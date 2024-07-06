@@ -1,5 +1,6 @@
 import Mathlib.Algebra.QuaternionBasis
 import FLTJujian02.CentralSimple
+import FLTJujian02.QuatBasic
 
 variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
     [FiniteDimensional ℚ D] (hD : FiniteDimensional.finrank ℚ D = 4)
@@ -35,7 +36,26 @@ lemma finrank_four : FiniteDimensional.finrank ℂ (ℂ ⊗[ℚ] D) = 4 :=
 
 theorem Gen_Quat_is_CSA: IsCentralSimple ℚ (ℍ[ℚ, a, b]) where
   is_central := sorry
-  is_simple := sorry
+  is_simple := by
+    if hH : ∀(x : ℍ[ℚ, a, b]), x = 0 ∨ (∃(y : _), y * x = 1 ∧ x * y = 1) then
+      haveI : DivisionRing ℍ[ℚ, a, b] :=
+      { inv := fun x ↦ if hx : x = 0 then 0
+          else (by change _ ≠ _ at hx; have h1 := hH x ; simp only [hx, false_or] at h1 ;
+                    choose y hy using h1 ; exact y)
+        mul_inv_cancel := fun x hx ↦ by simp only [hx, ↓reduceDIte, ne_eq, id_eq] ;sorry
+        inv_zero := by simp only [↓reduceDIte]
+        nnqsmul := _
+        qsmul := _
+      }
+      --exact @instIsSimpleOrderRingCon_fLTJujian02 ℍ[ℚ, a, b] this
+      sorry
+    else
+    simp only [not_forall, not_or, not_exists] at hH
+    obtain ⟨x, hx1, hx2⟩ := hH
+    change x ≠ 0 at hx1
+    have hy : ∀(y : _), y * x ≠ 1 ∨ x * y ≠ 1 := by tauto
+    obtain ⟨iso⟩ := Quat.not_div_iff_iso_matrix a b|>.2 ⟨x, ⟨hx1, hy⟩⟩
+    exact (_root_.AlgEquiv.isCentralSimple iso.symm).2
 
 theorem isoisoisoisoisoiso:
     Nonempty (ℂ ⊗[ℚ] D  ≃ₐ[ℂ] ℍ[ℂ]) := by

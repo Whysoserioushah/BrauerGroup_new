@@ -796,7 +796,9 @@ def e6Aux0 :
           convert _root_.mul_one _ } fun e a => by
             change _ = _
             simp only [AlgHom.coe_mk, RingHom.coe_mk]
-            sorry : E ⊗[K] A →ₐ[E] E ⊗[K] A ⊗[K] B)--show _ = _ by simp : E ⊗[K] A →ₐ[E] E ⊗[K] A ⊗[K] B)
+            change e ⊗ₜ[K] 1 ⊗ₜ[K] 1 * 1 ⊗ₜ[K] a ⊗ₜ[K] 1 = 1 ⊗ₜ[K] a ⊗ₜ[K] 1 * e ⊗ₜ[K] 1 ⊗ₜ[K] 1
+            simp only [Algebra.TensorProduct.tmul_mul_tmul,
+              _root_.mul_one, _root_.one_mul] : E ⊗[K] A →ₐ[E] E ⊗[K] A ⊗[K] B)
     (Algebra.TensorProduct.lift
       { toFun := fun e => e ⊗ₜ[K] 1 ⊗ₜ 1
         map_one' := rfl
@@ -818,8 +820,11 @@ def e6Aux0 :
             rfl]
           rw [TensorProduct.tmul_smul]
           rw [Algebra.smul_def (A := E ⊗[K] A ⊗[K] B)]
-          convert _root_.mul_one _ } fun _ _ => by
-            change _ = _ ; simp only [AlgHom.coe_mk, RingHom.coe_mk]; sorry) fun x y => by
+          convert _root_.mul_one _ } fun e b => by
+            change _ = _ ; simp only [AlgHom.coe_mk, RingHom.coe_mk];
+            change e ⊗ₜ[K] 1 ⊗ₜ[K] 1 * 1 ⊗ₜ[K] 1 ⊗ₜ[K] b = 1 ⊗ₜ[K] 1 ⊗ₜ[K] b * e ⊗ₜ[K] 1 ⊗ₜ[K] 1
+            simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul])
+            fun x y => by
             change _ = _
             induction' x using TensorProduct.induction_on with e a x x' hx hx'
             · simp only [map_zero, zero_mul, mul_zero]
@@ -828,10 +833,13 @@ def e6Aux0 :
               _root_.one_mul]
               induction' y using TensorProduct.induction_on with e' b y y' hy hy'
               · simp only [map_zero, mul_zero, zero_mul]
-              · simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk,
-                MonoidHom.coe_mk, OneHom.coe_mk, Algebra.TensorProduct.tmul_mul_tmul,
-                _root_.mul_one, _root_.one_mul]
-                sorry--rw [mul_comm]
+              · simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
+                change e ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] a ⊗ₜ[K] (1 : B) *
+                  (e' ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] (1 : A) ⊗ₜ[K] b) =
+                  e' ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] (1 : A) ⊗ₜ[K] b *
+                  (e ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] a ⊗ₜ[K] (1 : B))
+                simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
+                rw [mul_comm (G := E)]
               · simp only [map_add, mul_add, hy, hy', add_mul]
             · simp only [map_add, mul_add, hx, hx', add_mul]
 
@@ -851,7 +859,9 @@ def e6 [csa_A : IsCentralSimple K A] [csa_B : IsCentralSimple K B] :
       · refine ⟨(e ⊗ₜ a) ⊗ₜ[E] (1 ⊗ₜ b), ?_⟩
         simp only [e6Aux0, Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk,
           MonoidHom.coe_mk, OneHom.coe_mk, Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one,
-          _root_.one_mul, map_one]; sorry
+          _root_.one_mul, map_one];
+        change e ⊗ₜ[K] 1 ⊗ₜ[K] 1 * 1 ⊗ₜ[K] a ⊗ₜ[K] 1 * 1 ⊗ₜ[K] 1 ⊗ₜ[K] b = _
+        simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
       · rcases ha with ⟨aa, haa⟩
         rcases ha' with ⟨aa', haa'⟩
         refine ⟨aa + aa', ?_⟩
