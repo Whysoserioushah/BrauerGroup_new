@@ -339,7 +339,6 @@ theorem eqv_mat (A : CSA K) (n : ℕ) (hn : n ≠ 0): IsBrauerEquivalent A (matr
   unfold matrix_A one_mul_in eqv_in
   exact dim_one_iso _ |>.symm
 
-
 def matrixEquivForward (m n : Type*) [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] :
     Matrix m m K ⊗[K] Matrix n n K →ₐ[K] Matrix (m × n) (m × n) K :=
   Algebra.TensorProduct.algHomOfLinearMapTensorProduct
@@ -811,12 +810,8 @@ def e6Aux0 :
             rfl]
           rw [TensorProduct.tmul_smul]
           rw [Algebra.smul_def (A := E ⊗[K] A ⊗[K] B)]
-          convert _root_.mul_one _ } fun e b => by
-            change _ = _ ; simp only [AlgHom.coe_mk, RingHom.coe_mk];
-            change e ⊗ₜ[K] 1 ⊗ₜ[K] 1 * 1 ⊗ₜ[K] 1 ⊗ₜ[K] b = 1 ⊗ₜ[K] 1 ⊗ₜ[K] b * e ⊗ₜ[K] 1 ⊗ₜ[K] 1
-            simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul])
-            fun x y => by
-            change _ = _
+          convert _root_.mul_one _ } fun e b => show (_ ⊗ₜ _) * (_ ⊗ₜ _) = (_ ⊗ₜ _) * (_ ⊗ₜ _) by simp)
+            fun x y => show _ = _ by
             induction' x using TensorProduct.induction_on with e a x x' hx hx'
             · simp only [map_zero, zero_mul, mul_zero]
             · simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk,
@@ -825,12 +820,9 @@ def e6Aux0 :
               induction' y using TensorProduct.induction_on with e' b y y' hy hy'
               · simp only [map_zero, mul_zero, zero_mul]
               · simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
-                change e ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] a ⊗ₜ[K] (1 : B) *
-                  (e' ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] (1 : A) ⊗ₜ[K] b) =
-                  e' ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] (1 : A) ⊗ₜ[K] b *
-                  (e ⊗ₜ[K] (1 : A) ⊗ₜ[K] (1 : B) * (1 : E) ⊗ₜ[K] a ⊗ₜ[K] (1 : B))
+                change (_ ⊗ₜ _) * (_ ⊗ₜ _) * ((_ ⊗ₜ _) * (_ ⊗ₜ _)) = (_ ⊗ₜ _) * (_ ⊗ₜ _) * ((_ ⊗ₜ _) * (_ ⊗ₜ _))
                 simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
-                rw [mul_comm (G := E)]
+                rw [mul_comm]
               · simp only [map_add, mul_add, hy, hy', add_mul]
             · simp only [map_add, mul_add, hx, hx', add_mul]
 
