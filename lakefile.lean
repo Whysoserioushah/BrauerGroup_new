@@ -1,7 +1,7 @@
 import Lake
 open Lake DSL
 
-package "FLT_jujian_02" where
+package "BrauerGroup" where
   -- Settings applied to both builds and interactive editing
   leanOptions := #[
     ⟨`pp.unicode.fun, true⟩ -- pretty-prints `fun a ↦ b`
@@ -11,5 +11,5 @@ package "FLT_jujian_02" where
 require "leanprover-community" / "mathlib"
 
 @[default_target]
-lean_lib «FLTJujian02» where
+lean_lib «BrauerGroup» where
   -- add any library configuration options here

@@ -1,6 +1,7 @@
 import Mathlib.Algebra.QuaternionBasis
-import FLTJujian02.CentralSimple
-import FLTJujian02.QuatBasic
+import BrauerGroup.CentralSimple
+import BrauerGroup.QuatBasic
+import BrauerGroup.CentralSimple
 
 variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
     [FiniteDimensional ℚ D] (hD : FiniteDimensional.finrank ℚ D = 4)

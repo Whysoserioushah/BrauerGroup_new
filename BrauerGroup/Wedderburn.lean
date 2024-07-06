@@ -1,9 +1,9 @@
 import Mathlib.RingTheory.SimpleModule
 import Mathlib.RingTheory.Artinian
-import FLTJujian02.Con
+import BrauerGroup.Con
 import Mathlib.Algebra.Ring.Equiv
 import Mathlib.LinearAlgebra.Matrix.IsDiag
-import FLTJujian02.MoritaEquivalence
+import BrauerGroup.MoritaEquivalence
 
 variable (A : Type*) [Ring A]
 

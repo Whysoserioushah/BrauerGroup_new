@@ -1,5 +1,5 @@
-import FLTJujian02.CentralSimple
-import FLTJujian02.Composition
+import BrauerGroup.CentralSimple
+import BrauerGroup.Composition
 import Mathlib.LinearAlgebra.Matrix.ToLin
 
 
@@ -274,10 +274,9 @@ instance one_in (n : ℕ) (hn : n ≠ 0): CSA K where
 
 instance one_in' : CSA K where
   carrier := K
-  is_central_simple := {
-    is_central := Subsingleton.le (Subalgebra.center _ _) ⊥
-    is_simple := instIsSimpleOrderRingCon_fLTJujian02 _
-  }
+  is_central_simple :=
+  { is_central := Subsingleton.le (Subalgebra.center _ _) ⊥
+    is_simple := inferInstance }
 
 instance one_mul_in (n : ℕ) (hn : n ≠ 0) (A : CSA K) : CSA K where
   carrier := A ⊗[K] (Matrix (Fin n) (Fin n) K)
@@ -485,8 +484,7 @@ lemma mul_inv (A : CSA.{u, u} K) : IsBrauerEquivalent (mul A (inv (K := K) A)) o
   have hn : n ≠ 0 := by
     by_contra! hn
     simp only [n] at hn
-    have := FiniteDimensional.finrank_pos_iff (R := K) (M := A) |>.2 $
-      RingCon.instNontrivialOfIsSimpleOrder_fLTJujian02 _
+    have := FiniteDimensional.finrank_pos_iff (R := K) (M := A) |>.2 inferInstance
     omega
   have := tensor_self_op K A
   exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso _|>.trans this⟩⟩
@@ -497,8 +495,7 @@ lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) o
   have hn : n ≠ 0 := by
     by_contra! hn
     simp only [n] at hn
-    have := FiniteDimensional.finrank_pos_iff (R := K) (M := A) |>.2 $
-      RingCon.instNontrivialOfIsSimpleOrder_fLTJujian02 _
+    have := FiniteDimensional.finrank_pos_iff (R := K) (M := A) |>.2 $ inferInstance
     omega
   have := tensor_op_self K A
   exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso _|>.trans this⟩⟩
@@ -793,12 +790,8 @@ def e6Aux0 :
             rfl]
           rw [TensorProduct.tmul_smul]
           rw [Algebra.smul_def (A := E ⊗[K] A ⊗[K] B)]
-          convert _root_.mul_one _ } fun e a => by
-            change _ = _
-            simp only [AlgHom.coe_mk, RingHom.coe_mk]
-            change e ⊗ₜ[K] 1 ⊗ₜ[K] 1 * 1 ⊗ₜ[K] a ⊗ₜ[K] 1 = 1 ⊗ₜ[K] a ⊗ₜ[K] 1 * e ⊗ₜ[K] 1 ⊗ₜ[K] 1
-            simp only [Algebra.TensorProduct.tmul_mul_tmul,
-              _root_.mul_one, _root_.one_mul] : E ⊗[K] A →ₐ[E] E ⊗[K] A ⊗[K] B)
+          convert _root_.mul_one _ } fun e a =>
+            show (_ ⊗ₜ[K] _) * (_ ⊗ₜ[K] _) = (_ ⊗ₜ[K] _) * (_ ⊗ₜ[K] _) by simp)
     (Algebra.TensorProduct.lift
       { toFun := fun e => e ⊗ₜ[K] 1 ⊗ₜ 1
         map_one' := rfl

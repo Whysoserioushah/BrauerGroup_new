@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yunzhou Xie, Jujian Zhang, Kevin Buzzard
 -/
 
-import FLTJujian02.Con
-import FLTJujian02.Wedderburn
+import BrauerGroup.Con
+import BrauerGroup.Wedderburn
 import Mathlib.RingTheory.Flat.Basic
 import Mathlib.LinearAlgebra.TensorProduct.RightExactness
 
