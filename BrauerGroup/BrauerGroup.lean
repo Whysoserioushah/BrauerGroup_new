@@ -7,11 +7,9 @@ suppress_compilation
 universe u v v₁ v₂ w
 
 variable (K : Type u) [Field K]
-variable (A B : Type v)[Ring A][Ring B][Algebra K A][Algebra K B]
+variable (A B : Type v) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
 
 open scoped TensorProduct BigOperators
-
--- attribute [-instance] LinearMap.module
 
 lemma bijective_of_dim_eq_of_isCentralSimple
     [csa_source : IsCentralSimple K A]
@@ -754,7 +752,7 @@ def e3 [csa_A : IsCentralSimple K A] :
         letI r2 : Ring (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := inferInstance
         letI : Nontrivial (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := by
             have := e3Aux2' (K := K) (E := E) A m hm |>.2
-            exact RingCon.instNontrivialOfIsSimpleOrder_fLTJujian02 _
+            exact RingCon.instNontrivialOfIsSimpleOrder_brauerGroup _
         apply bijective_of_surj_of_isCentralSimple E _ _ _ $ e3Aux5 (K := K) (E := E) A m
 
 def e4 :
