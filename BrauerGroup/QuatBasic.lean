@@ -594,7 +594,23 @@ lemma norm_in_to_iso_matrix :
         i_mul_j := rfl
         j_mul_i := by simp only [eq2, neg_neg] }
     have bij : Function.Bijective one_iso_to :=
-    ⟨by sorry, sorry⟩
+    ⟨
+    by sorry,
+    by
+      intro x
+      induction' x with x1 x2 x3 x4
+      have eq1 : one_iso_to 1 = 1 := by simp
+      have eq2 : ∃(y : ℍ[ℚ, 1, 4 * a * a]), one_iso_to y = ⟨0, 1, 0, 0⟩ := by
+        sorry
+      have eq3 : ∃(z : ℍ[ℚ, 1, 4 * a * a]), one_iso_to z = ⟨0, 0, 1, 0⟩ := sorry
+      have eq4 : ∃(w : ℍ[ℚ, 1, 4 * a * a]), one_iso_to w = ⟨0, 0, 0, 1⟩ := sorry
+      obtain ⟨y', hy'⟩ := eq2
+      obtain ⟨z, hz⟩ := eq3
+      obtain ⟨w, hw⟩ := eq4
+      use x1 • 1 + x2 • y' + x3 • z + x4 • w
+      simp only [map_add, LinearMapClass.map_smul, _root_.map_one, hy', QuaternionAlgebra.smul_mk,
+        smul_eq_mul, mul_zero, mul_one, hz, hw]
+      ext <;> simp⟩
     have eqv : ℍ[ℚ, 1, 4 * a * a] ≃ₐ[ℚ] ℍ[ℚ, a, b] :=
       AlgEquiv.ofBijective one_iso_to bij
     exact ⟨eqv.symm.trans $ one_iso_matrix (4 * a * a) (by simpa)⟩
