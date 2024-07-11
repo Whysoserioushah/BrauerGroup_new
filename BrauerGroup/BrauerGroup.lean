@@ -858,6 +858,8 @@ def e7 : E ≃ₐ[E] (E ⊗[K] K) := AlgEquiv.symm $ Algebra.TensorProduct.rid _
 
 end someEquivs
 
+section Q_to_C
+
 abbrev BaseChange : BrGroup (K := K) →* BrGroup (K := E) where
   toFun :=
     Quotient.map'
@@ -902,4 +904,12 @@ lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
   simp only [Quotient.map'_mk'']; apply Quotient.sound
   exact BrauerGroup.Alg_closed_equiv_one _
 
+end Q_to_C 
+
 end BrauerGroupHom
+
+namespace Brauer'
+
+
+
+end Brauer'

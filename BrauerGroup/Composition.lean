@@ -1,17 +1,30 @@
+/-
+Copyright (c) 2024 Yunzhou Xie. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Kevin Buzzard, Yunzhou Xie
+-/
 import Mathlib.Data.Matrix.Basic
+
+/-! 
+# Composition of matrices 
+This file shows that Mₙ(Mₘ(R)) ≃ Mₙₘ(R), Mₙ(Mₘ(R)) ≃ Mₘ(Mₙ(R)), Mn(Rᵒᵖ) ≃ₐ[K] Mₙ(R)ᵒᵖ 
+and also different levels of equivalence when R is an AddCommMonoid,
+Semiring, and Algebra over a CommSemiring K.
+-/
 namespace Matrix
 
 open BigOperators
 
 variable  (I J K L R : Type*)
 
-
+/-- Mₙ(Mₘ(R)) ≃ Mₙₘ(R) -/
 def comp : Matrix I J (Matrix K L R) ≃ Matrix (I × K) (J × L) R where
   toFun m ik jl := m ik.1 jl.1 ik.2 jl.2
   invFun n i j k l := n (i, k) (j, l)
   left_inv _ := rfl
   right_inv _ := rfl
 
+/-- Mₙ(Mₘ(R)) ≃ Mₘ(Mₙ(R)) -/
 def swap : Matrix (I × J) (K × L) R ≃ Matrix (J × I) (L × K) R where
   toFun m ji kl := m (ji.2, ji.1) (kl.2, kl.1)
   invFun n ij kl := n (ij.2, ij.1) (kl.2, kl.1)
@@ -21,12 +34,13 @@ def swap : Matrix (I × J) (K × L) R ≃ Matrix (J × I) (L × K) R where
 section AddCommMonoid
 variable [AddCommMonoid R]
 
-
+/-- Mₙ(Mₘ(R)) ≃+ Mₙₘ(R) -/
 def comp_addHom : Matrix I J (Matrix K L R) ≃+ Matrix (I × K) (J × L) R :=
 { Matrix.comp I J K L R with
   map_add' := fun _ _ ↦ rfl
 }
 
+/-- Mₙ(Mₘ(R)) ≃+ Mₘ(Mₙ(R)) -/
 def swap_addHom : Matrix (I × J) (K × L) R ≃+ Matrix (J × I) (L × K) R :=
 { Matrix.swap I J K L R with
   map_add' := fun _ _ ↦ rfl
@@ -37,6 +51,7 @@ end AddCommMonoid
 section Semiring
 variable [Semiring R][Fintype I][Fintype J] [DecidableEq I] [DecidableEq J]
 
+/-- Mₙ(Mₘ(R)) ≃+* Mₙₘ(R) -/
 def comp_ringHom : Matrix I I (Matrix J J R) ≃+* Matrix (I × J) (I × J) R :=
 { Matrix.comp_addHom I I J J R with
   map_mul' := fun _ _ ↦ by
@@ -44,6 +59,7 @@ def comp_ringHom : Matrix I I (Matrix J J R) ≃+* Matrix (I × J) (I × J) R :=
     refine (Matrix.sum_apply _ _ _ _).trans $ Eq.symm Fintype.sum_prod_type
 }
 
+/-- Mₙ(Mₘ(R)) ≃+* Mₘ(Mₙ(R)) -/
 def swap_ringHom : Matrix (I × J) (I × J) R ≃+* Matrix (J × I) (J × I) R :=
 { Matrix.swap_addHom I J I J R with
   map_mul' := fun _ _ ↦ by
@@ -60,6 +76,7 @@ section Algebra
 variable (K : Type*) [CommSemiring K] [Semiring R] [Fintype I] [Fintype J] [Algebra K R]
 variable [DecidableEq I] [DecidableEq J]
 
+/-- Mₙ(Mₘ(R)) ≃ₐ[K] Mₙₘ(R) -/
 def comp_algHom : Matrix I I (Matrix J J R) ≃ₐ[K] Matrix (I × J) (I × J) R :=
 { Matrix.comp_ringHom I J R with
   commutes' := fun c ↦ by
@@ -76,6 +93,7 @@ def comp_algHom : Matrix I I (Matrix J J R) ≃ₐ[K] Matrix (I × J) (I × J) R
     else simp only [hii, ↓reduceIte, zero_apply, Prod.mk.injEq]; tauto
 }
 
+/-- Mₙ(Mₘ(R)) ≃ₐ[K] Mₘ(Mₙ(R)) -/
 def swap_algHom : Matrix (I × J) (I × J) R ≃ₐ[K] Matrix (J × I) (J × I) R :=
 { Matrix.swap_ringHom I J R with
   commutes' := fun c ↦ by
@@ -91,7 +109,9 @@ def swap_algHom : Matrix (I × J) (I × J) R ≃ₐ[K] Matrix (J × I) (J × I) 
     else simp only [Prod.mk.injEq, hii, and_false, ↓reduceIte, false_and]
 }
 
+
 open BigOperators Matrix MulOpposite in
+/-- Mn(Rᵒᵖ) ≃ₐ[K] Mₙ(R)ᵒᵖ -/
 def matrixEquivMatrixMop_algebra (n : ℕ):
     Matrix (Fin n) (Fin n) Rᵐᵒᵖ ≃ₐ[K] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
   toFun := fun M => MulOpposite.op (M.transpose.map (fun d => MulOpposite.unop d))

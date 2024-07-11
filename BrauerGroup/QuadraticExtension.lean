@@ -435,10 +435,28 @@ instance DivisionRing (hd : ¬(IsSquare d)): DivisionRing (K√d) :=
   qsmul := _
 }
 
-instance (hd : ¬(IsSquare d)) : Field (K√d) :=
+instance sqrt_field (hd : ¬(IsSquare d)) : Field (K√d) :=
 { Ksqrtd.DivisionRing hd with
   mul_comm := _
 }
+
+theorem inv_norm_inv (hd : ¬(IsSquare d)) (x : K√d) : (norm x)⁻¹ = norm (x⁻¹) := by
+  letI : Field (K√d) := sqrt_field hd
+  if h : x = 0 then
+    subst h
+    simp only [norm_def, zero_re, mul_zero, zero_im, sub_self, inv_zero]
+  else
+  have eq1 : (norm x⁻¹) * norm x = norm (x * x⁻¹) := by rw [mul_comm]; exact norm_mul x x⁻¹ |>.symm
+  rw [mul_inv_cancel h, norm_one] at eq1
+  exact Eq.symm (eq_inv_of_mul_eq_one_left eq1)
+
+theorem norm_eq_zero_iff (hd : ¬(IsSquare d)) (x : K√d) : norm x = 0 ↔ x = 0 := by
+  constructor
+  · intro hx
+    by_contra!
+    exact (not_square_to_norm_not_zero hd x this) hx
+  · intro hx
+    simp [hx]
 
 end Norm
 
