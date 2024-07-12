@@ -102,6 +102,9 @@ lemma mul_mem_left (x y) (hy : y ∈ I) : x * y ∈ I := by
 lemma mul_mem_right (x y) (hx : x ∈ I) : x * y ∈ I := by
   simpa using I.mul hx (I.refl y)
 
+lemma smul_mem (r : R) {x} (hx : x ∈ I) : r • x ∈ I := by
+  simpa using I.mul (I.refl r) hx
+
 lemma sum_mem (f : ι → R) (h : ∀ i ∈ s, f i ∈ I) : ∑ i in s, f i ∈ I := by
   simpa using I.sum h
 
