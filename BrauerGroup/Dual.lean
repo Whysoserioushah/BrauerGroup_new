@@ -1,11 +1,9 @@
 import Mathlib.LinearAlgebra.Dual
 import Mathlib.LinearAlgebra.TensorPower
 
-universe u v
-
 section
 
-variable (k : Type u) (V : Type v) [CommSemiring k] [AddCommMonoid V] [Module k V]
+variable (k V : Type*) [CommSemiring k] [AddCommMonoid V] [Module k V]
 
 open TensorProduct PiTensorProduct
 
@@ -101,5 +99,19 @@ noncomputable def dualTensorPower (p : ℕ) :
 lemma dualTensorPower_tprod (p : ℕ) (f : Fin p → Module.Dual k V) (v : Fin p → V) :
     dualTensorPower k V p (tprod k f) (tprod k v) = ∏ i : Fin p, f i (v i) := by
   simp only [dualTensorPower, lift.tprod, MultilinearMap.coe_mk]
+
+end
+
+section
+
+variable (k V : Type*) [CommRing k] [AddCommGroup V] [Module k V] (p : ℕ)
+
+open TensorProduct PiTensorProduct
+
+noncomputable def Module.Dual.basis
+    {ι : Type*} [DecidableEq ι] [_root_.Finite ι] (b : Basis ι k V) :
+    Basis ι k (Module.Dual k V) :=
+  b.map $ LinearEquiv.ofBijective b.toDual ⟨b.toDual_injective,
+    LinearMap.range_eq_top.1 b.toDual_range⟩
 
 end
