@@ -5,8 +5,8 @@ import BrauerGroup.CentralSimple
 
 variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
     [FiniteDimensional ℚ D] (hD : FiniteDimensional.finrank ℚ D = 4)
+
 open Quaternion TensorProduct BigOperators Classical
---instance isoisoiso (h1: Module.rank ℚ D = 4): Nonempty (D ≃ₐ[ℚ] QuaternionAlgebra ℚ a b):= by sorry
 
 variable (a b : ℚ)
 
@@ -35,36 +35,36 @@ instance : FiniteDimensional ℂ (ℂ ⊗[ℚ] D) := Module.Finite.base_change �
 lemma finrank_four : FiniteDimensional.finrank ℂ (ℂ ⊗[ℚ] D) = 4 :=
   (dim_eq ℚ ℂ D).symm.trans hD
 
--- strictly speaking, this is wrong, because ℍ[ℚ, 0, 0] is not simple.
-theorem Gen_Quat_is_CSA: IsCentralSimple ℚ (ℍ[ℚ, a, b]) where
-  is_central := sorry
-  is_simple := sorry
-    -- if hH : ∀(x : ℍ[ℚ, a, b]), x = 0 ∨ (∃(y : _), y * x = 1 ∧ x * y = 1) then
-    --   haveI : DivisionRing ℍ[ℚ, a, b] :=
-    --   { inv := fun x ↦ if hx : x = 0 then 0
-    --       else (by change _ ≠ _ at hx; have h1 := hH x ; simp only [hx, false_or] at h1 ;
-    --                 choose y hy using h1 ; exact y)
-    --     mul_inv_cancel := fun x hx ↦ by simp only [hx, ↓reduceDIte, ne_eq, id_eq] ;sorry
-    --     inv_zero := by simp only [↓reduceDIte]
-    --     nnqsmul := _
-    --     qsmul := _
-    --   }
-    --   --exact @instIsSimpleOrderRingCon_fLTJujian02 ℍ[ℚ, a, b] this
-    --   sorry
-    -- else
-    -- simp only [not_forall, not_or, not_exists] at hH
-    -- obtain ⟨x, hx1, hx2⟩ := hH
-    -- change x ≠ 0 at hx1
-    -- have hy : ∀(y : _), y * x ≠ 1 ∨ x * y ≠ 1 := by tauto
-    -- obtain ⟨iso⟩ := Quat.not_div_iff_iso_matrix a b|>.2 ⟨x, ⟨hx1, hy⟩⟩
-    -- exact (_root_.AlgEquiv.isCentralSimple iso.symm).2
+instance Gen_Quat_is_CSA [NeZero a] [NeZero b] : IsCentralSimple ℚ (ℍ[ℚ, a, b]) where
+  is_central := by
+    intro z hz
+    rw [Algebra.mem_bot]
+    rw [Subalgebra.mem_center_iff] at hz
+
+    induction z with
+    | mk α β γ δ =>
+    have eq1 := hz ⟨0,1,0,0⟩
+    simp only [QuaternionAlgebra.mk_mul_mk, zero_mul, mul_one, zero_add, mul_zero, add_zero,
+      sub_zero, one_mul, zero_sub, QuaternionAlgebra.mk.injEq, eq_neg_self_iff, mul_eq_zero,
+      true_and] at eq1
+    rw [eq1.2, eq1.1.resolve_left (NeZero.ne' a).symm]
+    have eq2 := hz ⟨0,0,1,0⟩
+    simp only [QuaternionAlgebra.mk_mul_mk, zero_mul, mul_zero, add_zero, mul_one, zero_add,
+      sub_zero, zero_sub, one_mul, sub_self, QuaternionAlgebra.mk.injEq, neg_eq_self_iff,
+      mul_eq_zero, true_and] at eq2
+    rw [eq2.2]
+    have eq3 := hz ⟨0,0,0,1⟩
+    simp only [QuaternionAlgebra.mk_mul_mk, zero_mul, mul_zero, add_zero, mul_one, zero_sub,
+      sub_self, zero_add, one_mul, sub_zero, QuaternionAlgebra.mk.injEq, eq_neg_self_iff,
+      mul_eq_zero, neg_eq_self_iff, and_true, true_and] at eq3
+    exact ⟨α, rfl⟩
+  is_simple := Quat.quat_isSimple a b (NeZero.ne' a).symm (NeZero.ne' b).symm
 
 theorem isoisoisoisoisoiso:
     Nonempty (ℂ ⊗[ℚ] D  ≃ₐ[ℂ] ℍ[ℂ]) := by
-
   sorry
 
 variable (K E : Type) [Field K] [Ring E] [Algebra K E] [h : IsCentralSimple K E]
     [FiniteDimensional K E] (hD : FiniteDimensional.finrank K E = 4)
 
-theorem CSA_is_quat : ∃(a b : K), Nonempty (E ≃ₐ[K] ℍ[K, a, b]) := sorry
+theorem CSA_is_quat : ∃ (a b : K), Nonempty (E ≃ₐ[K] ℍ[K, a, b]) := sorry
