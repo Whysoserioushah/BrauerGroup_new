@@ -1,0 +1,37 @@
+\section{Galois Descent}
+
+\subsection{Preliminary results}
+Let $k$ be a field and $V$ a $k$-vector space. We denote by $V^{\star}$ the dual space of $V$.
+
+\begin{lemma}\label{lem:dual-tensor-power}
+  There is a map $(V^{\star})^{\otimes p} \to (V^{\otimes p})^\star$
+  \leanok
+  \lean{dualTensorPower}
+\end{lemma}
+\begin{proof}
+Indeed, let $f_1 \otimes, \dots, \otimes f_p \in (V^{\star})^{\otimes p}$ and $v_1 \otimes, \dots, \otimes v_p \in V^{\otimes p}$. We define the map by considering the product $\prod_{i} f_i (v_i)$.
+\end{proof}
+
+\subsection{$(p, q)$-tensor}\label{sec:p-q-tensor}
+
+Let $k$ be a field and $V$ a $k$-vector space.
+
+\begin{definition}\label{def:tensor-of-type}%
+  For any $p, q \in \mathbb{N}$, a $V$-tensor of type $(p,q)$ or a $(p, q)$-tensor is an element of the tensor product $V^{\otimes p} \otimes {(V^*)}^{\otimes q}$.
+  \leanok%
+  \lean{TensorWithType}
+\end{definition}
+
+
+\begin{lemma}
+  If $v$ is a $V$-tensor of type $(p,q)$, then it induces a linear map $V^{\otimes q}\to V^{\otimes p}$
+\end{lemma}
+\begin{proof}
+  Let $v = x \otimes f$ where $f$ can be seen as ${(V^{\otimes q})}^{\star}$ under
+  \cref{lem:dual-tensor-power} and $x \in V^{\otimes p}$, thus if $y \in V^{\otimes q}$, we can obtain an elment in $V^{\otimes p}$ by $f(y)\cdot x$
+\end{proof}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:
