@@ -13,4 +13,8 @@ lean_decls
 print.pdf
 web.paux
 
+blueprint/src/print.prv/*
+blueprint/src/_region_.prv/*
+**/__region__.tex
+
 *.el

@@ -24,12 +24,51 @@ Let $k$ be a field and $V$ a $k$-vector space.
 
 
 \begin{lemma}
-  If $v$ is a $V$-tensor of type $(p,q)$, then it induces a linear map $V^{\otimes q}\to V^{\otimes p}$
+  If $v$ is a $V$-tensor of type $(p,q)$, then it induces a linear map $V^{\otimes q}\to V^{\otimes p}$.
+  \leanok%
+  \lean{TensorOfType.toHom}
 \end{lemma}
 \begin{proof}
   Let $v = x \otimes f$ where $f$ can be seen as ${(V^{\otimes q})}^{\star}$ under
   \cref{lem:dual-tensor-power} and $x \in V^{\otimes p}$, thus if $y \in V^{\otimes q}$, we can obtain an elment in $V^{\otimes p}$ by $f(y)\cdot x$
 \end{proof}
+
+Let $W$ be another $k$-vector space such that $e : V \cong W$.
+
+\begin{lemma}\label{lem:tensor-of-type-congr}
+  $e$ induces an isomorphism between $V$-tensor of type $(p,q)$ and $W$-tensor of type $(p, q)$. Furthermore, $\mathsf{1} : V \cong V$ induces the identity and the linear map induced by $e_{1}\circ e_{2}$ is equal to the composition of linear map induced by $e_{1}$ and $e_{2}$.
+  \leanok%
+  \lean{TensorOfType.congr}
+\end{lemma}
+\begin{proof}
+  Indeed, $e$ induces an automorphism on $V^{\otimes p}$ while $e^{-1}$ induces an automorphism on $W^{\otimes q}$. Checking the functoriality is trivial.
+\end{proof}
+
+\section{Vector space with tensor of type $(p,q)$}
+
+Let $k$ be a field.
+
+\begin{definition}
+  A $k$-vector space with tensor of type $(p, q)$ is a pair of $(V, \Phi)$ where $V$ is a $k$-vector space and $\Phi$ a $V$-tensor of type $(p, q)$.
+  \leanok%
+  \lean{VectorSpaceWithTensorOfType}
+\end{definition}
+
+\begin{definition}
+  An equivalence between $k$-vector spaces $(V, \Phi)$ and $(W, \Psi)$ with tensor of type $(p, q)$ is a $k$-equivalence $e : V \cong W$ such that $e(\Phi) = \Psi$ where $e$ is seen as an isomorphism between $V$-tensor of type $(p, q)$ and $W$-tensor of type $(p, q)$ under \cref{lem:tensor-of-type-congr}.
+  \leanok%
+\end{definition}
+
+\begin{lemma}
+  The notion of equivalence between $k$-vector spaces with tensor of type $(p, q)$ is an equivalence relation:
+  \begin{itemize}
+    \item $(V, \Phi)$ is equivalent to itself.
+    \item If $(V, \Phi)$ is equivalent to $(W, \Psi)$, then $(W, \Psi)$ is equivalent to $(V, \Phi)$.
+    \item If $(V_{1}, \Phi_{1})$ is equivalent to $(V_{2}, \Psi_{2})$ and $(V_{2}, \Psi_{2})$ is equivalent to $(V_{3}, \Psi_{3})$, then $(V_{1}, \Phi_{1})$ is equivalent to $(V_{3}, \Psi_{3})$.
+  \end{itemize}
+  \leanok%
+  \lean{VectorSpaceWithTensorOfType.Equiv.refl, VectorSpaceWithTensorOfType.Equiv.symm,  VectorSpaceWithTensorOfType.Equiv.trans}
+\end{lemma}
 
 %%% Local Variables:
 %%% mode: LaTeX
