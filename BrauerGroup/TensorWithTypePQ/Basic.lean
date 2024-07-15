@@ -1,7 +1,11 @@
 import Mathlib.LinearAlgebra.TensorPower
 import BrauerGroup.Dual
+import BrauerGroup.PiTensorProduct
 
-variable (k K V V₁ V₂ V₃ W : Type*) [CommSemiring k] [CommSemiring k]
+suppress_compilation
+
+variable (k K V V₁ V₂ V₃ W : Type*)
+variable [CommSemiring k] [CommSemiring K] [Algebra k K]
 variable [AddCommMonoid V] [Module k V]
 variable [AddCommMonoid V₁] [Module k V₁]
 variable [AddCommMonoid V₂] [Module k V₂]
@@ -115,6 +119,58 @@ lemma congr_apply (e : V ≃ₗ[k] W) (v : TensorOfType k V p q) :
 @[simp]
 lemma congr_symm_apply (e : V ≃ₗ[k] W) (w : TensorOfType k W p q) :
     (congr e).symm w = induced e.symm w := rfl
+
+section extendScalars
+
+variable (k K V : Type*) [CommRing k] [CommRing K] [Algebra k K]
+variable [AddCommGroup V] [Module k V]
+
+def extendScalars : TensorOfType k V p q →ₗ[k] TensorOfType K (K ⊗[k] V) p q :=
+  let f1 : (⨂[k]^p V) →ₗ[k] ⨂[K]^p (K ⊗[k] V) := PiTensorProduct.extendScalars k K _
+  let f2 : (⨂[k]^q (Module.Dual k V)) →ₗ[k] ⨂[K]^q (Module.Dual K (K ⊗[k] V)) :=
+    { PiTensorProduct.map fun i => Module.Dual.extendScalars k K V with
+      map_smul' := fun k hk => by
+        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearMap.map_smul_of_tower,
+          RingHom.id_apply] } ∘ₗ
+    PiTensorProduct.extendScalars k K _
+  TensorProduct.lift $
+    { toFun := fun vp =>
+      { toFun := fun fq => vp ⊗ₜ[K] f2 fq
+        map_add' := fun fq₁ fq₂ => by
+          simp only [map_add, tmul_add]
+        map_smul' := fun a fq => by
+          simp only [LinearMapClass.map_smul, tmul_smul, RingHom.id_apply] }
+      map_add' := fun vp₁ vp₂ => by
+        simp only
+        ext fq
+        simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
+          LinearMap.add_apply, add_tmul]
+      map_smul' := fun a vp => by
+        simp only [RingHom.id_apply]
+        ext fq
+        simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
+          LinearMap.smul_apply]
+        rw [smul_tmul'] } ∘ₗ f1
+
+@[simp]
+lemma extendScalars_tprod_tmul_tprod (v : Fin p → V) (f : Fin q → Module.Dual k V) :
+    extendScalars k K V ((tprod k v) ⊗ₜ (tprod k f)) =
+    (tprod K ((1 : K) ⊗ₜ v ·)) ⊗ₜ
+    (tprod K $ fun i => Module.Dual.extendScalars k K V (1 ⊗ₜ f i)) := by
+  simp only [extendScalars, LinearMap.coe_comp, LinearMap.coe_mk, LinearMap.coe_toAddHom,
+    Function.comp_apply, lift.tmul, AddHom.coe_mk, extendScalars_tprod, map_tprod]
+
+lemma extendScalars_tprod_tmul_tprod_toHom_apply
+    (v : Fin p → V) (f : Fin q → Module.Dual k V) (w : Fin q → V) :
+    toHom (extendScalars k K V ((tprod k v) ⊗ₜ (tprod k f))) (tprod K (1 ⊗ₜ w ·)) =
+    (∏ x : Fin q, (f x) (w x)) • (tprod K) (1 ⊗ₜ v ·) := by
+  simp only [extendScalars_tprod_tmul_tprod, toHom_tprod_tmul_tprod_apply,
+    Module.Dual.extendScalars_tmul_apply_tmul, mul_one]
+  simp_rw [← Algebra.algebraMap_eq_smul_one]
+  rw [← map_prod]
+  rw [algebraMap_smul]
+
+end extendScalars
 
 end TensorOfType
 

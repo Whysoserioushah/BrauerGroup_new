@@ -3,7 +3,9 @@ import BrauerGroup.CentralSimple
 import BrauerGroup.Composition
 import BrauerGroup.Con
 import BrauerGroup.Dual
+import BrauerGroup.GaloisDescent.Basic
 import BrauerGroup.MoritaEquivalence
+import BrauerGroup.PiTensorProduct
 import BrauerGroup.QuadraticExtension
 import BrauerGroup.QuatBasic
 import BrauerGroup.Quaternion
