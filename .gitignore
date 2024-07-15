@@ -15,6 +15,6 @@ web.paux
 
 blueprint/src/print.prv/*
 blueprint/src/_region_.prv/*
-**/__region__.tex
 
 *.el
+/blueprint/src/_region_.tex
