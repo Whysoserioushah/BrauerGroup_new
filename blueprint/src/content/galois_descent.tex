@@ -94,6 +94,15 @@ Let $k$ be a field.
   \lean{VectorSpaceWithTensorOfType.Equiv.refl, VectorSpaceWithTensorOfType.Equiv.symm,  VectorSpaceWithTensorOfType.Equiv.trans}
 \end{lemma}
 
+\begin{lemma}[extend scalars]\label{lem:extend-scalars-vector-space-with-tensor}
+  \leanok%
+  \lean{VectorSpaceWithTensorOfType.extendScalars}
+  Let $K/k$ be a field extension and $(V, \Phi)$ a $k$-vector space with tensor of type $(p,q)$, then $(V, \Phi)$ can be extended to a $K$-vector space with tensor of type $(p,q)$.
+\end{lemma}
+\begin{proof}
+  Indeed, $(K \otimes_{k} V, \Phi_{K})$ works where $\Phi_{K}$ is obtained via~\cref{lem:extend-scalars-pq-tensor}.
+\end{proof}
+
 %%% Local Variables:
 %%% mode: LaTeX
 %%% TeX-master: "../print"
