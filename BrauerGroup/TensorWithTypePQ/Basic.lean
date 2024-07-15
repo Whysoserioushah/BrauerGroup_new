@@ -128,7 +128,7 @@ variable [AddCommGroup V] [Module k V]
 def extendScalars : TensorOfType k V p q →ₗ[k] TensorOfType K (K ⊗[k] V) p q :=
   let f1 : (⨂[k]^p V) →ₗ[k] ⨂[K]^p (K ⊗[k] V) := PiTensorProduct.extendScalars k K _
   let f2 : (⨂[k]^q (Module.Dual k V)) →ₗ[k] ⨂[K]^q (Module.Dual K (K ⊗[k] V)) :=
-    { PiTensorProduct.map fun i => Module.Dual.extendScalars k K V with
+    { PiTensorProduct.map fun _ => Module.Dual.extendScalars k K V with
       map_smul' := fun k hk => by
         simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearMap.map_smul_of_tower,
           RingHom.id_apply] } ∘ₗ
@@ -174,28 +174,27 @@ end extendScalars
 
 end TensorOfType
 
-structure VectorSpaceWithTensorOfType (p q : ℕ) where
+structure VectorSpaceWithTensorOfType (k : Type*) (p q : ℕ) [CommRing k] where
 (carrier : Type*)
-[ab : AddCommMonoid carrier]
+[ab : AddCommGroup carrier]
 [mod : Module k carrier]
 (tensor : TensorOfType k carrier p q)
 
 namespace VectorSpaceWithTensorOfType
 
-variable {k p q}
-variable (V V₁ V₂ V₃ W : VectorSpaceWithTensorOfType k p q)
-
-instance : AddCommMonoid V.carrier := V.ab
-instance : Module k V.carrier := V.mod
+variable {p q}
+variable (k : Type*) [CommRing k] (V V₁ V₂ V₃ W : VectorSpaceWithTensorOfType k p q)
 
 instance : CoeSort (VectorSpaceWithTensorOfType k p q) Type* := ⟨carrier⟩
+instance : AddCommGroup V := V.ab
+instance : Module k V := V.mod
 
 noncomputable def hom := TensorOfType.toHom V.tensor
 
 structure Equiv extends V ≃ₗ[k] W where
   map_tensor : TensorOfType.induced toLinearEquiv V.tensor = W.tensor
 
-instance : EquivLike (Equiv V W) V W where
+instance : EquivLike (Equiv k V W) V W where
   coe e x := e.toLinearEquiv x
   inv e x := e.toLinearEquiv.symm x
   left_inv e x := by simp
@@ -205,17 +204,17 @@ instance : EquivLike (Equiv V W) V W where
     simp only [DFunLike.coe_fn_eq, Equiv.mk.injEq]
     simpa using h
 
-instance : LinearEquivClass (Equiv V W) k V W where
+instance : LinearEquivClass (Equiv k V W) k V W where
   map_add e := e.toLinearEquiv.map_add
   map_smulₛₗ e := e.toLinearEquiv.map_smul
 
 @[refl, simps toLinearEquiv]
-def Equiv.refl : Equiv V V where
+def Equiv.refl : Equiv k V V where
   __ := LinearEquiv.refl k V
   map_tensor := by simp only [TensorOfType.induced_refl, LinearMap.id_coe, id_eq]
 
 @[symm, simps toLinearEquiv]
-def Equiv.symm (e : Equiv V W) : Equiv W V where
+def Equiv.symm (e : Equiv k V W) : Equiv k W V where
   __ := e.toLinearEquiv.symm
   map_tensor := by
     simp only
@@ -226,10 +225,23 @@ def Equiv.symm (e : Equiv V W) : Equiv W V where
     rw [eq1]
 
 @[trans, simps toLinearEquiv]
-def Equiv.trans (e : Equiv V₁ V₂) (f : Equiv V₂ V₃) : Equiv V₁ V₃ where
+def Equiv.trans (e : Equiv k V₁ V₂) (f : Equiv k V₂ V₃) : Equiv k V₁ V₃ where
   __ := (e.toLinearEquiv.trans f.toLinearEquiv)
   map_tensor := by
     simp only
     rw [TensorOfType.induced_trans, LinearMap.comp_apply, e.map_tensor, f.map_tensor]
+
+section extendScalars
+
+variable {k K : Type*} [CommRing k] [CommRing K] [Algebra k K]
+
+def extendScalars (V : VectorSpaceWithTensorOfType k p q) :
+    VectorSpaceWithTensorOfType K p q where
+  carrier := K ⊗[k] V
+  ab := inferInstance
+  mod := inferInstance
+  tensor := TensorOfType.extendScalars k K V V.tensor
+
+end extendScalars
 
 end VectorSpaceWithTensorOfType
