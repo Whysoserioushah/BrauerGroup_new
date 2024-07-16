@@ -1,7 +1,7 @@
-import Mathlib.Algebra.QuaternionBasis
-import BrauerGroup.CentralSimple
 import BrauerGroup.QuatBasic
-import BrauerGroup.CentralSimple
+import BrauerGroup.BrauerGroup
+
+suppress_compilation
 
 variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
     [FiniteDimensional ℚ D] (hD : FiniteDimensional.finrank ℚ D = 4)
@@ -9,16 +9,6 @@ variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
 open Quaternion TensorProduct BigOperators Classical
 
 variable (a b : ℚ)
-
-theorem Quat_is_CSA: IsCentralSimple ℚ (ℍ[ℚ]) where
-  is_central z hz := by
-    rw [@Subalgebra.mem_center_iff] at hz
-    let eq2 := congrArg Quaternion.imI (hz ⟨0,0,1,0⟩)
-    let eq3 := congrArg Quaternion.imJ (hz ⟨0,0,0,1⟩)
-    let eq4 := congrArg Quaternion.imK (hz ⟨0,1,0,0⟩)
-    simp only [mul_imI, zero_mul, add_zero, one_mul, zero_add, sub_zero, mul_zero, mul_one,
-      zero_sub, eq_neg_self_iff, mul_imJ, sub_self, mul_imK] at eq2 eq3 eq4
-    refine ⟨_, id (ext z (↑z.re) rfl eq3 eq4 eq2).symm⟩
 
 variable (K L : Type) [Field K] [Field L] [Algebra K L]
   (V : Type) [AddCommGroup V] [Module K V] [Module.Finite K V]
@@ -40,7 +30,6 @@ instance Gen_Quat_is_CSA [NeZero a] [NeZero b] : IsCentralSimple ℚ (ℍ[ℚ, a
     intro z hz
     rw [Algebra.mem_bot]
     rw [Subalgebra.mem_center_iff] at hz
-
     induction z with
     | mk α β γ δ =>
     have eq1 := hz ⟨0,1,0,0⟩
@@ -60,14 +49,19 @@ instance Gen_Quat_is_CSA [NeZero a] [NeZero b] : IsCentralSimple ℚ (ℍ[ℚ, a
     exact ⟨α, rfl⟩
   is_simple := Quat.quat_isSimple a b (NeZero.ne' a).symm (NeZero.ne' b).symm
 
-/-- use the fact that ℍ is CSA and BrauerGroup over ℂ is trivial and dimension is 4 -/
+/-- prove 1 ⊗ 1, 1 ⊗ i, 1 ⊗ j, 1 ⊗ k is a basis of ℂ ⊗ ℍ. -/
 theorem complex_tensor_eqv [NeZero a] [NeZero b] :
-    Nonempty (ℂ ⊗[ℚ] ℍ[ℚ, a, b] ≃ₐ[ℂ] Matrix (Fin 2) (Fin 2) ℂ) := by
+    Nonempty (ℂ ⊗[ℚ] ℍ[ℚ, a, b] ≃ₐ[ℂ] ℍ[ℂ, a, b]) := by
   sorry
+
+/-- use exist non-trvial but norm-zero element 1 + (1/√a) i -/
+def complex_quat_eqv (c d : ℂ) [NeZero c] [NeZero d]: ℍ[ℂ, c, d] ≃ₐ[ℂ] Matrix (Fin 2) (Fin 2) ℂ :=
+  (Quat.not_div_iff_iso_matrix c d (NeZero.ne' c).symm (NeZero.ne' d).symm).2
+  (by sorry)|>.some
 
 variable (E : Type) [Ring E] [Algebra ℂ E] [h : IsCentralSimple ℂ E]
     [FiniteDimensional ℂ E] (hD : FiniteDimensional.finrank ℂ E = 4)
 
-/-- by choose basis read FiniteDimensional.finBasis -/
+/-- by prove {1, i, j, k} in E is indeed a basis of E read FiniteDimensional.finBasis -/
 theorem CSA_is_quat : ∃(a b : ℂ) (_ : NeZero a) (_ : NeZero b),
     Nonempty (E ≃ₐ[ℂ] ℍ[ℂ, a, b]) := sorry

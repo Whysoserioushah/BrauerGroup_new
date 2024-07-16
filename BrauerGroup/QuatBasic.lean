@@ -7,11 +7,13 @@ suppress_compilation
 
 namespace Quat
 
-variable (a b : ℚ) (ha : a ≠ 0) (hb : b ≠ 0)
+variable (K : Type*) [Field K] [CharZero K]
+variable (a b : K) (ha : a ≠ 0) (hb : b ≠ 0)
 
 open Quaternion Classical Matrix
 
-def normQuat : ℍ[ℚ, a, b] →*₀ ℚ where
+variable {K}
+def normQuat : ℍ[K, a, b] →*₀ K where
   toFun a := a * star a|>.re
   map_zero' := by simp only [star_zero, mul_zero, QuaternionAlgebra.zero_re]
   map_one' := by simp only [star_one, mul_one, QuaternionAlgebra.one_re]
@@ -20,7 +22,7 @@ def normQuat : ℍ[ℚ, a, b] →*₀ ℚ where
       QuaternionAlgebra.mul_star_eq_coe, mul_assoc, QuaternionAlgebra.coe_mul_eq_smul,
       mul_smul_comm, QuaternionAlgebra.smul_re, smul_eq_mul, mul_comm]
 
-theorem invertible_iff (x : ℍ[ℚ, a, b]) : (∃ y : ℍ[ℚ, a, b], x * y = 1 ∧ y * x = 1) ↔
+theorem invertible_iff (x : ℍ[K, a, b]) : (∃ y : ℍ[K, a, b], x * y = 1 ∧ y * x = 1) ↔
     normQuat a b x ≠ 0 := by
   constructor
   · intro ⟨y, h1, _⟩
@@ -38,8 +40,8 @@ theorem invertible_iff (x : ℍ[ℚ, a, b]) : (∃ y : ℍ[ℚ, a, b], x * y = 1
         inv_mul_cancel hx]; rfl
 
 theorem non_zero_norm_iff_div :
-    (∀(x : ℍ[ℚ, a, b]), x ≠ 0 → (∃(y : ℍ[ℚ, a, b]), y * x = 1 ∧ x * y = 1)) ↔
-    ∀ (x : ℍ[ℚ, a, b]), (normQuat a b) x = 0 ↔ x = 0 := by
+    (∀(x : ℍ[K, a, b]), x ≠ 0 → (∃(y : ℍ[K, a, b]), y * x = 1 ∧ x * y = 1)) ↔
+    ∀ (x : ℍ[K, a, b]), (normQuat a b) x = 0 ↔ x = 0 := by
   constructor
   · intro hD x ;constructor
     · intro hx
@@ -58,8 +60,8 @@ theorem non_zero_norm_iff_div :
       rw [show (x * star x).re = normQuat a b x from rfl, QuaternionAlgebra.smul_coe,
         inv_mul_cancel (by by_contra! hxx ; exact hx ((hD' x).1 hxx))]; rfl
 
-def equiv_to_square (u v : ℚ) (hu : u ≠ 0) (hv : v ≠ 0):
-    ℍ[ℚ, a, b] →ₐ[ℚ] ℍ[ℚ, u^2 * a, v^2 * b] :=
+def equiv_to_square (u v : K) (hu : u ≠ 0) (hv : v ≠ 0):
+    ℍ[K, a, b] →ₐ[K] ℍ[K, u^2 * a, v^2 * b] :=
   QuaternionAlgebra.lift $
     { i := ⟨0, u⁻¹, 0, 0⟩
       j := ⟨0, 0, v⁻¹, 0⟩
@@ -85,8 +87,8 @@ def equiv_to_square (u v : ℚ) (hu : u ≠ 0) (hv : v ≠ 0):
         simp only [QuaternionAlgebra.mk_mul_mk, mul_zero, pow_two, zero_mul, add_zero,
           sub_self, zero_sub, QuaternionAlgebra.neg_mk, neg_zero, mul_comm] }
 
-def square_to_equiv (u v : ℚ) (_ : u ≠ 0) (_ : v ≠ 0):
-    ℍ[ℚ, u^2 * a, v^2 * b] →ₐ[ℚ] ℍ[ℚ, a, b] :=
+def square_to_equiv (u v : K) (_ : u ≠ 0) (_ : v ≠ 0):
+    ℍ[K, u^2 * a, v^2 * b] →ₐ[K] ℍ[K, a, b] :=
   QuaternionAlgebra.lift $
     { i := ⟨0, u, 0, 0⟩
       j := ⟨0, 0, v, 0⟩
@@ -112,7 +114,7 @@ def square_to_equiv (u v : ℚ) (_ : u ≠ 0) (_ : v ≠ 0):
         simp only [QuaternionAlgebra.mk_mul_mk, mul_zero, pow_two, zero_mul, add_zero,
           sub_self, zero_sub, QuaternionAlgebra.neg_mk, neg_zero, mul_comm] }
 
-lemma to_square_re (u v : ℚ) (hu : u ≠ 0) (hv : v ≠ 0) (x : ℍ[ℚ, a, b]):
+lemma to_square_re (u v : K) (hu : u ≠ 0) (hv : v ≠ 0) (x : ℍ[K, a, b]):
     ((equiv_to_square a b u v hu hv) x).re = x.re := by
   simp only [equiv_to_square, QuaternionAlgebra.lift_apply, QuaternionAlgebra.Basis.liftHom_apply]
   induction x with
@@ -121,8 +123,8 @@ lemma to_square_re (u v : ℚ) (hu : u ≠ 0) (hv : v ≠ 0) (x : ℍ[ℚ, a, b]
       QuaternionAlgebra.smul_mk, smul_eq_mul, mul_zero, QuaternionAlgebra.add_re,
       QuaternionAlgebra.coe_re, add_zero]
 
-def equiv_mul_square (u v : ℚ) (hu : u ≠ 0) (hv : v ≠ 0):
-    ℍ[ℚ, a, b] ≃ₐ[ℚ] ℍ[ℚ, u^2 * a, v^2 * b] where
+def equiv_mul_square (u v : K) (hu : u ≠ 0) (hv : v ≠ 0):
+    ℍ[K, a, b] ≃ₐ[K] ℍ[K, u^2 * a, v^2 * b] where
   toFun := equiv_to_square a b u v hu hv
   invFun := square_to_equiv a b u v hu hv
   left_inv x := by
@@ -191,7 +193,8 @@ def equiv_mul_square (u v : ℚ) (hu : u ≠ 0) (hv : v ≠ 0):
   map_add' := equiv_to_square a b u v hu hv|>.map_add
   commutes' := equiv_to_square a b u v hu hv|>.commutes
 
-def one_iso_matrix : ℍ[ℚ, 1, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 2) ℚ where
+set_option maxHeartbeats 500000 in
+def one_iso_matrix : ℍ[K, 1, b] ≃ₐ[K] Matrix (Fin 2) (Fin 2) K where
   toFun x := x.1 • 1 + x.2 • (1 - stdBasisMatrix 1 1 2) +
     x.3 • (stdBasisMatrix 0 1 b + stdBasisMatrix 1 0 1) +
     x.4 • (stdBasisMatrix 0 1 b - stdBasisMatrix 1 0 1)
@@ -346,13 +349,13 @@ def one_iso_matrix : ℍ[ℚ, 1, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 2) ℚ where
       smul_add, QuaternionAlgebra.coe_imK]
     exact Algebra.algebraMap_eq_smul_one q|>.symm
 
-lemma iso_to_not_div : Nonempty (ℍ[ℚ, a, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 2) ℚ) →
-    ∃(x : ℍ[ℚ, a, b]), x ≠ 0 ∧ (∀(y : ℍ[ℚ, a, b]), (y * x ≠ 1 ∨ x * y ≠ 1)) := by
+lemma iso_to_not_div : Nonempty (ℍ[K, a, b] ≃ₐ[K] Matrix (Fin 2) (Fin 2) K) →
+    ∃(x : ℍ[K, a, b]), x ≠ 0 ∧ (∀(y : ℍ[K, a, b]), (y * x ≠ 1 ∨ x * y ≠ 1)) := by
   intro ⟨hH⟩
   let x := hH.invFun $ stdBasisMatrix 1 1 1
   use x ; by_contra! hx ;
   have : x ≠ 0 := by
-    suffices stdBasisMatrix 1 1 1 ≠ 0 by
+    suffices stdBasisMatrix (1 : Fin 2) (1 : Fin 2) (1 : K) ≠ 0 by
       by_contra! hhx;
       have hHx : hH x = stdBasisMatrix 1 1 1 := by
         simp only [Equiv.invFun_as_coe, AlgEquiv.toEquiv_eq_coe, AlgEquiv.symm_toEquiv_eq_symm,
@@ -367,104 +370,31 @@ lemma iso_to_not_div : Nonempty (ℍ[ℚ, a, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 
   simp only [AlgEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe, Equiv.invFun_as_coe,
     AlgEquiv.symm_toEquiv_eq_symm, AlgEquiv.symm_apply_apply, Fin.isValue, _root_.map_mul,
     AlgEquiv.apply_symm_apply, _root_.map_one] at hy1
-  suffices ∀(M : Matrix (Fin 2) (Fin 2) ℚ), M * stdBasisMatrix 1 1 1 ≠ 1 by tauto
+  suffices ∀(M : Matrix (Fin 2) (Fin 2) K), M * stdBasisMatrix 1 1 1 ≠ 1 by tauto
   intro M ; by_contra! hM
   rw [← Matrix.ext_iff] at hM; specialize hM 2 2
   simp only [Fin.isValue, ne_eq, Fin.reduceEq, not_false_eq_true,
     StdBasisMatrix.mul_right_apply_of_ne, one_apply_eq, zero_ne_one] at hM
 
 lemma not_div_to_norm_zero :
-    (∃(x : ℍ[ℚ, a, b]), x ≠ 0 ∧ (∀(y : ℍ[ℚ, a, b]), (y * x ≠ 1 ∨ x * y ≠ 1))) →
-    (∃(x : ℍ[ℚ, a, b]), (x ≠ 0) ∧  (normQuat a b) x = 0) := by
+    (∃(x : ℍ[K, a, b]), x ≠ 0 ∧ (∀(y : ℍ[K, a, b]), (y * x ≠ 1 ∨ x * y ≠ 1))) →
+    (∃(x : ℍ[K, a, b]), (x ≠ 0) ∧  (normQuat a b) x = 0) := by
   intro ⟨x, ⟨hx, hy⟩⟩
   by_contra! hx'
-  have iff_1 : ∀ (x : ℍ[ℚ, a, b]), (normQuat a b) x = 0 ↔ x = 0 := by
+  have iff_1 : ∀ (x : ℍ[K, a, b]), (normQuat a b) x = 0 ↔ x = 0 := by
     intro x; constructor
     · by_contra!; exact (hx' x this.2) this.1
     · intro hxx; simp only [hxx, map_zero]
   obtain ⟨y, hy1, hy2⟩ := non_zero_norm_iff_div a b |>.2 iff_1 x hx
   specialize hy y ; tauto
 
--- open Polynomial
--- abbrev f_a : Polynomial ℚ := X^2 - a • 1
-
--- instance f_a_irr (ha : ¬ ∃ y, a = y ^ 2): Irreducible (f_a a) := by
---   unfold f_a; rw [irreducible_iff]
---   constructor
---   · by_contra! h
---     rw [Polynomial.isUnit_iff_degree_eq_zero, sub_eq_neg_add] at h
---     have h1 :=  Polynomial.eq_C_of_degree_eq_zero h
---     simp only [coeff_add, coeff_neg, coeff_smul, coeff_one_zero, smul_eq_mul, mul_one, coeff_X_pow,
---       OfNat.zero_ne_ofNat, ↓reduceIte, add_zero, map_neg] at h1
---     rw [Algebra.smul_def, algebraMap_eq, mul_one] at h1
---     simp at h1
---   · intro h g h1
---     by_contra! hhg
---     rw [Algebra.smul_def, algebraMap_eq, mul_one] at h1
---     have h_ne_zero : h ≠ 0 := by
---       by_contra!
---       simp only [this, zero_mul] at h1
---       exact (Polynomial.X_pow_sub_C_ne_zero (by omega) a) h1
---     have g_ne_zero : g ≠ 0 := by
---       by_contra!
---       simp only [this, mul_zero] at h1
---       exact (Polynomial.X_pow_sub_C_ne_zero (by omega) a) h1
---     obtain ⟨hh, hg⟩ := hhg
---     have hh := Polynomial.degree_pos_of_ne_zero_of_nonunit h_ne_zero hh
---     have hg := Polynomial.degree_pos_of_ne_zero_of_nonunit g_ne_zero hg
---     have h2 : h.degree + g.degree = 2 := by
---       rw [← degree_mul, ← h1, Polynomial.degree_X_pow_sub_C (by omega), Nat.cast_ofNat]
---     rw [Polynomial.degree_eq_natDegree h_ne_zero, Polynomial.degree_eq_natDegree g_ne_zero] at *
---     norm_cast at hh hg h2
---     have hh : h.natDegree = 1 := by omega
---     have hg : g.natDegree = 1 := by omega
---     obtain ⟨m, ⟨_, ⟨n, hn⟩⟩⟩ := Polynomial.natDegree_eq_one.1 hh
---     obtain ⟨p, ⟨gp, ⟨q, gq⟩⟩⟩ := Polynomial.natDegree_eq_one.1 hg
---     rw [← hn, ← gq] at h1
---     ring_nf at h1
---     rw [Polynomial.ext_iff] at h1
---     obtain l0 := h1 0
---     obtain l1 := (h1 1).symm
---     obtain l2 := h1 2
---     simp only [coeff_sub, coeff_X_pow, OfNat.zero_ne_ofNat, ↓reduceIte, coeff_C_zero, zero_sub,
---       X_mul_C, X_pow_mul_C, X_pow_mul_assoc_C, coeff_add, mul_coeff_zero, coeff_X_zero, mul_zero,
---       zero_mul, add_zero, zero_add, OfNat.one_ne_ofNat, coeff_C_succ, sub_self, coeff_mul_C,
---       coeff_mul_X, sub_zero] at l0 l1 l2
---     rw [mul_assoc, mul_comm, coeff_mul_C] at l2
---     nth_rewrite 2 [mul_comm] at l2
---     rw [coeff_mul_C, coeff_X_pow] at l2
---     simp only [↓reduceIte, one_mul] at l2
---     rw [mul_assoc] at l1
---     nth_rewrite 3 [mul_comm] at l1
---     rw [coeff_mul_C] at l1
---     nth_rewrite 4 [mul_comm] at l1
---     rw [coeff_mul_C, coeff_X_pow] at l1
---     simp only [OfNat.one_ne_ofNat, ↓reduceIte, zero_mul, add_zero] at l1
---     apply ha
---     use q / p
---     rw [div_pow, neg_eq_iff_eq_neg.1 l0, pow_two, neg_mul_eq_neg_mul, mul_comm, ← mul_div_assoc']
---     congr
---     rw [neg_eq_iff_eq_neg, ← neg_div, eq_div_iff_mul_eq, pow_two]
---     · rw [← neg_eq_iff_add_eq_zero] at l1
---       rw [← mul_assoc, ← l1, neg_mul, neg_inj]
---       nth_rewrite 2 [mul_comm]
---       rw [mul_comm] at l2
---       rw [mul_assoc, ← l2, mul_one]
---     · rw [pow_ne_zero_iff]
---       exact gp
---       norm_num
-
--- instance (ha : ¬ ∃ y, a = y ^ 2) : Field (AdjoinRoot (f_a a)) := by
---   exact @AdjoinRoot.instField (f := f_a a) (fact_iff.2 (f_a_irr a ha))
-
--- local notation "ℚ(√"a")" => Algebra.adjoin ℚ {√a}
 
 -- Prop 1.1.7 3 -> 4
 open Ksqrtd
 lemma norm_zero_to_norm_in :
-    (∃(x : ℍ[ℚ, a, b]), (x ≠ 0) ∧  (normQuat a b) x = 0) →
+    (∃(x : ℍ[K, a, b]), (x ≠ 0) ∧  (normQuat a b) x = 0) →
     (∃(y : Ksqrtd a), b = Ksqrtd.norm y) ∨
-    Nonempty (ℍ[ℚ, a, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 2) ℚ) := by
+    Nonempty (ℍ[K, a, b] ≃ₐ[K] Matrix (Fin 2) (Fin 2) K) := by
   intro ⟨x, ⟨hx1, hx2⟩⟩
   if h : IsSquare a then
   obtain ⟨k, h⟩ := h
@@ -473,7 +403,7 @@ lemma norm_zero_to_norm_in :
     simp_all only [ne_eq, mul_eq_zero, or_self, not_false_eq_true]
   have k_neq : k⁻¹ ≠ 0 := by
     simp_all only [ne_eq, mul_eq_zero, or_self, inv_eq_zero, not_false_eq_true]
-  have eqv : ℍ[ℚ, a, b] ≃ₐ[ℚ] ℍ[ℚ, 1, b] := by
+  have eqv : ℍ[K, a, b] ≃ₐ[K] ℍ[K, 1, b] := by
     have := Quat.equiv_mul_square a b k⁻¹ 1 k_neq one_ne_zero
     rw [h, pow_two, mul_assoc, ← mul_assoc k⁻¹ k k, inv_mul_cancel k_neq', one_mul,
       inv_mul_cancel k_neq', pow_two, one_mul, one_mul, ← h] at this
@@ -534,13 +464,13 @@ lemma norm_zero_to_norm_in :
   rw [inv_norm_inv h ⟨x.imJ, x.imK⟩, ← Ksqrtd.norm_mul] at eq1
   exact ⟨_, eq1.symm⟩
 
-lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[ℚ, a, b]) := by
+lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[K, a, b]) := by
   refine ⟨fun I => ?_⟩
   if h : I = ⊥ then exact Or.inl h else
 
   refine Or.inr ?_
 
-  suffices ∃ (x : ℍ[ℚ, a, b]), IsUnit x ∧ x ∈ I by
+  suffices ∃ (x : ℍ[K, a, b]), IsUnit x ∧ x ∈ I by
     rcases this with ⟨_, ⟨⟨⟨x, y, hxy1, hxy2⟩, rfl⟩, h⟩⟩
     rw [eq_top_iff, RingCon.le_iff]
     rintro z -
@@ -555,10 +485,10 @@ lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[ℚ, a, b]) := by
   simp only [ne_eq, QuaternionAlgebra.ext_iff, QuaternionAlgebra.zero_re,
     QuaternionAlgebra.zero_imI, QuaternionAlgebra.zero_imJ, QuaternionAlgebra.zero_imK,
     not_and] at hx2
-  let q : ℍ[ℚ, a, b] := ⟨x₁, x₂, x₃, x₄⟩
-  let i : ℍ[ℚ, a, b] := ⟨0, 1, 0, 0⟩
-  let j : ℍ[ℚ, a, b] := ⟨0, 0, 1, 0⟩
-  have eq1 : (2⁻¹ : ℚ) • (i * q - q * i) = ⟨0, 0, a * x₄, x₃⟩ := by
+  let q : ℍ[K, a, b] := ⟨x₁, x₂, x₃, x₄⟩
+  let i : ℍ[K, a, b] := ⟨0, 1, 0, 0⟩
+  let j : ℍ[K, a, b] := ⟨0, 0, 1, 0⟩
+  have eq1 : (2⁻¹ : K) • (i * q - q * i) = ⟨0, 0, a * x₄, x₃⟩ := by
     ext
     · simp
     · simp
@@ -570,7 +500,7 @@ lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[ℚ, a, b]) := by
       zero_mul, one_mul, zero_add, sub_zero, add_zero, mul_zero, mul_one, zero_sub, sub_neg_eq_add,
       smul_eq_mul]
       field_simp
-  have eq2 : (2⁻¹ : ℚ) • (i * q + q * i) = ⟨a * x₂, x₁, 0, 0⟩ := by
+  have eq2 : (2⁻¹ : K) • (i * q + q * i) = ⟨a * x₂, x₁, 0, 0⟩ := by
     ext
     · simp only [smul_add, QuaternionAlgebra.add_re, QuaternionAlgebra.smul_re,
       QuaternionAlgebra.mul_re, zero_mul, mul_one, zero_add, mul_zero, add_zero, sub_zero,
@@ -585,23 +515,23 @@ lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[ℚ, a, b]) := by
   observe ha : a ≠ 0
   observe hb : b ≠ 0
   replace hx2 : x₁ ≠ 0 ∨ x₂ ≠ 0 ∨ x₃ ≠ 0 ∨ x₄ ≠ 0 := by tauto
-  have aux1 : (⟨0, 0, a * x₄, x₃⟩ : ℍ[ℚ, a, b]) ≠ 0 ∨ (⟨a * x₂, x₁, 0, 0⟩ : ℍ[ℚ, a, b]) ≠ 0 := by
+  have aux1 : (⟨0, 0, a * x₄, x₃⟩ : ℍ[K, a, b]) ≠ 0 ∨ (⟨a * x₂, x₁, 0, 0⟩ : ℍ[K, a, b]) ≠ 0 := by
     by_contra! rid
     rcases rid with ⟨h1, h2⟩
     rw [QuaternionAlgebra.ext_iff] at h1 h2
     simp only [QuaternionAlgebra.zero_re, QuaternionAlgebra.zero_imI, QuaternionAlgebra.zero_imJ,
       mul_eq_zero, QuaternionAlgebra.zero_imK, true_and, and_self, and_true] at h1 h2
     tauto
-  have aux2 : ∃ (y₀ y₁ : ℚ), (y₀ ≠ 0 ∨ y₁ ≠ 0) ∧ (⟨y₀, y₁, 0, 0⟩ : ℍ[ℚ, a, b]) ∈ I := by
+  have aux2 : ∃ (y₀ y₁ : K), (y₀ ≠ 0 ∨ y₁ ≠ 0) ∧ (⟨y₀, y₁, 0, 0⟩ : ℍ[K, a, b]) ∈ I := by
     rcases aux1 with h|h
-    · have : (⟨0, 0, a * x₄, x₃⟩ : ℍ[ℚ, a, b]) * j ≠ 0 := by
+    · have : (⟨0, 0, a * x₄, x₃⟩ : ℍ[K, a, b]) * j ≠ 0 := by
         simp only [ne_eq, QuaternionAlgebra.ext_iff, QuaternionAlgebra.zero_re,
           QuaternionAlgebra.zero_imI, QuaternionAlgebra.zero_imJ, mul_eq_zero,
           QuaternionAlgebra.zero_imK, true_and, not_and, QuaternionAlgebra.mul_re, mul_zero,
           add_zero, mul_one, zero_add, sub_zero, QuaternionAlgebra.mul_imI, sub_self,
           QuaternionAlgebra.mul_imJ, QuaternionAlgebra.mul_imK, and_self, and_true, not_or] at h ⊢
         tauto
-      have eq : (⟨0, 0, a * x₄, x₃⟩ : ℍ[ℚ, a, b]) * j = ⟨b * a * x₄, b * x₃, 0, 0⟩ := by
+      have eq : (⟨0, 0, a * x₄, x₃⟩ : ℍ[K, a, b]) * j = ⟨b * a * x₄, b * x₃, 0, 0⟩ := by
         ext
         · simp only [QuaternionAlgebra.mul_re, mul_zero, add_zero, mul_one, zero_add, mul_assoc,
           sub_zero]
@@ -644,8 +574,8 @@ lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[ℚ, a, b]) := by
         · apply RingCon.mul_mem_right
           assumption
   obtain ⟨y₀, y₁, h, mem⟩ := aux2
-  let z : ℍ[ℚ, a, b] := ⟨y₀, y₁, 0, 0⟩
-  have eq3 : (2⁻¹ : ℚ) • (j * z + z * j) = ⟨0, 0, y₀, 0⟩ := by
+  let z : ℍ[K, a, b] := ⟨y₀, y₁, 0, 0⟩
+  have eq3 : (2⁻¹ : K) • (j * z + z * j) = ⟨0, 0, y₀, 0⟩ := by
     ext
     · simp
     · simp
@@ -654,7 +584,7 @@ lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[ℚ, a, b]) := by
       smul_eq_mul, mul_one]
       field_simp
     · simp
-  have eq4 : (2⁻¹ : ℚ) • (j * z - z * j) = ⟨0, 0, 0, - y₁⟩ := by
+  have eq4 : (2⁻¹ : K) • (j * z - z * j) = ⟨0, 0, 0, - y₁⟩ := by
     ext
     · simp
     · simp
@@ -728,8 +658,8 @@ lemma quat_isSimple : IsSimpleOrder (RingCon $ ℍ[ℚ, a, b]) := by
 
 -- Prop 1.1.7 4 -> 1
 lemma norm_in_to_iso_matrix :
-    (∃(y : Ksqrtd a), b = Ksqrtd.norm y) ∨ Nonempty (ℍ[ℚ, a, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 2) ℚ) →
-    Nonempty (ℍ[ℚ, a, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 2) ℚ) := by
+    (∃(y : Ksqrtd a), b = Ksqrtd.norm y) ∨ Nonempty (ℍ[K, a, b] ≃ₐ[K] Matrix (Fin 2) (Fin 2) K) →
+    Nonempty (ℍ[K, a, b] ≃ₐ[K] Matrix (Fin 2) (Fin 2) K) := by
   intro h
   rcases h with h|h
   · if haa : IsSquare a then
@@ -738,7 +668,7 @@ lemma norm_in_to_iso_matrix :
       simp_all only [ne_eq, mul_eq_zero, or_self, not_false_eq_true]
     have k_neq : k⁻¹ ≠ 0 := by
       simp_all only [ne_eq, mul_eq_zero, or_self, inv_eq_zero, not_false_eq_true]
-    have eqv : ℍ[ℚ, a, b] ≃ₐ[ℚ] ℍ[ℚ, 1, b] := by
+    have eqv : ℍ[K, a, b] ≃ₐ[K] ℍ[K, 1, b] := by
       have := Quat.equiv_mul_square a b k⁻¹ 1 k_neq one_ne_zero
       rw [h, pow_two, mul_assoc, ← mul_assoc k⁻¹ k k, inv_mul_cancel k_neq', one_mul,
         inv_mul_cancel k_neq', pow_two, one_mul, one_mul, ← h] at this
@@ -751,7 +681,7 @@ lemma norm_in_to_iso_matrix :
       apply_fun fun x ↦ x⁻¹ at hy
       exact hy.trans $ inv_norm_inv haa y
     rw [norm_def] at hbinv
-    let u := (⟨0, 0, y⁻¹.re, y⁻¹.im⟩ : ℍ[ℚ, a, b])
+    let u := (⟨0, 0, y⁻¹.re, y⁻¹.im⟩ : ℍ[K, a, b])
     have u_sq : u * u = 1 := by
       simp only [QuaternionAlgebra.mk_mul_mk, mul_zero, add_zero, zero_add, zero_sub, zero_mul,
         sub_self, u]
@@ -793,7 +723,7 @@ lemma norm_in_to_iso_matrix :
         mul_one, QuaternionAlgebra.mul_imJ, sub_zero, QuaternionAlgebra.mul_imK,
         QuaternionAlgebra.add_imI, QuaternionAlgebra.add_imJ, zero_sub, zero_add, mul_neg,
         QuaternionAlgebra.add_imK, neg_mul, neg_neg]
-        rw [show @imI ℚ a b 4 = 0 from rfl, zero_mul, zero_mul]; ring
+        rw [show @imI K a b 4 = 0 from rfl, zero_mul, zero_mul]; ring
       · simp only [QuaternionAlgebra.mul_imJ, QuaternionAlgebra.add_re, QuaternionAlgebra.mul_re,
         QuaternionAlgebra.sub_re, QuaternionAlgebra.one_re, QuaternionAlgebra.coe_re, mul_zero,
         QuaternionAlgebra.sub_imI, QuaternionAlgebra.one_imI, QuaternionAlgebra.coe_imI, sub_self,
@@ -802,7 +732,7 @@ lemma norm_in_to_iso_matrix :
         QuaternionAlgebra.mul_imI, mul_one, sub_zero, QuaternionAlgebra.mul_imK,
         QuaternionAlgebra.add_imJ, zero_sub, zero_add, mul_neg, neg_zero, QuaternionAlgebra.add_imI,
         QuaternionAlgebra.add_imK, neg_mul, sub_neg_eq_add]
-        rw [show @imJ ℚ a b 4 = 0 from rfl, zero_mul, zero_mul]; ring
+        rw [show @imJ K a b 4 = 0 from rfl, zero_mul, zero_mul]; ring
       · simp only [QuaternionAlgebra.mul_imK, QuaternionAlgebra.add_re, QuaternionAlgebra.mul_re,
         QuaternionAlgebra.sub_re, QuaternionAlgebra.one_re, QuaternionAlgebra.coe_re, mul_zero,
         QuaternionAlgebra.sub_imI, QuaternionAlgebra.one_imI, QuaternionAlgebra.coe_imI, sub_self,
@@ -811,9 +741,9 @@ lemma norm_in_to_iso_matrix :
         QuaternionAlgebra.mul_imI, mul_one, QuaternionAlgebra.mul_imJ, sub_zero,
         QuaternionAlgebra.add_imK, zero_sub, zero_add, mul_neg, neg_zero, QuaternionAlgebra.add_imI,
         QuaternionAlgebra.add_imJ, neg_mul, sub_neg_eq_add]
-        rw [show @imK ℚ a b 4 = 0 from rfl, zero_mul, zero_mul]; ring
+        rw [show @imK K a b 4 = 0 from rfl, zero_mul, zero_mul]; ring
     have := equiv_mul_square 1 (4 * a * a)
-    let one_iso_to : ℍ[ℚ, 1, 4 * a * a] →ₐ[ℚ] ℍ[ℚ, a, b] :=
+    let one_iso_to : ℍ[K, 1, 4 * a * a] →ₐ[K] ℍ[K, a, b] :=
       QuaternionAlgebra.lift $
       { i := u
         j := v
@@ -853,7 +783,7 @@ lemma norm_in_to_iso_matrix :
         j_mul_i := by simp only [eq2, neg_neg] }
     have inj : Function.Injective one_iso_to := by
       change Function.Injective one_iso_to.toRingHom
-      have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective ℍ[ℚ,1,4 * a * a] |>.1 $
+      have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective ℍ[K,1,4 * a * a] |>.1 $
         quat_isSimple 1 (4 * a * a) (by simp) (by simpa)
       specialize H one_iso_to.toRingHom
       refine H.resolve_left fun rid => ?_
@@ -871,14 +801,14 @@ lemma norm_in_to_iso_matrix :
       rw [QuaternionAlgebra.finrank_eq_four, LinearMap.ker_eq_bot.2 inj, finrank_bot, add_zero] at eq
       apply Submodule.eq_top_of_finrank_eq
       rw [eq, QuaternionAlgebra.finrank_eq_four]⟩
-    have eqv : ℍ[ℚ, 1, 4 * a * a] ≃ₐ[ℚ] ℍ[ℚ, a, b] :=
+    have eqv : ℍ[K, 1, 4 * a * a] ≃ₐ[K] ℍ[K, a, b] :=
       AlgEquiv.ofBijective one_iso_to bij
     exact ⟨eqv.symm.trans $ one_iso_matrix (4 * a * a) (by simpa)⟩
   · exact h
 
 theorem not_div_iff_iso_matrix :
-    Nonempty (ℍ[ℚ, a, b] ≃ₐ[ℚ] Matrix (Fin 2) (Fin 2) ℚ) ↔
-    ∃(x : ℍ[ℚ, a, b]), x ≠ 0 ∧ (∀(y : ℍ[ℚ, a, b]), (y * x ≠ 1 ∨ x * y ≠ 1)) := by
+    Nonempty (ℍ[K, a, b] ≃ₐ[K] Matrix (Fin 2) (Fin 2) K) ↔
+    ∃(x : ℍ[K, a, b]), x ≠ 0 ∧ (∀(y : ℍ[K, a, b]), (y * x ≠ 1 ∨ x * y ≠ 1)) := by
   constructor
   · exact iso_to_not_div a b
   · intro not_div
