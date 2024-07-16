@@ -60,11 +60,14 @@ instance Gen_Quat_is_CSA [NeZero a] [NeZero b] : IsCentralSimple ℚ (ℍ[ℚ, a
     exact ⟨α, rfl⟩
   is_simple := Quat.quat_isSimple a b (NeZero.ne' a).symm (NeZero.ne' b).symm
 
-theorem isoisoisoisoisoiso:
-    Nonempty (ℂ ⊗[ℚ] D  ≃ₐ[ℂ] ℍ[ℂ]) := by
+/-- use the fact that ℍ is CSA and BrauerGroup over ℂ is trivial and dimension is 4 -/
+theorem complex_tensor_eqv [NeZero a] [NeZero b] :
+    Nonempty (ℂ ⊗[ℚ] ℍ[ℚ, a, b] ≃ₐ[ℂ] Matrix (Fin 2) (Fin 2) ℂ) := by
   sorry
 
-variable (K E : Type) [Field K] [Ring E] [Algebra K E] [h : IsCentralSimple K E]
-    [FiniteDimensional K E] (hD : FiniteDimensional.finrank K E = 4)
+variable (E : Type) [Ring E] [Algebra ℂ E] [h : IsCentralSimple ℂ E]
+    [FiniteDimensional ℂ E] (hD : FiniteDimensional.finrank ℂ E = 4)
 
-theorem CSA_is_quat : ∃ (a b : K), Nonempty (E ≃ₐ[K] ℍ[K, a, b]) := sorry
+/-- by choose basis read FiniteDimensional.finBasis -/
+theorem CSA_is_quat : ∃(a b : ℂ) (_ : NeZero a) (_ : NeZero b),
+    Nonempty (E ≃ₐ[ℂ] ℍ[ℂ, a, b]) := sorry
