@@ -1,0 +1,109 @@
+\chapter{Galois Descent}
+
+\section{Preliminary results}
+Let $k$ be a field and $V$ a $k$-vector space. We denote by $V^{\star}$ the dual space of $V$.
+
+\begin{lemma}\label{lem:dual-tensor-power}
+  There is a map $(V^{\star})^{\otimes p} \to (V^{\otimes p})^\star$
+  \leanok
+  \lean{dualTensorPower}
+\end{lemma}
+\begin{proof}
+Indeed, let $f_1 \otimes, \dots, \otimes f_p \in (V^{\star})^{\otimes p}$ and $v_1 \otimes, \dots, \otimes v_p \in V^{\otimes p}$. We define the map by considering the product $\prod_{i} f_i (v_i)$.
+\end{proof}
+
+\begin{lemma}[Extending scalars]\label{lem:extend-scalars}
+  \leanok%
+  \lean{PiTensorProduct.extendScalars, Module.Dual.extendScalars}
+  Let $K/k$ be a field extension, then we can extend scalars:
+  \begin{itemize}
+    \item a $k$-linear map $\bigotimes_{i} V \to \bigotimes_{i} K \otimes_{k} V$;
+    \item a $K$-linear map $K \otimes V^{\star} \to \left(K \otimes_{k} V\right)^{\star}$.
+  \end{itemize}
+\end{lemma}
+
+\begin{proof}
+  $\bigotimes_{i} v_{i} \mapsto \bigotimes_{i} (1\otimes v_{i})$ and $(a \otimes f) \mapsto (x \otimes v) \mapsto f(v)\cdot ax$ will do.
+\end{proof}
+
+\section{$(p, q)$-tensor}\label{sec:p-q-tensor}
+
+Let $k$ be a field and $V$ a $k$-vector space.
+
+\begin{definition}\label{def:tensor-of-type}%
+  For any $p, q \in \mathbb{N}$, a $V$-tensor of type $(p,q)$ or a $(p, q)$-tensor is an element of the tensor product $V^{\otimes p} \otimes {(V^*)}^{\otimes q}$.
+  \leanok%
+  \lean{TensorOfType}
+\end{definition}
+
+
+\begin{lemma}
+  If $v$ is a $V$-tensor of type $(p,q)$, then it induces a linear map $V^{\otimes q}\to V^{\otimes p}$.
+  \leanok%
+  \lean{TensorOfType.toHom}
+\end{lemma}
+\begin{proof}
+  Let $v = x \otimes f$ where $f$ can be seen as ${(V^{\otimes q})}^{\star}$ under
+  \cref{lem:dual-tensor-power} and $x \in V^{\otimes p}$, thus if $y \in V^{\otimes q}$, we can obtain an elment in $V^{\otimes p}$ by $f(y)\cdot x$
+\end{proof}
+
+Let $W$ be another $k$-vector space such that $e : V \cong W$.
+
+\begin{lemma}\label{lem:tensor-of-type-congr}
+  $e$ induces an isomorphism between $V$-tensor of type $(p,q)$ and $W$-tensor of type $(p, q)$. Furthermore, $\mathsf{1} : V \cong V$ induces the identity and the linear map induced by $e_{1}\circ e_{2}$ is equal to the composition of linear map induced by $e_{1}$ and $e_{2}$.
+  \leanok%
+  \lean{TensorOfType.congr}
+\end{lemma}
+\begin{proof}
+  Indeed, $e$ induces an automorphism on $V^{\otimes p}$ while $e^{-1}$ induces an automorphism on $W^{\otimes q}$. Checking the functoriality is trivial.
+\end{proof}
+
+\begin{lemma}[extend scalars]\label{lem:extend-scalars-pq-tensor}
+  \leanok%
+  \lean{TensorOfType.extendScalars}
+  Let $K/k$ be a field extension, $\Phi$ be $V$-tensor of type $(p,q)$ over $k$, then there is a $K\otimes V$-tensor of type $(p,q)$ over $K$.
+\end{lemma}
+\begin{proof}
+  We construct a bilinear map $V^{\otimes p} \to (V^{\star})^{\otimes q} \to (K \otimes_{k} V)^{\otimes p}\otimes_{K} \left({{(K \otimes_{k} V)}^{\star}}\right)^{\otimes q}$
+  We have a map $\alpha : (V^{\star})^{\otimes} q \to ((K \otimes_{k} V)^{\star})^{\otimes q}$ by composing $(V^{\star})^{\otimes q} \to (K \otimes_{k} V^{\star})^{\otimes q}$ and $(K \otimes_{k} V^{\star}) \to (K \otimes_{k} V)^{\star}$ from \cref{lem:extend-scalars}. Thus we can define $v \mapsto f \mapsto \hat{v}\otimes \alpha f$ where $\hat{v}$ is $v$ extended to $(K\otimes_{k} V)^{\otimes p}$ by \cref{lem:extend-scalars} again.
+\end{proof}
+
+\section{Vector space with tensor of type $(p,q)$}
+
+Let $k$ be a field.
+
+\begin{definition}
+  A $k$-vector space with tensor of type $(p, q)$ is a pair of $(V, \Phi)$ where $V$ is a $k$-vector space and $\Phi$ a $V$-tensor of type $(p, q)$.
+  \leanok%
+  \lean{VectorSpaceWithTensorOfType}
+\end{definition}
+
+\begin{definition}
+  An equivalence between $k$-vector spaces $(V, \Phi)$ and $(W, \Psi)$ with tensor of type $(p, q)$ is a $k$-equivalence $e : V \cong W$ such that $e(\Phi) = \Psi$ where $e$ is seen as an isomorphism between $V$-tensor of type $(p, q)$ and $W$-tensor of type $(p, q)$ under \cref{lem:tensor-of-type-congr}.
+  \leanok%
+\end{definition}
+
+\begin{lemma}
+  The notion of equivalence between $k$-vector spaces with tensor of type $(p, q)$ is an equivalence relation:
+  \begin{itemize}
+    \item $(V, \Phi)$ is equivalent to itself.
+    \item If $(V, \Phi)$ is equivalent to $(W, \Psi)$, then $(W, \Psi)$ is equivalent to $(V, \Phi)$.
+    \item If $(V_{1}, \Phi_{1})$ is equivalent to $(V_{2}, \Psi_{2})$ and $(V_{2}, \Psi_{2})$ is equivalent to $(V_{3}, \Psi_{3})$, then $(V_{1}, \Phi_{1})$ is equivalent to $(V_{3}, \Psi_{3})$.
+  \end{itemize}
+  \leanok%
+  \lean{VectorSpaceWithTensorOfType.Equiv.refl, VectorSpaceWithTensorOfType.Equiv.symm,  VectorSpaceWithTensorOfType.Equiv.trans}
+\end{lemma}
+
+\begin{lemma}[extend scalars]\label{lem:extend-scalars-vector-space-with-tensor}
+  \leanok%
+  \lean{VectorSpaceWithTensorOfType.extendScalars}
+  Let $K/k$ be a field extension and $(V, \Phi)$ a $k$-vector space with tensor of type $(p,q)$, then $(V, \Phi)$ can be extended to a $K$-vector space with tensor of type $(p,q)$.
+\end{lemma}
+\begin{proof}
+  Indeed, $(K \otimes_{k} V, \Phi_{K})$ works where $\Phi_{K}$ is obtained via~\cref{lem:extend-scalars-pq-tensor}.
+\end{proof}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:
