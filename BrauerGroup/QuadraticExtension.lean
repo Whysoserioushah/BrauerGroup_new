@@ -506,8 +506,7 @@ def lift (q : ℚ): { r : ℝ // r * r = ↑q } ≃ (Ksqrtd q →ₐ[ℚ] ℝ) w
     refine hom_ext q _ _ ?_
     simp
 
-/-- `lift r` is injective if `d` is non-square, and R has characteristic zero (that is, the map from
-`ℤ` into `R` is injective). -/
+/-- `lift r` is injective if `q` is non-square -/
 theorem lift_injective (q : ℚ) (r : { r : ℝ // r * r = ↑q })
     (hd : ¬(IsSquare q)) : Function.Injective (lift q r) :=
   (injective_iff_map_eq_zero (lift q r)).mpr fun a ha => by
