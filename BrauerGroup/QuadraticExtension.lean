@@ -279,6 +279,12 @@ theorem intCast_val (n : ℤ) : (n : K√d) = ⟨n, 0⟩ := by ext <;> simp
 instance : CharZero (K√d) where cast_injective m n := by simp [Ksqrtd.ext_iff]
 
 @[simp]
+theorem ratCast_re (q : ℚ) : ((q : K) : K√d).re = q := rfl
+
+@[simp]
+theorem ratCast_im (q : ℚ) : ((q : K) : K√d).im = 0 := rfl
+
+@[simp]
 theorem ofInt_eq_intCast (n : ℤ) : (ofField n : K√d) = n := rfl
 
 @[simp]
@@ -457,6 +463,65 @@ theorem norm_eq_zero_iff (hd : ¬(IsSquare d)) (x : K√d) : norm x = 0 ↔ x = 
     exact (not_square_to_norm_not_zero hd x this) hx
   · intro hx
     simp [hx]
+
+@[ext]
+theorem hom_ext (q : ℚ) (f g : Ksqrtd q →ₐ[ℚ] ℝ) (h : f (sqrtd (K := ℚ)) = g (sqrtd (K := ℚ))) :
+    f = g := by
+  ext ⟨x, y⟩
+  rw [decompose, decompose, map_add, map_add, map_add, map_add, map_mul, map_mul, map_mul, map_mul,
+    h]; change _ + _ * f 0 + _ = _ + _ * g 0 + _; simp only [map_zero, mul_zero, add_zero]
+  change f (algebraMap _ _ x) + _ * f (algebraMap _ _ y) = g (algebraMap _ _ x) +
+    _ * g (algebraMap _ _ y)
+  simp only [AlgHom.commutes, eq_ratCast]
+
+@[simps]
+def lift (q : ℚ): { r : ℝ // r * r = ↑q } ≃ (Ksqrtd q →ₐ[ℚ] ℝ) where
+  toFun r :=
+    { toFun := fun a => a.1 + a.2 * (r : ℝ)
+      map_zero' := by simp
+      map_add' := fun a b => by
+        simp only [add_re, Rat.cast_add, add_im]
+        ring
+      map_one' := by simp
+      map_mul' := fun a b => by
+        have :
+          (a.re + a.im * r : ℝ) * (b.re + b.im * r) =
+            a.re * b.re + (a.re * b.im + a.im * b.re) * r + a.im * b.im * (r * r) := by
+          ring
+        simp only [mul_re, Rat.cast_add, Rat.cast_mul, mul_im, this, r.prop]
+        ring
+      commutes' := fun k => by
+        simp only [Algebra.id.map_eq_id, RingHom.id_apply]
+        rw [show algebraMap _ _ k = (k : Ksqrtd q) from rfl]
+        simp only [Rat.cast_zero, zero_mul, add_zero, eq_ratCast]
+      }
+  invFun f := ⟨f sqrtd, by
+    rw [← f.map_mul, dmuld, show ⟨q, 0⟩ = q • (1 : Ksqrtd q) by
+      ext; change q = _ ; rw [← Algebra.algebraMap_eq_smul_one]; change q = (q : Ksqrtd q).re; rfl;
+      change 0 = _ ; rw [← Algebra.algebraMap_eq_smul_one]; change 0 = (q : Ksqrtd q).im; rfl]; simp⟩
+  left_inv r := by
+    ext
+    simp
+  right_inv f := by
+    refine hom_ext q _ _ ?_
+    simp
+
+/-- `lift r` is injective if `q` is non-square -/
+theorem lift_injective (q : ℚ) (r : { r : ℝ // r * r = ↑q })
+    (hd : ¬(IsSquare q)) : Function.Injective (lift q r) :=
+  (injective_iff_map_eq_zero (lift q r)).mpr fun a ha => by
+    suffices lift q r a.norm = 0 by
+      simp only [ratCast_re, add_zero, lift_apply_apply, ratCast_im, Rat.cast_zero,
+        zero_mul, Rat.cast_eq_zero] at this
+      rw [(norm_eq_zero_iff hd a).1]; exact this
+    rw [norm_eq_mul_conj, map_mul, ha, zero_mul]
+
+@[simps!]
+def toReal (q : ℚ) (h : 0 ≤ q) : Ksqrtd q →ₐ[ℚ] ℝ :=
+  lift q ⟨_, Real.mul_self_sqrt (Rat.cast_nonneg.mpr h)⟩
+
+theorem toReal_injective {q : ℚ} (h0d : 0 ≤ q) (hd : ¬(IsSquare q)) :
+    Function.Injective (toReal q h0d) := lift_injective q _ hd
 
 end Norm
 

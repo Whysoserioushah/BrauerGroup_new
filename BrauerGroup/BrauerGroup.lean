@@ -226,11 +226,16 @@ def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivale
     IsBrauerEquivalent A C := by
   obtain ⟨n, m, hn, hm, iso1⟩ := hAB
   obtain ⟨p, q, hp, hq, iso2⟩ := hBC
-  exact ⟨⟨_, _, Nat.mul_ne_zero hp hn, Nat.mul_ne_zero hm hq,
+  refine ⟨⟨_, _, Nat.mul_ne_zero hp hn, Nat.mul_ne_zero hm hq,
     matrix_eqv' _ _ _ |>.symm.trans $ Matrix.comp_algHom _ _ _ _|>.symm.trans $
-      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.comp_algHom _ _ _ _|>.trans $
-      Matrix.swap_algHom _ _ _ _ |>.trans $ Matrix.comp_algHom _ _ _ _|>.symm.trans $
-      iso2.mapMatrix.trans $ Matrix.comp_algHom _ _ _ _|>.trans $ matrix_eqv' _ _ _⟩⟩
+      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.comp_algHom _ _ _ _|>.trans $ ?_⟩⟩
+  haveI : Algebra K (Matrix (Fin m × Fin p) (Fin m × Fin p) B) := inferInstance
+  haveI : Algebra K (Matrix (Fin p × Fin m) (Fin p × Fin m) B) := inferInstance
+  -- let eqv := Matrix.reindexAlgEquiv B (.prodComm (Fin p) (Fin m))
+  -- refine eqv.trans ?_
+  sorry
+      -- Matrix.reindexAlgEquiv K (.prodComm _ _) |>.trans $ Matrix.comp_algHom _ _ _ _|>.symm.trans $
+      -- iso2.mapMatrix.trans $ Matrix.comp_algHom _ _ _ _|>.trans $ matrix_eqv' _ _ _⟩⟩
 
 
 lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B := by
@@ -326,6 +331,9 @@ def dim_one_iso (R : Type*) [Ring R] [Algebra K R]: (Matrix (Fin 1) (Fin 1) R) �
     rw [Matrix.smul_apply]; rfl
 
 open IsBrauerEquivalent
+-- def Matrix.swapAlgEquiv (n m : ℕ) (A : Type*) [Ring A] [Algebra K A]:
+--     Matrix (Fin n × Fin m) (Fin n × Fin m) A ≃ₐ[K] Matrix (Fin m × Fin n) (Fin m × Fin n) A := by
+--   exact Matrix.reindexAlgEquiv K (.prodComm (Fin n) (Fin m))
 
 def matrix_comp (n m : ℕ) (A : Type*) [Ring A] [Algebra K A]:
     Matrix (Fin n) (Fin n) (Matrix (Fin m) (Fin m) A) ≃ₐ[K]
@@ -617,7 +625,8 @@ def e3Aux0 : E ⊗[K] A →ₐ[E] E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K :=
         rfl }
     (Algebra.TensorProduct.includeLeft : E ⊗[K] A →ₐ[E] (E ⊗[K] A) ⊗[K] Matrix (Fin m) (Fin m) K)
 
-def e3Aux10 : (E ⊗[K] Matrix (Fin m) (Fin m) K) ⊗[K] A ≃ₐ[K] E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K :=
+def e3Aux10 : (E ⊗[K] Matrix (Fin m) (Fin m) K) ⊗[K] A ≃ₐ[K]
+    E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K :=
   (Algebra.TensorProduct.assoc K E (Matrix (Fin m) (Fin m) K) A).trans $
     Algebra.TensorProduct.congr AlgEquiv.refl $ Algebra.TensorProduct.comm _ _ _
 
@@ -904,7 +913,7 @@ lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
   simp only [Quotient.map'_mk'']; apply Quotient.sound
   exact BrauerGroup.Alg_closed_equiv_one _
 
-end Q_to_C 
+end Q_to_C
 
 end BrauerGroupHom
 

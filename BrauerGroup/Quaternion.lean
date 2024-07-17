@@ -1,7 +1,7 @@
-import Mathlib.Algebra.QuaternionBasis
-import BrauerGroup.CentralSimple
 import BrauerGroup.QuatBasic
-import BrauerGroup.CentralSimple
+import BrauerGroup.BrauerGroup
+
+suppress_compilation
 
 variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
     [FiniteDimensional ℚ D] (hD : FiniteDimensional.finrank ℚ D = 4)
@@ -9,16 +9,6 @@ variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
 open Quaternion TensorProduct BigOperators Classical
 
 variable (a b : ℚ)
-
-theorem Quat_is_CSA: IsCentralSimple ℚ (ℍ[ℚ]) where
-  is_central z hz := by
-    rw [@Subalgebra.mem_center_iff] at hz
-    let eq2 := congrArg Quaternion.imI (hz ⟨0,0,1,0⟩)
-    let eq3 := congrArg Quaternion.imJ (hz ⟨0,0,0,1⟩)
-    let eq4 := congrArg Quaternion.imK (hz ⟨0,1,0,0⟩)
-    simp only [mul_imI, zero_mul, add_zero, one_mul, zero_add, sub_zero, mul_zero, mul_one,
-      zero_sub, eq_neg_self_iff, mul_imJ, sub_self, mul_imK] at eq2 eq3 eq4
-    refine ⟨_, id (ext z (↑z.re) rfl eq3 eq4 eq2).symm⟩
 
 variable (K L : Type) [Field K] [Field L] [Algebra K L]
   (V : Type) [AddCommGroup V] [Module K V] [Module.Finite K V]
@@ -40,7 +30,6 @@ instance Gen_Quat_is_CSA [NeZero a] [NeZero b] : IsCentralSimple ℚ (ℍ[ℚ, a
     intro z hz
     rw [Algebra.mem_bot]
     rw [Subalgebra.mem_center_iff] at hz
-
     induction z with
     | mk α β γ δ =>
     have eq1 := hz ⟨0,1,0,0⟩
@@ -60,11 +49,67 @@ instance Gen_Quat_is_CSA [NeZero a] [NeZero b] : IsCentralSimple ℚ (ℍ[ℚ, a
     exact ⟨α, rfl⟩
   is_simple := Quat.quat_isSimple a b (NeZero.ne' a).symm (NeZero.ne' b).symm
 
-theorem isoisoisoisoisoiso:
-    Nonempty (ℂ ⊗[ℚ] D  ≃ₐ[ℂ] ℍ[ℂ]) := by
-  sorry
+def Quat_to_tensor [NeZero a] [NeZero b] : ℍ[ℂ, a, b] →ₐ[ℂ] ℂ ⊗[ℚ] ℍ[ℚ, a, b] :=
+  QuaternionAlgebra.lift
+  {
+    i := (1 : ℂ) ⊗ₜ ⟨0,1,0,0⟩,
+    j := (1 : ℂ) ⊗ₜ ⟨0,0,1,0⟩,
+    k := (1 : ℂ) ⊗ₜ ⟨0,0,0,1⟩,
+    i_mul_i := by
+      simp only [Algebra.TensorProduct.tmul_mul_tmul, mul_one,
+        QuaternionAlgebra.mk_mul_mk, mul_zero, zero_add, add_zero, sub_zero, sub_self,
+        Algebra.TensorProduct.one_def]
+      rw [show ⟨a, 0, 0, 0⟩ = a • (1 : ℍ[ℚ, a, b]) by ext <;> simp]
+      rw [tmul_smul]; congr
+    j_mul_j := by
+      simp only [Algebra.TensorProduct.tmul_mul_tmul, mul_one,
+        QuaternionAlgebra.mk_mul_mk, mul_zero, zero_add, add_zero, sub_zero, sub_self,
+        Algebra.TensorProduct.one_def]
+      rw [show ⟨b, 0, 0, 0⟩ = b • (1 : ℍ[ℚ, a, b]) by ext <;> simp]
+      rw [tmul_smul]; congr
+    i_mul_j := by
+      simp only [Algebra.TensorProduct.tmul_mul_tmul, mul_one,
+        QuaternionAlgebra.mk_mul_mk, mul_zero, zero_add, add_zero, sub_zero, sub_self,
+        Algebra.TensorProduct.one_def]
+    j_mul_i := by
+      simp only [Algebra.TensorProduct.tmul_mul_tmul, mul_one, QuaternionAlgebra.mk_mul_mk,
+        mul_zero, add_zero, sub_self, zero_sub]
+      rw[show (⟨0, 0, 0, -1⟩:ℍ[ℚ, a, b]) = -1 • ⟨0, 0, 0, 1⟩ by ext <;> simp]
+      rw [tmul_smul, neg_one_zsmul]
+  }
+/-- prove 1 ⊗ 1, 1 ⊗ i, 1 ⊗ j, 1 ⊗ k is a basis of ℂ ⊗ ℍ. -/
+lemma Injective_Quat_to_tensor [NeZero a] [NeZero b]: Function.Injective (Quat_to_tensor a b) := by
+  change Function.Injective (Quat_to_tensor a b).toRingHom
+  have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective ℍ[ℂ , a, b] |>.1 $
+    Quat.quat_isSimple (a:ℂ) (b:ℂ) (by aesop) (by aesop)
+  specialize H (Quat_to_tensor a b).toRingHom
+  refine H.resolve_left fun rid => ?_
+  rw [eq_top_iff, RingCon.le_iff] at rid
+  specialize @rid 1 ⟨⟩
+  simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
+    one_ne_zero] at rid
+    
+lemma Surjective_Quat_to_tensor [NeZero a] [NeZero b]: Function.Surjective (Quat_to_tensor a b) := by
+  change Function.Surjective (Quat_to_tensor a b).toLinearMap
+  rw [← LinearMap.range_eq_top]
+  have eq := (Quat_to_tensor a b).toLinearMap.finrank_range_add_finrank_ker
+  rw [QuaternionAlgebra.finrank_eq_four, LinearMap.ker_eq_bot.2 (Injective_Quat_to_tensor a b), finrank_bot, add_zero] at eq
+  apply Submodule.eq_top_of_finrank_eq
+  · rw [eq]; symm; exact (finrank_four ℍ[ℚ,a,b] (QuaternionAlgebra.finrank_eq_four a b))
 
-variable (K E : Type) [Field K] [Ring E] [Algebra K E] [h : IsCentralSimple K E]
-    [FiniteDimensional K E] (hD : FiniteDimensional.finrank K E = 4)
+theorem complex_tensor_eqv [NeZero a] [NeZero b] :
+    Nonempty (ℍ[ℂ, a, b] ≃ₐ[ℂ] ℂ ⊗[ℚ] ℍ[ℚ, a, b]) :=
+  ⟨AlgEquiv.ofBijective (Quat_to_tensor a b) ⟨Injective_Quat_to_tensor _ _, Surjective_Quat_to_tensor _ _⟩ ⟩
 
-theorem CSA_is_quat : ∃ (a b : K), Nonempty (E ≃ₐ[K] ℍ[K, a, b]) := sorry
+
+/-- use exist non-trvial but norm-zero element 1 + (1/√a) i -/
+def complex_quat_eqv (c d : ℂ) [NeZero c] [NeZero d]: ℍ[ℂ, c, d] ≃ₐ[ℂ] Matrix (Fin 2) (Fin 2) ℂ :=
+  (Quat.not_div_iff_iso_matrix c d (NeZero.ne' c).symm (NeZero.ne' d).symm).2
+  (by sorry)|>.some
+
+variable (E : Type) [Ring E] [Algebra ℂ E] [h : IsCentralSimple ℂ E]
+    [FiniteDimensional ℂ E] (hD : FiniteDimensional.finrank ℂ E = 4)
+
+/-- by prove {1, i, j, k} in E is indeed a basis of E read FiniteDimensional.finBasis -/
+theorem CSA_is_quat : ∃(a b : ℂ) (_ : NeZero a) (_ : NeZero b),
+    Nonempty (E ≃ₐ[ℂ] ℍ[ℂ, a, b]) := sorry
