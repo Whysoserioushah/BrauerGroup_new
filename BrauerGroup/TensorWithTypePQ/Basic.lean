@@ -316,6 +316,23 @@ def extendScalars (V : VectorSpaceWithTensorOfType k p q) :
   mod := inferInstance
   tensor := V.tensor.extendScalars K
 
+instance (V : VectorSpaceWithTensorOfType k p q) : Module k (V.extendScalars K) :=
+  inferInstanceAs $ Module k (K ⊗[k] V)
+
+instance (V : VectorSpaceWithTensorOfType k p q) : IsScalarTower k K (V.extendScalars K) where
+  smul_assoc a b x := by
+    simp only [algebra_compatible_smul K, smul_eq_mul, Algebra.id.map_eq_id, _root_.map_mul,
+      RingHomCompTriple.comp_apply, RingHom.id_apply, mul_smul]
+    simp only [Algebra.id.map_eq_id, RingHomCompTriple.comp_apply, smul_eq_mul, _root_.map_mul,
+      RingHom.id_apply, mul_smul]
+    induction x using TensorProduct.induction_on
+    · simp
+    · rw [smul_tmul', smul_tmul', smul_tmul']
+      congr
+      simp only [smul_eq_mul]
+      rw [algebra_compatible_smul K, smul_eq_mul]
+    · aesop
+
 def Equiv.extendScalarsAux {V W : VectorSpaceWithTensorOfType k p q} (e : Equiv V W) :
     (V.extendScalars K) ≃ₗ[K] (W.extendScalars K) :=
   LinearEquiv.ofLinear
@@ -468,6 +485,145 @@ lemma Equiv.extendScalars_trans
     (e.trans f).extendScalars K = (e.extendScalars K).trans (f.extendScalars K) :=
   DFunLike.ext _ _ fun x => congr($(Equiv.extendScalarsAux_trans K e f) x)
 
+variable {K} in
+def auxExtendAlgEquiv (V : VectorSpaceWithTensorOfType k p q) (σ : K ≃ₐ[k] K) :
+    V.extendScalars K ≃ₗ[k] V.extendScalars K :=
+  LinearEquiv.ofLinear
+    (LinearMap.rTensor V σ.toLinearMap)
+    (LinearMap.rTensor V σ.symm.toLinearMap)
+    (by
+      apply TensorProduct.ext
+      ext a v
+      simp only [LinearMap.compr₂_apply, mk_apply, LinearMap.coe_comp, Function.comp_apply]
+      erw [LinearMap.rTensor_tmul]
+      aesop)
+    (by
+      apply TensorProduct.ext
+      ext a v
+      simp only [LinearMap.compr₂_apply, mk_apply, LinearMap.coe_comp, Function.comp_apply]
+      erw [LinearMap.rTensor_tmul]
+      aesop)
+
+
+@[simp]
+lemma auxExtendAlgEquiv_tmul (V : VectorSpaceWithTensorOfType k p q) (σ : K ≃ₐ[k] K)
+    (a : K) (v : V) :
+    auxExtendAlgEquiv V σ (a ⊗ₜ v) = σ a ⊗ₜ v := rfl
+
+
+-- def auxExtendAlgEquiv' (V : VectorSpaceWithTensorOfType k p q) (σ : K ≃ₐ[k] K) :
+--     V.extendScalars K ≃ₗ[K] V.extendScalars K where
+--   toFun := auxExtendAlgEquiv V σ
+--   map_add' := (auxExtendAlgEquiv V σ).map_add
+--   map_smul' a x := by
+--     simp only [RingHom.id_apply]
+--     induction x using TensorProduct.induction_on with
+--     | zero => simp
+--     | tmul b x =>
+--       rw [smul_tmul']
+--       simp only [smul_eq_mul, auxExtendAlgEquiv_tmul, _root_.map_mul]
+--       rw [smul_tmul']
+--       sorry
+--     | add x y hx hy => aesop
+--   invFun := (auxExtendAlgEquiv V σ).symm
+--   left_inv := (auxExtendAlgEquiv V σ).left_inv
+--   right_inv := (auxExtendAlgEquiv V σ).right_inv
+
+variable {K} in
+def auxRestrict {V W : VectorSpaceWithTensorOfType k p q}
+    (f : Equiv (V.extendScalars K) (W.extendScalars K)) :
+    V.extendScalars K ≃ₗ[k] W.extendScalars K where
+  toFun := f
+  map_add' := f.map_add
+  map_smul' a x := by
+    simp only [RingHom.id_apply]
+    rw [algebra_compatible_smul K, map_smul, algebraMap_smul]
+  invFun := f.symm
+  left_inv := f.left_inv
+  right_inv := f.right_inv
+
+@[simp]
+lemma auxRestrict_apply {V W : VectorSpaceWithTensorOfType k p q}
+    (f : Equiv (V.extendScalars K) (W.extendScalars K)) (x : V.extendScalars K) :
+    auxRestrict f x = f x := rfl
+
+variable {K} in
+def Equiv.algEquivActAux
+    {V W : VectorSpaceWithTensorOfType k p q}
+    (σ : K ≃ₐ[k] K) (f : Equiv (V.extendScalars K) (W.extendScalars K)) :
+    (V.extendScalars K) ≃ₗ[k] (W.extendScalars K) :=
+  auxExtendAlgEquiv V σ ≪≫ₗ auxRestrict f ≪≫ₗ
+  auxExtendAlgEquiv W σ.symm
+
+lemma Equiv.algEquivActAux_tmul
+    {V W : VectorSpaceWithTensorOfType k p q}
+    (σ : K ≃ₐ[k] K) (f : Equiv (V.extendScalars K) (W.extendScalars K))
+    (a : K) (v : V) :
+    Equiv.algEquivActAux σ f (a ⊗ₜ v) =
+    (W.auxExtendAlgEquiv σ.symm) (f (σ a ⊗ₜ[k] v)) := by
+  simp only [algEquivActAux, LinearEquiv.trans_apply, auxExtendAlgEquiv_tmul, auxRestrict_apply]
+
+def Equiv.algEquivAct
+    {V W : VectorSpaceWithTensorOfType k p q}
+    (σ : K ≃ₐ[k] K) (f : Equiv (V.extendScalars K) (W.extendScalars K)) :
+    (V.extendScalars K) ≃ₗ[K] (W.extendScalars K) where
+  toFun := Equiv.algEquivActAux σ f
+  map_add' := map_add _
+  map_smul' a x := by
+    simp only [RingHom.id_apply]
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [smul_zero, map_zero, RingHom.id_apply]
+    | tmul b x =>
+      rw [smul_tmul']
+      simp only [algEquivActAux, smul_eq_mul, LinearEquiv.trans_apply, auxExtendAlgEquiv_tmul,
+        auxRestrict_apply, RingHom.id_apply]
+      simp only [_root_.map_mul, LinearEquiv.ofLinear_apply]
+      rw [show (σ a * σ b) ⊗ₜ[k] x = (σ a * σ b) • (1 ⊗ₜ x) by simp only [smul_tmul',
+        smul_eq_mul, mul_one], map_smul]
+      have mem : f (1 ⊗ₜ[k] x) ∈ (⊤ : Submodule k _):= ⟨⟩
+      rw [← span_tmul_eq_top k K W, mem_span_set] at mem
+      obtain ⟨c, hc, (eq1 : (∑ i in c.support, _ • _) = _)⟩ := mem
+      choose xᵢ yᵢ hxy using hc
+      have eq1 : f (1 ⊗ₜ[k] x) = ∑ i in c.support.attach, (c i.1 • xᵢ i.2) ⊗ₜ[k] yᵢ i.2 := by
+        rw [← eq1, ← Finset.sum_attach]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [← smul_tmul', hxy i.2]
+      rw [eq1, Finset.smul_sum, map_sum]
+      rw [show ∑ i ∈ c.support.attach, (W.auxExtendAlgEquiv σ.symm)
+        ((σ a * σ b) • (c i.1 • xᵢ i.2) ⊗ₜ[k] yᵢ i.2) =
+        ∑ i ∈ c.support.attach, (W.auxExtendAlgEquiv σ.symm)
+        (((σ a * σ b) • c i.1 • xᵢ i.2) ⊗ₜ[k] yᵢ i.2) from Finset.sum_congr rfl fun i _ => by
+          rw [smul_tmul']]
+      simp_rw [auxExtendAlgEquiv_tmul]
+      rw [show ∑ i in c.support.attach, σ.symm ((σ a * σ b) • c i.1 • xᵢ i.2) ⊗ₜ[k] yᵢ i.2 =
+        ∑ i in c.support.attach, (a * b) • ((c i.1 • σ.symm (xᵢ i.2)) ⊗ₜ[k] yᵢ i.2) from
+          Finset.sum_congr rfl fun i _ => by
+            congr 1
+            simp only [smul_eq_mul, Algebra.mul_smul_comm, LinearMapClass.map_smul, _root_.map_mul,
+              AlgEquiv.symm_apply_apply]]
+      rw [← Finset.smul_sum]
+      rw [show σ b ⊗ₜ[k] x = σ b • (1 ⊗ₜ x) by simp only [smul_tmul', smul_eq_mul,
+        mul_one], map_smul, eq1]
+      conv_rhs =>
+        rw [Finset.smul_sum, map_sum,
+        show ∑  i in c.support.attach, (W.auxExtendAlgEquiv σ.symm)
+          (σ b • ((c i.1 • (xᵢ i.2)) ⊗ₜ[k] yᵢ i.2)) =
+          ∑ i in c.support.attach, (W.auxExtendAlgEquiv σ.symm)
+            ((σ b • (c i.1 • xᵢ i.2)) ⊗ₜ[k] yᵢ i.2) from Finset.sum_congr rfl fun i _ => by
+            rw [smul_tmul']]
+      simp_rw [auxExtendAlgEquiv_tmul]
+      rw [show ∑ i in c.support.attach, σ.symm (σ b • c i.1 • xᵢ i.2) ⊗ₜ[k] yᵢ i.2 =
+        ∑ i in c.support.attach, b • (c i.1 • σ.symm (xᵢ i.2) ⊗ₜ[k] yᵢ i.2) from
+          Finset.sum_congr rfl fun i _ => by
+            congr 1
+            simp only [smul_eq_mul, Algebra.mul_smul_comm, LinearMapClass.map_smul, _root_.map_mul,
+              AlgEquiv.symm_apply_apply]]
+      rw [← Finset.smul_sum, ← mul_smul]
+      congr
+    | add x y hx hy => aesop
+  invFun := (Equiv.algEquivActAux σ f).symm
+  left_inv := (Equiv.algEquivActAux σ f).left_inv
+  right_inv := (Equiv.algEquivActAux σ f).right_inv
 
 end extendScalars
 
