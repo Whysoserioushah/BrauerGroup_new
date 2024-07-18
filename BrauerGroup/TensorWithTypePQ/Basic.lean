@@ -23,6 +23,27 @@ variable [AddCommMonoid V₂] [Module k V₂]
 variable [AddCommMonoid V₃] [Module k V₃]
 variable [AddCommMonoid W] [Module k W]
 
+@[elab_as_elim]
+lemma induction_on (x : TensorOfType k V p q)
+    {motive : TensorOfType k V p q → Prop}
+    (zero : motive 0)
+    (tprod_tmul_tprod : ∀ (v : Fin p → V) (f : Fin q → Module.Dual k V),
+      motive (tprod k v ⊗ₜ tprod k f))
+    (smul : ∀ (a : k) (x : TensorOfType k V p q), motive x → motive (a • x))
+    (add : ∀ (x y : TensorOfType k V p q), motive x → motive y → motive (x + y)) : motive x := by
+  induction x using TensorProduct.induction_on with
+  | zero => assumption
+  | tmul v f =>
+    induction v using PiTensorProduct.induction_on with
+    | smul_tprod a v =>
+      induction f using PiTensorProduct.induction_on with
+      | smul_tprod b f =>
+        rw [← smul_tmul, ← mul_smul, ← smul_tmul']
+        exact smul _ _ (tprod_tmul_tprod _ _)
+      | add => rw [tmul_add]; aesop
+    | add => rw [add_tmul]; aesop
+  | add x y hx hy => exact add x y hx hy
+
 @[simps]
 noncomputable def toHomAux (v : ⨂[k]^p V) (f : ⨂[k]^q (Module.Dual k V)) :
     ⨂[k]^q V →ₗ[k] ⨂[k]^p V where
@@ -504,30 +525,10 @@ def auxExtendAlgEquiv (V : VectorSpaceWithTensorOfType k p q) (σ : K ≃ₐ[k] 
       erw [LinearMap.rTensor_tmul]
       aesop)
 
-
 @[simp]
 lemma auxExtendAlgEquiv_tmul (V : VectorSpaceWithTensorOfType k p q) (σ : K ≃ₐ[k] K)
     (a : K) (v : V) :
     auxExtendAlgEquiv V σ (a ⊗ₜ v) = σ a ⊗ₜ v := rfl
-
-
--- def auxExtendAlgEquiv' (V : VectorSpaceWithTensorOfType k p q) (σ : K ≃ₐ[k] K) :
---     V.extendScalars K ≃ₗ[K] V.extendScalars K where
---   toFun := auxExtendAlgEquiv V σ
---   map_add' := (auxExtendAlgEquiv V σ).map_add
---   map_smul' a x := by
---     simp only [RingHom.id_apply]
---     induction x using TensorProduct.induction_on with
---     | zero => simp
---     | tmul b x =>
---       rw [smul_tmul']
---       simp only [smul_eq_mul, auxExtendAlgEquiv_tmul, _root_.map_mul]
---       rw [smul_tmul']
---       sorry
---     | add x y hx hy => aesop
---   invFun := (auxExtendAlgEquiv V σ).symm
---   left_inv := (auxExtendAlgEquiv V σ).left_inv
---   right_inv := (auxExtendAlgEquiv V σ).right_inv
 
 variable {K} in
 def auxRestrict {V W : VectorSpaceWithTensorOfType k p q}
@@ -555,6 +556,7 @@ def Equiv.algEquivActAux
   auxExtendAlgEquiv V σ ≪≫ₗ auxRestrict f ≪≫ₗ
   auxExtendAlgEquiv W σ.symm
 
+@[simp]
 lemma Equiv.algEquivActAux_tmul
     {V W : VectorSpaceWithTensorOfType k p q}
     (σ : K ≃ₐ[k] K) (f : Equiv (V.extendScalars K) (W.extendScalars K))
@@ -563,7 +565,8 @@ lemma Equiv.algEquivActAux_tmul
     (W.auxExtendAlgEquiv σ.symm) (f (σ a ⊗ₜ[k] v)) := by
   simp only [algEquivActAux, LinearEquiv.trans_apply, auxExtendAlgEquiv_tmul, auxRestrict_apply]
 
-def Equiv.algEquivAct
+variable {K} in
+def Equiv.algEquivActAux'
     {V W : VectorSpaceWithTensorOfType k p q}
     (σ : K ≃ₐ[k] K) (f : Equiv (V.extendScalars K) (W.extendScalars K)) :
     (V.extendScalars K) ≃ₗ[K] (W.extendScalars K) where
@@ -625,6 +628,42 @@ def Equiv.algEquivAct
   left_inv := (Equiv.algEquivActAux σ f).left_inv
   right_inv := (Equiv.algEquivActAux σ f).right_inv
 
+@[simp]
+lemma Equiv.algEquivActAux'_tmul {V W : VectorSpaceWithTensorOfType k p q}
+    (σ : K ≃ₐ[k] K) (f : Equiv (V.extendScalars K) (W.extendScalars K))
+    (a : K) (v : V) :
+    Equiv.algEquivActAux' σ f (a ⊗ₜ v) =
+   a • (W.auxExtendAlgEquiv σ.symm) (f (1 ⊗ₜ[k] v)) := by
+  rw [show a ⊗ₜ v = a • ((1 : K) ⊗ₜ[k] v) by simp only [smul_tmul', smul_eq_mul, mul_one],
+    map_smul]
+  simp only [algEquivActAux', LinearEquiv.coe_mk, algEquivActAux_tmul, _root_.map_one]
+
+lemma Equiv.algEquivActAux'_induced
+    {V W : VectorSpaceWithTensorOfType k p q}
+    (σ : K ≃ₐ[k] K) (e : Equiv (V.extendScalars K) (W.extendScalars K))
+    (x : TensorOfType K (V.extendScalars K) p q) :
+    x.induced (Equiv.algEquivActAux' σ e) =
+    x.induced e := by
+  induction x using TensorOfType.induction_on with
+  | zero => simp
+  | smul a x hx =>
+    rw [TensorOfType.induced_smul, hx, TensorOfType.induced_smul]
+  | tprod_tmul_tprod v f =>
+    simp only [TensorOfType.induced_tprod_tmul_tprod]
+    sorry
+  | add x y hx hy =>
+    rw [TensorOfType.induced_add, hx, hy, TensorOfType.induced_add]
+
+def Equiv.algEquivAct
+    {V W : VectorSpaceWithTensorOfType k p q}
+    (σ : K ≃ₐ[k] K) (f : Equiv (V.extendScalars K) (W.extendScalars K)) :
+    Equiv (V.extendScalars K) (W.extendScalars K) where
+  toLinearEquiv := Equiv.algEquivActAux' σ f
+  map_tensor := by
+    simp only [extendScalars_tensor]
+    rw [Equiv.algEquivActAux'_induced]
+    erw [f.map_tensor]
+    rfl
 end extendScalars
 
 section twisedForm
