@@ -12,6 +12,17 @@ abbrev Aut (n : ℕ) := ((Matrix (Fin n) (Fin n) K) ≃* (Matrix (Fin n) (Fin n)
 abbrev PGL (n : ℕ) :=
   (GeneralLinearGroup (Fin n) K)⧸(Subgroup.center (GeneralLinearGroup (Fin n) K))
 
+def left_ideal_of_MnK {n:ℕ} (r: ℕ) (A: Matrix (Fin n) (Fin n) K) : Ideal (Matrix (Fin n) (Fin n) K) where
+  carrier := {A | ∀ i j, j.val ≠ r → A i j = 0}
+  add_mem' := by 
+    intro _ _ _ _ _ _ _
+    simp_all only [ne_eq, Set.mem_setOf_eq, add_apply, not_false_eq_true, add_zero]
+  zero_mem' := by
+    intro _ _ _; simp
+  smul_mem' := by
+    intro  _ _ _ _ _ _
+    simp_all only [smul_eq_mul, mul_apply, ne_eq, Set.mem_setOf_eq, not_false_eq_true, mul_zero, Finset.sum_const_zero]
+
 /-- Any automorphism of Mₙ(K) is inner -/
 lemma Is_inner (n : ℕ) :
     ∀(σ : Aut K n), ∃(C : GeneralLinearGroup (Fin n) K), ∀ A : Matrix (Fin n) (Fin n) K,
