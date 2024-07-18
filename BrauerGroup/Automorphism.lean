@@ -66,7 +66,32 @@ lemma toAut_is_surj (n : ℕ) : Function.Surjective (toAut K n) := by
 lemma GL_center_commute_all (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.center (GL (Fin n) K)) :
     ∀ g : Matrix (Fin n) (Fin n) K, g * G = G * g := by
   intro g
+  rw [Subgroup.mem_center_iff] at hG
+  have : ∀ (i : Fin n), ∀ (j :Fin n), 
+      G * stdBasisMatrix i j (1 : K) = stdBasisMatrix i j (1 : K) * G := by
+    intro i j
+    specialize hG (GeneralLinearGroup.mkOfDetNeZero (1 + (Matrix.stdBasisMatrix i j (1 : K))) (by sorry))
+    change ((1 + (Matrix.stdBasisMatrix i j (1 : K))) * (G : Matrix (Fin n) (Fin n) K) = 
+    (G : Matrix (Fin n) (Fin n) K) * (1 + (Matrix.stdBasisMatrix i j (1 : K)))) at hG
   sorry
+
+lemma GL_centre_is_scalar (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.center (GL (Fin n) K)) :
+    ∃ (k : K), G = k • (1 : Matrix (Fin n) (Fin n) K) := by
+    --rw [show (1 : Matrix (Fin n) (Fin n) K) = (1 : GL (Fin n) K) from rfl]
+    apply GL_center_commute_all at hG
+    -- specialize hG ((1 : Matrix (Fin n) (Fin n) K) + (Matrix.stdBasisMatrix (i : Fin n) (j : Fin n) (1 : K)))
+    use (Matrix.GeneralLinearGroup.det G) ^ (1/n)
+    have : ∀ (i : Fin n), ∀ (j : Fin n), i≠j → G i j = 0 := by
+      intro i j hij
+      have : ∀ (l : Fin n), G i l = G i l * (1 : K) := by simp
+      specialize hG (GeneralLinearGroup.mkOfDetNeZero (1 + (Matrix.stdBasisMatrix i j (1 : K))) (by sorry))
+      rw [this j, mul_one]
+  
+      -- rw [Matrix.GeneralLinearGroup.ext_iff] at hG 
+      -- specialize hG i j
+      -- rw [GeneralLinearGroup.coe_mul, Matrix.mul_apply, GeneralLinearGroup.coe_mul, mul_apply] at hG
+      sorry
+    sorry
 
 lemma toAut_ker (n : ℕ) :
     (toAut K n).ker = Subgroup.center (GL (Fin n) K) := by
