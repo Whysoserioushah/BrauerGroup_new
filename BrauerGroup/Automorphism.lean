@@ -3,7 +3,7 @@ import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Defs
 
 suppress_compilation
 
-variable (K : Type*) [Field K]
+variable (K : Type*) [Field K] [CharZero K]
 open Matrix
 
 /-- Automorphism group of Mₙ(K)-/
@@ -14,7 +14,7 @@ abbrev PGL (n : ℕ) :=
 
 def left_ideal_of_MnK {n:ℕ} (r: ℕ) (A: Matrix (Fin n) (Fin n) K) : Ideal (Matrix (Fin n) (Fin n) K) where
   carrier := {A | ∀ i j, j.val ≠ r → A i j = 0}
-  add_mem' := by 
+  add_mem' := by
     intro _ _ _ _ _ _ _
     simp_all only [ne_eq, Set.mem_setOf_eq, add_apply, not_false_eq_true, add_zero]
   zero_mem' := by
@@ -63,16 +63,71 @@ lemma toAut_is_surj (n : ℕ) : Function.Surjective (toAut K n) := by
   use C; ext A
   simp only [MulEquiv.coe_mk, Equiv.coe_fn_mk, (hC A), coe_units_inv]
 
+abbrev A_ij (n : ℕ) (i j : Fin n) (hij : i ≠ j): GL (Fin n) K where
+  val := 1 + stdBasisMatrix i j (1 : K)
+  inv := 1 - stdBasisMatrix i j (1 : K)
+  val_inv := by
+    rw [Matrix.add_mul, Matrix.mul_sub, Matrix.mul_sub, mul_one, one_mul, mul_one, add_sub,
+      sub_add, sub_self, sub_zero, sub_eq_self]
+    ext x y
+    simp only [mul_apply, stdBasisMatrix, mul_ite, mul_one, mul_zero, zero_apply]
+    if hi : j ≠ y then simp [hi]
+    else
+    simp only [ne_eq, Decidable.not_not] at hi;
+    simp only [hi, and_true, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, ite_eq_right_iff,
+      one_ne_zero, imp_false, not_and]
+    intro _
+    by_contra hy; exact hij $ hy.symm.trans hi.symm
+  inv_val := by
+    rw [sub_mul, mul_add, mul_add, mul_one, one_mul, mul_one, ← sub_sub, ← add_sub, sub_self,
+      add_zero, sub_eq_self]
+    ext x y
+    simp only [mul_apply, stdBasisMatrix, mul_ite, mul_one, mul_zero, zero_apply]
+    if hi : j ≠ y then simp [hi]
+    else
+    simp only [ne_eq, Decidable.not_not] at hi
+    simp only [hi, and_true, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, ite_eq_right_iff,
+      one_ne_zero, imp_false, not_and]
+    intro _
+    by_contra hy; exact hij $ hy.symm.trans hi.symm
+
 lemma GL_center_commute_all (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.center (GL (Fin n) K)) :
     ∀ g : Matrix (Fin n) (Fin n) K, g * G = G * g := by
   intro g
   rw [Subgroup.mem_center_iff] at hG
-  have : ∀ (i : Fin n), ∀ (j :Fin n), 
+  have commutes_Aij : ∀ (i j :Fin n),
       G * stdBasisMatrix i j (1 : K) = stdBasisMatrix i j (1 : K) * G := by
     intro i j
-    specialize hG (GeneralLinearGroup.mkOfDetNeZero (1 + (Matrix.stdBasisMatrix i j (1 : K))) (by sorry))
-    change ((1 + (Matrix.stdBasisMatrix i j (1 : K))) * (G : Matrix (Fin n) (Fin n) K) = 
-    (G : Matrix (Fin n) (Fin n) K) * (1 + (Matrix.stdBasisMatrix i j (1 : K)))) at hG
+    if hij : i = j then
+    let ijeq : GL (Fin n) K :=
+    { val := 1 + stdBasisMatrix i j (1 : K)
+      inv := 1 - (2⁻¹ : K) • stdBasisMatrix i j (1 : K)
+      val_inv := by
+        simp only [← hij, smul_stdBasisMatrix, smul_eq_mul, mul_one, mul_sub, add_mul, one_mul,
+          StdBasisMatrix.mul_same, ← stdBasisMatrix_add, show (2⁻¹ : K) + 2⁻¹ = 1 by ring,
+          add_sub_cancel_right]
+      inv_val := by
+        simp only [← hij, smul_stdBasisMatrix, smul_eq_mul, mul_one, mul_add, sub_mul, one_mul,
+          StdBasisMatrix.mul_same, add_sub, sub_add, sub_sub, sub_eq_self]
+        rw [← sub_add]
+        apply_fun fun x => (stdBasisMatrix i i 2⁻¹) + x
+        · simp only [add_zero, ← add_assoc, add_sub, ← stdBasisMatrix_add,
+            show (2⁻¹ : K) + 2⁻¹ = 1 by ring, sub_self, zero_add]
+        · intro A B hAB
+          simp_all only [add_right_inj] }
+    specialize hG ijeq
+    have : (ijeq * G).1 = (G * ijeq).1 := by simp_all only [Units.val_mul]
+    change (1 + _) * G.1 = G.1 * (1 + _) at this
+    rw [add_mul, one_mul, mul_add, mul_one, add_right_inj] at this
+    exact this.symm
+    else
+    specialize hG (A_ij K n i j hij)
+    have : (A_ij K n i j hij * G).1 = (G * A_ij K n i j hij).1 := by
+      simp_all only [Units.val_mul]
+    change (1 + _) * G.1 = G.1 * (1 + _) at this
+    rw [add_mul, one_mul, mul_add, mul_one, add_right_inj] at this
+    exact this.symm
+
   sorry
 
 lemma GL_centre_is_scalar (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.center (GL (Fin n) K)) :
@@ -86,8 +141,8 @@ lemma GL_centre_is_scalar (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.cent
       have : ∀ (l : Fin n), G i l = G i l * (1 : K) := by simp
       specialize hG (GeneralLinearGroup.mkOfDetNeZero (1 + (Matrix.stdBasisMatrix i j (1 : K))) (by sorry))
       rw [this j, mul_one]
-  
-      -- rw [Matrix.GeneralLinearGroup.ext_iff] at hG 
+
+      -- rw [Matrix.GeneralLinearGroup.ext_iff] at hG
       -- specialize hG i j
       -- rw [GeneralLinearGroup.coe_mul, Matrix.mul_apply, GeneralLinearGroup.coe_mul, mul_apply] at hG
       sorry
