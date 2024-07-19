@@ -12,7 +12,7 @@ abbrev Aut (n : ℕ) := ((Matrix (Fin n) (Fin n) K) ≃* (Matrix (Fin n) (Fin n)
 abbrev PGL (n : ℕ) :=
   (GeneralLinearGroup (Fin n) K)⧸(Subgroup.center (GeneralLinearGroup (Fin n) K))
 
-def left_ideal_of_MnK {n:ℕ} (r: ℕ) (A: Matrix (Fin n) (Fin n) K) : Ideal (Matrix (Fin n) (Fin n) K) where
+def left_ideal_of_MnK {n:ℕ} (r: ℕ) : Ideal (Matrix (Fin n) (Fin n) K) where
   carrier := {A | ∀ i j, j.val ≠ r → A i j = 0}
   add_mem' := by
     intro _ _ _ _ _ _ _
