@@ -94,6 +94,8 @@ abbrev A_ij (n : ℕ) (i j : Fin n) (hij : i ≠ j): GL (Fin n) K where
 lemma GL_center_commute_all (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.center (GL (Fin n) K)) :
     ∀ g : Matrix (Fin n) (Fin n) K, g * G = G * g := by
   intro g
+  if hn : n = 0 then subst hn; simp only [mul_empty]
+  else
   rw [Subgroup.mem_center_iff] at hG
   have commutes_Aij : ∀ (i j :Fin n),
       G * stdBasisMatrix i j (1 : K) = stdBasisMatrix i j (1 : K) * G := by
@@ -127,8 +129,13 @@ lemma GL_center_commute_all (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.ce
     change (1 + _) * G.1 = G.1 * (1 + _) at this
     rw [add_mul, one_mul, mul_add, mul_one, add_right_inj] at this
     exact this.symm
-
-  sorry
+  rw [matrix_eq_sum_std_basis g, Finset.sum_mul, Finset.mul_sum]
+  simp_rw [Finset.sum_mul, Finset.mul_sum]
+  suffices ∀(i j : Fin n), ∀(k : K), stdBasisMatrix i j k * G = G * stdBasisMatrix i j k by
+    simp only [this]
+  intro i j k
+  rw [← mul_one k, ← smul_eq_mul K, ← smul_stdBasisMatrix, mul_smul_comm, smul_mul_assoc]
+  congr 1; exact commutes_Aij i j|>.symm
 
 lemma GL_centre_is_scalar (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.center (GL (Fin n) K)) :
     ∃ (k : K), G = k • (1 : Matrix (Fin n) (Fin n) K) := by
