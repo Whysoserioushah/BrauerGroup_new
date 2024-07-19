@@ -1,5 +1,5 @@
-import Mathlib.Tactic
 import Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Defs
+import Mathlib.LinearAlgebra.Matrix.IsDiag
 
 suppress_compilation
 
@@ -139,21 +139,38 @@ lemma GL_center_commute_all (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.ce
 
 lemma GL_centre_is_scalar (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.center (GL (Fin n) K)) :
     ∃ (k : K), G = k • (1 : Matrix (Fin n) (Fin n) K) := by
-    --rw [show (1 : Matrix (Fin n) (Fin n) K) = (1 : GL (Fin n) K) from rfl]
     apply GL_center_commute_all at hG
-    -- specialize hG ((1 : Matrix (Fin n) (Fin n) K) + (Matrix.stdBasisMatrix (i : Fin n) (j : Fin n) (1 : K)))
-    use (Matrix.GeneralLinearGroup.det G) ^ (1/n)
-    have : ∀ (i : Fin n), ∀ (j : Fin n), i≠j → G i j = 0 := by
+    if hn : n = 0 then
+    use 1
+    subst hn
+    simp only [mul_empty, implies_true, det_fin_zero, Nat.div_zero, pow_zero, one_smul,
+      Units.val_eq_one]; exact units_eq_one G
+    else
+    have isdiag: Matrix.IsDiag (G : Matrix (Fin n) (Fin n) K) := by
       intro i j hij
-      have : ∀ (l : Fin n), G i l = G i l * (1 : K) := by simp
-      specialize hG (GeneralLinearGroup.mkOfDetNeZero (1 + (Matrix.stdBasisMatrix i j (1 : K))) (by sorry))
-      rw [this j, mul_one]
-
-      -- rw [Matrix.GeneralLinearGroup.ext_iff] at hG
-      -- specialize hG i j
-      -- rw [GeneralLinearGroup.coe_mul, Matrix.mul_apply, GeneralLinearGroup.coe_mul, mul_apply] at hG
-      sorry
-    sorry
+      let e1 := hG (stdBasisMatrix j i (1 : K))
+      rw [← ext_iff] at e1
+      specialize e1 j j
+      simp only [mul_apply, stdBasisMatrix, true_and, ite_mul, one_mul, zero_mul, Finset.sum_ite_eq,
+        Finset.mem_univ, ↓reduceIte, hij, and_false, mul_zero, Finset.sum_const_zero] at e1
+      exact e1
+    have eq_diag (i j : Fin n): G i i = G j j := by
+      let e2 := hG (stdBasisMatrix i j (1 : K))
+      rw [← ext_iff] at e2
+      specialize e2 i j
+      simp only [StdBasisMatrix.mul_left_apply_same, one_mul, StdBasisMatrix.mul_right_apply_same,
+        mul_one] at e2
+      exact e2.symm
+    haveI : Nonempty (Fin n) := ⟨0, by omega⟩
+    obtain ⟨x, _⟩  := exists_true_iff_nonempty.2 this
+    use ((G : Matrix (Fin n) (Fin n) K) x x)
+    ext i j
+    if hij : i ≠ j then aesop
+    else
+    simp only [ne_eq, Decidable.not_not] at hij
+    simp only [hij, smul_apply, one_apply_eq, smul_eq_mul, mul_one]
+    rw [isDiag_iff_diagonal_diag] at isdiag
+    tauto
 
 lemma toAut_ker (n : ℕ) :
     (toAut K n).ker = Subgroup.center (GL (Fin n) K) := by
