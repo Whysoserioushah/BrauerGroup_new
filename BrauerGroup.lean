@@ -1,3 +1,4 @@
+import BrauerGroup.Automorphism
 import BrauerGroup.BrauerGroup
 import BrauerGroup.CentralSimple
 import BrauerGroup.Composition
@@ -9,5 +10,5 @@ import BrauerGroup.PiTensorProduct
 import BrauerGroup.QuadraticExtension
 import BrauerGroup.QuatBasic
 import BrauerGroup.Quaternion
-import BrauerGroup.TensorWithTypePQ.Basic
+import BrauerGroup.TensorOfTypePQ.Basic
 import BrauerGroup.Wedderburn
