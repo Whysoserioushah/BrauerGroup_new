@@ -54,6 +54,21 @@ def extension_inv (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K 
 
 lemma dim_is_sq (A : CSA k): IsSquare (FiniteDimensional.finrank k A) := ⟨sorry, sorry⟩
 
+def deg (A : CSA k): ℕ := dim_is_sq k A|>.choose
+
+lemma deg_sq_eq_dim (A : CSA k): (deg k A) ^ 2 = FiniteDimensional.finrank k A :=
+  by rw [pow_two]; exact dim_is_sq k A|>.choose_spec.symm
+
+lemma deg_pos (A : CSA k): 0 < deg k A := by
+  by_contra! h
+  have eq_zero : deg k A = 0 := by omega
+  apply_fun (λ x => x^2) at eq_zero
+  rw [deg_sq_eq_dim k A, pow_two, mul_zero] at eq_zero
+  haveI := A.is_central_simple.is_simple.1
+  have Nontriv : Nontrivial A := inferInstance
+  have := FiniteDimensional.finrank_pos_iff (R := k) (M := A)|>.2 Nontriv
+  linarith
+
 end CentralSimple
 end more_on_CSA
 
@@ -62,17 +77,8 @@ structure split (A : CSA k) :=
   (iso : K ⊗[k] A ≃ₐ[k] Matrix (Fin n) (Fin n) K)
 
 def split_by_alg_closure (A : CSA k): split k A where
-  n := by choose n hn using CentralSimple.dim_is_sq k A; use n
-  hn := by
-    choose n hn using CentralSimple.dim_is_sq k A
-    haveI := A.is_central_simple.is_simple.1
-    by_contra! hn
-    apply_fun fun x => x^2 at hn;
-    simp only [pow_two, zero_mul] at hn
-    -- change (FiniteDimensional.finrank k A) = 0 at hn
-    -- should be because of dim is a square and not zero therefore n ≠ 0 as well
-    -- require some work.
-    sorry
+  n := CentralSimple.deg k A
+  hn := by haveI := CentralSimple.deg_pos k A; omega
   K := AlgebraicClosure k
   hK1 := inferInstance
   hK2 := inferInstance
