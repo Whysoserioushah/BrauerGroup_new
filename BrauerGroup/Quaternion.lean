@@ -88,7 +88,7 @@ lemma Injective_Quat_to_tensor [NeZero a] [NeZero b]: Function.Injective (Quat_t
   specialize @rid 1 ⟨⟩
   simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
     one_ne_zero] at rid
-    
+
 lemma Surjective_Quat_to_tensor [NeZero a] [NeZero b]: Function.Surjective (Quat_to_tensor a b) := by
   change Function.Surjective (Quat_to_tensor a b).toLinearMap
   rw [← LinearMap.range_eq_top]

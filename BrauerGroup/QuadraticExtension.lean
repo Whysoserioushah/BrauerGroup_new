@@ -77,26 +77,6 @@ theorem add_re (z w : K√d) : (z + w).re = z.re + w.re :=
 theorem add_im (z w : K√d) : (z + w).im = z.im + w.im :=
   rfl
 
-section bit
-set_option linter.deprecated false
-
-@[simp]
-theorem bit0_re (z) : (bit0 z : K√d).re = bit0 z.re :=
-  rfl
-
-@[simp]
-theorem bit0_im (z) : (bit0 z : K√d).im = bit0 z.im :=
-  rfl
-
-@[simp]
-theorem bit1_re (z) : (bit1 z : K√d).re = bit1 z.re :=
-  rfl
-
-@[simp]
-theorem bit1_im (z) : (bit1 z : K√d).im = bit0 z.im := by simp [bit1]
-
-end bit
-
 /-- Negation in `K√d` -/
 instance : Neg (K√d) :=
   ⟨fun z => ⟨-z.1, -z.2⟩⟩
