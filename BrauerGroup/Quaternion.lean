@@ -9,9 +9,9 @@ variable (D : Type) [Ring D] [Algebra ℚ D] [h : IsCentralSimple ℚ D]
 open Quaternion TensorProduct BigOperators Classical
 
 variable (a b : ℚ)
-
-variable (K L : Type) [Field K] [Field L] [Algebra K L]
-  (V : Type) [AddCommGroup V] [Module K V] [Module.Finite K V]
+universe u
+variable (K L : Type u) [Field K] [Field L] [Algebra K L]
+  (V : Type u) [AddCommGroup V] [Module K V] [Module.Finite K V]
 
 lemma dim_eq : FiniteDimensional.finrank K V = FiniteDimensional.finrank L (L ⊗[K] V) := by
   let b := FiniteDimensional.finBasis K V
