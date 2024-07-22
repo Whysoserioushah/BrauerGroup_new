@@ -8,7 +8,7 @@ suppress_compilation
 open TensorProduct PiTensorProduct
 
 abbrev TensorOfType (k V : Type*) [CommSemiring k] [AddCommMonoid V] [Module k V] (p q : ℕ) :=
-  (⨂[k]^p V) ⊗[k] (⨂[k]^q $ Module.Dual k V)
+   (⨂[k]^q V) →ₗ[k] (⨂[k]^p V)
 
 namespace TensorOfType
 
@@ -23,156 +23,156 @@ variable [AddCommMonoid V₂] [Module k V₂]
 variable [AddCommMonoid V₃] [Module k V₃]
 variable [AddCommMonoid W] [Module k W]
 
-@[elab_as_elim]
-lemma induction_on (x : TensorOfType k V p q)
-    {motive : TensorOfType k V p q → Prop}
-    (zero : motive 0)
-    (tprod_tmul_tprod : ∀ (v : Fin p → V) (f : Fin q → Module.Dual k V),
-      motive (tprod k v ⊗ₜ tprod k f))
-    (smul : ∀ (a : k) (x : TensorOfType k V p q), motive x → motive (a • x))
-    (add : ∀ (x y : TensorOfType k V p q), motive x → motive y → motive (x + y)) : motive x := by
-  induction x using TensorProduct.induction_on with
-  | zero => assumption
-  | tmul v f =>
-    induction v using PiTensorProduct.induction_on with
-    | smul_tprod a v =>
-      induction f using PiTensorProduct.induction_on with
-      | smul_tprod b f =>
-        rw [← smul_tmul, ← mul_smul, ← smul_tmul']
-        exact smul _ _ (tprod_tmul_tprod _ _)
-      | add => rw [tmul_add]; aesop
-    | add => rw [add_tmul]; aesop
-  | add x y hx hy => exact add x y hx hy
+-- @[elab_as_elim]
+-- lemma induction_on (x : TensorOfType k V p q)
+--     {motive : TensorOfType k V p q → Prop}
+--     (zero : motive 0)
+--     (tprod_tmul_tprod : ∀ (v : Fin p → V) (f : Fin q → Module.Dual k V),
+--       motive (tprod k v ⊗ₜ tprod k f))
+--     (smul : ∀ (a : k) (x : TensorOfType k V p q), motive x → motive (a • x))
+--     (add : ∀ (x y : TensorOfType k V p q), motive x → motive y → motive (x + y)) : motive x := by
+--   induction x using TensorProduct.induction_on with
+--   | zero => assumption
+--   | tmul v f =>
+--     induction v using PiTensorProduct.induction_on with
+--     | smul_tprod a v =>
+--       induction f using PiTensorProduct.induction_on with
+--       | smul_tprod b f =>
+--         rw [← smul_tmul, ← mul_smul, ← smul_tmul']
+--         exact smul _ _ (tprod_tmul_tprod _ _)
+--       | add => rw [tmul_add]; aesop
+--     | add => rw [add_tmul]; aesop
+--   | add x y hx hy => exact add x y hx hy
 
-@[simps]
-noncomputable def toHomAux (v : ⨂[k]^p V) (f : ⨂[k]^q (Module.Dual k V)) :
-    ⨂[k]^q V →ₗ[k] ⨂[k]^p V where
-  toFun v' := dualTensorPower k V q f v' • v
-  map_add' v₁ v₂ := by simp only [map_add, add_smul]
-  map_smul' a v' := by simp only [LinearMapClass.map_smul, smul_eq_mul, mul_smul, RingHom.id_apply]
+-- @[simps]
+-- noncomputable def toHomAux (v : ⨂[k]^p V) (f : ⨂[k]^q (Module.Dual k V)) :
+--     ⨂[k]^q V →ₗ[k] ⨂[k]^p V where
+--   toFun v' := dualTensorPower k V q f v' • v
+--   map_add' v₁ v₂ := by simp only [map_add, add_smul]
+--   map_smul' a v' := by simp only [LinearMapClass.map_smul, smul_eq_mul, mul_smul, RingHom.id_apply]
 
-noncomputable def toHom : TensorOfType k V p q →ₗ[k] ⨂[k]^q V →ₗ[k] ⨂[k]^p V :=
-TensorProduct.lift
-{ toFun := fun v =>
-  { toFun := fun f => toHomAux v f
-    map_add' := by
-      intros f₁ f₂
-      ext v'
-      simp only [LinearMap.compMultilinearMap_apply, toHomAux_apply, map_add, LinearMap.add_apply,
-        add_smul]
-    map_smul' := by
-      intros a f
-      ext v'
-      simp only [LinearMap.compMultilinearMap_apply, toHomAux_apply, map_smul, LinearMap.smul_apply,
-        smul_eq_mul, mul_smul, RingHom.id_apply] }
-  map_add' := by
-    intros v₁ v₂
-    ext f w
-    simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk, toHomAux_apply,
-      dualTensorPower_tprod, smul_add, LinearMap.add_apply]
-  map_smul' := by
-    intros a v
-    ext f w
-    simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk, toHomAux_apply,
-      dualTensorPower_tprod, RingHom.id_apply, LinearMap.smul_apply]
-    rw [smul_comm] }
+-- noncomputable def toHom : TensorOfType k V p q →ₗ[k] ⨂[k]^q V →ₗ[k] ⨂[k]^p V :=
+-- TensorProduct.lift
+-- { toFun := fun v =>
+--   { toFun := fun f => toHomAux v f
+--     map_add' := by
+--       intros f₁ f₂
+--       ext v'
+--       simp only [LinearMap.compMultilinearMap_apply, toHomAux_apply, map_add, LinearMap.add_apply,
+--         add_smul]
+--     map_smul' := by
+--       intros a f
+--       ext v'
+--       simp only [LinearMap.compMultilinearMap_apply, toHomAux_apply, map_smul, LinearMap.smul_apply,
+--         smul_eq_mul, mul_smul, RingHom.id_apply] }
+--   map_add' := by
+--     intros v₁ v₂
+--     ext f w
+--     simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk, toHomAux_apply,
+--       dualTensorPower_tprod, smul_add, LinearMap.add_apply]
+--   map_smul' := by
+--     intros a v
+--     ext f w
+--     simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk, toHomAux_apply,
+--       dualTensorPower_tprod, RingHom.id_apply, LinearMap.smul_apply]
+--     rw [smul_comm] }
 
-@[simp]
-lemma toHom_tprod_tmul_tprod_apply
-    (v : Fin p → V) (f : Fin q → Module.Dual k V) (x : Fin q → V) :
-    toHom (tprod k v ⊗ₜ[k] tprod k f) (tprod k x) =
-    (∏ i : Fin q, f i (x i)) • tprod k v := by
-  simp only [toHom, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, toHomAux_apply,
-    dualTensorPower_tprod]
+-- @[simp]
+-- lemma toHom_tprod_tmul_tprod_apply
+--     (v : Fin p → V) (f : Fin q → Module.Dual k V) (x : Fin q → V) :
+--     toHom (tprod k v ⊗ₜ[k] tprod k f) (tprod k x) =
+--     (∏ i : Fin q, f i (x i)) • tprod k v := by
+--   simp only [toHom, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, toHomAux_apply,
+--     dualTensorPower_tprod]
 
-noncomputable def inducedLinearMap (e : V ≃ₗ[k] W) : TensorOfType k V p q →ₗ[k] TensorOfType k W p q :=
-  TensorProduct.map
-    (PiTensorProduct.map fun _ => e)
-    (PiTensorProduct.map fun _ => Module.Dual.transpose e.symm)
+-- noncomputable def inducedLinearMap (e : V ≃ₗ[k] W) : TensorOfType k V p q →ₗ[k] TensorOfType k W p q :=
+--   TensorProduct.map
+--     (PiTensorProduct.map fun _ => e)
+--     (PiTensorProduct.map fun _ => Module.Dual.transpose e.symm)
 
-def induced (v : TensorOfType k V p q) (e : V ≃ₗ[k] W) : TensorOfType k W p q :=
-  inducedLinearMap e v
+-- def induced (v : TensorOfType k V p q) (e : V ≃ₗ[k] W) : TensorOfType k W p q :=
+--   inducedLinearMap e v
 
-@[simp]
-lemma induced_zero (e : V ≃ₗ[k] W)  : (0 : TensorOfType k V p q).induced e = 0 :=
-  (inducedLinearMap e).map_zero
+-- @[simp]
+-- lemma induced_zero (e : V ≃ₗ[k] W)  : (0 : TensorOfType k V p q).induced e = 0 :=
+--   (inducedLinearMap e).map_zero
 
-@[simp]
-lemma induced_smul (v : TensorOfType k V p q) (e : V ≃ₗ[k] W) (a : k) :
-    (a • v).induced e = a • v.induced e :=
-  (inducedLinearMap e).map_smul a v
+-- @[simp]
+-- lemma induced_smul (v : TensorOfType k V p q) (e : V ≃ₗ[k] W) (a : k) :
+--     (a • v).induced e = a • v.induced e :=
+--   (inducedLinearMap e).map_smul a v
 
-lemma induced_add (v₁ v₂ : TensorOfType k V p q) (e : V ≃ₗ[k] W) :
-    (v₁ + v₂).induced e = v₁.induced e + v₂.induced e :=
-  (inducedLinearMap e).map_add v₁ v₂
+-- lemma induced_add (v₁ v₂ : TensorOfType k V p q) (e : V ≃ₗ[k] W) :
+--     (v₁ + v₂).induced e = v₁.induced e + v₂.induced e :=
+--   (inducedLinearMap e).map_add v₁ v₂
 
-@[simp]
-lemma inducedLinearMap_tprod_tmul_tprod
-    (e : V ≃ₗ[k] W) (v : Fin p → V) (f : Fin q → Module.Dual k V) :
-    inducedLinearMap e (tprod k v ⊗ₜ[k] tprod k f) =
-    tprod k (fun i => e (v i)) ⊗ₜ[k] tprod k (fun i => Module.Dual.transpose e.symm (f i)) := by
-  simp only [inducedLinearMap, map_tmul, map_tprod, LinearEquiv.coe_coe]
+-- @[simp]
+-- lemma inducedLinearMap_tprod_tmul_tprod
+--     (e : V ≃ₗ[k] W) (v : Fin p → V) (f : Fin q → Module.Dual k V) :
+--     inducedLinearMap e (tprod k v ⊗ₜ[k] tprod k f) =
+--     tprod k (fun i => e (v i)) ⊗ₜ[k] tprod k (fun i => Module.Dual.transpose e.symm (f i)) := by
+--   simp only [inducedLinearMap, map_tmul, map_tprod, LinearEquiv.coe_coe]
 
-@[simp]
-lemma induced_tprod_tmul_tprod (v : Fin p → V) (f : Fin q → Module.Dual k V) (e : V ≃ₗ[k] W)  :
-    induced (tprod k v ⊗ₜ[k] tprod k f : TensorOfType k V p q) e =
-    tprod k (fun i => e (v i)) ⊗ₜ[k] tprod k (fun i => Module.Dual.transpose e.symm (f i)) :=
-  inducedLinearMap_tprod_tmul_tprod e v f
+-- @[simp]
+-- lemma induced_tprod_tmul_tprod (v : Fin p → V) (f : Fin q → Module.Dual k V) (e : V ≃ₗ[k] W)  :
+--     induced (tprod k v ⊗ₜ[k] tprod k f : TensorOfType k V p q) e =
+--     tprod k (fun i => e (v i)) ⊗ₜ[k] tprod k (fun i => Module.Dual.transpose e.symm (f i)) :=
+--   inducedLinearMap_tprod_tmul_tprod e v f
 
-@[simp]
-lemma inducedLinearMap_refl :
-    inducedLinearMap (p := p) (q := q) (LinearEquiv.refl k V) = LinearMap.id := by
-  ext v f
-  simp only [inducedLinearMap, LinearEquiv.refl_toLinearMap, PiTensorProduct.map_id, Module.Dual.transpose,
-    LinearEquiv.refl_symm, LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply,
-    curry_apply, LinearMap.coe_restrictScalars, map_tmul, LinearMap.id_coe, id_eq, map_tprod,
-    LinearMap.flip_apply]
-  congr 2
+-- @[simp]
+-- lemma inducedLinearMap_refl :
+--     inducedLinearMap (p := p) (q := q) (LinearEquiv.refl k V) = LinearMap.id := by
+--   ext v f
+--   simp only [inducedLinearMap, LinearEquiv.refl_toLinearMap, PiTensorProduct.map_id, Module.Dual.transpose,
+--     LinearEquiv.refl_symm, LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply,
+--     curry_apply, LinearMap.coe_restrictScalars, map_tmul, LinearMap.id_coe, id_eq, map_tprod,
+--     LinearMap.flip_apply]
+--   congr 2
 
-@[simp] lemma induced_refl (v : TensorOfType k V p q) : v.induced (LinearEquiv.refl k V) = v :=
-  congr($inducedLinearMap_refl v)
+-- @[simp] lemma induced_refl (v : TensorOfType k V p q) : v.induced (LinearEquiv.refl k V) = v :=
+--   congr($inducedLinearMap_refl v)
 
-lemma inducedLinearMap_trans (e : V₁ ≃ₗ[k] V₂) (f : V₂ ≃ₗ[k] V₃) :
-    inducedLinearMap (p := p) (q := q) (e ≪≫ₗ f) =
-    inducedLinearMap (p := p) (q := q) f ∘ₗ inducedLinearMap (p := p) (q := q) e := by
-  ext v g
-  simp only [LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply, curry_apply,
-    LinearMap.coe_restrictScalars, inducedLinearMap_tprod_tmul_tprod, LinearEquiv.trans_apply,
-    Module.Dual.transpose, LinearEquiv.trans_symm, LinearMap.flip_apply, LinearMap.coe_comp,
-    Function.comp_apply]
-  congr 2
+-- lemma inducedLinearMap_trans (e : V₁ ≃ₗ[k] V₂) (f : V₂ ≃ₗ[k] V₃) :
+--     inducedLinearMap (p := p) (q := q) (e ≪≫ₗ f) =
+--     inducedLinearMap (p := p) (q := q) f ∘ₗ inducedLinearMap (p := p) (q := q) e := by
+--   ext v g
+--   simp only [LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply, curry_apply,
+--     LinearMap.coe_restrictScalars, inducedLinearMap_tprod_tmul_tprod, LinearEquiv.trans_apply,
+--     Module.Dual.transpose, LinearEquiv.trans_symm, LinearMap.flip_apply, LinearMap.coe_comp,
+--     Function.comp_apply]
+--   congr 2
 
-lemma induced_trans (v : TensorOfType k V₁ p q) (e : V₁ ≃ₗ[k] V₂) (f : V₂ ≃ₗ[k] V₃) :
-    v.induced (e ≪≫ₗ f) = (v.induced e).induced f :=
-  congr($(inducedLinearMap_trans e f) v)
+-- lemma induced_trans (v : TensorOfType k V₁ p q) (e : V₁ ≃ₗ[k] V₂) (f : V₂ ≃ₗ[k] V₃) :
+--     v.induced (e ≪≫ₗ f) = (v.induced e).induced f :=
+--   congr($(inducedLinearMap_trans e f) v)
 
-noncomputable def congr (e : V ≃ₗ[k] W) : TensorOfType k V p q ≃ₗ[k] TensorOfType k W p q :=
-LinearEquiv.ofLinear
-  (inducedLinearMap e) (inducedLinearMap e.symm) (by
-    ext w fw
-    simp only [LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply, curry_apply,
-      LinearMap.coe_restrictScalars, LinearMap.coe_comp, Function.comp_apply,
-      inducedLinearMap_tprod_tmul_tprod, Module.Dual.transpose, LinearEquiv.symm_symm, LinearMap.flip_apply,
-      LinearEquiv.apply_symm_apply, LinearMap.id_coe, id_eq]
-    congr 2
-    ext i x
-    simp only [LinearMap.llcomp_apply, LinearEquiv.coe_coe, LinearEquiv.apply_symm_apply]) (by
-    ext w fw
-    simp only [LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply, curry_apply,
-      LinearMap.coe_restrictScalars, LinearMap.coe_comp, Function.comp_apply,
-      inducedLinearMap_tprod_tmul_tprod, Module.Dual.transpose, LinearMap.flip_apply,
-      LinearEquiv.symm_apply_apply, LinearEquiv.symm_symm, LinearMap.id_coe, id_eq]
-    congr 2
-    ext i x
-    simp only [LinearMap.llcomp_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply])
+-- noncomputable def congr (e : V ≃ₗ[k] W) : TensorOfType k V p q ≃ₗ[k] TensorOfType k W p q :=
+-- LinearEquiv.ofLinear
+--   (inducedLinearMap e) (inducedLinearMap e.symm) (by
+--     ext w fw
+--     simp only [LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply, curry_apply,
+--       LinearMap.coe_restrictScalars, LinearMap.coe_comp, Function.comp_apply,
+--       inducedLinearMap_tprod_tmul_tprod, Module.Dual.transpose, LinearEquiv.symm_symm, LinearMap.flip_apply,
+--       LinearEquiv.apply_symm_apply, LinearMap.id_coe, id_eq]
+--     congr 2
+--     ext i x
+--     simp only [LinearMap.llcomp_apply, LinearEquiv.coe_coe, LinearEquiv.apply_symm_apply]) (by
+--     ext w fw
+--     simp only [LinearMap.compMultilinearMap_apply, AlgebraTensorModule.curry_apply, curry_apply,
+--       LinearMap.coe_restrictScalars, LinearMap.coe_comp, Function.comp_apply,
+--       inducedLinearMap_tprod_tmul_tprod, Module.Dual.transpose, LinearMap.flip_apply,
+--       LinearEquiv.symm_apply_apply, LinearEquiv.symm_symm, LinearMap.id_coe, id_eq]
+--     congr 2
+--     ext i x
+--     simp only [LinearMap.llcomp_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply])
 
-@[simp]
-lemma congr_apply (e : V ≃ₗ[k] W) (v : TensorOfType k V p q) :
-    congr e v = inducedLinearMap e v := rfl
+-- @[simp]
+-- lemma congr_apply (e : V ≃ₗ[k] W) (v : TensorOfType k V p q) :
+--     congr e v = inducedLinearMap e v := rfl
 
-@[simp]
-lemma congr_symm_apply (e : V ≃ₗ[k] W) (w : TensorOfType k W p q) :
-    (congr e).symm w = inducedLinearMap e.symm w := rfl
+-- @[simp]
+-- lemma congr_symm_apply (e : V ≃ₗ[k] W) (w : TensorOfType k W p q) :
+--     (congr e).symm w = inducedLinearMap e.symm w := rfl
 
 end basic
 
@@ -183,32 +183,68 @@ variable {p q : ℕ}
 variable [CommRing k] [CommRing K] [Algebra k K]
 variable [AddCommGroup V] [Module k V]
 
-def extendScalarsLinearMap : TensorOfType k V p q →ₗ[k] TensorOfType K (K ⊗[k] V) p q :=
-  let f1 : (⨂[k]^p V) →ₗ[k] ⨂[K]^p (K ⊗[k] V) := PiTensorProduct.extendScalars k K _
-  let f2 : (⨂[k]^q (Module.Dual k V)) →ₗ[k] ⨂[K]^q (Module.Dual K (K ⊗[k] V)) :=
-    { PiTensorProduct.map fun _ => Module.Dual.extendScalars k K V with
-      map_smul' := fun k hk => by
-        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearMap.map_smul_of_tower,
-          RingHom.id_apply] } ∘ₗ
-    PiTensorProduct.extendScalars k K _
-  TensorProduct.lift $
-    { toFun := fun vp =>
-      { toFun := fun fq => vp ⊗ₜ[K] f2 fq
-        map_add' := fun fq₁ fq₂ => by
-          simp only [map_add, tmul_add]
-        map_smul' := fun a fq => by
-          simp only [LinearMapClass.map_smul, tmul_smul, RingHom.id_apply] }
-      map_add' := fun vp₁ vp₂ => by
-        simp only
-        ext fq
-        simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
-          LinearMap.add_apply, add_tmul]
-      map_smul' := fun a vp => by
-        simp only [RingHom.id_apply]
-        ext fq
-        simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
-          LinearMap.smul_apply]
-        rw [smul_tmul'] } ∘ₗ f1
+variable {k} in
+def _root_.Basis.extendScalarsTensorPower {ι : Type*} (b : Basis ι k V) :
+  Basis (Fin p → ι) K (K ⊗[k] (⨂[k]^p V)) :=
+.mk (v := fun i => 1 ⊗ₜ tprod k fun j => b (i j))
+  (_) sorry
+
+variable {k} in
+def _root_.Basis.tensorPowerExtendScalars {ι : Type*} (b : Basis ι k V) :
+    Basis (Fin p → ι) K (⨂[K]^p $ K ⊗[k] V) :=
+.mk (v := fun i => tprod K fun j => 1 ⊗ₜ b (i j)) sorry sorry
+
+variable {k} in
+def _root_.Basis.extendScalarsTensorPowerEquiv {ι : Type*} (b : Basis ι k V) : K ⊗[k] (⨂[k]^p V) ≃ₗ[K] (⨂[K]^p $ K ⊗[k] V) :=
+  LinearEquiv.ofLinear
+    (b.extendScalarsTensorPower K |>.constr K fun v => tprod K fun j => 1 ⊗ₜ[k] b (v j))
+    (b.tensorPowerExtendScalars K |>.constr K fun v => 1 ⊗ₜ tprod k fun j => b (v j))
+    (by
+      apply (Basis.tensorPowerExtendScalars K V b).ext
+      intro i
+      simp only [LinearMap.coe_comp, Function.comp_apply, Basis.constr_basis, LinearMap.id_coe,
+        id_eq]
+      simp only [Basis.tensorPowerExtendScalars, Basis.coe_mk]
+      convert Basis.constr_basis _ _ _ _
+      simp only [Basis.extendScalarsTensorPower, Basis.coe_mk]) sorry
+
+def extendScalarsLinearMap {ι : Type*} (b : Basis ι k V) :
+    TensorOfType k V p q →ₗ[k] TensorOfType K (K ⊗[k] V) p q where
+  toFun f :=
+      (b.extendScalarsTensorPowerEquiv K).toLinearMap ∘ₗ
+      { LinearMap.lTensor K f with
+        map_smul' := sorry } ∘ₗ
+      (b.extendScalarsTensorPowerEquiv K).symm.toLinearMap
+  map_add' := sorry
+  map_smul' := sorry
+
+
+#exit
+  -- let f1 : (⨂[k]^p V) →ₗ[k] ⨂[K]^p (K ⊗[k] V) := PiTensorProduct.extendScalars k K _
+  -- let f2 : (⨂[k]^q (Module.Dual k V)) →ₗ[k] ⨂[K]^q (Module.Dual K (K ⊗[k] V)) :=
+  --   { PiTensorProduct.map fun _ => Module.Dual.extendScalars k K V with
+  --     map_smul' := fun k hk => by
+  --       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearMap.map_smul_of_tower,
+  --         RingHom.id_apply] } ∘ₗ
+  --   PiTensorProduct.extendScalars k K _
+  -- TensorProduct.lift $
+  --   { toFun := fun vp =>
+  --     { toFun := fun fq => vp ⊗ₜ[K] f2 fq
+  --       map_add' := fun fq₁ fq₂ => by
+  --         simp only [map_add, tmul_add]
+  --       map_smul' := fun a fq => by
+  --         simp only [LinearMapClass.map_smul, tmul_smul, RingHom.id_apply] }
+  --     map_add' := fun vp₁ vp₂ => by
+  --       simp only
+  --       ext fq
+  --       simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
+  --         LinearMap.add_apply, add_tmul]
+  --     map_smul' := fun a vp => by
+  --       simp only [RingHom.id_apply]
+  --       ext fq
+  --       simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
+  --         LinearMap.smul_apply]
+  --       rw [smul_tmul'] } ∘ₗ f1
 
 variable {k V}
 def extendScalars (v : TensorOfType k V p q) : TensorOfType K (K ⊗[k] V) p q :=
