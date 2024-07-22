@@ -1,24 +1,18 @@
 import BrauerGroup.BrauerGroup
 import BrauerGroup.Con
 import BrauerGroup.Quaternion
+import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.LinearAlgebra.Dimension.Finrank
 
 suppress_compilation
 
 universe u v w
 variable (k A K: Type u) [Field k] [Field K] [Algebra k K] [Ring A]
   [Algebra k A]
-open scoped TensorProduct Classical
 
--- variable (L : Type u) [Field L] [Algebra K L]
---   (V : Type u) [AddCommGroup V] [Module K V] [Module.Finite K V]
+variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
 
--- lemma dim_eq : FiniteDimensional.finrank K V = FiniteDimensional.finrank L (L ⊗[K] V) := by
---   let b := FiniteDimensional.finBasis K V
---   let b' := Algebra.TensorProduct.basis L b
---   rw [FiniteDimensional.finrank_eq_card_basis b, FiniteDimensional.finrank_eq_card_basis b']
-
-section more_on_CSA
-namespace CentralSimple
+open scoped TensorProduct
 
 instance module_over_over (A : CSA k) (I : RingCon A):
     Module k I := Module.compHom I (algebraMap k A)
@@ -68,60 +62,63 @@ def extension_inv (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K 
       exact RingCon.IsSimpleOrder.iff_eq_zero_or_injective A|>.1 inferInstance
         to_ten.toRingHom|>.resolve_left (by
         intro h
-        sorry)
-    have : FiniteDimensional k (K ⊗[k] A) := sorry
+        rw [SetLike.ext_iff] at h
+        specialize h 1
+        simp only [RingCon.mem_ker, map_one, one_ne_zero, false_iff] at h
+        exact h ⟨⟩)
+    have : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
+
     exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj
-    -- sorry
-
-theorem finrank_matrix (m n : Type*) [Fintype m] [Fintype n] :
-    FiniteDimensional.finrank K (Matrix m n K) = Fintype.card m * Fintype.card n := by
-  simp [FiniteDimensional.finrank]
-
-example (hA : IsCentralSimple k A)(B : Type u)[Ring B][Algebra k B](hAB : A ≃ₐ[k] B) :
-    IsCentralSimple k B := by exact AlgEquiv.isCentralSimple hAB
 
 theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
-    IsCentralSimple k A ↔ (∃(n : ℕ)(_ : 0 < n)(L : Type u)(_ : Field L)(_ : Algebra k L)
+    IsCentralSimple k A ↔ (∃(n : ℕ)(_ : n ≠ 0)(L : Type u)(_ : Field L)(_ : Algebra k L)
     (fin_dim : FiniteDimensional k L), Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)) := by
   constructor
-  · sorry
+  · intro hA
+    haveI := hk_bar.1
+    obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
+    refine ⟨n, hn, ?_⟩
+    haveI : FiniteDimensional k_bar (k_bar ⊗[k] A) := inferInstance
+    let b := FiniteDimensional.finBasis k_bar (k_bar ⊗[k] A)
+
+
+    sorry
   · rintro ⟨n, hn, L, _, _, _, ⟨iso⟩⟩
-    haveI : Nonempty (Fin n) := by tauto
-    exact (cantralsimple_over_extension_iff k A L).mpr $ AlgEquiv.isCentralSimple iso.symm
+    haveI : Nonempty (Fin n) := ⟨0, by omega⟩
+    exact (centralsimple_over_extension_iff k A L).mpr $ AlgEquiv.isCentralSimple iso.symm
 
 lemma dim_is_sq (h : IsCentralSimple k A) [FiniteDimensional k A]:
     IsSquare (FiniteDimensional.finrank k A) := by
-  obtain ⟨n, hn, L, _, _, _, ⟨iso⟩⟩ := CSA_iff_exist_split k A|>.1 h
+  obtain ⟨n, -, L, _, _, _, ⟨iso⟩⟩ := CSA_iff_exist_split k A k_bar|>.1 h
   refine ⟨n, ?_⟩
+  have := FiniteDimensional.finrank_matrix L (Fin n) (Fin n)
+  simp only [Fintype.card_fin] at this
+  exact dim_eq k L A|>.trans $ LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
-  sorry
+def deg (A : CSA k): ℕ := dim_is_sq k A k_bar A.is_central_simple|>.choose
 
-def deg (A : CSA k): ℕ := dim_is_sq k A A.is_central_simple|>.choose
+lemma deg_sq_eq_dim (A : CSA k): (deg k k_bar A) ^ 2 = FiniteDimensional.finrank k A :=
+  by rw [pow_two]; exact dim_is_sq k A k_bar A.is_central_simple|>.choose_spec.symm
 
-lemma deg_sq_eq_dim (A : CSA k): (deg k A) ^ 2 = FiniteDimensional.finrank k A :=
-  by rw [pow_two]; exact dim_is_sq k A A.is_central_simple|>.choose_spec.symm
-
-lemma deg_pos (A : CSA k): 0 < deg k A := by
+lemma deg_pos (A : CSA k): 0 < deg k k_bar A := by
   by_contra! h
-  have eq_zero : deg k A = 0 := by omega
+  have eq_zero : deg k k_bar A = 0 := by omega
   apply_fun (λ x => x^2) at eq_zero
-  rw [deg_sq_eq_dim k A, pow_two, mul_zero] at eq_zero
+  rw [deg_sq_eq_dim k k_bar A, pow_two, mul_zero] at eq_zero
   haveI := A.is_central_simple.is_simple.1
   have Nontriv : Nontrivial A := inferInstance
   have := FiniteDimensional.finrank_pos_iff (R := k) (M := A)|>.2 Nontriv
   linarith
 
-end CentralSimple
-end more_on_CSA
-
 structure split (A : CSA k) :=
   (n : ℕ) (hn : n ≠ 0) (K : Type*) (hK1 : Field K) (hK2 : Algebra k K)
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
 
+
 def split_by_alg_closure (A : CSA k): split k A where
-  n := CentralSimple.deg k A
-  hn := by haveI := CentralSimple.deg_pos k A; omega
-  K := AlgebraicClosure k
+  n := deg k k_bar A
+  hn := by haveI := deg_pos k k_bar A; omega
+  K := k_bar
   hK1 := inferInstance
   hK2 := inferInstance
   iso := sorry
