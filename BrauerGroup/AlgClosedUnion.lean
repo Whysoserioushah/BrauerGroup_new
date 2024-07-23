@@ -27,11 +27,11 @@ lemma intermediateTensor_mono {L1 L2 : IntermediateField K K_bar} (h : L1 ≤ L2
   simp only [AlgHom.toNonUnitalAlgHom_eq_coe, NonUnitalAlgHom.toDistribMulActionHom_eq_coe,
     Submodule.mem_comap, LinearMap.mem_range, exists_apply_eq_apply]
 
-abbrev S : Set (IntermediateField K K_bar) :=
+private abbrev SetOfFinite : Set (IntermediateField K K_bar) :=
   {M | FiniteDimensional K M}
 
 lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
-    (Set.range fun (L : S K K_bar) ↦ intermediateTensor K K_bar A L):= by
+    (Set.range fun (L : SetOfFinite K K_bar) ↦ intermediateTensor K K_bar A L):= by
   rintro _ ⟨⟨L1, (hL1 : FiniteDimensional _ _)⟩, rfl⟩ _ ⟨⟨L2, (hL2 : FiniteDimensional _ _)⟩, rfl⟩
   refine ⟨intermediateTensor K K_bar A (L1 ⊔ L2), ⟨⟨L1 ⊔ L2, show FiniteDimensional _ _ from
     ?_⟩, rfl⟩, ⟨intermediateTensor_mono K K_bar A le_sup_left,
@@ -39,9 +39,15 @@ lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
   · apply (config := { allowSynthFailures := true }) IntermediateField.finiteDimensional_sup <;>
     assumption
 
+lemma SetOfFinite_nonempty : (Set.range fun (L : SetOfFinite K K_bar) ↦
+    intermediateTensor K K_bar A L).Nonempty := by
+  refine ⟨intermediateTensor K K_bar A ⊥, ⟨⟨⊥, ?_⟩, rfl⟩⟩
+  simp only [SetOfFinite, Set.mem_setOf_eq, IntermediateField.bot_toSubalgebra]
+  infer_instance
+
 /-- K_bar ⊗[K] A = union of all finite subextension of K ⊗ A -/
 theorem inter_tensor_union :
-    ⨆ (L : S K K_bar),
+    ⨆ (L : SetOfFinite K K_bar),
     (intermediateTensor K K_bar A L) = ⊤ := by
   rw [eq_top_iff]
   rintro x -
@@ -51,12 +57,16 @@ theorem inter_tensor_union :
     have fin0: FiniteDimensional K K⟮x⟯ := IntermediateField.adjoin.finiteDimensional (by
       observe : IsAlgebraic K x
       exact Algebra.IsIntegral.isIntegral x)
-    refine Submodule.mem_sSup_of_directed ?_ (is_direct K K_bar A) |>.2
+    refine Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A) (is_direct K K_bar A) |>.2
       ⟨intermediateTensor K K_bar A K⟮x⟯, ⟨⟨⟨K⟮x⟯, fin0⟩, rfl⟩,
         ⟨(⟨x, IntermediateField.mem_adjoin_simple_self K x⟩ ⊗ₜ a), by simp⟩⟩⟩
-    refine ⟨intermediateTensor K K_bar A ⊥, ⟨⟨⊥, ?_⟩, rfl⟩⟩
-    simp only [S, Set.mem_setOf_eq, IntermediateField.bot_toSubalgebra]
-    infer_instance
-
   |add x y hx hy =>
   apply AddMemClass.add_mem <;> assumption
+
+theorem algclosure_element_in (x : K_bar ⊗[K] A): ∃(F : IntermediateField K K_bar),
+    FiniteDimensional K F ∧ x ∈ intermediateTensor K K_bar A F := by
+  have mem : x ∈ (⊤ : Submodule K _) := ⟨⟩
+  rw [← inter_tensor_union K K_bar A] at mem
+  obtain ⟨_, ⟨⟨⟨L, hL1⟩, rfl⟩, hL⟩⟩ := Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A)
+    (is_direct K K_bar A)|>.1 mem
+  refine ⟨L, ⟨hL1, hL⟩⟩

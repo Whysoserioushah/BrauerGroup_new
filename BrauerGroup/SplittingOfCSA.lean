@@ -1,6 +1,6 @@
 import BrauerGroup.BrauerGroup
-import BrauerGroup.Con
 import BrauerGroup.Quaternion
+import BrauerGroup.AlgClosedUnion
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
 
@@ -80,6 +80,17 @@ theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
     refine ⟨n, hn, ?_⟩
     haveI : FiniteDimensional k_bar (k_bar ⊗[k] A) := inferInstance
     let b := FiniteDimensional.finBasis k_bar (k_bar ⊗[k] A)
+    have := inter_tensor_union k k_bar A
+    -- let S1 : Set k_bar := (i : (Fin (FiniteDimensional.finrank k_bar (k_bar ⊗[k] A)))), {b i}
+    have (i : Fin (FiniteDimensional.finrank k_bar (k_bar ⊗[k] A))) :
+        ∃ (L : IntermediateField k k_bar), FiniteDimensional k L ∧
+          b i ∈ intermediateTensor k k_bar A L := by
+      apply algclosure_element_in k k_bar A
+    choose L finL hL using this
+
+    -- refine ⟨(⨆ (i : Fin (FiniteDimensional.finrank k_bar (k_bar ⊗[k] A))), L i :
+    --   IntermediateField k k_bar), inferInstance, inferInstance,
+    --   IntermediateField.finiteDimensional_iSup_of_finite, ⟨?_⟩⟩
 
 
     sorry
@@ -113,7 +124,6 @@ lemma deg_pos (A : CSA k): 0 < deg k k_bar A := by
 structure split (A : CSA k) :=
   (n : ℕ) (hn : n ≠ 0) (K : Type*) (hK1 : Field K) (hK2 : Algebra k K)
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
-
 
 def split_by_alg_closure (A : CSA k): split k A where
   n := deg k k_bar A

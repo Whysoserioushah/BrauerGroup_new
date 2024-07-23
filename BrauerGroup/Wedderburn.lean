@@ -404,37 +404,42 @@ private lemma Wedderburn_Artin.aux.equivIdeal
       (show n - 1 < n by omega) ⟨_, _, one_eq'.symm⟩
   exact ⟨n, n_ne, ⟨LinearEquiv.ofBijective g ⟨g_inj, g_surj⟩⟩⟩
 
+namespace endPowEquivMatrix
 
-set_option maxHeartbeats 800000 in
-/--
-For `A`-module `M`,
-`Hom(Mⁿ, Mⁿ) ≅ Mₙ(Hom(M, M))`
+variable {A : Type*} [Ring A]
+    {M : Type*} [AddCommGroup M] [Module A M] {n : ℕ}
 
--/
-@[simps]
-def endPowEquivMatrix
-    (M : Type*) [AddCommGroup M] [Module A M] (n : ℕ):
-    Module.End A (Fin n → M) ≃+* M[Fin n, Module.End A M] where
-  toFun f i j :=
+abbrev toFun : Module.End A (Fin n → M) → Matrix (Fin n) (Fin n) (Module.End A M) :=
+  fun f i j ↦
   { toFun := fun x ↦ f (Function.update 0 j x) i
     map_add' := fun x y ↦ show  f _ i = (f _ + f _) i by
       rw [← f.map_add, ← Function.update_add, add_zero]
     map_smul' := fun x y ↦ show f _ _ = (x • f _) _ by
       rw [← f.map_smul, ← Function.update_smul, smul_zero] }
-  invFun M' :=
+
+abbrev invFun : Matrix (Fin n) (Fin n) (Module.End A M) → Module.End A (Fin n → M) :=
+  fun M' ↦
   { toFun := fun x i ↦ ∑ j : Fin n, M' i j (x j)
     map_add' := fun x y ↦ by
       simp only [map_add, ← Finset.sum_add_distrib, Pi.add_apply]
       ext
-      dsimp only [Pi.add_apply]
+      dsimp
       exact Finset.sum_add_distrib
     map_smul' := by
       intro a x
       simp only [Pi.smul_apply, LinearMapClass.map_smul, RingHom.id_apply, Finset.smul_sum]
       ext
-      dsimp only [Pi.smul_apply]
+      dsimp
       exact Eq.symm Finset.smul_sum
   }
+end endPowEquivMatrix
+
+-- count_heartbeats in -- 17331
+def endPowEquivMatrix (A : Type*) [Ring A]
+    (M : Type*) [AddCommGroup M] [Module A M] (n : ℕ):
+    Module.End A (Fin n → M) ≃+* Matrix (Fin n) (Fin n) (Module.End A M) where
+  toFun := endPowEquivMatrix.toFun
+  invFun := endPowEquivMatrix.invFun
   left_inv f := by
     ext i x j : 3
     simp only [of_apply, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.coe_comp, LinearMap.coe_single,
@@ -445,7 +450,6 @@ def endPowEquivMatrix
     ext k : 1
     simp [Pi.single, Function.update]
   right_inv M := by
-    dsimp
     ext i j x : 3
     simp only [Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite, Finset.sum_apply,
       Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, of_apply, LinearMap.coe_mk, AddHom.coe_mk]
@@ -453,7 +457,7 @@ def endPowEquivMatrix
       ∑ k : Fin n, if k = j then (M i k x) else 0
       from Finset.sum_congr rfl fun k _ ↦ by split_ifs <;> aesop]
     simp
-  map_mul' f g := by -- slow defeq?
+  map_mul' f g := by
     ext i j x : 2
     simp only [of_apply, LinearMap.coe_mk, AddHom.coe_mk, mul_apply, LinearMap.coeFn_sum,
       Finset.sum_apply, LinearMap.mul_apply, AddSubmonoid.coe_finset_sum,
@@ -462,7 +466,8 @@ def endPowEquivMatrix
     congr! 1
     ext k : 1
     simp [Function.update]
-  map_add' _ _ := by ext i j x : 2; simp -- slow defeq?
+  map_add' _ _ := by ext i j x : 2; simp
+
 
 theorem Wedderburn_Artin_ideal_version
     (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleOrder (RingCon A)] :
@@ -476,7 +481,6 @@ theorem Wedderburn_Artin_ideal_version
   obtain ⟨n, hn, ⟨e⟩⟩ := Wedderburn_Artin.aux.equivIdeal I I_nontrivial I_minimal
   exact ⟨n, hn, I, inferInstance, ⟨e⟩⟩
 
-set_option maxHeartbeats 1600000 in
 theorem Wedderburn_Artin
     (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleOrder (RingCon A)] :
     ∃ (n : ℕ) (_ : n ≠ 0) (I : Ideal A) (_ : IsSimpleModule A I),
@@ -649,8 +653,8 @@ lemma Wedderburn_Artin_algebra_version
     simp only [LinearMap.coe_mk, AddHom.coe_mk, MulOpposite.unop_op]
     rw [show r • x = Function.update (0 : Fin n → I) i (r • x) i by simp]
     refine congr_fun (e.injective ?_) i
-    simp only [equivEndMop_apply, MulOpposite.unop_op, LinearMap.coe_mk, AddHom.coe_mk,
-      LinearEquiv.apply_symm_apply]
+    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, LinearMap.coe_mk, AddHom.coe_mk,
+      Function.comp_apply, LinearEquiv.apply_symm_apply]
     rw [show Function.update (0 : Fin n → I) i (r • x) = r • Function.update (0 : Fin n → I) i x
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
@@ -660,8 +664,8 @@ lemma Wedderburn_Artin_algebra_version
     rw [show (0 : I) = Function.update (0 : Fin n → I) i (r • x) j
       by simp [Function.update, if_neg (Ne.symm h)]]
     refine congr_fun (e.injective ?_) j
-    simp only [equivEndMop_apply, MulOpposite.unop_op, LinearMap.coe_mk, AddHom.coe_mk,
-      LinearEquiv.apply_symm_apply, map_zero]
+    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, LinearMap.coe_mk, AddHom.coe_mk,
+      Function.comp_apply, LinearEquiv.apply_symm_apply]
     rw [show Function.update (0 : Fin n → I) i (r • x) = r • Function.update (0 : Fin n → I) i x
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
