@@ -272,3 +272,71 @@ LinearEquiv.ofLinear
       map_smul' := sorry }) sorry sorry
 
 end PiTensorProduct.fin
+
+
+section PiTensorProduct.fin
+
+variable {k K : Type*} [Field k] [Field K] [Algebra k K]
+variable {V W : Type*} [AddCommGroup V] [AddCommGroup W] [Module k V] [Module k W]
+
+variable (k) in
+def zeroPower (ι : Type*) (V : ι → Type*) [hι: IsEmpty ι]
+  [∀ i, AddCommGroup $ V i]  [∀ i, Module k $ V i]: (⨂[k] i : ι, V i) ≃ₗ[k] k :=
+  LinearEquiv.ofLinear
+    (PiTensorProduct.lift
+      { toFun := fun _ ↦ 1
+        map_add' := by
+          intros; exact hι.elim (by assumption)
+        map_smul' := by
+          intros; exact hι.elim (by assumption) })
+    { toFun := fun a ↦ a • tprod k fun x ↦ hι.elim x
+      map_add' := by
+        intro x y
+        simp only [self_eq_add_right, add_smul]
+      map_smul' := by
+        intro m x
+        simp [mul_smul]
+      }
+    (by
+      refine LinearMap.ext_ring ?h
+      simp only [LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, one_smul,
+        lift.tprod, MultilinearMap.coe_mk, LinearMap.id_coe, id_eq])
+    (by
+      ext x
+      simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, LinearMap.coe_mk,
+        AddHom.coe_mk, Function.comp_apply, lift.tprod, MultilinearMap.coe_mk, one_smul,
+        LinearMap.id_coe, id_eq]
+      refine MultilinearMap.congr_arg (tprod k) ?_
+      ext y
+      exact hι.elim y)
+
+variable (k) in
+def PiTensorProduct.tensorCommutes (n : ℕ) :
+    ∀ (V W : Fin n → Type*)
+    [∀ i, AddCommGroup (V i)] [∀ i, Module k (V i)]
+    [∀ i, AddCommGroup (W i)] [∀ i, Module k (W i)],
+    (⨂[k] i : Fin n, V i) ⊗[k] (⨂[k] i : Fin n, W i) ≃ₗ[k]
+    ⨂[k] i : Fin n, (V i ⊗[k] W i) :=
+  n.recOn
+  (fun V W _ _ _ _ ↦ LinearEquiv.symm $ zeroPower k (Fin 0) (fun i : (Fin 0) ↦ V i ⊗[k] W i) ≪≫ₗ
+      (TensorProduct.lid k k).symm ≪≫ₗ TensorProduct.congr (zeroPower k (Fin 0) _).symm
+      (zeroPower k (Fin 0) _).symm)
+  (fun m em V W _ _ _ _ ↦
+      (TensorProduct.congr (PiTensorProduct.succ k (fun i : Fin (m+1) ↦ V i))
+      (PiTensorProduct.succ k (fun i : Fin (m+1) ↦ W i))) ≪≫ₗ
+      (TensorProduct.AlgebraTensorModule.tensorTensorTensorComm k k _ _ _ _) ≪≫ₗ
+      LinearEquiv.symm
+        ((PiTensorProduct.succ (n := m) k (V := fun i : Fin (m.succ) ↦ (V i ⊗[k] W i))) ≪≫ₗ
+          TensorProduct.congr (LinearEquiv.refl _ _)
+            (em (fun i => V i.succ) (fun i => W i.succ)).symm))
+
+theorem PiTensorProduct.tensorCommutes_apply (n : ℕ) (V W : Fin n → Type*)
+    [hi1 : ∀ i, AddCommGroup (V i)] [hi2 : ∀ i, Module k (V i)]
+    [hi1' : ∀ i, AddCommGroup (W i)] [hi2' : ∀ i, Module k (W i)]
+    (v : Π i : Fin n, V i) (w : Π i : Fin n, W i) :
+    PiTensorProduct.tensorCommutes k n V W ((tprod k v) ⊗ₜ (tprod k w)) =
+    tprod k (fun i ↦ v i ⊗ₜ w i) := by
+    sorry
+
+end PiTensorProduct.fin
+
