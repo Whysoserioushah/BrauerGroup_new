@@ -13,24 +13,102 @@ variable (k A K: Type u) [Field k] [Field K] [Algebra k K] [Ring A]
 variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
 
 open scoped TensorProduct
+open RingCon
 
 instance module_over_over (A : CSA k) (I : RingCon A):
     Module k I := Module.compHom I (algebraMap k A)
+
+lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (Is_CSA : IsCentralSimple K (K ⊗[k] A))
+  (h : 1 ⊗ₜ[k] x ∈ (⊥ : RingCon (K ⊗[k] A))) :
+    x ∈ (⊥ : RingCon A) := by
+  sorry
+
+lemma one_tensor_bot_Algebra [FiniteDimensional k K] {x : A} (Is_CSA : IsCentralSimple K (K ⊗[k] A))
+  (h : 1 ⊗ₜ[k] x ∈ (⊥ : Subalgebra K (K ⊗[k] A))) :
+    x ∈ (⊥ : Subalgebra k A) := by
+  sorry
 
 theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
     IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) where
   mp := fun hA ↦ IsCentralSimple.baseChange k A K
   mpr := fun hAt ↦ {
-    is_central := sorry
+    is_central := by
+      obtain h := hAt.is_central
+      intro x hx
+      rw [Subalgebra.mem_center_iff] at hx
+      have h1 : ((1 : K) ⊗ₜ[k] x) ∈ Subalgebra.center K (K ⊗[k] A) := by
+        rw [Subalgebra.mem_center_iff]
+        intro b
+        induction b using TensorProduct.induction_on with
+        | zero => simp only [zero_mul, mul_zero]
+        | tmul b c =>
+          rw [Algebra.TensorProduct.tmul_mul_tmul, Algebra.TensorProduct.tmul_mul_tmul, mul_one,
+            one_mul, hx c]
+        | add b c hb hc => rw [add_mul, mul_add]; simp only [hb, hc]
+      specialize h h1
+      exact one_tensor_bot_Algebra _ _ _ hAt h
     is_simple :=
     {
-      exists_pair_ne := ⟨⊥, ⊤, by sorry⟩
+      exists_pair_ne := ⟨⊥, ⊤, by
+        suffices Nontrivial (RingCon A) by simp only [ne_eq, bot_ne_top, not_false_eq_true]
+        have : Nontrivial A := by
+          by_contra! h
+          have h0 : (⊥ : RingCon (K ⊗[k] A)) ≠ ⊤ := by
+            rcases hAt.is_simple.exists_pair_ne with ⟨x, ⟨y, hxy⟩⟩
+            obtain h := hAt.is_simple.eq_bot_or_eq_top y
+            rcases hAt.is_simple.eq_bot_or_eq_top x with (x1 | x2) <;> aesop
+          suffices (⊥ : RingCon (K ⊗[k] A)) = ⊤ by exact h0 this
+          rw [not_nontrivial_iff_subsingleton, subsingleton_iff] at h
+          suffices (⊥ : RingCon (K ⊗[k] A)) = (⊤ : Set (K ⊗[k] A)) by
+            rw [eq_top_iff, le_iff, this]
+            simp only [Set.top_eq_univ, Set.subset_univ]
+          apply Set.eq_of_subset_of_subset (by simp)
+          intro x hx
+          suffices x = 0 by tauto
+          induction x using TensorProduct.induction_on with
+          | zero => rfl
+          | tmul b c => rw [← h 0 c, TensorProduct.tmul_zero]
+          | add b c hb hc =>
+            simp only [Set.top_eq_univ, Set.mem_univ, true_implies] at hb hc hx
+            rw [hb, hc, add_zero]
+        exact RingCon.instNontrivial
+        ⟩
       eq_bot_or_eq_top := fun I => by
         by_contra! hI
-        have tensor_is_ideal: RingCon (K ⊗[k] A) :=
+        let tensor_is_ideal : RingCon (K ⊗[k] A) :=
           RingCon.span {x| ∃(a : K)(i : I), x = a ⊗ₜ i.1}
-        have ne_bot : tensor_is_ideal ≠ ⊥ := sorry
-        have ne_top : tensor_is_ideal ≠ ⊤ := sorry
+        have ne_bot : tensor_is_ideal ≠ ⊥ := by
+          by_contra! h
+          suffices I = ({0} : Set A) by
+            apply hI.1
+            rw [← le_bot_iff, le_iff]
+            simp only [this, Set.singleton_subset_iff, SetLike.mem_coe]
+            tauto
+          apply Set.eq_of_subset_of_subset
+          · intro x hx
+            simp only [SetLike.mem_coe] at hx
+            have : 1 ⊗ₜ x ∈ (tensor_is_ideal : Set (K ⊗[k] A)) := by
+              simp only [Subtype.exists, exists_prop, SetLike.mem_coe, tensor_is_ideal]
+              suffices 1 ⊗ₜ x ∈ {x| ∃ (a : K) , ∃ b ∈ I, x = a ⊗ₜ[k] b} by tauto
+              use 1; use x
+            simp only [SetLike.mem_coe, Set.mem_singleton_iff, h] at this ⊢
+            suffices x ∈ (⊥ : RingCon A) by tauto
+            exact one_tensor_bot_RingCon _ _ _ hAt this
+          · simp only [Set.singleton_subset_iff, SetLike.mem_coe]
+            exact RingCon.zero_mem I
+        have ne_top : tensor_is_ideal ≠ ⊤ := by
+          by_contra! h
+          suffices I = (⊤ : Set A) by
+            apply hI.2
+            rw [eq_top_iff, le_iff]
+            simp only [this, Set.top_eq_univ, Set.subset_univ]
+          apply Set.eq_of_subset_of_subset (by simp)
+          intro x _
+          by_contra! hx
+          rw [eq_top_iff, le_iff] at h
+          have : ∃ (a : K), a ⊗ₜ[k] x ∉ tensor_is_ideal := by
+            sorry
+          tauto
         haveI := hAt.is_simple.2 tensor_is_ideal
         tauto
     }
