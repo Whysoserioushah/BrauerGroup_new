@@ -66,8 +66,7 @@ def extension_inv (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K 
         specialize h 1
         simp only [RingCon.mem_ker, map_one, one_ne_zero, false_iff] at h
         exact h ⟨⟩)
-    have : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
-
+    haveI : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
     exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj
 
 theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
@@ -100,11 +99,12 @@ theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
 
 lemma dim_is_sq (h : IsCentralSimple k A) [FiniteDimensional k A]:
     IsSquare (FiniteDimensional.finrank k A) := by
-  obtain ⟨n, -, L, _, _, _, ⟨iso⟩⟩ := CSA_iff_exist_split k A k_bar|>.1 h
+  haveI := hk_bar.1
+  obtain ⟨n, _, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
   refine ⟨n, ?_⟩
-  have := FiniteDimensional.finrank_matrix L (Fin n) (Fin n)
+  have := FiniteDimensional.finrank_matrix k_bar (Fin n) (Fin n)
   simp only [Fintype.card_fin] at this
-  exact dim_eq k L A|>.trans $ LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
+  exact dim_eq k k_bar A|>.trans $ LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
 def deg (A : CSA k): ℕ := dim_is_sq k A k_bar A.is_central_simple|>.choose
 
@@ -131,4 +131,19 @@ def split_by_alg_closure (A : CSA k): split k A where
   K := k_bar
   hK1 := inferInstance
   hK2 := inferInstance
-  iso := sorry
+  iso := by
+    haveI := hk_bar.1
+    choose n _ iso using simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
+    have iso' := iso.some ; clear iso
+    have e : Matrix (Fin n) (Fin n) k_bar ≃ₐ[k_bar] Matrix (Fin (deg k k_bar A))
+      (Fin (deg k k_bar A)) k_bar := by
+      suffices n = deg k k_bar A from Matrix.reindexAlgEquiv k_bar (finCongr this)
+      have := deg_sq_eq_dim k k_bar A
+      rw [pow_two] at this
+      have e1 := LinearEquiv.finrank_eq iso'.toLinearEquiv|>.trans $
+        FiniteDimensional.finrank_matrix k_bar (Fin n) (Fin n)
+      simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
+        Fintype.card_fin] at e1
+      have := this.trans e1
+      exact Nat.mul_self_inj.mp (id this.symm)
+    exact iso'.trans e
