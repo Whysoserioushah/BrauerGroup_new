@@ -90,8 +90,6 @@ theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
     -- refine ⟨(⨆ (i : Fin (FiniteDimensional.finrank k_bar (k_bar ⊗[k] A))), L i :
     --   IntermediateField k k_bar), inferInstance, inferInstance,
     --   IntermediateField.finiteDimensional_iSup_of_finite, ⟨?_⟩⟩
-
-
     sorry
   · rintro ⟨n, hn, L, _, _, _, ⟨iso⟩⟩
     haveI : Nonempty (Fin n) := ⟨0, by omega⟩
@@ -121,16 +119,13 @@ lemma deg_pos (A : CSA k): 0 < deg k k_bar A := by
   have := FiniteDimensional.finrank_pos_iff (R := k) (M := A)|>.2 Nontriv
   linarith
 
-structure split (A : CSA k) :=
-  (n : ℕ) (hn : n ≠ 0) (K : Type*) (hK1 : Field K) (hK2 : Algebra k K)
+structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] :=
+  (n : ℕ) (hn : n ≠ 0)
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
 
-def split_by_alg_closure (A : CSA k): split k A where
+def split_by_alg_closure (A : CSA k): split k A k_bar where
   n := deg k k_bar A
   hn := by haveI := deg_pos k k_bar A; omega
-  K := k_bar
-  hK1 := inferInstance
-  hK2 := inferInstance
   iso := by
     haveI := hk_bar.1
     choose n _ iso using simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
@@ -147,3 +142,9 @@ def split_by_alg_closure (A : CSA k): split k A where
       have := this.trans e1
       exact Nat.mul_self_inj.mp (id this.symm)
     exact iso'.trans e
+
+def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebra k L]
+    (hA : split k A L) [Algebra L L'] [Algebra k L'] [IsScalarTower k L L'] : split k A L' where
+  n := deg k k_bar A
+  hn := by haveI := deg_pos k k_bar A; omega
+  iso := sorry
