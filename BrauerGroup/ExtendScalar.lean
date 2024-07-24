@@ -108,3 +108,46 @@ def absorbAddHom : L ⊗[K] K ⊗[k] A →+ L ⊗[k] A :=
       simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk] at hx hy
       simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_add, hx, hy, smul_add]
     )
+
+set_option synthInstance.maxHeartbeats 40000 in
+def absorb : L ⊗[K] K ⊗[k] A →ₐ[L] L ⊗[k] A where
+  __ := absorbAddHom k K L A
+  map_one' := by
+    simp only [Algebra.TensorProduct.one_def, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
+    change (1 • 1) ⊗ₜ (1 : A) = _
+    rw [one_smul]
+  map_mul' := fun x y ↦ by
+    simp only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [zero_mul, map_zero]
+    | tmul l ka =>
+      induction y using TensorProduct.induction_on with
+      | zero => simp only [mul_zero, map_zero]
+      | tmul l' ka' =>
+        simp only [Algebra.TensorProduct.tmul_mul_tmul]
+        induction ka' using TensorProduct.induction_on with
+        | zero => simp only [mul_zero, TensorProduct.tmul_zero, map_zero]
+        | tmul k' a =>
+          induction ka using TensorProduct.induction_on with
+          | zero => simp only [zero_mul, TensorProduct.tmul_zero, map_zero]
+          | tmul k1 a1 =>
+            simp only [Algebra.TensorProduct.tmul_mul_tmul]
+            change ((k1 * k') • (l * l')) ⊗ₜ (a1 * a) =
+              (k1 • l) ⊗ₜ a1 * (k' • l') ⊗ₜ a
+            simp only [Algebra.TensorProduct.tmul_mul_tmul, Algebra.mul_smul_comm,
+              Algebra.smul_mul_assoc]
+            rw [← smul_assoc, smul_eq_mul, mul_comm]
+          | add x y hx hy =>
+            simp only [add_mul, TensorProduct.tmul_add, map_add, hx, hy]
+        | add x y hx hy =>
+          simp only [mul_add, TensorProduct.tmul_add, map_add, hx, hy]
+      | add x y hx hy =>
+        simp only [mul_add, map_add, hx, hy]
+    | add x' y' hx hy =>
+      simp only [add_mul, map_add, hx, hy]
+  commutes' := fun l ↦ by
+    simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
+    RingHom.id_apply, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+    Algebra.TensorProduct.one_def]
+    change (1 • l) ⊗ₜ (1 : A) = l ⊗ₜ 1
+    rw [one_smul]
