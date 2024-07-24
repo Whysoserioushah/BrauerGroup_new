@@ -151,3 +151,33 @@ def absorb : L ⊗[K] K ⊗[k] A →ₐ[L] L ⊗[k] A where
     Algebra.TensorProduct.one_def]
     change (1 • l) ⊗ₜ (1 : A) = l ⊗ₜ 1
     rw [one_smul]
+
+def absorb_eqv : L ⊗[k] A ≃ₐ[L] L ⊗[K] K ⊗[k] A where
+  toFun := release k K L A
+  invFun := absorb k K L A
+  left_inv := fun x ↦ by
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [map_zero]
+    | tmul l a =>
+      change (absorb k K L A) (l ⊗ₜ[K] (1 : K) ⊗ₜ a) = _
+      change (1 • l) ⊗ₜ _ = _
+      rw [one_smul]
+    | add x y hx hy =>
+      simp only [map_add, hx, hy]
+  right_inv := fun x ↦ by
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [map_zero]
+    | tmul l ka =>
+      induction ka using TensorProduct.induction_on with
+      | zero => simp only [TensorProduct.tmul_zero, map_zero]
+      | tmul k' a =>
+        change (release k K L A) ((k' • l) ⊗ₜ a) = _
+        change (k' • l) ⊗ₜ[K] (1 : K) ⊗ₜ a = _
+        rw [TensorProduct.smul_tmul, TensorProduct.smul_tmul', smul_eq_mul, mul_one]
+      | add x y hx hy =>
+        simp only [TensorProduct.tmul_add, map_add, hx, hy]
+    | add x y hx hy =>
+      simp only [map_add, hx, hy]
+  map_mul' := release k K L A|>.map_mul
+  map_add' := release k K L A|>.map_add
+  commutes' := release k K L A|>.commutes
