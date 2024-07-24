@@ -18,14 +18,35 @@ open RingCon
 instance module_over_over (A : CSA k) (I : RingCon A):
     Module k I := Module.compHom I (algebraMap k A)
 
-lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (Is_CSA : IsCentralSimple K (K ⊗[k] A))
+lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (_ : IsCentralSimple K (K ⊗[k] A))
   (h : 1 ⊗ₜ[k] x ∈ (⊥ : RingCon (K ⊗[k] A))) :
     x ∈ (⊥ : RingCon A) := by
-  sorry
+  let h1 : k ⊗[k] A ≃ₐ[k] A := Algebra.TensorProduct.lid _ _
+  let h2 : k →ₗ[k] K := {
+    toFun := algebraMap k K
+    map_add' := by simp only [map_add, implies_true]
+    map_smul' := by intro x y; simp only [smul_eq_mul, map_mul, RingHom.id_apply, Algebra.smul_def]
+  }
+  have h4 : Function.Injective (LinearMap.rTensor A h2) := by
+    apply Module.Flat.rTensor_preserves_injective_linearMap
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, h2]
+    exact Basis.algebraMap_injective (FiniteDimensional.finBasis k K)
+  suffices x = 0 by tauto
+  suffices (1 : k) ⊗ₜ[k] x = 0 by
+    obtain h := map_zero h1
+    rw [← this, Algebra.TensorProduct.lid_tmul, Algebra.smul_def] at h
+    simp_all
+  suffices (algebraMap k K) 1 ⊗ₜ[k] x = 0 by
+    have h : (LinearMap.rTensor A h2) (1 ⊗ₜ[k] x) = (algebraMap k K) 1 ⊗ₜ[k] x := by tauto
+    rw [this, show 0 = (LinearMap.rTensor A h2) 0 by simp ] at h
+    tauto
+  simp; tauto
 
 lemma one_tensor_bot_Algebra [FiniteDimensional k K] {x : A} (Is_CSA : IsCentralSimple K (K ⊗[k] A))
   (h : 1 ⊗ₜ[k] x ∈ (⊥ : Subalgebra K (K ⊗[k] A))) :
     x ∈ (⊥ : Subalgebra k A) := by
+  rw [Algebra.mem_bot] at h ⊢
+  simp only [Set.mem_range, Algebra.id.map_eq_id, RingHom.id_apply] at h ⊢
   sorry
 
 theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
