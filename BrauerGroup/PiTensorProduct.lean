@@ -1,5 +1,7 @@
 import Mathlib.LinearAlgebra.PiTensorProduct
 import BrauerGroup.Dual
+import Mathlib.Data.Finset.Finsupp
+import Mathlib.Data.Finsupp.Notation
 
 suppress_compilation
 
@@ -186,7 +188,171 @@ lemma span_simple_tensor_eq_top [Fintype ι] :
 
 end PiTensorProduct
 
+section PiTensorProduct.Basis
 
+variable (n : ℕ) (k : Type*) [Field k]
+variable (ι : Fin n → Type*) [Π i, Fintype (ι i)]
+variable (V : Fin n → Type*) [Π i, AddCommGroup (V i)] [Π i, Module k (V i)]
+variable (B : (i : Fin n) → Basis (ι i) k (V i))
+
+open Finsupp in
+def finsuppPiTensorFinsupp :
+    (⨂[k] (i : Fin n), ι i →₀ k) ≃ₗ[k] ((i : Fin n) → ι i) →₀ k :=
+  LinearEquiv.ofLinear
+    (PiTensorProduct.lift
+      { toFun := fun f =>
+          { support := Fintype.piFinset fun i => (f i).support
+            toFun := fun x => ∏ i : Fin n, f i (x i)
+            mem_support_toFun := fun x => by
+              simp only [Fintype.mem_piFinset, mem_support_iff, ne_eq]
+              rw [Finset.prod_eq_zero_iff]
+              simp only [Finset.mem_univ, true_and, not_exists] }
+        map_add' := by
+          intro _ f i a b
+          ext v
+          simp only [Finsupp.coe_mk, Finsupp.coe_add, Pi.add_apply]
+          calc ∏ j : Fin n, (Function.update f i (a + b) j) (v j)
+            _ = ∏ j : Fin n, if j = i then a (v i) + b (v i) else f j (v j) := by
+              refine Finset.prod_congr rfl fun j hj => ?_
+              simp only [Function.update]
+              aesop
+          simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
+          rw [if_pos (by simp)]
+          simp only [Finset.card_singleton, pow_one, add_mul]
+          rw [calc ∏ j : Fin n, (Function.update f i a j) (v j)
+              _ = ∏ j : Fin n, if j = i then a (v i) else f j (v j) := by
+                refine Finset.prod_congr rfl fun j hj => ?_
+                simp only [Function.update]
+                aesop,
+              calc ∏ j : Fin n, (Function.update f i b j) (v j)
+              _ = ∏ j : Fin n, if j = i then b (v i) else f j (v j) := by
+                refine Finset.prod_congr rfl fun j hj => ?_
+                simp only [Function.update]
+                aesop]
+          simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
+          rw [if_pos (by simp)]
+          simp only [Finset.card_singleton, pow_one, add_mul]
+        map_smul' := by
+          intro _ f i a x
+          ext v
+          simp only [Finsupp.coe_mk, Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul]
+          calc ∏ j : Fin n, (Function.update f i (a • x) j) (v j)
+            _ = ∏ j : Fin n, if j = i then a * x (v i) else f j (v j) := by
+              refine Finset.prod_congr rfl fun j hj => ?_
+              simp only [Function.update]
+              aesop
+          simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
+          rw [if_pos (by simp)]
+          simp only [Finset.card_singleton, pow_one, mul_pow]
+          rw [calc ∏ j : Fin n, (Function.update f i x j) (v j)
+              _ = ∏ j : Fin n, if j = i then x (v i) else f j (v j) := by
+                refine Finset.prod_congr rfl fun j hj => ?_
+                simp only [Function.update]
+                aesop]
+          simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
+          rw [if_pos (by simp)]
+          simp only [Finset.card_singleton, pow_one, mul_pow, mul_assoc] })
+    (Finsupp.llift (⨂[k] (i : Fin n), ι i →₀ k) k k ((i : Fin n) → ι i) fun x =>
+      tprod k $ fun i => fun₀
+        | x i => 1)
+    (by
+      ext v₁ v₂
+      simp only [LinearMap.coe_comp, Function.comp_apply, lsingle_apply, llift_apply, lift_apply,
+        zero_smul, sum_single_index, one_smul, lift.tprod, MultilinearMap.coe_mk, coe_mk,
+        LinearMap.id_comp]
+      if h : v₁ = v₂ then subst h; aesop
+      else
+        rw [Finsupp.single_eq_of_ne h]
+        replace h := Function.funext_iff.not.1 h
+        push_neg at h
+        obtain ⟨j, hj⟩ := h
+        rw [Finset.prod_eq_zero (i := j) (hi := by simp)]
+        rwa [Finsupp.single_eq_of_ne])
+    (by
+      ext x
+      simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, Function.comp_apply,
+        lift.tprod, MultilinearMap.coe_mk, llift_apply, lift_apply, LinearMap.id_coe, id_eq]
+      simp only [sum, coe_mk, Finset.sum_map, Function.Embedding.coeFn_mk]
+      change ∑ z ∈ _, (∏ i : Fin n, _) • (⨂ₜ[k] _, _) = _
+      have (z : (a : Fin n) → ι a) :
+          (∏ i : Fin n, (x i) (z i)) •
+          (tprod k fun j ↦ fun₀ | z j => (1 : k)) =
+          tprod k fun j ↦ fun₀ | z j => (x j) (z j) := sorry
+      simp_rw [this]
+      -- delta
+      erw [← (tprod k).map_sum_finset (A := fun i ↦ (x i).support)
+        (g := fun (z : (i : Fin n) → ι i) => fun j ↦ fun₀ | z j => (x j) (z j))]
+      -- convert (tprod k).map_sum_finset _
+      --   (fun i ↦ (x i).support) |>.symm.trans _ using 2
+      -- swap
+      -- · refine fun j => ?_
+      sorry
+      -- have eqx : x = fun i => _ := sorry
+      )
+
+example : Basis (Π i, ι i) k (⨂[k] i, V i) :=
+  Finsupp.basisSingleOne.map $
+    LinearEquiv.symm $ PiTensorProduct.congr (fun i => (B i).repr) ≪≫ₗ finsuppPiTensorFinsupp n k ι
+
+variable (ι k V : Type*) [Fintype ι] [Field k] [AddCommGroup V] [Module k V] (ℬ : Basis ι k V)
+
+-- example (n : ℕ) : (⨂[k]^n V) ≃ₗ[k] (Fin n → ι) →₀ k :=
+-- LinearEquiv.ofLinear
+--   (PiTensorProduct.lift
+--     { toFun := fun v =>
+--         ∑ i : Fin n, Finsupp.mapDomain (fun x _ => x) (ℬ.repr (v i))
+--       map_add' := by
+--         intro _ v i x y
+--         simp only
+--         simp_rw [Function.update_apply]
+
+--         rw [← Finsupp.mapDomain_add]
+--         congr
+--         ext
+--         simp only [Function.update]
+--         split_ifs with h
+--         · subst h
+--           simp only [Finsupp.mapDomain_single, Finsupp.single_add]
+--         · simp only [Finsupp.mapDomain_single, Finsupp.single_add]
+--       map_smul' := _ })
+--   _
+--   _
+--   _
+
+example (n : ℕ) : Basis (Fin n → ι) k (⨂[k]^n V) :=
+  Finsupp.basisSingleOne.map $ by
+    let e : ⨂[k]^n V ≃ₗ[k] ⨂[k]^n (ι →₀ k) := PiTensorProduct.congr (fun i => ℬ.repr)
+    refine LinearEquiv.symm $ e ≪≫ₗ ?_
+  -- .mk (v := fun v => tprod k fun i => ℬ $ v i) sorry
+  --   (fun x _ => by
+  --     induction x using PiTensorProduct.induction_on with
+  --     | smul_tprod a v =>
+  --       have eq (i : Fin n) := ℬ.total_repr (v i)
+  --       simp_rw [Finsupp.total_apply, Finsupp.sum] at eq
+  --       have eq' : v = fun i : Fin n => ∑ x ∈ (ℬ.repr (v i)).support, (ℬ.repr (v i)) x • ℬ x :=
+  --         funext fun i => (eq i).symm
+  --       refine Submodule.smul_mem _ _ $ ?_
+  --       rw [eq', (tprod k).map_sum_finset]
+  --       refine Submodule.sum_mem _ fun x _ => ?_
+  --       let c : Fin n → V := ∑ i : Fin n, Function.update 0 i (ℬ.repr (v i) (x i) • ℬ (x i))
+  --       rw [show (fun i ↦ (ℬ.repr (v i)) (x i) • ℬ (x i)) = c by
+  --         ext j
+  --         simp only [Finset.sum_apply, c]
+  --         rw [Eq.comm, Finset.sum_eq_single j]
+  --         · simp only [Function.update_same]
+  --         · rintro j' - hj
+  --           rw [Function.update_noteq, Pi.zero_apply]
+  --           exact Ne.symm hj
+  --         · simp only [Finset.mem_univ, not_true_eq_false, Function.update_same, smul_eq_zero,
+  --           false_implies]]
+  --       simp? [c, (tprod k).map_add]
+  --       sorry
+  --     | add x y hx hy =>
+  --       sorry)
+
+end PiTensorProduct.Basis
+
+#exit
 section PiTensorProduct.fin
 
 variable {n : ℕ} (k K : Type*) [CommSemiring k] [CommSemiring K] [Algebra k K]
@@ -339,4 +505,3 @@ theorem PiTensorProduct.tensorCommutes_apply (n : ℕ) (V W : Fin n → Type*)
     sorry
 
 end PiTensorProduct.fin
-
