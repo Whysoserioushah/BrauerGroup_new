@@ -1,6 +1,7 @@
 import BrauerGroup.BrauerGroup
 import BrauerGroup.Quaternion
 import BrauerGroup.AlgClosedUnion
+import BrauerGroup.ExtendScalar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
 
@@ -47,6 +48,10 @@ lemma one_tensor_bot_Algebra [FiniteDimensional k K] {x : A} (Is_CSA : IsCentral
     x ∈ (⊥ : Subalgebra k A) := by
   rw [Algebra.mem_bot] at h ⊢
   simp only [Set.mem_range, Algebra.id.map_eq_id, RingHom.id_apply] at h ⊢
+  obtain ⟨y, hy⟩ := h
+  rw [Algebra.algebraMap_eq_smul_one, Algebra.TensorProduct.one_def,
+    TensorProduct.smul_tmul'] at hy
+
   sorry
 
 theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
@@ -128,6 +133,9 @@ theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
           by_contra! hx
           rw [eq_top_iff, le_iff] at h
           have : ∃ (a : K), a ⊗ₜ[k] x ∉ tensor_is_ideal := by
+            use 1
+            by_contra! in_tensor
+
             sorry
           tauto
         haveI := hAt.is_simple.2 tensor_is_ideal
@@ -246,4 +254,45 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
     (hA : split k A L) [Algebra L L'] [Algebra k L'] [IsScalarTower k L L'] : split k A L' where
   n := deg k k_bar A
   hn := by haveI := deg_pos k k_bar A; omega
-  iso := sorry
+  iso := by
+    obtain ⟨n, _, iso⟩ := hA
+    let e1 : L' ⊗[k] A ≃ₐ[L] L' ⊗[L] L ⊗[k] A := {
+      __ := absorb_eqv k L L' A
+      commutes' := fun _ => rfl
+    }
+    let e2 := e1.trans $ Algebra.TensorProduct.congr (AlgEquiv.refl) iso
+    let e3 : L' ⊗[k] A ≃ₐ[L'] L' ⊗[L] Matrix (Fin n) (Fin n) L := {
+      __ := e2
+      commutes' := fun l' => by
+        simp only [AlgEquiv.toEquiv_eq_coe, Algebra.TensorProduct.algebraMap_apply,
+          Algebra.id.map_eq_id, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe]
+        simp only [AlgEquiv.toEquiv_eq_coe, AlgEquiv.trans_apply, Algebra.TensorProduct.congr_apply,
+          AlgEquiv.refl_toAlgHom, e2, e1]
+        erw [absorb_eqv_apply, Algebra.TensorProduct.map_tmul]
+        simp only [AlgHom.coe_id, id_eq, Algebra.TensorProduct.one_def.symm, map_one]
+    }
+    let e4 : L' ⊗[L] Matrix (Fin n) (Fin n) L ≃ₐ[L'] Matrix (Fin n) (Fin n) L' := {
+      __ := matrixEquivTensor _ _ _|>.symm
+      commutes' := fun l' ↦ by
+        simp only [AlgEquiv.toEquiv_eq_coe, Algebra.TensorProduct.algebraMap_apply,
+          Algebra.id.map_eq_id, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe,
+          matrixEquivTensor_apply_symm, Matrix.map]
+        ext i j
+        simp only [Matrix.of_apply]
+        if hij : i = j then
+        subst hij
+        simp only [Matrix.one_apply_eq, map_one, mul_one, Algebra.algebraMap_eq_smul_one,
+          Matrix.smul_apply, smul_eq_mul, mul_one]
+        else
+        simp only [ne_eq, hij, not_false_eq_true, Matrix.one_apply_ne, map_zero, mul_zero,
+          Algebra.algebraMap_eq_smul_one, Matrix.smul_apply, smul_eq_mul, zero_mul]
+    }
+    let e5 : n = deg k k_bar A := by
+      have := deg_sq_eq_dim k k_bar A
+      rw [pow_two] at this
+      have e6 := LinearEquiv.finrank_eq (e3.trans e4).toLinearEquiv|>.trans $
+        FiniteDimensional.finrank_matrix L' (Fin n) (Fin n)
+      simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
+        Fintype.card_fin] at e6
+      exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
+    exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' (finCongr e5)

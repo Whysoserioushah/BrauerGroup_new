@@ -181,3 +181,6 @@ def absorb_eqv : L ⊗[k] A ≃ₐ[L] L ⊗[K] K ⊗[k] A where
   map_mul' := release k K L A|>.map_mul
   map_add' := release k K L A|>.map_add
   commutes' := release k K L A|>.commutes
+
+theorem absorb_eqv_apply (l : L) (a : A) : absorb_eqv k K L A (l ⊗ₜ a) = l ⊗ₜ[K] (1 : K) ⊗ₜ a :=
+  rfl
