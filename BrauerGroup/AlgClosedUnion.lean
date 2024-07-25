@@ -261,6 +261,13 @@ def ee : Basis (Fin n × Fin n) k_bar (k_bar ⊗[k] A) :=
 
 local notation "e" => ee n k k_bar A iso
 
+@[simp]
+lemma ee_apply (i : Fin n × Fin n) : iso (e i) = Matrix.stdBasis k_bar (Fin n) (Fin n) i := by
+  apply_fun iso.symm
+  simp only [AlgEquiv.symm_apply_apply]
+  have := Basis.map_apply (Matrix.stdBasis k_bar (Fin n) (Fin n)) iso.symm.toLinearEquiv i
+  erw [← this]
+
 def ℒℒ : IntermediateField k k_bar :=
   ⨆ (i : Fin n × Fin n), subfieldOf k k_bar A (e i)
 
@@ -318,6 +325,79 @@ def isoRestrict' : ℒ ⊗[k] A ≃ₗ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
   (intermediateTensorEquiv' k k_bar A ℒ).symm ≪≫ₗ
   Basis.equiv (e^) (Matrix.stdBasis ℒ (Fin n) (Fin n)) (Equiv.refl _)
 
+set_option synthInstance.maxHeartbeats 50000 in
+instance : SMulCommClass k ℒ ℒ := inferInstance
+-- instance : Algebra ℒ (ℒ ⊗[k] A) := Algebra.TensorProduct.leftAlgebra
+
+def inclusion : ℒ ⊗[k] A →ₐ[ℒ] k⁻ ⊗[k] A :=
+  Algebra.TensorProduct.map (Algebra.ofId ℒ k⁻) (AlgHom.id k A)
+
+def inclusion' : Matrix (Fin n) (Fin n) ℒ →ₐ[ℒ] Matrix (Fin n) (Fin n) k⁻ :=
+  AlgHom.mapMatrix (Algebra.ofId ℒ _)
+
+/--
+ℒ ⊗_k A ------>  intermidateTensor
+  |              /
+  | inclusion  /
+  v          /
+k⁻ ⊗_k A  <-
+-/
+lemma comm_triangle :
+    (intermediateTensor' k k_bar A ℒ).subtype ∘ₗ
+    (intermediateTensorEquiv' k k_bar A ℒ).symm.toLinearMap =
+    (inclusion n k k_bar A iso).toLinearMap := by
+  ext a
+  simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+    LinearMap.coe_comp, Submodule.coeSubtype, LinearEquiv.coe_coe, Function.comp_apply, inclusion,
+    AlgHom.toLinearMap_apply, Algebra.TensorProduct.map_tmul, _root_.map_one, AlgHom.coe_id, id_eq]
+  simp only [intermediateTensorEquiv', intermediateTensorEquiv, LinearEquiv.symm_symm,
+    LinearEquiv.coe_symm_mk]
+  rfl
+
+/--
+intermidateTensor ----> M_n(ℒ)
+  | val                 | inclusion'
+  v                     v
+k⁻ ⊗_k A ----------> M_n(k⁻)
+          iso
+-/
+lemma comm_square' :
+    iso.toLinearEquiv.toLinearMap.restrictScalars ℒ ∘ₗ
+    (intermediateTensor' k k_bar A ℒ).subtype =
+    (inclusion' n k k_bar A iso).toLinearMap ∘ₗ
+    Basis.equiv (e^) (Matrix.stdBasis ℒ (Fin n) (Fin n)) (Equiv.refl _) := by
+  apply Basis.ext (e^)
+  intro i
+  conv_lhs => simp only [AlgEquiv.toLinearEquiv_toLinearMap, e_hat,
+    basisOfLinearIndependentOfCardEqFinrank,
+    Basis.coe_mk, e_hat', LinearMap.coe_comp, LinearMap.coe_restrictScalars, Submodule.coeSubtype,
+    Function.comp_apply, AlgEquiv.toLinearMap_apply, LinearEquiv.coe_coe, AlgHom.toLinearMap_apply]
+  simp only [ee_apply, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+    Basis.equiv_apply, Equiv.refl_apply, AlgHom.toLinearMap_apply]
+  ext a b
+  simp only [inclusion', AlgHom.mapMatrix_apply, Matrix.map_apply]
+  simp only [Algebra.ofId, AlgHom.coe_mk, IntermediateField.algebraMap_apply]
+  rw [Matrix.stdBasis_eq_stdBasisMatrix]
+  erw [Matrix.stdBasis_eq_stdBasisMatrix]
+  simp only [Matrix.stdBasisMatrix]
+  aesop
+
+/--
+     isoRestrict
+  ℒ ⊗_k A -----> M_n(ℒ)
+    | inclusion    | inclusion'
+    v              v
+  k⁻ ⊗_k A -----> M_n(k⁻)
+            iso
+-/
+lemma comm_square :
+    (inclusion' n k k_bar A iso).toLinearMap ∘ₗ
+    (isoRestrict' n k k_bar A iso).toLinearMap  =
+    iso.toLinearEquiv.toLinearMap.restrictScalars ℒ ∘ₗ
+    (inclusion n k k_bar A iso).toLinearMap := by
+  rw [← comm_triangle n k k_bar A iso, ← LinearMap.comp_assoc, comm_square' n k k_bar A iso]
+  rfl
+
 lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   /-
         isoRestrict
@@ -334,9 +414,6 @@ lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   -/
   sorry
 
-set_option synthInstance.maxHeartbeats 50000 in
-instance : SMulCommClass k ℒ ℒ := inferInstance
-instance : Algebra ℒ (ℒ ⊗[k] A) := Algebra.TensorProduct.leftAlgebra
 
 lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
   isoRestrict' n k k⁻ A iso (x * y) = isoRestrict' n k k⁻ A iso x * isoRestrict' n k k⁻ A iso y := by
@@ -360,6 +437,6 @@ lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
 
 def isoRestrict : ℒ ⊗[k] A ≃ₐ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
   AlgEquiv.ofLinearEquiv (isoRestrict' n k k⁻ A iso)
-    (isoRestrict_map_one n k k⁻ A iso) sorry
+    (isoRestrict_map_one n k k⁻ A iso) (isoRestrict_map_mul n k k⁻ A iso)
 
 end lemma_tto
