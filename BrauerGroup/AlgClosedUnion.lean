@@ -318,7 +318,48 @@ def isoRestrict' : ℒ ⊗[k] A ≃ₗ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
   (intermediateTensorEquiv' k k_bar A ℒ).symm ≪≫ₗ
   Basis.equiv (e^) (Matrix.stdBasis ℒ (Fin n) (Fin n)) (Equiv.refl _)
 
+lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
+  /-
+        isoRestrict
+  ℒ ⊗_k A -----> M_n(ℒ)
+    | inclusion    | inclusion'
+    v              v
+  k⁻ ⊗_k A -----> M_n(k⁻)
+            iso
+
+  Want to show isoRestrict 1 = 1
+  inclusion' ∘ isoRestrict = iso ∘ inclusion
+  inclusion' (isoRestrict 1) = iso (inclusion 1) = 1 = inclusion' 1
+  since inclusion' is injective, isoRestrict 1 = 1
+  -/
+  sorry
+
+set_option synthInstance.maxHeartbeats 50000 in
+instance : SMulCommClass k ℒ ℒ := inferInstance
+instance : Algebra ℒ (ℒ ⊗[k] A) := Algebra.TensorProduct.leftAlgebra
+
+lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
+  isoRestrict' n k k⁻ A iso (x * y) = isoRestrict' n k k⁻ A iso x * isoRestrict' n k k⁻ A iso y := by
+  /-
+        isoRestrict
+  ℒ ⊗_k A -----> M_n(ℒ)
+    | inclusion    | inclusion'
+    v              v
+  k⁻ ⊗_k A -----> M_n(k⁻)
+            iso
+
+  Want to show isoRestrict (x * y) = isoRestrict x * isoRestrict y
+  inclusion' ∘ isoRestrict = iso ∘ inclusion
+  inclusion' (isoRestrict (x * y)) = iso (inclusion (x * y)) = iso (inclusion x) * iso (inclusion y)
+    = inclusion' (isoRestrict x) * inclusion' (isoRestrict y)
+    = inclusion' (isoRestrict x * isoRestrict y)
+  since inclusion' is injective, isoRestrict (x * y) = isoRestrict x * isoRestrict y
+
+  -/
+  sorry
+
 def isoRestrict : ℒ ⊗[k] A ≃ₐ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
-  AlgEquiv.ofLinearEquiv (isoRestrict' n k k⁻ A iso) sorry sorry
+  AlgEquiv.ofLinearEquiv (isoRestrict' n k k⁻ A iso)
+    (isoRestrict_map_one n k k⁻ A iso) sorry
 
 end lemma_tto
