@@ -1,4 +1,5 @@
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
+import Mathlib.LinearAlgebra.FiniteDimensional
 
 suppress_compilation
 
@@ -16,11 +17,24 @@ open scoped IntermediateField
 def intermediateTensor (L : IntermediateField K K_bar) : Submodule K (K_bar ⊗[K] A) :=
   LinearMap.range (LinearMap.rTensor _ (L.val.toLinearMap) : L ⊗[K] A →ₗ[K] K_bar ⊗[K] A)
 
+set_option synthInstance.maxHeartbeats 40000 in
 def intermediateTensor' (L : IntermediateField K K_bar) : Submodule L (K_bar ⊗[K] A) :=
   LinearMap.range ({LinearMap.rTensor _ (L.val.toLinearMap) with
     map_smul' := fun l x => by
-      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply];
-      sorry} : L ⊗[K] A →ₗ[L] K_bar ⊗[K] A)
+      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
+      induction x using TensorProduct.induction_on with
+      | zero => simp
+      | tmul x a =>
+        simp only [smul_tmul', smul_eq_mul, LinearMap.rTensor_tmul, AlgHom.toLinearMap_apply,
+          _root_.map_mul, IntermediateField.coe_val]
+        rfl
+      | add x y hx hy => aesop } : L ⊗[K] A →ₗ[L] K_bar ⊗[K] A)
+
+lemma mem_intermediateTensor_iff_mem_intermediateTensor'
+    {L : IntermediateField K K_bar} {x : K_bar ⊗[K] A} :
+    x ∈ intermediateTensor K K_bar A L ↔ x ∈ intermediateTensor' K K_bar A L := by
+  simp only [intermediateTensor, LinearMap.mem_range, intermediateTensor', LinearMap.coe_mk,
+    LinearMap.coe_toAddHom]
 
 lemma intermediateTensor_mono {L1 L2 : IntermediateField K K_bar} (h : L1 ≤ L2) :
     intermediateTensor K K_bar A L1 ≤ intermediateTensor K K_bar A L2 := by
@@ -86,6 +100,12 @@ instance (x : K_bar ⊗[K] A): FiniteDimensional K (subfieldOf K K_bar A x) :=
 
 theorem mem_subfieldOf (x : K_bar ⊗[K] A) : x ∈ intermediateTensor K K_bar A
     (subfieldOf K K_bar A x) := (algclosure_element_in K K_bar A _).choose_spec.2
+
+theorem mem_subfieldOf' (x : K_bar ⊗[K] A) : x ∈ intermediateTensor' K K_bar A
+    (subfieldOf K K_bar A x) := by
+  rw [← mem_intermediateTensor_iff_mem_intermediateTensor']
+  exact mem_subfieldOf K K_bar A x
+
 end
 
 namespace lemma_tto
@@ -183,30 +203,49 @@ variable (n : ℕ) (k k_bar A : Type u) [Field k] [Field k_bar] [Algebra k k_bar
   [IsAlgClosure k k_bar] [Ring A] [Algebra k A]
   (iso : k_bar ⊗[k] A ≃ₐ[k_bar] Matrix (Fin n) (Fin n) k_bar)
 
-def inter_tensor (E : IntermediateField k k_bar) : Subalgebra k (k_bar ⊗[k] A) :=
-  (Algebra.TensorProduct.map ({
-    __ := Algebra.ofId E k_bar
-    commutes' := fun _ => rfl} : E →ₐ[k]k_bar) (AlgHom.id k A)).range
-
-def e : Basis (Fin n × Fin n) k_bar (k_bar ⊗[k] A) :=
+def ee : Basis (Fin n × Fin n) k_bar (k_bar ⊗[k] A) :=
   Basis.map (Matrix.stdBasis k_bar _ _) iso.symm
 
-def ℒ : IntermediateField k k_bar :=
-  ⨆ (i : Fin n × Fin n), subfieldOf k k_bar A (e n k k_bar A iso i)
+local notation "e" => ee n k k_bar A iso
 
-instance : FiniteDimensional k $ ℒ n k k_bar A iso :=
+def ℒℒ : IntermediateField k k_bar :=
+  ⨆ (i : Fin n × Fin n), subfieldOf k k_bar A (e i)
+
+
+local notation "ℒ" => ℒℒ n k k_bar A iso
+
+instance : FiniteDimensional k ℒ :=
   IntermediateField.finiteDimensional_iSup_of_finite
 
-local notation "ℒ" => ℒ n k k_bar A iso
 
-def f (i : Fin n × Fin n) : subfieldOf k k_bar A (e n k k_bar A iso i) →ₐ[k] ℒ :=
-  subfieldOf k k_bar A (e n k k_bar A iso i)|>.inclusion (le_sSup ⟨i, rfl⟩)
+def f (i : Fin n × Fin n) : subfieldOf k k_bar A (e i) →ₐ[k] ℒ :=
+  subfieldOf k k_bar A (e i)|>.inclusion (le_sSup ⟨i, rfl⟩)
 
-def e_hat (i : Fin n × Fin n) : intermediateTensor k k_bar A ℒ :=
-  ⟨e n k k_bar A iso i, intermediateTensor_mono k k_bar A
-    (le_sSup (by simp)) $ mem_subfieldOf k k_bar A (e n k k_bar A iso i)⟩
+def e_hat (i : Fin n × Fin n) : intermediateTensor' k k_bar A ℒ :=
+  ⟨e i, by
+    rw [← mem_intermediateTensor_iff_mem_intermediateTensor']
+    exact intermediateTensor_mono k k_bar A
+      (le_sSup (by simp)) $ mem_subfieldOf k k_bar A (e i)⟩
 
--- theorem ehat_linear_independent : LinearIndependent ℒ (e_hat n k k_bar A iso) := _
+local notation "e^" => e_hat n k k_bar A iso
+local notation "k⁻" => k_bar
 
+theorem e_hat_linear_independent : LinearIndependent ℒ e^ := by
+  rw [linearIndependent_iff']
+  intro s g h
+  have h' : ∑ i ∈ s, algebraMap ℒ k⁻ (g i) • e i = 0 := by
+    apply_fun Submodule.subtype _ at h
+    simpa only [IntermediateField.algebraMap_apply, map_sum, map_smul, Submodule.coeSubtype,
+      map_zero] using h
+
+  have H := (linearIndependent_iff'.1 $ e |>.linearIndependent) s (algebraMap ℒ k⁻ ∘ g) h'
+  intro i hi
+  simpa using H i hi
+
+theorem dim_ℒ_ge : n^2 ≤ FiniteDimensional.finrank ℒ (intermediateTensor' k k_bar A ℒ) := by
+  haveI : FiniteDimensional ℒ (intermediateTensor' k k_bar A ℒ) := sorry
+  have := (e_hat_linear_independent n k k_bar A iso).fintype_card_le_finrank
+  simp only [Fintype.card_prod, Fintype.card_fin] at this
+  simpa [pow_two]
 
 end lemma_tto
