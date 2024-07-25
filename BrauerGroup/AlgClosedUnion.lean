@@ -335,6 +335,15 @@ def inclusion : ℒ ⊗[k] A →ₐ[ℒ] k⁻ ⊗[k] A :=
 def inclusion' : Matrix (Fin n) (Fin n) ℒ →ₐ[ℒ] Matrix (Fin n) (Fin n) k⁻ :=
   AlgHom.mapMatrix (Algebra.ofId ℒ _)
 
+lemma inclusion'_injective : Function.Injective (inclusion' n k k_bar A iso) := by
+  intro x y h
+  ext i j
+  rw [← Matrix.ext_iff] at h
+  specialize h i j
+  simp only [inclusion', Algebra.ofId, AlgHom.mapMatrix_apply, AlgHom.coe_mk, Matrix.map_apply,
+    IntermediateField.algebraMap_apply, SetLike.coe_eq_coe] at h
+  rw [h]
+
 /--
 ℒ ⊗_k A ------>  intermidateTensor
   |              /
@@ -412,7 +421,12 @@ lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   inclusion' (isoRestrict 1) = iso (inclusion 1) = 1 = inclusion' 1
   since inclusion' is injective, isoRestrict 1 = 1
   -/
-  sorry
+  have eq := congr($(comm_square n k k_bar A iso) 1)
+  conv_rhs at eq =>
+    rw [LinearMap.comp_apply]
+    erw [(inclusion n k k_bar A iso).map_one, iso.map_one]
+  refine inclusion'_injective n k k_bar A iso (eq.trans ?_)
+  rw [_root_.map_one]
 
 
 lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
@@ -433,7 +447,18 @@ lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
   since inclusion' is injective, isoRestrict (x * y) = isoRestrict x * isoRestrict y
 
   -/
-  sorry
+  have eq := congr($(comm_square n k k_bar A iso) (x * y))
+  conv_rhs at eq =>
+    rw [LinearMap.comp_apply]
+    erw [(inclusion n k k_bar A iso).map_mul, iso.map_mul]
+  have eq₁ := congr($(comm_square n k k_bar A iso) x)
+  have eq₂ := congr($(comm_square n k k_bar A iso) y)
+  simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, AlgHom.toLinearMap_apply,
+    AlgEquiv.toLinearEquiv_toLinearMap, LinearMap.coe_restrictScalars,
+    AlgEquiv.toLinearMap_apply] at eq₁ eq₂
+  rw [← eq₁, ← eq₂, ← _root_.map_mul] at eq
+  refine inclusion'_injective n k k_bar A iso (eq.trans ?_)
+  rw [_root_.map_mul]
 
 def isoRestrict : ℒ ⊗[k] A ≃ₐ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
   AlgEquiv.ofLinearEquiv (isoRestrict' n k k⁻ A iso)
