@@ -424,13 +424,14 @@ lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   have eq := congr($(comm_square n k k_bar A iso) 1)
   conv_rhs at eq =>
     rw [LinearMap.comp_apply]
-    erw [(inclusion n k k_bar A iso).map_one, iso.map_one]
+    erw [(inclusion n k k_bar A iso).map_one, map_one iso]
   refine inclusion'_injective n k k_bar A iso (eq.trans ?_)
   rw [_root_.map_one]
 
 
 lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
-  isoRestrict' n k k⁻ A iso (x * y) = isoRestrict' n k k⁻ A iso x * isoRestrict' n k k⁻ A iso y := by
+    isoRestrict' n k k⁻ A iso (x * y) =
+    isoRestrict' n k k⁻ A iso x * isoRestrict' n k k⁻ A iso y := by
   /-
         isoRestrict
   ℒ ⊗_k A -----> M_n(ℒ)

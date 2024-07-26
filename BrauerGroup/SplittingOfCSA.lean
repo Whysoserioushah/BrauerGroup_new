@@ -4,6 +4,7 @@ import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
+import Mathlib.FieldTheory.IsSepclosed
 
 suppress_compilation
 
@@ -12,6 +13,7 @@ variable (k A K: Type u) [Field k] [Field K] [Algebra k K] [Ring A]
   [Algebra k A]
 
 variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
+  (k_s : Type u) [Field k_s] [Algebra k k_s] [IsSepClosure k k_s]
 
 open scoped TensorProduct
 open RingCon
@@ -178,26 +180,15 @@ def extension_inv (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K 
 
 theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
     IsCentralSimple k A ↔ (∃(n : ℕ)(_ : n ≠ 0)(L : Type u)(_ : Field L)(_ : Algebra k L)
-    (fin_dim : FiniteDimensional k L), Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)) := by
+    (_ : FiniteDimensional k L), Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)) := by
   constructor
   · intro hA
     haveI := hk_bar.1
     obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
     refine ⟨n, hn, ?_⟩
-    haveI : FiniteDimensional k_bar (k_bar ⊗[k] A) := inferInstance
-    let b := FiniteDimensional.finBasis k_bar (k_bar ⊗[k] A)
-    have := inter_tensor_union k k_bar A
-    -- let S1 : Set k_bar := (i : (Fin (FiniteDimensional.finrank k_bar (k_bar ⊗[k] A)))), {b i}
-    have (i : Fin (FiniteDimensional.finrank k_bar (k_bar ⊗[k] A))) :
-        ∃ (L : IntermediateField k k_bar), FiniteDimensional k L ∧
-          b i ∈ intermediateTensor k k_bar A L := by
-      apply algclosure_element_in k k_bar A
-    choose L finL hL using this
-
-    -- refine ⟨(⨆ (i : Fin (FiniteDimensional.finrank k_bar (k_bar ⊗[k] A))), L i :
-    --   IntermediateField k k_bar), inferInstance, inferInstance,
-    --   IntermediateField.finiteDimensional_iSup_of_finite, ⟨?_⟩⟩
-    sorry
+    have := @lemma_tto.isoRestrict n ({out := hn}) k k_bar A _ _ _ _ _ _ _ iso
+    use lemma_tto.ℒℒ n k k_bar A iso
+    refine ⟨_, _, inferInstance, ⟨this⟩⟩
   · rintro ⟨n, hn, L, _, _, _, ⟨iso⟩⟩
     haveI : Nonempty (Fin n) := ⟨0, by omega⟩
     exact (centralsimple_over_extension_iff k A L).mpr $ AlgEquiv.isCentralSimple iso.symm
@@ -296,3 +287,8 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
         Fintype.card_fin] at e6
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
     exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' (finCongr e5)
+
+theorem exist_sep_over_CSA (A : CSA k): ∃(L : Type u)(_ : Field L)(_ : Algebra k L)
+    (split : split k A L), Algebra.IsSeparable k L := by
+  use
+  sorry
