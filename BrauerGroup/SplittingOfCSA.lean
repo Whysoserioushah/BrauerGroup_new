@@ -54,6 +54,52 @@ lemma one_tensor_bot_Algebra [FiniteDimensional k K] {x : A} (Is_CSA : IsCentral
 
   sorry
 
+lemma RingCon_Injective_top [FiniteDimensional k K] {I : RingCon A} (Is_CSA : IsCentralSimple K (K ⊗[k] A))
+    (h : (RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i} : RingCon (K ⊗[k] A)) = ⊤) :
+    I = ⊤ := by
+  let f : RingCon A → RingCon (K ⊗[k] A) :=
+    fun I => RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i}
+  let g : RingCon (K ⊗[k] A) → RingCon A :=
+    fun J => RingCon.span {x| 1 ⊗ₜ x ∈ J}
+  have hf : Function.Injective f := by
+    apply Function.LeftInverse.injective (g := g)
+    intro J
+    apply LE.le.antisymm'
+    · simp [f, g]
+      rw [le_iff]
+      intro a ha
+      simp only [SetLike.mem_coe]
+      suffices a ∈ {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}} by
+        have := subset_span {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}}
+        apply this
+        tauto
+      simp only [Set.mem_setOf_eq]
+      suffices (1 : K) ⊗ₜ[k] a ∈ {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i} by
+        have := subset_span {x | ∃ a : K, ∃ i ∈ J, x = a ⊗ₜ[k] i}
+        apply this
+        tauto
+      simp only [Set.mem_setOf_eq]
+      tauto
+    · simp [f, g]
+      rw [le_iff]
+      intro a ha
+      sorry
+  suffices f ⊤ = ⊤ by rw [← this] at h; tauto
+  rw [← top_le_iff, le_iff]
+  intro x _
+  simp only [SetLike.mem_coe, f]
+  induction x using TensorProduct.induction_on with
+  | zero =>
+    exact RingCon.zero_mem _
+  | tmul b c =>
+    suffices b ⊗ₜ[k] c ∈ ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A)) by
+      have := subset_span ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A))
+      apply this; tauto
+    use b; use c; tauto
+  | add b c hb hc =>
+    simp only [SetLike.mem_coe] at hb hc
+    exact add_mem _ (hb (show b ∈ ⊤ by tauto)) (hc (show c ∈ ⊤ by tauto))
+
 theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
     IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) where
   mp := fun hA ↦ IsCentralSimple.baseChange k A K
@@ -71,8 +117,7 @@ theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
           rw [Algebra.TensorProduct.tmul_mul_tmul, Algebra.TensorProduct.tmul_mul_tmul, mul_one,
             one_mul, hx c]
         | add b c hb hc => rw [add_mul, mul_add]; simp only [hb, hc]
-      specialize h h1
-      exact one_tensor_bot_Algebra _ _ _ hAt h
+      exact one_tensor_bot_Algebra _ _ _ hAt (h h1)
     is_simple :=
     {
       exists_pair_ne := ⟨⊥, ⊤, by
@@ -124,20 +169,9 @@ theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
             exact RingCon.zero_mem I
         have ne_top : tensor_is_ideal ≠ ⊤ := by
           by_contra! h
-          suffices I = (⊤ : Set A) by
-            apply hI.2
-            rw [eq_top_iff, le_iff]
-            simp only [this, Set.top_eq_univ, Set.subset_univ]
-          apply Set.eq_of_subset_of_subset (by simp)
-          intro x _
-          by_contra! hx
-          rw [eq_top_iff, le_iff] at h
-          have : ∃ (a : K), a ⊗ₜ[k] x ∉ tensor_is_ideal := by
-            use 1
-            by_contra! in_tensor
-
-            sorry
-          tauto
+          apply hI.2
+          simp [tensor_is_ideal] at h
+          exact RingCon_Injective_top k A K hAt h
         haveI := hAt.is_simple.2 tensor_is_ideal
         tauto
     }
