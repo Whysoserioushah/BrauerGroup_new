@@ -56,7 +56,8 @@ lemma one_tensor_bot_Algebra [FiniteDimensional k K] {x : A} (Is_CSA : IsCentral
 
   sorry
 
-lemma RingCon_Injective_top [FiniteDimensional k K] {I : RingCon A} (Is_CSA : IsCentralSimple K (K ⊗[k] A))
+lemma RingCon_Injective_top [FiniteDimensional k K] {I : RingCon A}
+    (Is_CSA : IsCentralSimple K (K ⊗[k] A))
     (h : (RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i} : RingCon (K ⊗[k] A)) = ⊤) :
     I = ⊤ := by
   let f : RingCon A → RingCon (K ⊗[k] A) :=
@@ -324,5 +325,5 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
 
 theorem exist_sep_over_CSA (A : CSA k): ∃(L : Type u)(_ : Field L)(_ : Algebra k L)
     (split : split k A L), Algebra.IsSeparable k L := by
-  use
+  -- use
   sorry

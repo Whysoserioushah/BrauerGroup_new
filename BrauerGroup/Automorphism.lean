@@ -7,7 +7,7 @@ variable (K : Type*) [Field K] [CharZero K]
 open Matrix
 
 /-- Automorphism group of Mₙ(K)-/
-abbrev Aut (n : ℕ) := ((Matrix (Fin n) (Fin n) K) ≃* (Matrix (Fin n) (Fin n) K))
+abbrev Aut (n : ℕ) := ((Matrix (Fin n) (Fin n) K) ≃ₐ[K] (Matrix (Fin n) (Fin n) K))
 
 abbrev PGL (n : ℕ) :=
   (GeneralLinearGroup (Fin n) K)⧸(Subgroup.center (GeneralLinearGroup (Fin n) K))
@@ -46,22 +46,27 @@ abbrev toAut (n : ℕ): GeneralLinearGroup (Fin n) K →* Aut K n where
       simp only [← mul_assoc]
       rw [mul_assoc (C * A) _ C, ← GeneralLinearGroup.coe_mul, mul_left_inv,
         GeneralLinearGroup.coe_one, mul_one]
-  }
+    map_add' := fun A B ↦ by simp only [coe_units_inv, mul_add, add_mul]
+    commutes' := fun k ↦ by
+      simp only [Algebra.algebraMap_eq_smul_one, mul_smul_comm, mul_one, smul_mul,
+        ← GeneralLinearGroup.coe_mul, mul_right_inv, GeneralLinearGroup.coe_one] }
   map_one' := by simp only [Units.val_one, one_mul, inv_one, mul_one]; rfl
   map_mul' A B := by
-    ext M i j
-    simp only [Units.val_mul, _root_.mul_inv_rev, MulEquiv.coe_mk, Equiv.coe_fn_mk,
-      MulAut.mul_apply, _root_.map_mul, ← mul_assoc]
-    rw [mul_assoc ((A : Matrix (Fin n) (Fin n) K) * B) _ A, ← GeneralLinearGroup.coe_mul A⁻¹ A,
-      mul_left_inv, GeneralLinearGroup.coe_one, mul_one]; nth_rw 2 [mul_assoc (A * B * M)]
-    rw [← GeneralLinearGroup.coe_mul A⁻¹ A, mul_left_inv, GeneralLinearGroup.coe_one, mul_one]
+    ext M : 1
+    simp only [Units.val_mul, _root_.mul_inv_rev, coe_units_inv, AlgEquiv.coe_mk,
+      AlgEquiv.mul_apply, _root_.map_mul]
+    rw [← mul_assoc, ← mul_assoc, ← mul_assoc, ← mul_assoc, ← mul_assoc,
+      mul_assoc ((A : Matrix (Fin n) (Fin n) K) * B) _ A, ← GeneralLinearGroup.coe_inv A,
+      ← GeneralLinearGroup.coe_mul A⁻¹ A, mul_left_inv, GeneralLinearGroup.coe_one, mul_one,
+      mul_assoc (A * B * M) _ A, ← GeneralLinearGroup.coe_mul A⁻¹ A, mul_left_inv,
+      GeneralLinearGroup.coe_one, mul_one]
 
 lemma toAut_is_surj (n : ℕ) : Function.Surjective (toAut K n) := by
   intro σ
   simp only [MonoidHom.coe_mk, coe_units_inv, OneHom.coe_mk]
   obtain ⟨C, hC⟩ := Is_inner _ _ σ
-  use C; ext A
-  simp only [MulEquiv.coe_mk, Equiv.coe_fn_mk, (hC A), coe_units_inv]
+  use C; ext A : 1
+  simp only [AlgEquiv.coe_mk, MulEquiv.coe_mk, Equiv.coe_fn_mk, (hC A), coe_units_inv]
 
 abbrev A_ij (n : ℕ) (i j : Fin n) (hij : i ≠ j): GL (Fin n) K where
   val := 1 + stdBasisMatrix i j (1 : K)
@@ -184,7 +189,11 @@ lemma toAut_ker (n : ℕ) :
     simp only [MulEquiv.coe_mk, Equiv.coe_fn_mk, MulAut.one_apply] at hσ
     norm_cast at hσ
     have :  G * C * G⁻¹ * G = C * G := by
-      rwa [mul_right_cancel_iff]
+      simp only [coe_units_inv, AlgEquiv.coe_mk, AlgEquiv.one_apply] at hσ
+      have : G * C * G⁻¹ = C := by
+        ext i j : 2
+        simp_all only [Units.val_mul, coe_units_inv]
+      exact congrFun (congrArg HMul.hMul this) G
     simp only [inv_mul_cancel_right] at this
     exact this.symm
   · intro h
@@ -192,7 +201,7 @@ lemma toAut_ker (n : ℕ) :
     simp only [MonoidHom.coe_mk, coe_units_inv, OneHom.coe_mk]
     rw [DFunLike.ext_iff]
     intro A
-    simp only [MulEquiv.coe_mk, Equiv.coe_fn_mk, MulAut.one_apply]
+    simp only [AlgEquiv.coe_mk, AlgEquiv.one_apply]
     have : (G : Matrix (Fin n) (Fin n) K) * A * (G)⁻¹ * G = A * G := by
       rw [Matrix.GeneralLinearGroup.coe_inv, mul_assoc,
         show (G : Matrix (Fin n) (Fin n) K)⁻¹ * G = 1 by norm_cast; simp, mul_one]
