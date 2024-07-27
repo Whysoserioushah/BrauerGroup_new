@@ -242,11 +242,10 @@ def deg (A : CSA k): ℕ := dim_is_sq k A k_bar A.is_central_simple|>.choose
 lemma deg_sq_eq_dim (A : CSA k): (deg k k_bar A) ^ 2 = FiniteDimensional.finrank k A :=
   by rw [pow_two]; exact dim_is_sq k A k_bar A.is_central_simple|>.choose_spec.symm
 
-lemma deg_pos (A : CSA k): 0 < deg k k_bar A := by
+lemma deg_pos (A : CSA k): deg k k_bar A ≠ 0 := by
   by_contra! h
-  have eq_zero : deg k k_bar A = 0 := by omega
-  apply_fun (λ x => x^2) at eq_zero
-  rw [deg_sq_eq_dim k k_bar A, pow_two, mul_zero] at eq_zero
+  apply_fun (λ x => x^2) at h
+  rw [deg_sq_eq_dim k k_bar A, pow_two, mul_zero] at h
   haveI := A.is_central_simple.is_simple.1
   have Nontriv : Nontrivial A := inferInstance
   have := FiniteDimensional.finrank_pos_iff (R := k) (M := A)|>.2 Nontriv
@@ -255,6 +254,10 @@ lemma deg_pos (A : CSA k): 0 < deg k k_bar A := by
 structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] :=
   (n : ℕ) (hn : n ≠ 0)
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
+
+def isSplit : Prop :=
+  ∃(n : ℕ)(L : Type u)(_ : n ≠ 0)(_ : Field L)(_ : Algebra k L),
+  Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)
 
 def split_by_alg_closure (A : CSA k): split k A k_bar where
   n := deg k k_bar A
@@ -323,7 +326,8 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
     exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' (finCongr e5)
 
-theorem exist_sep_over_CSA (A : CSA k): ∃(L : Type u)(_ : Field L)(_ : Algebra k L)
-    (split : split k A L), Algebra.IsSeparable k L := by
-  -- use
+theorem exist_sep_over_CSA (A : CSA k): ∃(L : Type u)(_: Field L)(_ : Algebra k L),
+    isSplit k A ∧ Algebra.IsSeparable k L := by
+  refine ⟨k_s, _, _,
+    ⟨⟨deg k k_bar A, k_s, deg_pos k k_bar A, _, inferInstance, ⟨?_⟩⟩, inferInstance⟩⟩
   sorry
