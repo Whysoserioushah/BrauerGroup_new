@@ -255,8 +255,8 @@ structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] :=
   (n : ℕ) (hn : n ≠ 0)
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
 
-def isSplit : Prop :=
-  ∃(n : ℕ)(L : Type u)(_ : n ≠ 0)(_ : Field L)(_ : Algebra k L),
+def isSplit (L : Type u) [Field L] [Algebra k L]: Prop :=
+  ∃(n : ℕ)(_ : n ≠ 0),
   Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)
 
 def split_by_alg_closure (A : CSA k): split k A k_bar where
@@ -326,8 +326,10 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
     exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' (finCongr e5)
 
-theorem exist_sep_over_CSA (A : CSA k): ∃(L : Type u)(_: Field L)(_ : Algebra k L),
-    isSplit k A ∧ Algebra.IsSeparable k L := by
-  refine ⟨k_s, _, _,
-    ⟨⟨deg k k_bar A, k_s, deg_pos k k_bar A, _, inferInstance, ⟨?_⟩⟩, inferInstance⟩⟩
+theorem sepclosure_split (A : CSA k):
+    isSplit k A k_s := by
+  obtain ⟨n, hn, _, _, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version k_s (k_s ⊗[k] A)
   sorry
+
+theorem finite_sep_split (A : CSA k): ∃(L : Type u)(_ : Field L)(_ : Algebra k L)
+    (fin_dim : FiniteDimensional k L)(_ : Algebra.IsSeparable k L), isSplit k A L := sorry
