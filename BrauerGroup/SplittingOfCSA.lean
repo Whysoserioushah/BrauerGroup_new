@@ -386,7 +386,22 @@ theorem sepclosure_split (A : CSA k):
       exact Nat.mul_self_inj.mp (id (this.trans e3).symm)
     exact e1.trans $ Matrix.reindexAlgEquiv k_s $ finCongr e2
   else
-  have hd : 1 < d := by sorry
+  have hd : 1 < d := by
+    suffices d ≠ 0 by omega
+    by_contra! h
+    obtain d_eq := d_eq.symm
+    rw [h, FiniteDimensional.finrank_zero_iff (R := k_s) (M := D),
+      ← not_nontrivial_iff_subsingleton] at d_eq
+    tauto
+  -- suffices Matrix (Fin n) (Fin n) D ≃ₐ[k_s] Matrix (Fin (deg k k_bar A)) (Fin (deg k k_bar A)) k_s by
+  --   exact ((id this.symm).trans (id iso.symm)).symm
+  -- have e1 := deg_sq_eq_dim k k_bar A
+  -- have e2 := matrixEquivTensor (A := D) (R := k_s) (n := Fin n)
+  -- have e3 := LinearEquiv.finrank_eq e2.toLinearEquiv
+  -- have e4 := LinearEquiv.finrank_eq iso.toLinearEquiv
+  -- rw [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_matrix k_s (Fin n) (Fin n),
+  --   ← e4, FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
+  --   Fintype.card_fin, ← e1] at e3; clear e4 e1
   sorry
 
 theorem finite_sep_split (A : CSA k): ∃(L : Type u)(_ : Field L)(_ : Algebra k L)
