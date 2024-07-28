@@ -7,7 +7,7 @@ suppress_compilation
 
 universe u v w
 
-open Classical
+open Classical MulOpposite
 open scoped TensorProduct
 variable (K : Type u) [Field K]
 -- variable {A B M: Type u} [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
@@ -35,14 +35,63 @@ instance (K A B M : Type u)
     Semiring (B ⊗[K] (Module.End A M)ᵐᵒᵖ) :=
   Algebra.TensorProduct.instSemiring -- Module.End.divisionRing
 
+instance (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A) : Module K (module_inst K A B M f) :=
+  inferInstanceAs (Module K M)
+
+instance (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A) : Module A (module_inst K A B M f) :=
+  inferInstanceAs (Module A M)
+
+instance (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A) : IsScalarTower K A (module_inst K A B M f) :=
+  inferInstanceAs (IsScalarTower K A M)
+
+attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
+def smul1 (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A):
+    (module_inst K A B M f) → (B ⊗[K] (Module.End A M)ᵐᵒᵖ) →ₗ[K] (module_inst K A B M f) :=
+  fun m ↦ TensorProduct.lift {
+    toFun := fun b ↦ {
+      toFun := fun l ↦ l.unop ((f b) • m)
+      map_add' := fun l1 l2 ↦ by simp only [LinearMapClass.map_smul, ← smul_add]; rfl
+      map_smul' := fun k l ↦ by
+        simp only [LinearMapClass.map_smul, RingHom.id_apply]
+        rw [smul_comm]; simp only [unop_smul, LinearMap.smul_apply]
+        congr; sorry
+    }
+    map_add' := fun _ _ ↦ by
+      ext _ ; simp [add_smul]
+    map_smul' := fun k b ↦ by
+      ext l
+      simp only [LinearMapClass.map_smul, smul_assoc, LinearMap.map_smul_of_tower, LinearMap.coe_mk,
+        AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
+  }
+
 attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] (f: B →ₐ[K] A) :
-    Module (B ⊗[K] (Module.End A M)ᵐᵒᵖ) (module_inst K A B M f) :=
-  sorry
+    Module (B ⊗[K] (Module.End A M)ᵐᵒᵖ) (module_inst K A B M f) where
+  smul r m := smul1 K A B M f m r
+  one_smul m := by
+    change smul1 K A B M f m (1 : B ⊗[K] (Module.End A M)ᵐᵒᵖ) = m
+    sorry
+  mul_smul := sorry
+  smul_zero := sorry
+  smul_add := sorry
+  add_smul := sorry
+  zero_smul := sorry
 
 -- -- lemma SkolemNoether_aux (A : Type u) [Ring A] [Algebra K A]
 -- --   (M : Type u) [AddCommGroup M] [Module A M] [Module K M] [IsScalarTower K A M]
