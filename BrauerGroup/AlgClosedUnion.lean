@@ -49,7 +49,7 @@ def intermediateTensorEquiv (L : IntermediateField K K_bar) :
 lemma intermediateTensorEquiv_apply_tmul (L : IntermediateField K K_bar)
       (x : L) (a : A) (h : x.1 ⊗ₜ[K] a ∈ intermediateTensor K K_bar A L) :
     intermediateTensorEquiv K K_bar A L ⟨_, h⟩ =
-    x ⊗ₜ a:= by
+    x ⊗ₜ a := by
   simp only [intermediateTensorEquiv]
   convert LinearEquiv.ofBijective_symm_apply_apply _ _
   rfl
@@ -105,7 +105,7 @@ private abbrev SetOfFinite : Set (IntermediateField K K_bar) :=
   {M | FiniteDimensional K M}
 
 lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
-    (Set.range fun (L : SetOfFinite K K_bar) ↦ intermediateTensor K K_bar A L):= by
+    (Set.range fun (L : SetOfFinite K K_bar) ↦ intermediateTensor K K_bar A L) := by
   rintro _ ⟨⟨L1, (hL1 : FiniteDimensional _ _)⟩, rfl⟩ _ ⟨⟨L2, (hL2 : FiniteDimensional _ _)⟩, rfl⟩
   refine ⟨intermediateTensor K K_bar A (L1 ⊔ L2), ⟨⟨L1 ⊔ L2, show FiniteDimensional _ _ from
     ?_⟩, rfl⟩, ⟨intermediateTensor_mono K K_bar A le_sup_left,
