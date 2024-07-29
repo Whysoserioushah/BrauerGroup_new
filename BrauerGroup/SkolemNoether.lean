@@ -100,7 +100,15 @@ instance (K A B M : Type u)
     simp only [TensorProduct.lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, map_one, one_smul,
       unop_one, LinearMap.one_apply]
   mul_smul x y m := sorry
-  smul_zero := sorry
+  smul_zero a := by
+    change smul1 K A B M f 0 a.unop = 0
+    rw [smul1]
+    cases' a with a
+    simp only [map_zero, smul_zero, unop_op]
+    induction a using TensorProduct.induction_on
+    · sorry
+    · sorry
+    · sorry
   smul_add := sorry
   add_smul := sorry
   zero_smul := sorry
@@ -128,11 +136,12 @@ instance tensor_is_simple (K A B M : Type u)
         have hl : b • l m = l (b • m) := congr($hl m)
         simp only [l_eq, LinearMap.coe_mk, AddHom.coe_mk] at hl
         rw [smul_smul, smul_smul] at hl
-        let ann : RingCon A := RingCon.fromIdeal {r | r • m = 0} (by sorry) (by sorry)
-          (by sorry) (fun x y hxy ↦ by
-            change _ • m = 0 at *
-            rw [← smul_smul, hxy]
-            sorry) (by sorry)
+        -- let ann : RingCon A := RingCon.fromIdeal {r | r • m = 0} (by sorry) (by sorry)
+        --   (by sorry) (fun x y hxy ↦ by
+        --     change _ • m = 0 at *
+        --     rw [← smul_smul, hxy, smul_zero]) (fun x y hxy ↦ by
+        --     change _ • m = 0 at *
+        --     sorry)
         sorry
       have := csa_A.1 mem_a
       rw [Algebra.mem_bot] at *
