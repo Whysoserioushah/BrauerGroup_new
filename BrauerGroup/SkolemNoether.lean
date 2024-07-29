@@ -131,12 +131,9 @@ instance (K A B M : Type u)
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] (f: B →ₐ[K] A) :
-    Module (B ⊗[K] (Module.End A M)ᵐᵒᵖ) (module_inst K A B M f) where
-  smul r m := smul1 K A B M f m r
-  one_smul m := by
-    change smul1 K A B M f m (1 : B ⊗[K] (Module.End A M)ᵐᵒᵖ) = m
-    rw [smul1]; simp only [Algebra.TensorProduct.one_def, TensorProduct.lift.tmul, LinearMap.coe_mk,
-      AddHom.coe_mk, map_one, one_smul, unop_one, LinearMap.one_apply]
+    Module (B ⊗[K] (Module.End A M)ᵐᵒᵖ)ᵐᵒᵖ (module_inst K A B M f) where
+  smul := fun rationalsomething m => smul1 K A B M f m (MulOpposite.unop rationalsomething)
+  one_smul := sorry
   mul_smul x y m := sorry
   smul_zero := sorry
   smul_add := sorry
