@@ -2,6 +2,7 @@ import BrauerGroup.CentralSimple
 import Mathlib.RingTheory.TensorProduct.Basic
 import Mathlib.Algebra.Opposites
 import Mathlib.RingTheory.SimpleModule
+import Mathlib.LinearAlgebra.TensorProduct.Opposite
 
 suppress_compilation
 
@@ -35,11 +36,11 @@ instance (K A B M : Type u)
     Semiring (B ⊗[K] (Module.End A M)ᵐᵒᵖ) :=
   Algebra.TensorProduct.instSemiring -- Module.End.divisionRing
 
-instance (K A B M : Type u)
+instance inst_K_mod (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] (f: B →ₐ[K] A) : Module K (module_inst K A B M f) :=
-  inferInstanceAs (Module K M)
+  Module.compHom M (algebraMap K A)
 
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
@@ -51,8 +52,39 @@ instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] (f: B →ₐ[K] A) : IsScalarTower K A (module_inst K A B M f) :=
-  inferInstanceAs (IsScalarTower K A M)
+  IsScalarTower.of_algebraMap_smul fun _ ↦ congrFun rfl
 
+attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
+instance(K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A) : Ring (B ⊗[K] (Module.End A M)ᵐᵒᵖ)ᵐᵒᵖ := inferInstance
+
+attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
+set_option synthInstance.maxHeartbeats 40000 in
+def iso (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A):
+    (B ⊗[K] (Module.End A M)ᵐᵒᵖ)ᵐᵒᵖ ≃ₐ[K] (Bᵐᵒᵖ ⊗[K] ((Module.End A M)ᵐᵒᵖ)ᵐᵒᵖ) :=
+  Algebra.TensorProduct.opAlgEquiv K K _ _|>.symm
+
+-- attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
+-- set_option synthInstance.maxHeartbeats 40000 in
+-- def smul1 (K A B M : Type u)
+--     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
+--     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+--     [IsSimpleModule A M] (f: B →ₐ[K] A):
+--     (module_inst K A B M f) → (Bᵐᵒᵖ ⊗[K] ((Module.End A M)ᵐᵒᵖ)ᵐᵒᵖ) →ₗ[K] (module_inst K A B M f) :=
+--   fun m ↦ TensorProduct.lift {
+--     toFun := fun bmop ↦ {
+--       toFun := fun l ↦ (f (bmop.unop)) • (l.unop.unop m)
+--       map_add' := _
+--       map_smul' := _
+--     }
+--     map_add' := _
+--     map_smul' := _
+--   }
 attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
 def smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
@@ -61,12 +93,11 @@ def smul1 (K A B M : Type u)
     (module_inst K A B M f) → (B ⊗[K] (Module.End A M)ᵐᵒᵖ) →ₗ[K] (module_inst K A B M f) :=
   fun m ↦ TensorProduct.lift {
     toFun := fun b ↦ {
-      toFun := fun l ↦ l.unop ((f b) • m)
+      toFun := fun l ↦ (f b) • (l.unop m)
       map_add' := fun l1 l2 ↦ by simp only [LinearMapClass.map_smul, ← smul_add]; rfl
       map_smul' := fun k l ↦ by
         simp only [LinearMapClass.map_smul, RingHom.id_apply]
         rw [smul_comm]; simp only [unop_smul, LinearMap.smul_apply]
-        congr; sorry
     }
     map_add' := fun _ _ ↦ by
       ext _ ; simp [add_smul]
@@ -74,7 +105,25 @@ def smul1 (K A B M : Type u)
       ext l
       simp only [LinearMapClass.map_smul, smul_assoc, LinearMap.map_smul_of_tower, LinearMap.coe_mk,
         AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
+      congr; rw [inst_K_mod];
+      sorry
   }
+  -- fun m ↦ TensorProduct.lift {
+  --   toFun := fun b ↦ {
+  --     toFun := fun l ↦ _
+  --     map_add' := fun l1 l2 ↦ by simp only [LinearMapClass.map_smul, ← smul_add]; rfl
+  --     map_smul' := fun k l ↦ by
+  --       simp only [LinearMapClass.map_smul, RingHom.id_apply]
+  --       rw [smul_comm]; simp only [unop_smul, LinearMap.smul_apply]
+  --       congr; sorry
+  --   }
+  --   map_add' := fun _ _ ↦ by
+  --     ext _ ; simp [add_smul]
+  --   map_smul' := fun k b ↦ by
+  --     ext l
+  --     simp only [LinearMapClass.map_smul, smul_assoc, LinearMap.map_smul_of_tower, LinearMap.coe_mk,
+  --       AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
+  -- }
 
 attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
 instance (K A B M : Type u)
@@ -86,8 +135,9 @@ instance (K A B M : Type u)
   smul r m := smul1 K A B M f m r
   one_smul m := by
     change smul1 K A B M f m (1 : B ⊗[K] (Module.End A M)ᵐᵒᵖ) = m
-    sorry
-  mul_smul := sorry
+    rw [smul1]; simp only [Algebra.TensorProduct.one_def, TensorProduct.lift.tmul, LinearMap.coe_mk,
+      AddHom.coe_mk, map_one, one_smul, unop_one, LinearMap.one_apply]
+  mul_smul x y m := sorry
   smul_zero := sorry
   smul_add := sorry
   add_smul := sorry
