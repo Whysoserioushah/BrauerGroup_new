@@ -1,4 +1,4 @@
-import BrauerGroup.CentralSimple
+import BrauerGroup.BrauerGroup
 import Mathlib.RingTheory.TensorProduct.Basic
 import Mathlib.Algebra.Opposites
 import Mathlib.RingTheory.SimpleModule
@@ -94,19 +94,57 @@ instance (K A B M : Type u)
     [IsSimpleModule A M] (f: B →ₐ[K] A) :
     Module (B ⊗[K] (Module.End A M)ᵐᵒᵖ)ᵐᵒᵖ (module_inst K A B M f) where
   smul := fun r m => smul1 K A B M f m r.unop
-  one_smul := sorry
+  one_smul m := by
+    change smul1 K A B M f m 1 = m
+    rw [smul1, Algebra.TensorProduct.one_def]
+    simp only [TensorProduct.lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, map_one, one_smul,
+      unop_one, LinearMap.one_apply]
   mul_smul x y m := sorry
   smul_zero := sorry
   smul_add := sorry
   add_smul := sorry
   zero_smul := sorry
 
-theorem tensor_is_simple (K A B M : Type u)
+attribute [-instance] MulOpposite.instAddCommMonoid MulOpposite.instModule in
+set_option synthInstance.maxHeartbeats 40000 in
+instance tensor_is_simple (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
     [IsSimpleOrder (RingCon B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    [IsSimpleModule A M] (f: B →ₐ[K] A): IsSimpleOrder (RingCon (B ⊗[K] (Module.End A M)ᵐᵒᵖ)) := by
-
-  sorry
+    [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder (RingCon (B ⊗[K] (Module.End A M)ᵐᵒᵖ)) := by
+  haveI : IsCentralSimple K (Module.End A M)ᵐᵒᵖ := CSA_op_is_CSA K (Module.End A M) ({
+    is_central := by
+      intro l hl
+      rw [Subalgebra.mem_center_iff] at hl
+      obtain ⟨m, hm⟩ := IsSimpleModule.instIsPrincipal A (⊤ : Submodule A M)
+      let a : A := Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : l m ∈ Submodule.span A {m}) |>.choose
+      have ha : l m = a • m := Submodule.mem_span_singleton.1
+        (hm ▸ ⟨⟩ : l m ∈ Submodule.span A {m}) |>.choose_spec.symm
+      have l_eq : l = ⟨⟨(a • ·), sorry⟩, sorry⟩ := sorry
+      have mem_a : a ∈ Subalgebra.center K A := by
+        rw [Subalgebra.mem_center_iff]
+        intro b
+        let 𝒷 : Module.End A M := ⟨⟨(b • ·), sorry⟩, sorry⟩
+        specialize hl 𝒷
+        have hl : b • l m = l (b • m) := congr($hl m)
+        simp only [l_eq, LinearMap.coe_mk, AddHom.coe_mk] at hl
+        rw [smul_smul, smul_smul] at hl
+        let ann : RingCon A := RingCon.fromIdeal {r | r • m = 0} (by sorry) (by sorry)
+          (by sorry) (by sorry) (by sorry)
+        sorry
+      have := csa_A.1 mem_a
+      rw [Algebra.mem_bot] at *
+      rcases this with ⟨k, hk⟩
+      use k
+      rw [l_eq]
+      ext m
+      simp only [Module.algebraMap_end_apply, LinearMap.coe_mk, AddHom.coe_mk]
+      rw [← hk, algebraMap_smul]; congr
+      ext k m
+      change algebraMap _ _ k • m = k • m
+      simp only [algebraMap_smul]
+    is_simple := inferInstance
+  })
+  exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M)ᵐᵒᵖ _ _ _ _ _ this
 
 variable (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
