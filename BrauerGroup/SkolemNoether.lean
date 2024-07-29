@@ -129,7 +129,10 @@ instance tensor_is_simple (K A B M : Type u)
         simp only [l_eq, LinearMap.coe_mk, AddHom.coe_mk] at hl
         rw [smul_smul, smul_smul] at hl
         let ann : RingCon A := RingCon.fromIdeal {r | r • m = 0} (by sorry) (by sorry)
-          (by sorry) (by sorry) (by sorry)
+          (by sorry) (fun x y hxy ↦ by
+            change _ • m = 0 at *
+            rw [← smul_smul, hxy]
+            sorry) (by sorry)
         sorry
       have := csa_A.1 mem_a
       rw [Algebra.mem_bot] at *
