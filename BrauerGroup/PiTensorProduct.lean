@@ -191,7 +191,7 @@ end PiTensorProduct
 section PiTensorProduct.Basis
 
 variable (n : ℕ) (k : Type*) [Field k]
-variable (ι : Fin n → Type*) [Π i, Fintype (ι i)]
+variable (ι : Fin n → Type*) --[Π i, Fintype (ι i)]
 variable (V : Fin n → Type*) [Π i, AddCommGroup (V i)] [Π i, Module k (V i)]
 variable (B : (i : Fin n) → Basis (ι i) k (V i))
 
@@ -280,12 +280,6 @@ def finsuppPiTensorFinsupp :
           tprod k fun j ↦ fun₀ | z j => (x j) (z j) := sorry
       simp_rw [this]
       -- delta
-      erw [← (tprod k).map_sum_finset (A := fun i ↦ (x i).support)
-        (g := fun (z : (i : Fin n) → ι i) => fun j ↦ fun₀ | z j => (x j) (z j))]
-      -- convert (tprod k).map_sum_finset _
-      --   (fun i ↦ (x i).support) |>.symm.trans _ using 2
-      -- swap
-      -- · refine fun j => ?_
       sorry
       -- have eqx : x = fun i => _ := sorry
       )
@@ -323,6 +317,7 @@ example (n : ℕ) : Basis (Fin n → ι) k (⨂[k]^n V) :=
   Finsupp.basisSingleOne.map $ by
     let e : ⨂[k]^n V ≃ₗ[k] ⨂[k]^n (ι →₀ k) := PiTensorProduct.congr (fun i => ℬ.repr)
     refine LinearEquiv.symm $ e ≪≫ₗ ?_
+    sorry
   -- .mk (v := fun v => tprod k fun i => ℬ $ v i) sorry
   --   (fun x _ => by
   --     induction x using PiTensorProduct.induction_on with
