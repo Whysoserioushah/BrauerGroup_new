@@ -295,6 +295,12 @@ def piTensorBasis : Basis (Π i, ι i) k (⨂[k] i, V i) :=
   Finsupp.basisSingleOne.map $
     LinearEquiv.symm $ PiTensorProduct.congr (fun i => (B i).repr) ≪≫ₗ finsuppPiTensorFinsupp n k ι
 
+lemma piTensorBasis_apply (x : Π i, ι i) :
+    piTensorBasis n k ι V B x = tprod k fun i => (B i) (x i) := by
+  simp only [piTensorBasis, PiTensorProduct.congr, Basis.coe_repr_symm, finsuppPiTensorFinsupp,
+    LinearEquiv.trans_symm, Basis.map_apply, Finsupp.coe_basisSingleOne, LinearEquiv.trans_apply,
+    LinearEquiv.ofLinear_symm_apply, Finsupp.llift_apply, Finsupp.lift_apply, zero_smul,
+    Finsupp.sum_single_index, one_smul, map_tprod, Finsupp.total_single]
 
 end PiTensorProduct.Basis
 
