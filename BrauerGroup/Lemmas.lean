@@ -1,5 +1,5 @@
 import Mathlib.RingTheory.TensorProduct.Basic
-import BrauerGroup.CentralSimple
+import BrauerGroup.BrauerGroup
 
 universe u
 
@@ -80,12 +80,12 @@ theorem center_is_ext (hA : IsCentralSimple k A) [FiniteDimensional k A] :
 
 -- variable (D : Type u) [DivisionRing D] [Algebra k D]
 
-variable (M B : Type u) [AddCommMonoid M] [Module k M] [Ring B] [Algebra k B]
+variable (M B : Type u) [AddCommGroup M] [Module k M] [Ring B] [Algebra k B]
 
-def MM (M : Type u) [AddCommMonoid M] [Module k M] (f : B →ₐ[k] Module.End k M):= M
+def MM (M : Type u) [AddCommGroup M] [Module k M] (f : B →ₐ[k] Module.End k M):= M
 
-instance (f : B →ₐ[k] Module.End k M): AddCommMonoid (MM k B M f) :=
-  inferInstanceAs (AddCommMonoid M)
+instance (f : B →ₐ[k] Module.End k M): AddCommGroup (MM k B M f) :=
+  inferInstanceAs (AddCommGroup M)
 
 instance (f : B →ₐ[k] Module.End k M): Module k (MM k B M f) :=
   inferInstanceAs (Module k M)
@@ -98,10 +98,25 @@ instance BopModule (f : B →ₐ[k] Module.End k M) : Module B (MM k B M f) wher
   mul_smul b1 b2 m := by
     change f (b1 * b2) m = f b1 (f b2 m)
     simp only [MulOpposite.unop_mul, _root_.map_mul, LinearMap.mul_apply]
-  smul_zero := sorry
-  smul_add := sorry
-  add_smul := sorry
-  zero_smul := sorry
+  smul_zero b := by
+    change f b 0 = 0
+    simp only [LinearMap.map_zero]
+  smul_add b m1 m2 := by
+    change f b (m1 + m2) = f b m1 + f b m2
+    simp only [LinearMap.map_add]
+  add_smul b1 b2 m := by
+    change f (b1 + b2) m = f b1 m + f b2 m
+    simp only [map_add, LinearMap.add_apply]
+  zero_smul m := by
+    change f 0 m = 0
+    simp only [map_zero, LinearMap.zero_apply]
+
+variable [FiniteDimensional k B] (hB : IsSimpleOrder (RingCon B))
+
+def LinearEquiv.of_dimeq_simple_ring (M1 M2 : Type u) [AddCommGroup M1] [AddCommGroup M2]
+    [Module B M1] [Module B M2]
+    (dimeq : FiniteDimensional.finrank B M1 = FiniteDimensional.finrank B M2): M1 ≃ₗ[B] M2 := sorry
+
 
 def inst_eqv (f g : B →ₐ[k] Module.End k M) : (MM k B M f) ≃ₗ[B] (MM k B M g) := sorry
 

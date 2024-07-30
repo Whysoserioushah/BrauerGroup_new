@@ -12,7 +12,7 @@ variable (A B : Type v) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
 open scoped TensorProduct BigOperators
 
 lemma bijective_of_dim_eq_of_isCentralSimple
-    [csa_source : IsCentralSimple K A]
+    [csa_source : IsSimpleOrder (RingCon A)]
     [fin_source : FiniteDimensional K A]
     [fin_target : FiniteDimensional K B]
     (f : A →ₐ[K] B) (h : FiniteDimensional.finrank K A = FiniteDimensional.finrank K B) :
@@ -32,7 +32,7 @@ lemma bijective_of_dim_eq_of_isCentralSimple
     rw [Function.bijective_iff_existsUnique]
     intro b
     refine ⟨0, Subsingleton.elim _ _, fun _ _ => Subsingleton.elim _ _⟩
-  · have := RingCon.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 csa_source.2 f.toRingHom
+  · have := RingCon.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 csa_source f.toRingHom
     rcases this with (H|H)
     · have : (1 : A) ∈ RingCon.ker f.toRingHom := H ▸ ⟨⟩
       simp only [AlgHom.toRingHom_eq_coe, RingCon.mem_ker, map_one] at this
@@ -149,7 +149,8 @@ lemma dim_eq :
 
 def equivEnd [Small.{v, u} K] : A ⊗[K] Aᵐᵒᵖ ≃ₐ[K] Module.End K A :=
   AlgEquiv.ofBijective (toEnd K A) $
-    bijective_of_dim_eq_of_isCentralSimple _ _ _ _ $ dim_eq K A
+    @bijective_of_dim_eq_of_isCentralSimple K _ _ _ _ _ _ _
+      (@IsCentralSimple.TensorProduct.simple K _ A Aᵐᵒᵖ _ _ _ _ hA.2 _) _ _ _ $ dim_eq K A
 
 end tensor_self_op
 
