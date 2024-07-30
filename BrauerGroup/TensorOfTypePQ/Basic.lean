@@ -180,43 +180,80 @@ section extendScalars
 
 variable (k K V W : Type*)
 variable {p q : ℕ}
-variable [CommRing k] [CommRing K] [Algebra k K]
+variable [Field k] [Field K] [Algebra k K]
 variable [AddCommGroup V] [Module k V]
 
-variable {k} in
+variable {k V} (p) in
 def _root_.Basis.extendScalarsTensorPower {ι : Type*} (b : Basis ι k V) :
   Basis (Fin p → ι) K (K ⊗[k] (⨂[k]^p V)) :=
-.mk (v := fun i => 1 ⊗ₜ tprod k fun j => b (i j))
-  (_) sorry
+Algebra.TensorProduct.basis K (piTensorBasis _ _ _ _ (fun _ => b))
 
-variable {k} in
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPower_apply {ι : Type*} (b : Basis ι k V) (i : Fin p → ι) :
+    Basis.extendScalarsTensorPower K p b i = 1 ⊗ₜ tprod k fun j => b (i j) := by
+  simp only [Basis.extendScalarsTensorPower, Algebra.TensorProduct.basis_apply, piTensorBasis_apply]
+
+variable {k V} (p) in
 def _root_.Basis.tensorPowerExtendScalars {ι : Type*} (b : Basis ι k V) :
     Basis (Fin p → ι) K (⨂[K]^p $ K ⊗[k] V) :=
-.mk (v := fun i => tprod K fun j => 1 ⊗ₜ b (i j)) sorry sorry
+  piTensorBasis _ _ _ _ fun _ => Algebra.TensorProduct.basis K b
+
+@[simp]
+lemma _root_.Basis.tensorPowerExtendScalars_apply {ι : Type*} (b : Basis ι k V) (i : Fin p → ι) :
+    Basis.tensorPowerExtendScalars K p b i = tprod K fun j => 1 ⊗ₜ[k] b (i j) := by
+  simp only [Basis.tensorPowerExtendScalars, piTensorBasis_apply, Algebra.TensorProduct.basis_apply]
 
 variable {k} in
-def _root_.Basis.extendScalarsTensorPowerEquiv {ι : Type*} (b : Basis ι k V) : K ⊗[k] (⨂[k]^p V) ≃ₗ[K] (⨂[K]^p $ K ⊗[k] V) :=
-  LinearEquiv.ofLinear
-    (b.extendScalarsTensorPower K |>.constr K fun v => tprod K fun j => 1 ⊗ₜ[k] b (v j))
-    (b.tensorPowerExtendScalars K |>.constr K fun v => 1 ⊗ₜ tprod k fun j => b (v j))
-    (by
-      apply (Basis.tensorPowerExtendScalars K V b).ext
-      intro i
-      simp only [LinearMap.coe_comp, Function.comp_apply, Basis.constr_basis, LinearMap.id_coe,
-        id_eq]
-      simp only [Basis.tensorPowerExtendScalars, Basis.coe_mk]
-      convert Basis.constr_basis _ _ _ _
-      simp only [Basis.extendScalarsTensorPower, Basis.coe_mk]) sorry
+def _root_.Basis.extendScalarsTensorPowerEquiv {ι : Type*} (b : Basis ι k V) :
+    K ⊗[k] (⨂[k]^p V) ≃ₗ[K] (⨂[K]^p $ K ⊗[k] V) :=
+  (b.extendScalarsTensorPower K p).equiv (b.tensorPowerExtendScalars K p) (Equiv.refl _)
+
+variable {k V} in
+def extendScalarsLinearMapToFun {ι : Type*} (b : Basis ι k V) (f : TensorOfType k V p q) :
+    TensorOfType K (K ⊗[k] V) p q :=
+  (b.extendScalarsTensorPowerEquiv K).toLinearMap ∘ₗ
+      { LinearMap.lTensor K f with
+        map_smul' := fun a x => by
+          simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
+          induction x using TensorProduct.induction_on with
+          | zero => simp
+          | tmul b v =>
+            simp only [smul_tmul', smul_eq_mul, LinearMap.lTensor_tmul]
+          | add => aesop } ∘ₗ
+      (b.extendScalarsTensorPowerEquiv K).symm.toLinearMap
+
+variable {k V} in
+lemma extendScalarsLinearMapToFun_add {ι : Type*} (b : Basis ι k V) (f g : TensorOfType k V p q) :
+    extendScalarsLinearMapToFun K b (f + g) =
+    extendScalarsLinearMapToFun K b f + extendScalarsLinearMapToFun K b g := by
+  simp only [extendScalarsLinearMapToFun, LinearMap.lTensor_add]
+  ext
+  simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, LinearEquiv.coe_coe,
+    LinearMap.coe_mk, LinearMap.coe_toAddHom, Function.comp_apply, LinearMap.add_apply, map_add]
+
+variable {k V} in
+lemma extendScalarsLinearMapToFun_smul {ι : Type*} (b : Basis ι k V)
+    (a : k) (f : TensorOfType k V p q) :
+    extendScalarsLinearMapToFun K b (a • f) = a • extendScalarsLinearMapToFun K b f := by
+  simp only [extendScalarsLinearMapToFun, LinearMap.lTensor_smul, RingHom.id_apply]
+  fapply Basis.ext (b := b.tensorPowerExtendScalars K q)
+  intro i
+  simp only [Basis.tensorPowerExtendScalars_apply, LinearMap.coe_comp, LinearEquiv.coe_coe,
+    LinearMap.coe_mk, LinearMap.coe_toAddHom, Function.comp_apply, LinearMap.smul_apply,
+    Basis.extendScalarsTensorPowerEquiv, Basis.equiv_symm]
+  have := (b.tensorPowerExtendScalars K q).equiv_apply (b' := b.extendScalarsTensorPower K q)
+    (i := i) (Equiv.refl _)
+  simp only [Basis.tensorPowerExtendScalars_apply, Equiv.refl_apply,
+    Basis.extendScalarsTensorPower_apply] at this
+  erw [this]
+  simp only [LinearMap.lTensor_tmul]
+  rw [algebra_compatible_smul K a, map_smul, algebraMap_smul]
 
 def extendScalarsLinearMap {ι : Type*} (b : Basis ι k V) :
     TensorOfType k V p q →ₗ[k] TensorOfType K (K ⊗[k] V) p q where
-  toFun f :=
-      (b.extendScalarsTensorPowerEquiv K).toLinearMap ∘ₗ
-      { LinearMap.lTensor K f with
-        map_smul' := sorry } ∘ₗ
-      (b.extendScalarsTensorPowerEquiv K).symm.toLinearMap
-  map_add' := sorry
-  map_smul' := sorry
+  toFun f := extendScalarsLinearMapToFun K b f
+  map_add' := extendScalarsLinearMapToFun_add K b
+  map_smul' := extendScalarsLinearMapToFun_smul K b
 
 
 #exit
