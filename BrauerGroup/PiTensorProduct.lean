@@ -1,4 +1,5 @@
 import Mathlib.LinearAlgebra.PiTensorProduct
+import BrauerGroup.LinearMap
 import BrauerGroup.Dual
 import Mathlib.Data.Finset.Finsupp
 import Mathlib.Data.Finsupp.Notation
@@ -7,11 +8,12 @@ suppress_compilation
 
 open TensorProduct PiTensorProduct
 
+
+namespace PiTensorProduct
+
 variable {ι : Type*} (k K : Type*) [CommSemiring k] [CommSemiring K] [Algebra k K]
 variable (V : ι → Type*) [Π i : ι, AddCommMonoid (V i)] [Π i : ι, Module k (V i)]
 variable (W : ι → Type*) [Π i : ι, AddCommMonoid (W i)] [Π i : ι, Module k (W i)]
-
-namespace PiTensorProduct
 
 def extendScalars : (⨂[k] i, V i) →ₗ[k] ⨂[K] i, (K ⊗[k] V i) :=
   PiTensorProduct.lift
@@ -58,106 +60,6 @@ lemma extendScalars_tprod (x : Π i : ι, V i) :
     tprod K (1 ⊗ₜ x ·) := by
   simp only [extendScalars, lift.tprod, MultilinearMap.coe_mk]
 
--- def PiTensorProduct.tensorProductAux (w : (i : ι) → W i) :
---     (⨂[k] i, V i)  →ₗ[k] ⨂[k] i, (V i ⊗[k] W i) :=
---   PiTensorProduct.map fun i =>
---     { toFun := fun v => v ⊗ₜ[k] w i
---       map_add' := by simp [add_tmul]
---       map_smul' := by simp [smul_tmul] }
-
--- @[simp]
--- lemma PiTensorProduct.tensorProductAux_tprod (w : (i : ι) → W i) (x : Π i : ι, V i) :
---     PiTensorProduct.tensorProductAux k V W w (tprod k x) =
---     tprod k fun i => x i ⊗ₜ[k] w i := by
---   simp only [tensorProductAux, map_tprod, LinearMap.coe_mk, AddHom.coe_mk]
-
--- def PiTensorProduct.tensorProduct :
---     (⨂[k] i, V i) ⊗[k] (⨂[k] i, W i) →ₗ[k] ⨂[k] i, (V i ⊗[k] W i) :=
---   TensorProduct.lift
---     { toFun := fun v =>
---         PiTensorProduct.lift
---         { toFun := fun w => PiTensorProduct.tensorProductAux k V W w v
---           map_add' := by
---             intro _ w i x y
---             simp only
---             induction v using PiTensorProduct.induction_on with
---             | smul_tprod a v =>
---               simp only [LinearMapClass.map_smul, tensorProductAux_tprod]
---               rw [← smul_add]
---               rw [show (fun j ↦ v j ⊗ₜ[k] Function.update w i x j) =
---                 Function.update (fun i => v i ⊗ₜ[k] w i) i (v i ⊗ₜ[k] x) by
---                 ext <;> simp only [Function.update] <;> aesop,
---                 show (fun j ↦ v j ⊗ₜ[k] Function.update w i y j) =
---                 Function.update (fun i => v i ⊗ₜ[k] w i) i (v i ⊗ₜ[k] y) by
---                 ext <;> simp only [Function.update] <;> aesop]
---               rw [← (tprod k).map_add]
---               congr
---               ext
---               simp only [Function.update]
---               split_ifs with h
---               · subst h
---                 simp only [tmul_add]
---               · rfl
---             | add x y hx hy =>
---               rw [map_add, hx, hy, map_add, map_add]
---               abel
---           map_smul' := by
---             intro _ w i a x
---             simp only
---             induction v using PiTensorProduct.induction_on with
---             | smul_tprod b v =>
---               simp only [map_smul, tensorProductAux_tprod]
---               -- rw [← smul_tmul]
---               rw [show (fun j ↦ v j ⊗ₜ[k] Function.update w i x j) =
---                 Function.update (fun i => v i ⊗ₜ[k] w i) i (v i ⊗ₜ[k] x) by
---                 ext; simp only [Function.update]; aesop,
---                 show (fun j ↦ v j ⊗ₜ[k] Function.update w i (a • x) j) =
---                 Function.update (fun i => v i ⊗ₜ[k] w i) i (a • (v i ⊗ₜ[k] x)) by
---                 ext; simp only [Function.update]; aesop]
---               rw [(tprod k).map_smul, smul_comm]
---             | add x y hx hy =>
---               rw [map_add, hx, hy, map_add, smul_add] }
---       map_add' := fun x y => by
---         simp only [map_add]
---         rw [← map_add]
---         rfl
---       map_smul' := fun a x => by
---         simp only [LinearMapClass.map_smul, RingHom.id_apply]
---         rw [← map_smul]
---         rfl }
--- /-
--- (∑ᵢ₁, xᵢ₁ ⊗ yᵢ₁) ⊗ₜ (∑ᵢ₂, xᵢ₂ ⊗ yᵢ₂) ...
--- -/
--- def PiTensorProduct.tensorProductSymm :
---     (⨂[k] i, V i ⊗[k] W i) →ₗ[k] (⨂[k] i, W i) ⊗[k] (⨂[k] i, V i) :=
---   lift $ by
---     have := (tprod k (s := V))
---     have := MultilinearMap.domCoprod (R := k) (N := ⨂[k] i, V i ⊗[k] W i) (ι₁ := ι) (ι₂ := ι) (N₁ := (⨂[k] i, V i)) (N₂ := (⨂[k] i, W i))
---   -- { toFun := fun x => tprod _ fun i => x.1 i ⊗ₜ x.2 i
---   --   map_add' := by
---   --     intro _ x i x y
---   --     simp only
---   --     rw [← tmul_add]
---   --     congr
---   --     ext
---   --     simp only [Function.update]
---   --     split_ifs with h
---   --     · subst h
---   --       simp only [tmul_add]
---   --     · rfl
---   --   map_smul' := by
---   --     intro _ x i a y
---   --     simp only
---   --     rw [← tmul_smul]
---   --     congr
---   --     ext
---   --     simp only [Function.update]
---   --     split_ifs with h
---   --     · subst h
---   --       simp only [tmul_smul]
---   --     · rfl }
-
-
 /--
 pure tensor of pure tensor
 -/
@@ -190,9 +92,10 @@ end PiTensorProduct
 
 section PiTensorProduct.Basis
 
-variable (n k : Type*) [Field k] [Fintype n] [DecidableEq n]
-variable (ι : n → Type*) --[Π i, Fintype (ι i)]
-variable (V : n → Type*) [Π i, AddCommGroup (V i)] [Π i, Module k (V i)]
+variable (n k : Type*) [CommSemiring k] [Nontrivial k] [NoZeroDivisors k]
+variable [Fintype n] [DecidableEq n]
+variable (ι : n → Type*)
+variable (V : n → Type*) [Π i, AddCommMonoid (V i)] [Π i, Module k (V i)]
 variable (B : (i : n) → Basis (ι i) k (V i))
 
 lemma prod_mul_tprod (x : n → k) (v : (i : n) → V i) :
@@ -217,7 +120,7 @@ def finsuppPiTensorFinsupp :
           simp only [Finsupp.coe_mk, Finsupp.coe_add, Pi.add_apply]
           calc ∏ j : n, (Function.update f i (a + b) j) (v j)
             _ = ∏ j : n, if j = i then a (v i) + b (v i) else f j (v j) := by
-              refine Finset.prod_congr rfl fun j hj => ?_
+              refine Finset.prod_congr rfl fun j _ => ?_
               simp only [Function.update]
               aesop
           simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
@@ -225,12 +128,12 @@ def finsuppPiTensorFinsupp :
           simp only [Finset.card_singleton, pow_one, add_mul]
           rw [calc ∏ j : n, (Function.update f i a j) (v j)
               _ = ∏ j : n, if j = i then a (v i) else f j (v j) := by
-                refine Finset.prod_congr rfl fun j hj => ?_
+                refine Finset.prod_congr rfl fun j _ => ?_
                 simp only [Function.update]
                 aesop,
               calc ∏ j : n, (Function.update f i b j) (v j)
               _ = ∏ j : n, if j = i then b (v i) else f j (v j) := by
-                refine Finset.prod_congr rfl fun j hj => ?_
+                refine Finset.prod_congr rfl fun j _ => ?_
                 simp only [Function.update]
                 aesop]
           simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
@@ -242,7 +145,7 @@ def finsuppPiTensorFinsupp :
           simp only [Finsupp.coe_mk, Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul]
           calc ∏ j : n, (Function.update f i (a • x) j) (v j)
             _ = ∏ j : n, if j = i then a * x (v i) else f j (v j) := by
-              refine Finset.prod_congr rfl fun j hj => ?_
+              refine Finset.prod_congr rfl fun j _ => ?_
               simp only [Function.update]
               aesop
           simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
@@ -250,7 +153,7 @@ def finsuppPiTensorFinsupp :
           simp only [Finset.card_singleton, pow_one, mul_pow]
           rw [calc ∏ j : n, (Function.update f i x j) (v j)
               _ = ∏ j : n, if j = i then x (v i) else f j (v j) := by
-                refine Finset.prod_congr rfl fun j hj => ?_
+                refine Finset.prod_congr rfl fun j _ => ?_
                 simp only [Function.update]
                 aesop]
           simp only [Finset.prod_ite, Finset.prod_const, Finset.filter_eq']
@@ -305,156 +208,193 @@ lemma piTensorBasis_apply (x : Π i, ι i) :
 
 end PiTensorProduct.Basis
 
-#exit
-section PiTensorProduct.fin
+section extendScalars
 
-variable {n : ℕ} (k K : Type*) [CommSemiring k] [CommSemiring K] [Algebra k K]
-variable (V : Fin (n + 1) → Type*) [Π i, AddCommMonoid (V i)] [Π i, Module k (V i)]
-variable (W : Fin (n + 1) → Type*) [Π i, AddCommMonoid (W i)] [Π i, Module k (W i)]
+variable (k K V W W' : Type*)
+variable {p q : ℕ}
+variable [CommSemiring k] [Nontrivial k] [NoZeroDivisors k]
+variable [CommSemiring K] [Nontrivial K] [NoZeroDivisors K] [Algebra k K]
+variable [AddCommMonoid V] [Module k V]
+variable [AddCommMonoid W] [Module k W]
+variable [AddCommMonoid W'] [Module k W']
 
-def PiTensorProduct.succ : (⨂[k] i, V i) ≃ₗ[k] V 0 ⊗[k] (⨂[k] i : Fin n, V i.succ) :=
-LinearEquiv.ofLinear
-  (PiTensorProduct.lift
-    { toFun := fun v => v 0 ⊗ₜ[k] tprod k fun i => v i.succ
-      map_add' := by
-        intro _ v i x y
-        simp only
-        by_cases h : i = 0
-        · subst h
-          simp only [Function.update_same]
-          rw [add_tmul]
-          congr 3 <;>
-          · ext i
-            rw [Function.update_noteq (h := Fin.succ_ne_zero i),
-              Function.update_noteq (h :=  Fin.succ_ne_zero i)]
+variable {k V} (p) in
+def _root_.Basis.extendScalarsTensorPower {ι : Type*} (b : Basis ι k V) :
+  Basis (Fin p → ι) K (K ⊗[k] (⨂[k]^p V)) :=
+Algebra.TensorProduct.basis K (piTensorBasis _ _ _ _ (fun _ => b))
 
-        rw [Function.update_noteq (Ne.symm h), Function.update_noteq (Ne.symm h),
-          Function.update_noteq (Ne.symm h), ← tmul_add]
-        congr 1
-        have eq1 : (fun j : Fin n ↦ Function.update v i (x + y) j.succ) =
-          Function.update (fun i : Fin n ↦ v i.succ) (i.pred h)
-            (cast (by simp) x + cast (by simp) y):= by
-          ext j
-          simp only [Function.update, eq_mpr_eq_cast]
-          aesop
-        rw [eq1, (tprod k).map_add]
-        congr 2 <;>
-        ext j <;>
-        simp only [Function.update] <;>
-        have eq : (j = i.pred h) = (j.succ = i) := by
-          rw [← iff_eq_eq]
-          constructor
-          · rintro rfl
-            exact Fin.succ_pred i h
-          · rintro rfl
-            simp only [Fin.pred_succ]
-        · simp_rw [eq] <;> aesop
-        · simp_rw [eq] <;> aesop
-      map_smul' := by
-        intro _ v i a x
-        simp only
-        rw [smul_tmul', smul_tmul]
-        by_cases h : i = 0
-        · subst h
-          simp only [Function.update_same, tmul_smul]
-          rw [smul_tmul']
-          congr 2
-          ext j
-          rw [Function.update_noteq (Fin.succ_ne_zero j),
-            Function.update_noteq (Fin.succ_ne_zero j)]
-        · rw [Function.update_noteq (Ne.symm h), Function.update_noteq (Ne.symm h)]
-          congr 1
-          have eq1 : (fun j : Fin n ↦ Function.update v i (a • x) j.succ) =
-            Function.update (fun i : Fin n ↦ v i.succ) (i.pred h)
-              (a • cast (by simp) x):= by
-            ext j
-            simp only [Function.update, eq_mpr_eq_cast]
-            aesop
-          rw [eq1, (tprod k).map_smul]
-          congr
-          ext j
-          simp only [Function.update]
-          have eq : (j = i.pred h) = (j.succ = i) := by
-            rw [← iff_eq_eq]
-            constructor
-            · rintro rfl
-              exact Fin.succ_pred i h
-            · rintro rfl
-              simp only [Fin.pred_succ]
-          simp_rw [eq] <;> aesop })
-  (TensorProduct.lift
-    { toFun := fun v₀ => PiTensorProduct.lift
-        { toFun := fun v => tprod k $ Fin.cases v₀ v
-          map_add' := sorry
-          map_smul' := sorry }
-      map_add' := sorry
-      map_smul' := sorry }) sorry sorry
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPower_apply {ι : Type*} (b : Basis ι k V) (i : Fin p → ι) :
+    Basis.extendScalarsTensorPower K p b i = 1 ⊗ₜ tprod k fun j => b (i j) := by
+  simp only [Basis.extendScalarsTensorPower, Algebra.TensorProduct.basis_apply, piTensorBasis_apply]
 
-end PiTensorProduct.fin
+variable {k V} (p) in
+def _root_.Basis.tensorPowerExtendScalars {ι : Type*} (b : Basis ι k V) :
+    Basis (Fin p → ι) K (⨂[K]^p $ K ⊗[k] V) :=
+  piTensorBasis _ _ _ _ fun _ => Algebra.TensorProduct.basis K b
 
+@[simp]
+lemma _root_.Basis.tensorPowerExtendScalars_apply {ι : Type*} (b : Basis ι k V) (i : Fin p → ι) :
+    Basis.tensorPowerExtendScalars K p b i = tprod K fun j => 1 ⊗ₜ[k] b (i j) := by
+  simp only [Basis.tensorPowerExtendScalars, piTensorBasis_apply, Algebra.TensorProduct.basis_apply]
 
-section PiTensorProduct.fin
+variable {k V} (p) in
+def _root_.Basis.extendScalarsTensorPowerEquiv {ι : Type*} (b : Basis ι k V) :
+    K ⊗[k] (⨂[k]^p V) ≃ₗ[K] (⨂[K]^p $ K ⊗[k] V) :=
+  (b.extendScalarsTensorPower K p).equiv (b.tensorPowerExtendScalars K p) (Equiv.refl _)
 
-variable {k K : Type*} [Field k] [Field K] [Algebra k K]
-variable {V W : Type*} [AddCommGroup V] [AddCommGroup W] [Module k V] [Module k W]
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_apply {ι : Type*} (b : Basis ι k V)
+    (i : Fin p → ι) :
+    b.extendScalarsTensorPowerEquiv K p (1 ⊗ₜ tprod k fun j => b (i j)) =
+    tprod K fun j => 1 ⊗ₜ[k] b (i j) := by
+  simp only [Basis.extendScalarsTensorPowerEquiv]
+  have := (b.extendScalarsTensorPower K p).equiv_apply (b' := b.tensorPowerExtendScalars K p) i
+    (Equiv.refl _)
+  simp only [Basis.extendScalarsTensorPower_apply, Equiv.refl_apply,
+    Basis.tensorPowerExtendScalars_apply] at this
+  exact this
 
-variable (k) in
-def zeroPower (ι : Type*) (V : ι → Type*) [hι: IsEmpty ι]
-  [∀ i, AddCommGroup $ V i]  [∀ i, Module k $ V i]: (⨂[k] i : ι, V i) ≃ₗ[k] k :=
-  LinearEquiv.ofLinear
-    (PiTensorProduct.lift
-      { toFun := fun _ ↦ 1
-        map_add' := by
-          intros; exact hι.elim (by assumption)
-        map_smul' := by
-          intros; exact hι.elim (by assumption) })
-    { toFun := fun a ↦ a • tprod k fun x ↦ hι.elim x
-      map_add' := by
-        intro x y
-        simp only [self_eq_add_right, add_smul]
-      map_smul' := by
-        intro m x
-        simp [mul_smul]
-      }
-    (by
-      refine LinearMap.ext_ring ?h
-      simp only [LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, one_smul,
-        lift.tprod, MultilinearMap.coe_mk, LinearMap.id_coe, id_eq])
-    (by
-      ext x
-      simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, LinearMap.coe_mk,
-        AddHom.coe_mk, Function.comp_apply, lift.tprod, MultilinearMap.coe_mk, one_smul,
-        LinearMap.id_coe, id_eq]
-      refine MultilinearMap.congr_arg (tprod k) ?_
-      ext y
-      exact hι.elim y)
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_symm_apply {ι : Type*} (b : Basis ι k V)
+    (i : Fin p → ι) :
+    (b.extendScalarsTensorPowerEquiv K p).symm (tprod K fun j => 1 ⊗ₜ[k] b (i j)) =
+    1 ⊗ₜ[k] tprod k fun j => b (i j) := by
+  simp only [Basis.extendScalarsTensorPowerEquiv, Basis.equiv_symm, Equiv.refl_symm]
+  have := (b.tensorPowerExtendScalars K p).equiv_apply (b' := b.extendScalarsTensorPower K p) i
+    (Equiv.refl _)
+  simp only [Basis.tensorPowerExtendScalars_apply, Equiv.refl_apply,
+    Basis.extendScalarsTensorPower_apply] at this
+  exact this
 
-variable (k) in
-def PiTensorProduct.tensorCommutes (n : ℕ) :
-    ∀ (V W : Fin n → Type*)
-    [∀ i, AddCommGroup (V i)] [∀ i, Module k (V i)]
-    [∀ i, AddCommGroup (W i)] [∀ i, Module k (W i)],
-    (⨂[k] i : Fin n, V i) ⊗[k] (⨂[k] i : Fin n, W i) ≃ₗ[k]
-    ⨂[k] i : Fin n, (V i ⊗[k] W i) :=
-  n.recOn
-  (fun V W _ _ _ _ ↦ LinearEquiv.symm $ zeroPower k (Fin 0) (fun i : (Fin 0) ↦ V i ⊗[k] W i) ≪≫ₗ
-      (TensorProduct.lid k k).symm ≪≫ₗ TensorProduct.congr (zeroPower k (Fin 0) _).symm
-      (zeroPower k (Fin 0) _).symm)
-  (fun m em V W _ _ _ _ ↦
-      (TensorProduct.congr (PiTensorProduct.succ k (fun i : Fin (m+1) ↦ V i))
-      (PiTensorProduct.succ k (fun i : Fin (m+1) ↦ W i))) ≪≫ₗ
-      (TensorProduct.AlgebraTensorModule.tensorTensorTensorComm k k _ _ _ _) ≪≫ₗ
-      LinearEquiv.symm
-        ((PiTensorProduct.succ (n := m) k (V := fun i : Fin (m.succ) ↦ (V i ⊗[k] W i))) ≪≫ₗ
-          TensorProduct.congr (LinearEquiv.refl _ _)
-            (em (fun i => V i.succ) (fun i => W i.succ)).symm))
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_apply' {ιV ιW : Type*}
+    (bV : Basis ιV k V) (bW : Basis ιW k W)
+    (iV : Fin p → ιV) (f : V →ₗ[k] W) :
+    bW.extendScalarsTensorPowerEquiv K p (1 ⊗ₜ tprod k fun j => f $ bV (iV j)) =
+    tprod K fun j => (1 : K) ⊗ₜ[k] (f $ bV (iV j)) := by
+  have eq (j : Fin p) := bW.total_repr (f $ bV (iV j))
+  dsimp only [Finsupp.total, Finsupp.lsum, Finsupp.sum, LinearEquiv.coe_mk, LinearMap.coe_smulRight,
+    LinearMap.id_coe, id_eq, LinearMap.coe_mk, AddHom.coe_mk] at eq
+  have eq' : (tprod k fun j ↦ f (bV $ iV j)) = tprod k fun j =>
+    ∑ a ∈ (bW.repr (f (bV $ iV j))).support, (bW.repr (f (bV (iV j)))) a • bW a := by
+    congr
+    simp_rw [eq]
+  rw [eq', MultilinearMap.map_sum_finset, tmul_sum, map_sum]
+  simp_rw [MultilinearMap.map_smul_univ (tprod k), tmul_smul]
+  have eq'' : ((tprod K) fun j ↦ (1 : K) ⊗ₜ[k] f (bV (iV j))) = tprod K fun j =>
+    1 ⊗ₜ ∑ a ∈ (bW.repr (f (bV $ iV j))).support, (bW.repr (f (bV (iV j)))) a • bW a := by
+    congr
+    simp_rw [eq]
+  rw [eq'']
+  simp_rw [tmul_sum]
+  rw [MultilinearMap.map_sum_finset]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  rw [algebra_compatible_smul K, map_smul, map_prod]
+  simp only [Basis.extendScalarsTensorPowerEquiv_apply, tmul_smul]
+  rw [← MultilinearMap.map_smul_univ (tprod K)]
+  congr 1
+  ext i
+  simp
 
-theorem PiTensorProduct.tensorCommutes_apply (n : ℕ) (V W : Fin n → Type*)
-    [hi1 : ∀ i, AddCommGroup (V i)] [hi2 : ∀ i, Module k (V i)]
-    [hi1' : ∀ i, AddCommGroup (W i)] [hi2' : ∀ i, Module k (W i)]
-    (v : Π i : Fin n, V i) (w : Π i : Fin n, W i) :
-    PiTensorProduct.tensorCommutes k n V W ((tprod k v) ⊗ₜ (tprod k w)) =
-    tprod k (fun i ↦ v i ⊗ₜ w i) := by
-    sorry
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_symm_apply' {ιV ιW : Type*}
+    (bV : Basis ιV k V) (bW : Basis ιW k W)
+    (iV : Fin p → ιV) (f : V →ₗ[k] W) :
+    (bW.extendScalarsTensorPowerEquiv K p).symm (tprod K fun j => (1 : K) ⊗ₜ[k] (f $ bV (iV j))) =
+     (1 ⊗ₜ tprod k fun j => f $ bV (iV j)) := by
+  apply_fun (bW.extendScalarsTensorPowerEquiv K p) using
+    (bW.extendScalarsTensorPowerEquiv K p).injective
+  simp only [LinearEquiv.apply_symm_apply, Basis.extendScalarsTensorPowerEquiv_apply']
 
-end PiTensorProduct.fin
+set_option maxHeartbeats 500000 in
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_comp_extendScalars
+    {ιV ιW : Type*}
+    (bV : Basis ιV k V) (bW : Basis ιW k W)
+    (f : V →ₗ[k] W) :
+    (bW.extendScalarsTensorPowerEquiv K p).toLinearMap ∘ₗ
+      (LinearMap.extendScalars K (PiTensorProduct.map fun _ => f)) =
+    (PiTensorProduct.map fun _ => f.extendScalars K) ∘ₗ
+      (bV.extendScalarsTensorPowerEquiv K p).toLinearMap := by
+  ext v
+  simp only [AlgebraTensorModule.curry_apply, LinearMap.compMultilinearMap_apply, curry_apply,
+    LinearMap.coe_restrictScalars, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+    LinearMap.extendScalars_apply, map_tprod]
+  have eq (j : Fin p) := bW.total_repr (f $ v j)
+  dsimp only [Finsupp.total, Finsupp.lsum, Finsupp.sum, LinearEquiv.coe_mk, LinearMap.coe_smulRight,
+    LinearMap.id_coe, id_eq, LinearMap.coe_mk, AddHom.coe_mk] at eq
+  have eq' : (tprod k fun j ↦ f (v j)) = tprod k fun j =>
+    ∑ a ∈ (bW.repr (f (v j))).support, (bW.repr (f (v j))) a • bW a := by
+    congr
+    simp_rw [eq]
+  rw [eq']
+  rw [MultilinearMap.map_sum_finset, tmul_sum, map_sum]
+  simp_rw [MultilinearMap.map_smul_univ (tprod k), tmul_smul]
+  rw [show ∑ x ∈ Fintype.piFinset fun j ↦ (bW.repr (f (v j))).support,
+    (Basis.extendScalarsTensorPowerEquiv K p bW)
+      ((∏ i : Fin p, (bW.repr (f (v i))) (x i)) • 1 ⊗ₜ[k] (tprod k) fun i ↦ bW (x i)) =
+    ∑ x ∈ Fintype.piFinset fun j ↦ (bW.repr (f (v j))).support,
+    (Basis.extendScalarsTensorPowerEquiv K p bW)
+      (algebraMap k K (∏ i : Fin p, (bW.repr (f (v i))) (x i)) •
+        1 ⊗ₜ[k] (tprod k) fun i ↦ bW (x i)) from Finset.sum_congr rfl fun _ _ => by
+        rw [algebra_compatible_smul K, map_smul, map_prod]]
+  simp_rw [map_smul]
+  have eq''' (x : Fin p → ιW) :
+      Basis.extendScalarsTensorPowerEquiv K p bW (1 ⊗ₜ[k] (tprod k) fun i ↦ bW (x i)) =
+      tprod K fun i => 1 ⊗ₜ[k] bW (x i) := by
+    rw [Basis.extendScalarsTensorPowerEquiv_apply]
+  simp_rw [eq''']
+  have eq₄ : (tprod k) v =
+    tprod k fun i => ∑ a ∈ (bV.repr (v i)).support, bV.repr (v i) a • bV a := by
+    congr
+    ext j
+    have := bV.total_repr (v j)
+    simpa [Eq.comm, Finsupp.total] using this
+  conv_rhs => rw [eq₄, MultilinearMap.map_sum_finset, tmul_sum, map_sum, map_sum]
+  simp_rw [MultilinearMap.map_smul_univ (tprod k), tmul_smul]
+  have eq₅ (x : Fin p → ιV) :
+      Basis.extendScalarsTensorPowerEquiv K p bV
+        ((∏ i : Fin p, (bV.repr (v i)) (x i)) • 1 ⊗ₜ[k] (tprod k) fun i ↦ bV (x i)) =
+      algebraMap k K (∏ i : Fin p, (bV.repr (v i)) (x i)) • tprod K fun i => 1 ⊗ₜ[k] bV (x i) := by
+    rw [algebra_compatible_smul K, map_smul, Basis.extendScalarsTensorPowerEquiv_apply]
+  simp_rw [eq₅, map_smul, PiTensorProduct.map_tprod]
+  simp only [LinearMap.extendScalars_apply, algebraMap_smul]
+  have eq₆ (x : Fin p → ιW) :
+      (∏ i : Fin p, (bW.repr (f (v i))) (x i)) • ((tprod K) fun i ↦ (1 : K) ⊗ₜ[k] bW (x i)) =
+      tprod K fun i => (1 : K) ⊗ₜ[k] ((bW.repr (f (v i))) (x i) • bW (x i)) := by
+    rw [algebra_compatible_smul K, map_prod, ← (tprod K).map_smul_univ]
+    congr
+    ext j
+    simp
+  simp_rw [eq₆]
+  have eq₇ (x : Fin p → ιV) :
+      (∏ i : Fin p, (bV.repr (v i)) (x i)) • ((tprod K) fun i ↦ (1 : K) ⊗ₜ[k] f (bV (x i))) =
+      tprod K fun i => 1 ⊗ₜ[k] ((bV.repr (v i)) (x i) • f (bV (x i))):= by
+    rw [algebra_compatible_smul K, map_prod, ← (tprod K).map_smul_univ]
+    congr
+    ext j
+    simp
+  simp_rw [eq₇]
+  have eq₈ : (tprod K fun j ↦ (1 : K) ⊗ₜ[k] f (v j)) = tprod K fun j =>
+    ∑ a ∈ (bW.repr (f (v j))).support, 1 ⊗ₜ ((bW.repr (f (v j))) a • bW a) := by
+    simp_rw [← tmul_sum]
+    congr
+    ext j
+    simp_rw [eq]
+  rw [MultilinearMap.map_sum_finset] at eq₈
+  rw [← eq₈]
+  have eq₉ : (tprod K fun j ↦ (1 : K) ⊗ₜ[k] f (v j)) = tprod K fun j =>
+    ∑ a ∈ (bV.repr (v j)).support, 1 ⊗ₜ (bV.repr (v j) a • f (bV a)) := by
+    simp_rw [← tmul_sum]
+    congr
+    ext j
+    have := bV.total_repr (v j)
+    conv_lhs => erw [← this]
+    erw [map_sum]
+    congr
+    ext i
+    simp
+  rw [MultilinearMap.map_sum_finset] at eq₉
+  rw [← eq₉]
+
+end extendScalars
