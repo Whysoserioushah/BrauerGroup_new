@@ -16,11 +16,12 @@ namespace TensorOfType
 
 section extendScalars
 
-variable (k K V W : Type*)
+variable (k K V W W' : Type*)
 variable {p q : ℕ}
 variable [Field k] [Field K] [Algebra k K]
 variable [AddCommGroup V] [Module k V]
 variable [AddCommGroup W] [Module k W]
+variable [AddCommGroup W'] [Module k W']
 
 variable {k V W} in
 def _root_.LinearMap.extendScalars (f : V →ₗ[k] W) : K ⊗[k] V →ₗ[K] K ⊗[k] W :=
@@ -39,6 +40,17 @@ lemma _root_.LinearMap.extendScalars_apply (f : V →ₗ[k] W) (a : K) (v : V) :
     LinearMap.extendScalars K f (a ⊗ₜ v) = a ⊗ₜ f v := by
   simp only [LinearMap.extendScalars, LinearMap.coe_mk, LinearMap.coe_toAddHom,
     LinearMap.lTensor_tmul]
+
+@[simp]
+lemma _root_.LinearMap.extendScalars_id :
+    LinearMap.extendScalars K (LinearMap.id : V →ₗ[k] V) = LinearMap.id := by
+  ext
+  simp
+
+lemma _root_.LinearMap.extendScalars_comp (f : V →ₗ[k] W) (g : W →ₗ[k] W') :
+    (g ∘ₗ f).extendScalars K = g.extendScalars K ∘ₗ f.extendScalars K := by
+  ext v
+  simp
 
 variable {k V} (p) in
 def _root_.Basis.extendScalarsTensorPower {ι : Type*} (b : Basis ι k V) :
@@ -128,6 +140,96 @@ lemma _root_.Basis.extendScalarsTensorPowerEquiv_symm_apply' {ιV ιW : Type*}
   apply_fun (bW.extendScalarsTensorPowerEquiv K p) using
     (bW.extendScalarsTensorPowerEquiv K p).injective
   simp only [LinearEquiv.apply_symm_apply, Basis.extendScalarsTensorPowerEquiv_apply']
+
+set_option maxHeartbeats 500000 in
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_comp_extendScalars
+    {ιV ιW : Type*}
+    (bV : Basis ιV k V) (bW : Basis ιW k W)
+    (f : V →ₗ[k] W) :
+    (bW.extendScalarsTensorPowerEquiv K p).toLinearMap ∘ₗ
+      (LinearMap.extendScalars K (PiTensorProduct.map fun _ => f)) =
+    (PiTensorProduct.map fun _ => f.extendScalars K) ∘ₗ
+      (bV.extendScalarsTensorPowerEquiv K p).toLinearMap := by
+  ext v
+  simp only [AlgebraTensorModule.curry_apply, LinearMap.compMultilinearMap_apply, curry_apply,
+    LinearMap.coe_restrictScalars, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+    LinearMap.extendScalars_apply, map_tprod]
+  have eq (j : Fin p) := bW.total_repr (f $ v j)
+  dsimp only [Finsupp.total, Finsupp.lsum, Finsupp.sum, LinearEquiv.coe_mk, LinearMap.coe_smulRight,
+    LinearMap.id_coe, id_eq, LinearMap.coe_mk, AddHom.coe_mk] at eq
+  have eq' : (tprod k fun j ↦ f (v j)) = tprod k fun j =>
+    ∑ a ∈ (bW.repr (f (v j))).support, (bW.repr (f (v j))) a • bW a := by
+    congr
+    simp_rw [eq]
+  rw [eq']
+  rw [MultilinearMap.map_sum_finset, tmul_sum, map_sum]
+  simp_rw [MultilinearMap.map_smul_univ (tprod k), tmul_smul]
+  rw [show ∑ x ∈ Fintype.piFinset fun j ↦ (bW.repr (f (v j))).support,
+    (Basis.extendScalarsTensorPowerEquiv K p bW)
+      ((∏ i : Fin p, (bW.repr (f (v i))) (x i)) • 1 ⊗ₜ[k] (tprod k) fun i ↦ bW (x i)) =
+    ∑ x ∈ Fintype.piFinset fun j ↦ (bW.repr (f (v j))).support,
+    (Basis.extendScalarsTensorPowerEquiv K p bW)
+      (algebraMap k K (∏ i : Fin p, (bW.repr (f (v i))) (x i)) •
+        1 ⊗ₜ[k] (tprod k) fun i ↦ bW (x i)) from Finset.sum_congr rfl fun _ _ => by
+        rw [algebra_compatible_smul K, map_smul, map_prod]]
+  simp_rw [map_smul]
+  have eq''' (x : Fin p → ιW) :
+      Basis.extendScalarsTensorPowerEquiv K p bW (1 ⊗ₜ[k] (tprod k) fun i ↦ bW (x i)) =
+      tprod K fun i => 1 ⊗ₜ[k] bW (x i) := by
+    rw [Basis.extendScalarsTensorPowerEquiv_apply]
+  simp_rw [eq''']
+  have eq₄ : (tprod k) v =
+    tprod k fun i => ∑ a ∈ (bV.repr (v i)).support, bV.repr (v i) a • bV a := by
+    congr
+    ext j
+    have := bV.total_repr (v j)
+    simpa [Eq.comm, Finsupp.total] using this
+  conv_rhs => rw [eq₄, MultilinearMap.map_sum_finset, tmul_sum, map_sum, map_sum]
+  simp_rw [MultilinearMap.map_smul_univ (tprod k), tmul_smul]
+  have eq₅ (x : Fin p → ιV) :
+      Basis.extendScalarsTensorPowerEquiv K p bV
+        ((∏ i : Fin p, (bV.repr (v i)) (x i)) • 1 ⊗ₜ[k] (tprod k) fun i ↦ bV (x i)) =
+      algebraMap k K (∏ i : Fin p, (bV.repr (v i)) (x i)) • tprod K fun i => 1 ⊗ₜ[k] bV (x i) := by
+    rw [algebra_compatible_smul K, map_smul, Basis.extendScalarsTensorPowerEquiv_apply]
+  simp_rw [eq₅, map_smul, PiTensorProduct.map_tprod]
+  simp only [LinearMap.extendScalars_apply, algebraMap_smul]
+  have eq₆ (x : Fin p → ιW) :
+      (∏ i : Fin p, (bW.repr (f (v i))) (x i)) • ((tprod K) fun i ↦ (1 : K) ⊗ₜ[k] bW (x i)) =
+      tprod K fun i => (1 : K) ⊗ₜ[k] ((bW.repr (f (v i))) (x i) • bW (x i)) := by
+    rw [algebra_compatible_smul K, map_prod, ← (tprod K).map_smul_univ]
+    congr
+    ext j
+    simp
+  simp_rw [eq₆]
+  have eq₇ (x : Fin p → ιV) :
+      (∏ i : Fin p, (bV.repr (v i)) (x i)) • ((tprod K) fun i ↦ (1 : K) ⊗ₜ[k] f (bV (x i))) =
+      tprod K fun i => 1 ⊗ₜ[k] ((bV.repr (v i)) (x i) • f (bV (x i))):= by
+    rw [algebra_compatible_smul K, map_prod, ← (tprod K).map_smul_univ]
+    congr
+    ext j
+    simp
+  simp_rw [eq₇]
+  have eq₈ : (tprod K fun j ↦ (1 : K) ⊗ₜ[k] f (v j)) = tprod K fun j =>
+    ∑ a ∈ (bW.repr (f (v j))).support, 1 ⊗ₜ ((bW.repr (f (v j))) a • bW a) := by
+    simp_rw [← tmul_sum]
+    congr
+    ext j
+    simp_rw [eq]
+  rw [MultilinearMap.map_sum_finset] at eq₈
+  rw [← eq₈]
+  have eq₉ : (tprod K fun j ↦ (1 : K) ⊗ₜ[k] f (v j)) = tprod K fun j =>
+    ∑ a ∈ (bV.repr (v j)).support, 1 ⊗ₜ (bV.repr (v j) a • f (bV a)) := by
+    simp_rw [← tmul_sum]
+    congr
+    ext j
+    have := bV.total_repr (v j)
+    conv_lhs => erw [← this]
+    erw [map_sum]
+    congr
+    ext i
+    simp
+  rw [MultilinearMap.map_sum_finset] at eq₉
+  rw [← eq₉]
 
 variable {k V} in
 def extendScalarsLinearMapToFun {ι : Type*} (b : Basis ι k V) (f : TensorOfType k V p q) :
@@ -255,6 +357,18 @@ instance : Category (VectorSpaceWithTensorOfType k p q) where
 instance : FunLike (V ⟶ W) V W :=
   inferInstanceAs (FunLike (Hom V W) V W)
 
+lemma Hom.toLinearMap_injective : Function.Injective (Hom.toLinearMap : (V ⟶ W) → V →ₗ[k] W) := by
+  intro f g h
+  refine DFunLike.ext _ _ ?_
+  exact fun x => congr($h x)
+
+@[simp]
+lemma id_toLinearMap : (𝟙 V : Hom V V).toLinearMap = LinearMap.id := rfl
+
+@[simp]
+lemma comp_toLinearMap (f : V ⟶ V₁) (g : V₁ ⟶ V₂) :
+    (f ≫ g).toLinearMap = g.toLinearMap.comp f.toLinearMap := rfl
+
 instance : LinearMapClass (V ⟶ W) k V W :=
   inferInstanceAs (LinearMapClass (Hom V W) k V W)
 
@@ -292,6 +406,8 @@ instance (V : VectorSpaceWithTensorOfType k p q) : IsScalarTower k K (V.extendSc
       rw [algebra_compatible_smul K, smul_eq_mul]
     · aesop
 
+set_option maxHeartbeats 500000 in
+@[simps toLinearMap]
 def extendScalarsMap {V W : VectorSpaceWithTensorOfType k p q} (f : V ⟶ W) :
     V.extendScalars K ⟶ W.extendScalars K where
   __ := f.extendScalars K
@@ -319,51 +435,53 @@ def extendScalarsMap {V W : VectorSpaceWithTensorOfType k p q} (f : V ⟶ W) :
       conv_rhs => rw [← LinearMap.extendScalars_apply]
       refine DFunLike.congr_arg _ ?_
       simp only [Basis.extendScalarsTensorPowerEquiv_symm_apply']
-    have eqr : rhs = rhs' := sorry
-
+    have eqr : rhs = rhs' := by
+      simp only [rhs, rhs']
+      fapply Basis.ext (b := Basis.tensorPowerExtendScalars K q (Basis.ofVectorSpace k V))
+      intro v
+      simp only [Basis.tensorPowerExtendScalars_apply, LinearMap.coe_comp,
+        Function.comp_apply, LinearEquiv.coe_coe]
+      have eq1 := (Basis.ofVectorSpace k V).extendScalarsTensorPowerEquiv_symm_apply K (p := q) v
+      rw [eq1]
+      simp only [LinearMap.extendScalars_apply, LinearMap.coe_comp,
+        Function.comp_apply]
+      delta TensorOfType.extendScalars TensorOfType.extendScalarsLinearMap
+        TensorOfType.extendScalarsLinearMapToFun
+      dsimp only [LinearMap.coe_mk, AddHom.coe_mk]
+      simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+        Basis.extendScalarsTensorPowerEquiv_symm_apply, LinearMap.extendScalars_apply]
+      conv_rhs => rw [← LinearMap.comp_apply, ← LinearMap.extendScalars_apply]
+      change _ =
+        ((Basis.extendScalarsTensorPowerEquiv K p (Basis.ofVectorSpace k W.carrier)).toLinearMap ∘ₗ
+        (LinearMap.extendScalars K ((PiTensorProduct.map fun _ ↦ f.toLinearMap) ∘ₗ V.tensor)))
+        (1 ⊗ₜ[k] (tprod k) fun j ↦ (Basis.ofVectorSpace k V.carrier) (v j))
+      rw [LinearMap.extendScalars_comp, ← LinearMap.comp_assoc,
+        Basis.extendScalarsTensorPowerEquiv_comp_extendScalars (K := K) (bV := Basis.ofVectorSpace k V)
+          (bW := Basis.ofVectorSpace k W.carrier) (f := f.toLinearMap)]
+      rfl
     rw [eql, eqr, comm']
-
-    #exit
-    fapply Basis.ext (b := Basis.tensorPowerExtendScalars K q (Basis.ofVectorSpace k V))
-    intro v
-    simp only [Basis.tensorPowerExtendScalars_apply, Basis.coe_ofVectorSpace, LinearMap.coe_comp,
-      Function.comp_apply]
-    -- simp only [TensorOfType.extendScalars, TensorOfType.extendScalarsLinearMap_apply,
-    --   Basis.tensorPowerExtendScalars_apply, Basis.coe_ofVectorSpace, LinearMap.coe_comp,
-    --   Function.comp_apply]
-    erw [PiTensorProduct.map_tprod]
-    erw [show (tprod K fun i ↦ f.toLinearMap.extendScalars K (1 ⊗ₜ[k] v i) : ⨂[K]^q (extendScalars K W)) =
-      tprod K fun i => 1 ⊗ₜ[k] f (v i) by simp; rfl]
-
-    -- erw [LinearMap.extendScalars_apply]
-    -- -- have := congr($f.comm)
-    -- suffices
-    --   TensorOfType.extendScalars K (Basis.ofVectorSpace k W) W.tensor
-    --     (tprod K fun i => ((1 : K) ⊗ₜ[k] f (v i))) =
-    --   PiTensorProduct.map _
-    --     ((TensorOfType.extendScalarsLinearMapToFun K (Basis.ofVectorSpace k V.carrier) V.tensor)
-    --       ((tprod K) fun j ↦ 1 ⊗ₜ[k] ↑(v j))) by sorry
-    -- --   rw [this]
-
-    -- -- simp_rw [LinearMap.coe_mk]
 
 def extendScalarsFunctor : VectorSpaceWithTensorOfType k p q ⥤ VectorSpaceWithTensorOfType K p q where
   obj V := V.extendScalars K
-  map := _
-  map_id := _
-  map_comp := _
+  map := extendScalarsMap
+  map_id V := Hom.toLinearMap_injective _ _ $ by
+    simp only [extendScalars_carrier, extendScalarsMap_toLinearMap, id_toLinearMap,
+      LinearMap.extendScalars_id]
+  map_comp f g := Hom.toLinearMap_injective _ _ $ by
+    simp only [extendScalars_carrier, extendScalarsMap_toLinearMap, comp_toLinearMap,
+      LinearMap.extendScalars_comp]
 
 end extendScalars
 
 section twisedForm
 
 variable (p q : ℕ)
-variable {k : Type*} (K : Type*) [CommRing k] [CommRing K] [Algebra k K]
+variable {k : Type*} (K : Type*) [Field k] [Field K] [Algebra k K]
 variable (V W : VectorSpaceWithTensorOfType k p q)
 
 structure twisedForm extends
   VectorSpaceWithTensorOfType k p q,
-  Equiv (V.extendScalars K) (toVectorSpaceWithTensorOfType.extendScalars K)
+  (V.extendScalars K) ≅ (toVectorSpaceWithTensorOfType.extendScalars K)
 
 end twisedForm
 
