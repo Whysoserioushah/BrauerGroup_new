@@ -121,6 +121,137 @@ lemma SetOfFinite_nonempty : (Set.range fun (L : SetOfFinite k K) ↦
   simp only [SetOfFinite, Set.mem_setOf_eq, IntermediateField.bot_toSubalgebra]
   infer_instance
 
+variable (k K L A B: Type u) [Field k] [Field K] [Field L] [Algebra k K] [Algebra K L]
+  [Algebra k L] [Ring A] [Ring B] [Algebra K A] [Algebra K B] [IsScalarTower k K L]
+
+def releaseAddHom' (h : A ≃ₐ[K] B) : L ⊗[K] A →+ L ⊗[K] B :=
+  TensorProduct.liftAddHom
+  {
+    toFun := fun l ↦
+    {
+      toFun := fun a ↦ l ⊗ₜ[K] h a
+      map_zero' := by simp only [map_zero, tmul_zero]
+      map_add' := by intro x y; simp only [map_add, TensorProduct.tmul_add]
+    }
+    map_zero' := by ext ; simp only [zero_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+      AddMonoidHom.zero_apply]
+    map_add' := by
+      intro x y; ext
+      simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.add_apply, TensorProduct.add_tmul]
+  }
+  (fun r l a ↦ by simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, TensorProduct.tmul_smul]; rw [TensorProduct.smul_tmul]; simp)
+
+set_option synthInstance.maxHeartbeats 40000 in
+def release' (h : A ≃ₐ[K] B) : L ⊗[K] A →ₐ[L] L ⊗[K] B where
+  __ := releaseAddHom' K L A B h
+  map_one' := by
+    simp only [releaseAddHom', Algebra.TensorProduct.one_def, ZeroHom.toFun_eq_coe,
+    AddMonoidHom.toZeroHom_coe, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
+    ZeroHom.coe_mk, _root_.map_one]
+  map_mul' := fun x y ↦ by
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [zero_mul, ZeroHom.toFun_eq_coe, map_zero, AddMonoidHom.toZeroHom_coe]
+    | tmul l a =>
+      induction y using TensorProduct.induction_on with
+      | zero => simp only [mul_zero, ZeroHom.toFun_eq_coe, map_zero, AddMonoidHom.toZeroHom_coe]
+      | tmul l a => simp [releaseAddHom']
+      | add x y hx hy =>
+        simp only [mul_add, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add]
+        simp_all only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
+    | add z w hz hw =>
+      simp only [add_mul, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add]
+      simp_all only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
+  commutes' := fun l ↦ by
+    simp only [releaseAddHom', Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
+      RingHom.id_apply, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, liftAddHom_tmul,
+      AddMonoidHom.coe_mk, ZeroHom.coe_mk, _root_.map_one]
+
+def absorbAddHom' (h : A ≃ₐ[K] B) : L ⊗[K] B →+ L ⊗[K] A :=
+  TensorProduct.liftAddHom
+  {
+    toFun := fun l ↦
+    {
+      toFun := fun a ↦ l ⊗ₜ[K] h.invFun a
+      map_zero' := by
+        simp only [AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AlgEquiv.symm_toEquiv_eq_symm,
+          EquivLike.coe_coe, map_zero, tmul_zero]
+      map_add' := by intro x y; simp only [AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe,
+        AlgEquiv.symm_toEquiv_eq_symm, EquivLike.coe_coe, map_add, TensorProduct.tmul_add]
+    }
+    map_zero' := by
+      ext;
+      simp only [AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AlgEquiv.symm_toEquiv_eq_symm,
+        EquivLike.coe_coe, zero_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.zero_apply]
+    map_add' := by
+      intro x y; ext
+      simp only [AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AlgEquiv.symm_toEquiv_eq_symm,
+        EquivLike.coe_coe, AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.add_apply,
+        TensorProduct.add_tmul]
+  }
+  (fun r l a ↦ by
+    simp only [AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AlgEquiv.symm_toEquiv_eq_symm,
+      EquivLike.coe_coe, AddMonoidHom.coe_mk, ZeroHom.coe_mk, LinearMapClass.map_smul, tmul_smul]; rfl)
+
+set_option synthInstance.maxHeartbeats 40000 in
+def absorb' (h : A ≃ₐ[K] B) : L ⊗[K] B →ₐ[L] L ⊗[K] A where
+  __ := absorbAddHom' K L A B h
+  map_one' := by
+    simp only [absorbAddHom', Algebra.TensorProduct.one_def, ZeroHom.toFun_eq_coe,
+    AddMonoidHom.toZeroHom_coe, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
+    ZeroHom.coe_mk, AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AlgEquiv.symm_toEquiv_eq_symm,
+    EquivLike.coe_coe, _root_.map_one]
+  map_mul' := fun x y ↦ by
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [zero_mul, ZeroHom.toFun_eq_coe, map_zero, AddMonoidHom.toZeroHom_coe]
+    | tmul l a =>
+      induction y using TensorProduct.induction_on with
+      | zero => simp only [mul_zero, ZeroHom.toFun_eq_coe, map_zero, AddMonoidHom.toZeroHom_coe]
+      | tmul l a => simp [absorbAddHom']
+      | add x y hx hy =>
+        simp only [mul_add, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add]
+        simp_all only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
+    | add z w hz hw =>
+      simp only [add_mul, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add]
+      simp_all only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
+  commutes' := fun l ↦ by simp [absorbAddHom']
+
+def eqv_eqv (h : A ≃ₐ[K] B) : L ⊗[K] A ≃ₐ[L] L ⊗[K] B where
+  toFun := release' K L A B h
+  invFun := absorb' K L A B h
+  left_inv := fun x ↦ by
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [map_zero]
+    | tmul l a =>
+      change (absorb' K L A B h) (l ⊗ₜ[K] h a) = _
+      change (l ⊗ₜ[K] h.invFun (h a)) = _
+      simp only [AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AlgEquiv.symm_toEquiv_eq_symm,
+        EquivLike.coe_coe, AlgEquiv.symm_apply_apply]
+    | add x y hx hy => simp only [map_add, hx, hy]
+  right_inv := fun x ↦ by
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [map_zero]
+    | tmul l a =>
+      change (release' K L A B h) (l ⊗ₜ[K] h.invFun a) = _
+      change (l ⊗ₜ[K] h (h.invFun a)) = _
+      simp only [AlgEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AlgEquiv.symm_toEquiv_eq_symm,
+        EquivLike.coe_coe, AlgEquiv.apply_symm_apply]
+    | add x y hx hy => simp only [map_add, hx, hy]
+  map_mul' := release' K L A B h|>.map_mul
+  map_add' := release' K L A B h|>.map_add
+  commutes' := release' K L A B h|>.commutes
+
+def Matrix_eqv_eqv (n : ℕ) : L ⊗[k] Matrix (Fin n) (Fin n) k ≃ₐ[L] Matrix (Fin n) (Fin n) L where
+  toFun := ⇑(MatrixEquivTensor.toFunAlgHom k L (Fin n))
+  invFun := MatrixEquivTensor.invFun k L (Fin n)
+  left_inv := MatrixEquivTensor.left_inv k L (Fin n)
+  right_inv := MatrixEquivTensor.right_inv k L (Fin n)
+  map_mul' x y := by simp only [_root_.map_mul]
+  map_add' x y := by simp only [map_add]
+  commutes' r := by
+    simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id, RingHom.id_apply,
+      MatrixEquivTensor.toFunAlgHom_apply, map_zero, _root_.map_one, Matrix.map_one]
+    rw [Algebra.smul_def, mul_one]
+
 variable [Ring A] [Algebra k A] [Algebra k K]
 
 structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] :=
@@ -131,31 +262,27 @@ def isSplit (L : Type u) [Field L] [Algebra k L] : Prop :=
   ∃(n : ℕ)(_ : n ≠ 0),
   Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)
 
+lemma spilt_iff_left (A : CSA k) (ℒ : Set (IntermediateField k K))
+    (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) ℒ)
+    (h : ⨆ (L ∈ ℒ), (intermediateTensor k K A L) = K) :
+    isSplit k A K → (∃ L ∈ ℒ, isSplit k A L) := by
+  sorry
+
 set_option synthInstance.maxHeartbeats 50000 in
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 500000 in
+lemma spilt_iff_right (A : CSA k) (ℒ : Set (IntermediateField k K)):
+    (∃ L ∈ ℒ, isSplit k A L) → isSplit k A K := by
+    rintro ⟨L, ⟨_, ⟨n, ⟨hn, hnL⟩⟩⟩⟩
+    obtain equiv1 := absorb_eqv k L K A
+    have equiv2 : K ⊗[↥L] ↥L ⊗[k] A.carrier ≃ₐ[K] K ⊗[↥L] Matrix (Fin n) (Fin n) ↥L := by
+      exact eqv_eqv _ _ _ _ hnL.some
+    have equiv3 : K ⊗[↥L] Matrix (Fin n) (Fin n) ↥L ≃ₐ[K] K ⊗[↥L] ↥L ⊗[k] (Matrix (Fin n) (Fin n) k) := by
+      exact eqv_eqv _ _ _ _ (Matrix_eqv_eqv k L n).symm
+    obtain equiv4 := (absorb_eqv k L K (Matrix (Fin n) (Fin n) k)).symm
+    exact ⟨n ,⟨hn, Nonempty.intro (equiv1.trans (equiv2.trans (equiv3.trans (equiv4.trans (Matrix_eqv_eqv k K n)))))⟩⟩
+
 theorem spilt_iff (A : CSA k) (ℒ : Set (IntermediateField k K))
     (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) ℒ)
     (h : ⨆ (L ∈ ℒ), (intermediateTensor k K A L) = K) :
     isSplit k A K ↔ (∃ L ∈ ℒ, isSplit k A L) := by
-  constructor
-  ·
-    sorry
-  · rintro ⟨L, ⟨hL, ⟨n, ⟨hn, hnL⟩⟩⟩⟩
-    let hnL' := hnL.some
-    let e1 := absorb_eqv k L K A
-    have e3 : K ⊗[k] A.carrier ≃ₐ[K] K ⊗[↥L] Matrix (Fin n) (Fin n) ↥L := by
-      sorry
-    have e1 : K ⊗[k] Matrix (Fin n) (Fin n) k ≃ₐ[K] Matrix (Fin n) (Fin n) K := by
-      obtain := MatrixEquivTensor.equiv (A := K) (R := k) (n := Fin n)
-      sorry
-    have e2 : ↥L ⊗[k] Matrix (Fin n) (Fin n) k ≃ₐ[L] Matrix (Fin n) (Fin n) ↥L := by
-      obtain := MatrixEquivTensor.equiv (A := K) (R := k) (n := Fin n)
-      sorry
-    suffices K ⊗[k] A.carrier ≃ₐ[K] K ⊗[k] Matrix (Fin n) (Fin n) k by
-      exact ⟨n ,⟨hn, ⟨this.trans e1⟩⟩⟩
-    suffices K ⊗[k] A.carrier ≃ₐ[K] K ⊗[↥L] ↥L ⊗[k] (Matrix (Fin n) (Fin n) k) by
-      exact AlgEquiv.trans (A₂ := K ⊗[↥L] ↥L ⊗[k] Matrix (Fin n) (Fin n) k) this
-        (absorb_eqv k L K (Matrix (Fin n) (Fin n) k)).symm
-    suffices K ⊗[k] A.carrier ≃ₐ[L] K ⊗[↥L] Matrix (Fin n) (Fin n) ↥L by
-      sorry
-    sorry
+  exact ⟨spilt_iff_left _ _ _ _ l_direct h, spilt_iff_right _ _ _ _⟩
