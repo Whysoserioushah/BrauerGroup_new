@@ -43,6 +43,19 @@ instance : LinearMapClass (Hom V W) k V W where
   map_add f := f.toLinearMap.map_add
   map_smulₛₗ f := f.toLinearMap.map_smul
 
+variable {V W} in
+lemma Hom.comm_elementwise (f : Hom V W) (v : ⨂[k]^q V) :
+    W.tensor ((PiTensorProduct.map fun _ => f.toLinearMap) v) =
+    (PiTensorProduct.map fun _ => f.toLinearMap) (V.tensor v):=
+  congr($f.comm v)
+
+variable {V W} in
+@[simp]
+lemma Hom.comm_basis {ιV : Type*} (bV : Basis ιV k V) (f : Hom V W) (v : Fin q → ιV) :
+    (PiTensorProduct.map fun _ => f.toLinearMap) (V.tensor $ tprod k fun i => bV (v i)) =
+    W.tensor ((tprod k) fun i ↦ f.toLinearMap (bV (v i))) := by
+  rw [← f.comm_elementwise, PiTensorProduct.map_tprod]
+
 def Hom.id : Hom V V where
   __ := LinearMap.id
   comm := by ext; simp
