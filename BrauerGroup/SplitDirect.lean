@@ -100,24 +100,6 @@ lemma intermediateTensor_mono {L1 L2 : IntermediateField k K} (h : L1 ≤ L2) :
   simp only [AlgHom.toNonUnitalAlgHom_eq_coe, NonUnitalAlgHom.toDistribMulActionHom_eq_coe,
     Submodule.mem_comap, LinearMap.mem_range, exists_apply_eq_apply]
 
-private abbrev SetOfFinite : Set (IntermediateField k K) :=
-  {M | FiniteDimensional k M}
-
-lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
-    (Set.range fun (L : SetOfFinite k K) ↦ intermediateTensor k K A L) := by
-  rintro _ ⟨⟨L1, (hL1 : FiniteDimensional _ _)⟩, rfl⟩ _ ⟨⟨L2, (hL2 : FiniteDimensional _ _)⟩, rfl⟩
-  refine ⟨intermediateTensor k K A (L1 ⊔ L2), ⟨⟨L1 ⊔ L2, show FiniteDimensional _ _ from
-    ?_⟩, rfl⟩, ⟨intermediateTensor_mono k K A le_sup_left,
-      intermediateTensor_mono k K A le_sup_right⟩⟩
-  · apply (config := { allowSynthFailures := true }) IntermediateField.finiteDimensional_sup <;>
-    assumption
-
-lemma SetOfFinite_nonempty : (Set.range fun (L : SetOfFinite k K) ↦
-    intermediateTensor k K A L).Nonempty := by
-  refine ⟨intermediateTensor k K A ⊥, ⟨⟨⊥, ?_⟩, rfl⟩⟩
-  simp only [SetOfFinite, Set.mem_setOf_eq, IntermediateField.bot_toSubalgebra]
-  infer_instance
-
 variable (k K L A B: Type u) [Field k] [Field K] [Field L] [Algebra k K] [Algebra K L]
   [Algebra k L] [Ring A] [Ring B] [Algebra K A] [Algebra K B] [IsScalarTower k K L]
 
@@ -235,6 +217,59 @@ def Matrix_eqv_eqv (n : ℕ) : L ⊗[k] Matrix (Fin n) (Fin n) k ≃ₐ[L] Matri
     if hij : i = j then simp [hij, Matrix.algebraMap_matrix_apply]
     else simp [hij, Matrix.algebraMap_matrix_apply]
 
+variable (n : ℕ) [NeZero n] (k K A : Type u) [Field k] [Field K] [Algebra k K]
+  [Ring A] [Algebra k A]
+  (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
+  (ℒ : Set (IntermediateField k K))
+  (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) ℒ)
+  (h : ⨆ (L ∈ ℒ), L = K)
+
+theorem tensor_union_eq :
+    ⨆ (L : ℒ), (intermediateTensor k K A L) = ⊤ := by
+  sorry
+
+theorem extension_element_in (x : K ⊗[k] A):
+    ∃ (F : ℒ), x ∈ intermediateTensor k K A F := by
+  have mem : x ∈ (⊤ : Submodule k _) := ⟨⟩
+  rw [← tensor_union_eq k K A ℒ] at mem
+  sorry
+
+def subfieldOf (x : K ⊗[k] A) : IntermediateField k K :=
+  extension_element_in k K A ℒ x|>.choose
+
+lemma subfieldOf_in (x : K ⊗[k] A) : (subfieldOf k K A ℒ x) ∈ ℒ := by
+  rw [subfieldOf]
+  simp only [Subtype.coe_prop]
+
+def ee : Basis (Fin n × Fin n) K (K ⊗[k] A) :=
+  Basis.map (Matrix.stdBasis K _ _) iso.symm
+
+local notation "e" => ee n k K A iso
+
+@[simp]
+lemma ee_apply (i : Fin n × Fin n) : iso (e i) = Matrix.stdBasis K (Fin n) (Fin n) i := by
+  apply_fun iso.symm
+  simp only [AlgEquiv.symm_apply_apply]
+  have := Basis.map_apply (Matrix.stdBasis K (Fin n) (Fin n)) iso.symm.toLinearEquiv i
+  erw [← this]
+
+lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
+    (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L) := by
+  rintro _ ⟨⟨L1, hL1⟩, rfl⟩ _ ⟨⟨L2, hL2⟩, rfl⟩
+  obtain ⟨L3, hL3⟩ := l_direct L1 hL1 L2 hL2
+  refine ⟨intermediateTensor k K A L3, ⟨⟨L3, hL3.1⟩, rfl⟩,
+      ⟨intermediateTensor_mono k K A hL3.2.1, intermediateTensor_mono k K A hL3.2.2⟩⟩
+
+lemma L_sup :
+    ∃ L, L ∈ ℒ ∧ (∀ (i : Fin n × Fin n), subfieldOf k K A ℒ (e i) ≤ L) := by
+  sorry
+
+def ℒℒ : IntermediateField k K := (L_sup n k K A iso ℒ).choose
+
+local notation "ℒ₁" => ℒℒ n k K A iso ℒ
+
+def isoRestrict' : ℒ₁ ⊗[k] A ≃ₐ[ℒ₁] Matrix (Fin n) (Fin n) ℒ₁ := sorry
+
 variable [Ring A] [Algebra k A] [Algebra k K]
 
 structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] :=
@@ -245,22 +280,30 @@ def isSplit (L : Type u) [Field L] [Algebra k L] : Prop :=
   ∃(n : ℕ)(_ : n ≠ 0),
   Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)
 
-lemma spilt_iff_left (A : CSA k) (ℒ : Set (IntermediateField k K))
-    (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) ℒ)
-    (h : ⨆ (L ∈ ℒ), (intermediateTensor k K A L) = K) :
-    isSplit k A K → (∃ L ∈ ℒ, isSplit k A L) := by
-  sorry
+lemma spilt_iff_left (A : CSA k) (𝓁 : Set (IntermediateField k K))
+    (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) 𝓁)
+    (h : ⨆ (L ∈ 𝓁), L = K) :
+    isSplit k A K → (∃ L ∈ 𝓁, isSplit k A L) := by
+  rintro ⟨n, ⟨hn, hnL⟩⟩
+  obtain hnL' := hnL.some; clear hnL
+  use (L_sup n k K A hnL' 𝓁).choose
+  constructor
+  · exact (L_sup n k K A hnL' 𝓁).choose_spec.1
+  · use n; use hn
+    obtain h1 := isoRestrict' n k K A hnL' 𝓁
+    simp [ℒℒ] at h1
+    tauto
 
 set_option synthInstance.maxHeartbeats 40000 in
 set_option maxHeartbeats 800000 in
-lemma spilt_iff_right (A : CSA k) (ℒ : Set (IntermediateField k K)):
-    (∃ L ∈ ℒ, isSplit k A L) → isSplit k A K := fun ⟨L, ⟨_, ⟨n, ⟨hn, hnL⟩⟩⟩⟩ ↦
+lemma spilt_iff_right (A : CSA k) (𝓁 : Set (IntermediateField k K)):
+    (∃ L ∈ 𝓁, isSplit k A L) → isSplit k A K := fun ⟨L, ⟨_, ⟨n, ⟨hn, hnL⟩⟩⟩⟩ ↦
     ⟨n ,⟨hn, ⟨absorb_eqv k L K A|>.trans $ eqv_eqv _ _ _ _ hnL.some|>.trans $
       eqv_eqv _ _ _ _ (Matrix_eqv_eqv k L n).symm|>.trans $
       absorb_eqv k L K (Matrix (Fin n) (Fin n) k)|>.symm.trans $ Matrix_eqv_eqv k K n⟩⟩⟩
 
-theorem spilt_iff (A : CSA k) (ℒ : Set (IntermediateField k K))
-    (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) ℒ)
-    (h : ⨆ (L ∈ ℒ), (intermediateTensor k K A L) = K) :
-    isSplit k A K ↔ (∃ L ∈ ℒ, isSplit k A L) := by
+theorem spilt_iff (A : CSA k) (𝓁 : Set (IntermediateField k K))
+    (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) 𝓁)
+    (h : ⨆ (L ∈ 𝓁), L = K) :
+    isSplit k A K ↔ (∃ L ∈ 𝓁, isSplit k A L) := by
   exact ⟨spilt_iff_left _ _ _ _ l_direct h, spilt_iff_right _ _ _ _⟩
