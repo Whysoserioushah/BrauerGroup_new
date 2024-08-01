@@ -500,6 +500,77 @@ lemma oneTMulPow_comm_sq :
 
 end gal
 
+section gal
+
+variable {n p q : ℕ} {ιV ιW k K : Type*} [Field k] [Field K] [Algebra k K]
+variable {V W : VectorSpaceWithTensorOfType k p q} (bV : Basis ιV k V) (bW : Basis ιW k W)
+variable (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ⟶ W.extendScalars K bW)
+
+
+
+/--
+⨂[K]^q V_K -(1 ⊗ σ)^q-> ⨂[K]^q V_K -f^q-> ⨂[K]^q W_K -(1 ⊗ σ⁻¹)^q -> ⨂[K]^q W_K
+
+is equal to
+
+(σ ∘ f ∘ σ⁻¹)^q
+-/
+
+lemma galAct_tensor_power_eq :
+    (PiTensorProduct.map fun _ => f.toLinearMap.galAct σ :
+      (⨂[K]^n (K ⊗[k] V)) →ₗ[K] (⨂[K]^n (K ⊗[k] W))).restrictScalars k =
+    σ.toAlgHom.oneTMulPow n bW ∘ₗ
+    (PiTensorProduct.map fun _ => f.toLinearMap).restrictScalars k ∘ₗ
+    σ.symm.toAlgHom.oneTMulPow n bV := by
+  ext x
+  simp only [LinearMap.coe_restrictScalars, AlgEquiv.toAlgHom_eq_coe, extendScalars_carrier,
+    LinearMap.coe_comp, Function.comp_apply]
+  set B := bV.tensorPowerExtendScalars K n with B_eq
+  have eq₁ := B.total_repr x |>.symm
+  rw [eq₁]
+  dsimp only [Finsupp.total, Finsupp.coe_lsum, LinearMap.coe_smulRight, LinearMap.id_coe, id_eq,
+    Finsupp.sum]
+  simp only [map_sum, LinearMapClass.map_smul]
+  refine Finset.sum_congr rfl fun z _ => ?_
+  simp only [Basis.tensorPowerExtendScalars_apply, map_tprod, LinearMap.galAct_extendScalars_apply,
+    _root_.map_one, AlgHom.oneTMulPow_apply', AlgHom.coe_coe, LinearMapClass.map_smul, B]
+  simp only [← B_eq]
+  let X (i : Fin n) := f.toLinearMap (1 ⊗ₜ[k] bV (z i))
+  change (B.repr x z) • (tprod K fun i => (LinearMap.rTensor W.carrier σ.toLinearMap) (X i)) =  _
+  convert_to _ =
+    (AlgHom.oneTMulPow n bW σ.toAlgHom) (σ.symm ((B.repr x) z) • (tprod K fun i => X i))
+  set B' : Basis _ K (K ⊗[k] W) := Algebra.TensorProduct.basis _ bW with B'_eq
+  have eq₂ (i : Fin n) := B'.total_repr (X i) |>.symm
+  dsimp only [Finsupp.total, Finsupp.coe_lsum, LinearMap.coe_smulRight, LinearMap.id_coe, id_eq,
+    Finsupp.sum] at eq₂
+  simp only [Algebra.TensorProduct.basis_apply, smul_tmul', smul_eq_mul, mul_one, B'] at eq₂
+  simp only [← B'_eq] at eq₂
+
+  set lhs := _; set rhs := _; change lhs = rhs
+  rw [show lhs = B.repr x z • tprod K fun i => (LinearMap.rTensor W.carrier σ.toLinearMap)
+    (∑ z ∈ (B'.repr (X i)).support, B'.repr (X i) z ⊗ₜ[k] bW z) by
+    simp only [lhs]
+    congr; ext i
+    conv_lhs => rw [eq₂]]
+  simp only [map_sum, LinearMap.rTensor_tmul, AlgEquiv.toLinearMap_apply]
+  rw [MultilinearMap.map_sum_finset, Finset.smul_sum]
+  rw [show rhs = (AlgHom.oneTMulPow n bW ↑σ) (σ.symm ((B.repr x) z) • (tprod K) fun i ↦
+    ∑ z ∈ (B'.repr (X i)).support, B'.repr (X i) z ⊗ₜ[k] bW z) by
+    simp only [rhs]
+    congr; ext i
+    conv_lhs => rw [eq₂]]
+  rw [MultilinearMap.map_sum_finset, Finset.smul_sum]
+  simp only [map_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [AlgHom.oneTMulPow_apply'']
+  simp only [AlgHom.coe_coe, AlgEquiv.apply_symm_apply]
+  congr 1
+  rw [← MultilinearMap.map_smul_univ]
+  simp only [smul_tmul', smul_eq_mul, mul_one]
+
+
+end gal
+
 section twisedForm
 
 variable (p q : ℕ)

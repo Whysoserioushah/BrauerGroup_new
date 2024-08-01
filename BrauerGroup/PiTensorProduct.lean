@@ -537,21 +537,6 @@ lemma _root_.AlgHom.oneTMulPow_apply (σ : K →ₐ[k] K) (a : Fin q → K) (v :
     rw [smul_tmul', smul_eq_mul, mul_one], map_smul]
   simp
 
-@[simp]
-lemma _root_.AlgHom.oneTMulPow_apply' (σ : K →ₐ[k] K) (a : K) (v : Fin q → ι) [NeZero q] :
-    σ.oneTMulPow q b (a • tprod K fun i => 1 ⊗ₜ b (v i)) =
-    σ a • tprod K fun i => 1 ⊗ₜ b (v i) := by
-  rw [show (a • tprod K fun i => (1 : K) ⊗ₜ b (v i)) =
-    (∏ i : Fin q, if i = 0 then a else 1) • tprod K fun i => 1 ⊗ₜ b (v i) by simp,
-    ← MultilinearMap.map_smul_univ]
-  simp_rw [smul_tmul']
-  rw [AlgHom.oneTMulPow_apply]
-  simp only [smul_eq_mul, mul_one]
-  congr
-  rw [show ∏ x : Fin q, σ (if x = 0 then a else 1) = ∏ x : Fin q, if x = 0 then σ a else 1 from
-    Finset.prod_congr rfl fun i _ => by split_ifs <;> simp]
-  simp
-
 lemma _root_.AlgHom.oneTMulPow_apply_q_zero (σ : K →ₐ[k] K) :
     σ.oneTMulPow 0 b =
     (PiTensorProduct.isEmptyEquiv _).symm.toLinearMap.restrictScalars k ∘ₗ
@@ -585,6 +570,87 @@ lemma _root_.AlgHom.oneTMulPow_apply_q_zero (σ : K →ₐ[k] K) :
     σ (a ((tprod K) fun a ↦ 1 ⊗ₜ[k] b a.elim0)) • ((1 : K) ⊗ₜ (tprod k) fun j ↦ b j.elim0) by
     rw [smul_tmul', smul_eq_mul, mul_one], map_smul]
   simp
+
+@[simp]
+lemma _root_.AlgHom.oneTMulPow_apply'_aux1 (σ : K →ₐ[k] K) (a : K) (v : Fin q → ι) [NeZero q] :
+    σ.oneTMulPow q b (a • tprod K fun i => 1 ⊗ₜ b (v i)) =
+    σ a • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  rw [show (a • tprod K fun i => (1 : K) ⊗ₜ b (v i)) =
+    (∏ i : Fin q, if i = 0 then a else 1) • tprod K fun i => 1 ⊗ₜ b (v i) by simp,
+    ← MultilinearMap.map_smul_univ]
+  simp_rw [smul_tmul']
+  rw [AlgHom.oneTMulPow_apply]
+  simp only [smul_eq_mul, mul_one]
+  congr
+  rw [show ∏ x : Fin q, σ (if x = 0 then a else 1) = ∏ x : Fin q, if x = 0 then σ a else 1 from
+    Finset.prod_congr rfl fun i _ => by split_ifs <;> simp]
+  simp
+
+@[simp]
+lemma _root_.AlgHom.oneTMulPow_apply'_aux2 (σ : K →ₐ[k] K) (a : K) (v : Fin 0 → ι)  :
+    σ.oneTMulPow 0 b (a • tprod K fun i => 1 ⊗ₜ b (v i)) =
+    σ a • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  rw [AlgHom.oneTMulPow_apply_q_zero]
+  simp only [LinearMap.coe_comp, LinearMap.coe_restrictScalars, LinearEquiv.coe_coe,
+    Function.comp_apply, LinearMapClass.map_smul, isEmptyEquiv_apply_tprod, smul_eq_mul, mul_one,
+    AlgHom.toLinearMap_apply, isEmptyEquiv_symm_apply]
+  congr
+  ext i
+  exact i.elim0
+
+@[simp]
+lemma _root_.AlgHom.oneTMulPow_apply' (σ : K →ₐ[k] K) (a : K) (v : Fin q → ι) :
+    σ.oneTMulPow q b (a • tprod K fun i => 1 ⊗ₜ b (v i)) =
+    σ a • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  by_cases h : q = 0
+  · subst h
+    apply AlgHom.oneTMulPow_apply'_aux2
+  · haveI : NeZero q := ⟨h⟩
+    apply AlgHom.oneTMulPow_apply'_aux1
+
+@[simp]
+lemma _root_.AlgHom.oneTMulPow_apply''_aux1 [NeZero q] (σ : K →ₐ[k] K) (a : K)
+    (x : Fin q → K) (v : Fin q → ι) :
+    σ.oneTMulPow q b (a • tprod K fun i => x i ⊗ₜ b (v i)) =
+    σ a • (∏ y : Fin q, σ (x y)) • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  rw [show (a • tprod K fun i => x i ⊗ₜ b (v i)) =
+    (∏ i : Fin q, if i = 0 then a else 1) • tprod K fun i => x i ⊗ₜ b (v i) by simp,
+    ← MultilinearMap.map_smul_univ]
+  simp_rw [smul_tmul']
+  rw [AlgHom.oneTMulPow_apply]
+  simp only [smul_eq_mul, ite_mul, one_mul]
+  rw [← smul_assoc]
+  congr 1
+  change ∏ y : _, _ = _
+  rw [show (∏ y : Fin q, σ (if y = 0 then a * x y else x y)) =
+    ∏ y : Fin q, if y = 0 then (σ a) * (σ $ x y) else σ (x y) from
+    Finset.prod_congr rfl fun i _ => by split_ifs <;> simp]
+  conv_rhs => rw [show σ a = ∏ i : Fin q, if i = 0 then σ a else 1 by simp, smul_eq_mul]
+  rw [← Finset.prod_mul_distrib]
+  refine Finset.prod_congr rfl fun i _ => ?_; split_ifs <;> simp
+
+lemma _root_.AlgHom.oneTMulPow_apply''_aux2 (σ : K →ₐ[k] K) (a : K)
+    (x : Fin 0 → K) (v : Fin 0 → ι) :
+    σ.oneTMulPow 0 b (a • tprod K fun i => x i ⊗ₜ b (v i)) =
+    σ a • (∏ y : Fin 0, σ (x y)) • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  simp only [Finset.univ_eq_empty, Finset.prod_empty, one_smul]
+  rw [AlgHom.oneTMulPow_apply_q_zero]
+  simp only [LinearMap.coe_comp, LinearMap.coe_restrictScalars, LinearEquiv.coe_coe,
+    Function.comp_apply, LinearMapClass.map_smul, isEmptyEquiv_apply_tprod, smul_eq_mul, mul_one,
+    AlgHom.toLinearMap_apply, isEmptyEquiv_symm_apply]
+  congr
+  ext i
+  exact i.elim0
+
+lemma _root_.AlgHom.oneTMulPow_apply'' (σ : K →ₐ[k] K) (a : K)
+    (x : Fin q → K) (v : Fin q → ι) :
+    σ.oneTMulPow q b (a • tprod K fun i => x i ⊗ₜ b (v i)) =
+    σ a • (∏ y : Fin q, σ (x y)) • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  by_cases h : q = 0
+  · subst h
+    apply AlgHom.oneTMulPow_apply''_aux2
+  · haveI : NeZero q := ⟨h⟩
+    apply AlgHom.oneTMulPow_apply''_aux1
 
 end gal
 

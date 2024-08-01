@@ -92,4 +92,16 @@ lemma _root_.LinearMap.galAct_extendScalars_apply'
     LinearMap.rTensor_tmul, AlgEquiv.toLinearMap_apply, LinearMap.extendScalars_apply,
     AlgEquiv.apply_symm_apply]
 
+lemma _root_.LinearMap.restrictScalars_comp
+    {k K : Type*} [Semiring k] [Semiring K]
+    {V W W' : Type*} [AddCommMonoid V] [AddCommMonoid W] [AddCommMonoid W']
+    [Module k V] [Module k W] [Module k W']
+    [Module K V] [Module K W] [Module K W']
+    [LinearMap.CompatibleSMul V W k K] [LinearMap.CompatibleSMul W W' k K]
+    [LinearMap.CompatibleSMul V W' k K]
+    (f : V →ₗ[K] W) (g : W →ₗ[K] W') :
+    (LinearMap.restrictScalars k (g ∘ₗ f)) =
+    LinearMap.restrictScalars k g ∘ₗ LinearMap.restrictScalars k f := by
+  ext; rfl
+
 end
