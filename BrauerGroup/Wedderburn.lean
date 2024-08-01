@@ -671,19 +671,19 @@ lemma Wedderburn_Artin_algebra_version
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
     exact congr_arg e $ by ext; simp
 
-instance (priority := high) (M : Type*) [AddCommGroup M] [Module B M]   :
-    Algebra K (Module.End B M) :=
-  letI : Module K M := Module.compHom M (algebraMap K B)
-  letI : SMulCommClass B K M :=
-  { smul_comm := fun b k m =>
-      show b • (algebraMap K B k) • m = _ by
-      rw [← MulAction.mul_smul, ← Algebra.commutes, MulAction.mul_smul]
-      rfl }
-  letI : IsScalarTower K B M :=
-  { smul_assoc := fun k b m => by
-      rw [Algebra.smul_def, MulAction.mul_smul]; rfl }
+-- instance (priority := high) (M : Type*) [AddCommGroup M] [Module B M]   :
+--     Algebra K (Module.End B M) :=
+--   letI : Module K M := Module.compHom M (algebraMap K B)
+--   letI : SMulCommClass B K M :=
+--   { smul_comm := fun b k m =>
+--       show b • (algebraMap K B k) • m = _ by
+--       rw [← MulAction.mul_smul, ← Algebra.commutes, MulAction.mul_smul]
+--       rfl }
+--   letI : IsScalarTower K B M :=
+--   { smul_assoc := fun k b m => by
+--       rw [Algebra.smul_def, MulAction.mul_smul]; rfl }
 
-  Module.End.instAlgebra K B M
+--   Module.End.instAlgebra K B M
 
 -- def test' (D : Type*) [DivisionRing D] [Algebra K D] (m : ℕ) (hm : m ≠ 0)
 --     (Wdb : B ≃ₐ[K] M[Fin m, D]) (M : Type*)
