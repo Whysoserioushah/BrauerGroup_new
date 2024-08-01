@@ -307,6 +307,81 @@ lemma _root_.Basis.extendScalarsTensorPowerEquiv_symm_apply' {ιV ιW : Type*}
     (bW.extendScalarsTensorPowerEquiv K p).injective
   simp only [LinearEquiv.apply_symm_apply, Basis.extendScalarsTensorPowerEquiv_apply']
 
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_zero {ι : Type*} (b : Basis ι k V) :
+    b.extendScalarsTensorPowerEquiv K 0 =
+    ({ TensorProduct.congr (LinearEquiv.refl k K) (PiTensorProduct.isEmptyEquiv (ι := Fin 0) (s := fun _ => V)) with
+        map_smul' := fun a x => by
+          simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe,
+            RingHom.id_apply]
+          induction x using TensorProduct.induction_on with
+          | zero => simp
+          | tmul x y => simp [smul_tmul']
+          | add x y hx hy =>
+            simp only [smul_add, map_add, hx, hy, mul_add] } : (K ⊗[k] ⨂[k]^0 V) ≃ₗ[K] K ⊗[k] k) ≪≫ₗ
+    { TensorProduct.rid k K with
+      map_smul' := fun a x => by
+        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe,
+          RingHom.id_apply, smul_eq_mul]
+        induction x using TensorProduct.induction_on with
+        | zero => simp
+        | tmul x y => simp [smul_tmul']
+        | add x y hx hy =>
+          simp only [smul_add, map_add, hx, hy, mul_add] } ≪≫ₗ
+    (PiTensorProduct.isEmptyEquiv _).symm := by
+  apply_fun LinearEquiv.toLinearMap using LinearEquiv.toLinearMap_injective
+  fapply Basis.ext (b := b.extendScalarsTensorPower K 0)
+  intro v
+  simp only [Basis.extendScalarsTensorPower_apply, LinearEquiv.coe_coe,
+    Basis.extendScalarsTensorPowerEquiv_apply, LinearEquiv.invFun_eq_symm, LinearEquiv.trans_apply,
+    isEmptyEquiv_symm_apply]
+  erw [LinearMap.coe_mk]
+  simp only [LinearMap.coe_toAddHom, LinearEquiv.coe_coe]
+  erw [TensorProduct.rid_tmul]
+  simp only [LinearEquiv.coe_coe, isEmptyEquiv_apply_tprod, LinearEquiv.refl_toLinearMap,
+    LinearMap.id_coe, id_eq, one_smul]
+  congr 1
+  ext i
+  exact i.elim0
+
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_zero_apply {ι : Type*} (b : Basis ι k V)
+    (a : K) (x : ⨂[k]^0 V) :
+    b.extendScalarsTensorPowerEquiv K 0 (a ⊗ₜ x) =
+    (PiTensorProduct.isEmptyEquiv _).symm (PiTensorProduct.isEmptyEquiv _ x • a) := by
+  induction x using PiTensorProduct.induction_on with
+  | smul_tprod x v =>
+    simp only [Basis.extendScalarsTensorPowerEquiv_zero, LinearEquiv.invFun_eq_symm, tmul_smul,
+      smul_tmul', LinearEquiv.trans_apply, isEmptyEquiv_symm_apply, map_smul,
+      isEmptyEquiv_apply_tprod, smul_eq_mul, mul_one, smul_assoc]
+    erw [LinearMap.coe_mk]
+    simp only [LinearMap.coe_toAddHom, LinearEquiv.coe_coe]
+    erw [TensorProduct.rid_tmul]
+    simp only [LinearEquiv.coe_coe, isEmptyEquiv_apply_tprod, LinearEquiv.refl_toLinearMap,
+      LinearMapClass.map_smul, LinearMap.id_coe, id_eq, one_smul, smul_assoc]
+  | add x y hx hy =>
+    simp only [tmul_add, map_add, hx, isEmptyEquiv_symm_apply, smul_assoc, hy, add_smul]
+
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_zero_symm_apply {ι : Type*} (b : Basis ι k V)
+    (a : K)  :
+    (b.extendScalarsTensorPowerEquiv K 0).symm (a • tprod K isEmptyElim) =
+    a ⊗ₜ tprod k isEmptyElim := by
+  apply_fun b.extendScalarsTensorPowerEquiv K 0 using LinearEquiv.injective
+    (Basis.extendScalarsTensorPowerEquiv K 0 b)
+  simp only [LinearMapClass.map_smul, LinearEquiv.apply_symm_apply,
+    Basis.extendScalarsTensorPowerEquiv_zero_apply, isEmptyEquiv_apply_tprod, one_smul,
+    isEmptyEquiv_symm_apply]
+
+@[simp]
+lemma _root_.Basis.extendScalarsTensorPowerEquiv_zero_symm_apply' {ι : Type*} (b : Basis ι k V) :
+    (b.extendScalarsTensorPowerEquiv K 0).symm (tprod K isEmptyElim) =
+    1 ⊗ₜ tprod k isEmptyElim := by
+  apply_fun b.extendScalarsTensorPowerEquiv K 0 using LinearEquiv.injective
+    (Basis.extendScalarsTensorPowerEquiv K 0 b)
+  simp only [LinearMapClass.map_smul, LinearEquiv.apply_symm_apply,
+    Basis.extendScalarsTensorPowerEquiv_zero_apply, isEmptyEquiv_apply_tprod, one_smul,
+    isEmptyEquiv_symm_apply]
+
+
 set_option maxHeartbeats 500000 in
 lemma _root_.Basis.extendScalarsTensorPowerEquiv_comp_extendScalars
     {ιV ιW : Type*}
@@ -398,3 +473,154 @@ lemma _root_.Basis.extendScalarsTensorPowerEquiv_comp_extendScalars
   rw [← eq₉]
 
 end extendScalars
+
+section
+
+
+lemma PiTensorProduct.isEmptyEquiv_comp_algebraMap
+    {k K : Type*} [CommSemiring k] [CommSemiring K] [Algebra k K] (ι : Type*) [emp : IsEmpty ι]
+  (V : ι → Type*) [∀ i, AddCommMonoid (V i)] [∀ i, Module k (V i)] :
+  (Algebra.ofId k K).toLinearMap ∘ₗ
+  (PiTensorProduct.isEmptyEquiv ι : (⨂[k] i : ι, V i) ≃ₗ[k] k).toLinearMap =
+  (PiTensorProduct.isEmptyEquiv ι :
+    (⨂[K] i : ι, K ⊗[k] V i) ≃ₗ[K] K).toLinearMap.restrictScalars k ∘ₗ
+  PiTensorProduct.lift
+    { toFun := fun v => tprod K fun i => 1 ⊗ₜ v i
+      map_add' := fun v i => emp.elim i
+      map_smul' := fun v i => emp.elim i } := by
+  ext x
+  simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, LinearEquiv.coe_coe,
+    Function.comp_apply, isEmptyEquiv_apply_tprod, AlgHom.toLinearMap_apply, _root_.map_one,
+    LinearMap.coe_restrictScalars, lift.tprod, MultilinearMap.coe_mk]
+
+lemma PiTensorProduct.isEmptyEquiv_comp_algebraMap_elementwise
+    {k K : Type*} [CommSemiring k] [CommSemiring K] [Algebra k K] (ι : Type*) [emp : IsEmpty ι]
+    (V : ι → Type*) [∀ i, AddCommMonoid (V i)] [∀ i, Module k (V i)]  :
+    algebraMap k K (PiTensorProduct.isEmptyEquiv ι
+      (tprod k isEmptyElim : ⨂[k] i : ι, V i)) = 1 := by
+  have := congr($(PiTensorProduct.isEmptyEquiv_comp_algebraMap ι V (k := k) (K := K))
+    (tprod k isEmptyElim))
+  dsimp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+    AlgHom.toLinearMap_apply, LinearMap.coe_restrictScalars] at this
+  erw [this]
+  simp
+
+end
+
+section gal
+variable {ι k K V : Type*}
+variable {q : ℕ}
+variable [CommSemiring k] [Nontrivial k] [NoZeroDivisors k]
+variable [CommSemiring K] [Nontrivial K] [NoZeroDivisors K] [Algebra k K]
+variable [AddCommMonoid V] [Module k V] (b : Basis ι k V)
+
+variable (q) in
+def _root_.AlgHom.oneTMulPow (σ : K →ₐ[k] K) :
+    (⨂[K]^q (K ⊗[k] V)) →ₗ[k] ⨂[K]^q (K ⊗[k] V) :=
+  (Basis.extendScalarsTensorPowerEquiv K q b).toLinearMap.restrictScalars k ∘ₗ
+  σ.toLinearMap.rTensor _ ∘ₗ
+  (Basis.extendScalarsTensorPowerEquiv K q b).symm.toLinearMap.restrictScalars k
+
+@[simp]
+lemma _root_.AlgHom.oneTMulPow_apply (σ : K →ₐ[k] K) (a : Fin q → K) (v : Fin q → ι) :
+    σ.oneTMulPow q b (tprod K fun i => a i ⊗ₜ b (v i)) =
+    (∏ i : Fin q, σ (a i)) • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  simp only [AlgHom.oneTMulPow, LinearMap.coe_comp, LinearMap.coe_restrictScalars,
+    LinearEquiv.coe_coe, Function.comp_apply]
+  rw [show (tprod K fun i => a i ⊗ₜ b (v i)) =
+    (tprod K fun i => a i • 1 ⊗ₜ b (v i)) by simp_rw [smul_tmul', smul_eq_mul, mul_one],
+    MultilinearMap.map_smul_univ, map_smul]
+  simp only [Basis.extendScalarsTensorPowerEquiv_symm_apply]
+  rw [smul_tmul', smul_eq_mul, mul_one, LinearMap.rTensor_tmul,
+    show (σ.toLinearMap (∏ i : Fin q, a i) ⊗ₜ[k] (tprod k) fun j ↦ b (v j)) =
+    (σ.toLinearMap (∏ i : Fin q, a i) • 1 ⊗ₜ[k] (tprod k) fun j ↦ b (v j)) by
+    rw [smul_tmul', smul_eq_mul, mul_one], map_smul]
+  simp
+
+@[simp]
+lemma _root_.AlgHom.oneTMulPow_apply' (σ : K →ₐ[k] K) (a : K) (v : Fin q → ι) [NeZero q] :
+    σ.oneTMulPow q b (a • tprod K fun i => 1 ⊗ₜ b (v i)) =
+    σ a • tprod K fun i => 1 ⊗ₜ b (v i) := by
+  rw [show (a • tprod K fun i => (1 : K) ⊗ₜ b (v i)) =
+    (∏ i : Fin q, if i = 0 then a else 1) • tprod K fun i => 1 ⊗ₜ b (v i) by simp,
+    ← MultilinearMap.map_smul_univ]
+  simp_rw [smul_tmul']
+  rw [AlgHom.oneTMulPow_apply]
+  simp only [smul_eq_mul, mul_one]
+  congr
+  rw [show ∏ x : Fin q, σ (if x = 0 then a else 1) = ∏ x : Fin q, if x = 0 then σ a else 1 from
+    Finset.prod_congr rfl fun i _ => by split_ifs <;> simp]
+  simp
+
+lemma _root_.AlgHom.oneTMulPow_apply_q_zero (σ : K →ₐ[k] K) :
+    σ.oneTMulPow 0 b =
+    (PiTensorProduct.isEmptyEquiv _).symm.toLinearMap.restrictScalars k ∘ₗ
+    σ.toLinearMap ∘ₗ
+    (PiTensorProduct.isEmptyEquiv _).toLinearMap.restrictScalars k := by
+  ext x
+  simp only [LinearMap.coe_comp, LinearMap.coe_restrictScalars, LinearEquiv.coe_coe,
+    Function.comp_apply, AlgHom.toLinearMap_apply, isEmptyEquiv_symm_apply]
+  have mem : x ∈ (⊤ : Submodule K _) := ⟨⟩
+  rw [← PiTensorProduct.span_tprod_eq_top, mem_span_set] at mem
+  obtain ⟨a, ha, rfl⟩ := mem
+  choose x hx using ha
+  simp only [Finsupp.sum, map_sum, LinearMapClass.map_smul, smul_eq_mul, _root_.map_mul]
+  rw [Finset.sum_smul]
+  refine Finset.sum_congr rfl fun z hz => ?_
+  specialize hx hz
+  have hz' : z = tprod K isEmptyElim := by
+    rw [← hx]; congr; ext i; simpa using i.2
+  rw [hz']
+  simp only [isEmptyEquiv_apply_tprod, _root_.map_one, mul_one]
+  simp only [AlgHom.oneTMulPow, LinearMap.coe_comp, LinearMap.coe_restrictScalars,
+    LinearEquiv.coe_coe, Function.comp_apply, LinearMapClass.map_smul]
+  have eq : ((tprod K) isEmptyElim : ⨂[K] (_ : Fin 0), K ⊗[k] V) =
+      tprod K fun a => 1 ⊗ₜ b a.elim0 := by
+    congr; ext i; exact i.elim0
+  rw [eq]
+  simp only [Basis.extendScalarsTensorPowerEquiv_symm_apply, smul_tmul', smul_eq_mul, mul_one,
+    LinearMap.rTensor_tmul, AlgHom.toLinearMap_apply]
+  rw [show (σ (a ((tprod K) fun a ↦ 1 ⊗ₜ[k] b a.elim0)) ⊗ₜ[k]
+      (tprod k) fun j : Fin 0 ↦ b j.elim0) =
+    σ (a ((tprod K) fun a ↦ 1 ⊗ₜ[k] b a.elim0)) • ((1 : K) ⊗ₜ (tprod k) fun j ↦ b j.elim0) by
+    rw [smul_tmul', smul_eq_mul, mul_one], map_smul]
+  simp
+
+end gal
+
+section PiTensorProduct.fin
+
+variable {k K : Type*} [CommSemiring k] [Semiring K] [Algebra k K]
+
+variable (k) in
+def PiTensorProduct.emptyEquivBaseRing (ι : Type*) (V : ι → Type*) [hι: IsEmpty ι]
+  [∀ i, AddCommGroup $ V i]  [∀ i, Module k $ V i]: (⨂[k] i : ι, V i) ≃ₗ[k] k :=
+  LinearEquiv.ofLinear
+    (PiTensorProduct.lift
+      { toFun := fun _ ↦ 1
+        map_add' := by
+          intros; exact hι.elim (by assumption)
+        map_smul' := by
+          intros; exact hι.elim (by assumption) })
+    { toFun := fun a ↦ a • tprod k fun x ↦ hι.elim x
+      map_add' := by
+        intro x y
+        simp only [self_eq_add_right, add_smul]
+      map_smul' := by
+        intro m x
+        simp [mul_smul]
+      }
+    (by
+      refine LinearMap.ext_ring ?h
+      simp only [LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, one_smul,
+        lift.tprod, MultilinearMap.coe_mk, LinearMap.id_coe, id_eq])
+    (by
+      ext x
+      simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, LinearMap.coe_mk,
+        AddHom.coe_mk, Function.comp_apply, lift.tprod, MultilinearMap.coe_mk, one_smul,
+        LinearMap.id_coe, id_eq]
+      refine MultilinearMap.congr_arg (tprod k) ?_
+      ext y
+      exact hι.elim y)
+
+end PiTensorProduct.fin
