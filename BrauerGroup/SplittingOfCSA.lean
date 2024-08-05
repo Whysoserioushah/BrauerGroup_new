@@ -349,6 +349,19 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
     exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' (finCongr e5)
 
+variable [FiniteDimensional k A]
+
+def Basis_of_k : Basis (Fin (FiniteDimensional.finrank k A)) k_bar (k_bar ⊗[k] A):=
+  Algebra.TensorProduct.basis k_bar (FiniteDimensional.finBasis k A)
+
+theorem Basis_apply (i : Fin (FiniteDimensional.finrank k A)) :
+    Basis_of_k k A k_bar i = 1 ⊗ₜ (FiniteDimensional.finBasis k A i) :=
+  Algebra.TensorProduct.basis_apply (FiniteDimensional.finBasis k A) i
+
+example (x : k_bar ⊗[k] A) : 1 = 2 := by
+  have := Basis.mem_span (Basis_of_k k A k_bar) x
+
+  sorry
 theorem sepclosure_split (A : CSA k):
     isSplit k A k_s := by
   obtain ⟨n, hn, D, _, _, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version k_s (k_s ⊗[k] A)

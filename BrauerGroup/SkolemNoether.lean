@@ -157,7 +157,8 @@ instance (K A B M : Type u)
 instance tensor_is_simple (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
     [IsSimpleOrder (RingCon B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder (RingCon (B ⊗[K] (Module.End A M))) := by
+    [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder
+    (RingCon (B ⊗[K] (Module.End A M))) := by
   haveI : IsCentralSimple K (Module.End A M) := {
     is_central := by
       intro l hl
@@ -166,7 +167,13 @@ instance tensor_is_simple (K A B M : Type u)
       let a : A := Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : l m ∈ Submodule.span A {m}) |>.choose
       have ha : l m = a • m := Submodule.mem_span_singleton.1
         (hm ▸ ⟨⟩ : l m ∈ Submodule.span A {m}) |>.choose_spec.symm
-      have l_eq : l = ⟨⟨(a • ·), sorry⟩, sorry⟩ := sorry
+      have hm' : ∀(m' : M), ∃(a' : A), a' • m = m' := fun m' ↦
+        Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : m' ∈ Submodule.span A {m})
+      have l_eq : l = ⟨⟨(a • ·), smul_add a⟩, fun a' mm ↦ by
+        simp only [RingHom.id_apply]
+        obtain ⟨aa, haa⟩ := hm' mm
+        rw [← haa]
+        sorry⟩ := sorry
       have hl'' : ∀(l' : Module.End A M), ∃(b : A), b • m = l' m := fun l' ↦
         Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : l' m ∈ Submodule.span A {m})
       have mem_a : a ∈ Subalgebra.center K A := by
@@ -182,13 +189,12 @@ instance tensor_is_simple (K A B M : Type u)
           apply_fun l' at hl
           simp only [LinearMapClass.map_smul] at hl
           exact hl.symm
-        have hm' : ∀(m' : M), ∃(a' : A), a' • m = m' :=
-          fun m' ↦ Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : m' ∈ Submodule.span A {m})
         have hM : ∀(m' : M), ∃(l : Module.End A M), l m = m' := fun m' ↦ by
           obtain ⟨a', ha⟩ := hm' m'
           use ⟨⟨(a' • ·), sorry⟩, sorry⟩
           exact ha
-        let ann : RingCon A := RingCon.fromIdeal {r | ∀(m : M), r • m = 0} (by sorry) (by sorry)
+        let ann : RingCon A := RingCon.fromIdeal {r | ∀(m : M), r • m = 0} (by simp)
+          (fun _ _ _ _ ↦ by simp_all [add_smul])
           (by sorry) (fun x y hxy ↦ by
             intro m
             rw [← smul_smul, hxy, smul_zero]) (fun x y hxy ↦ by
@@ -239,18 +245,27 @@ section modules_over_simple_ring
 variable (N N' R : Type u) [Ring R] [Algebra K R] [FiniteDimensional K R]
   [IsSimpleOrder (RingCon R)] [AddCommGroup N] [Module R N] [AddCommGroup N'] [Module R N']
 
-theorem iso_iff_dim_eq : Nonempty (N ≃ₗ[R] N') ↔
-    FiniteDimensional.finrank R N = FiniteDimensional.finrank R N' := by
+theorem iso_iff_dim_eq (h : FiniteDimensional.finrank R N = FiniteDimensional.finrank R N'):
+    Nonempty (N ≃ₗ[R] N') := by
   sorry
 
 end modules_over_simple_ring
 
 variable (K A B M : Type u)
-    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
-    [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    [IsSimpleModule A M] (f g : B →ₐ[K] A)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
+    [Algebra K B] [hB : IsSimpleOrder (RingCon B)] [AddCommGroup M] [Module K M] [Module A M]
+    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A)
 
-lemma findimB : FiniteDimensional K B := sorry
+lemma findimB : FiniteDimensional K B := FiniteDimensional.of_injective (K := K) (V₂ := A) f (by
+    haveI := hA.2
+    haveI : Nontrivial A := RingCon.instNontrivialOfIsSimpleOrder_brauerGroup A
+    change Function.Injective f
+    have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective B|>.1 hB (B := A) f
+    refine H.resolve_left fun rid => ?_
+    rw [eq_top_iff, RingCon.le_iff] at rid
+    specialize @rid 1 ⟨⟩
+    simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
+        one_ne_zero] at rid )
 
 def iso_fg : module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := sorry
 -- -- lemma SkolemNoether_aux (A : Type u) [Ring A] [Algebra K A]
