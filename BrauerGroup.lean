@@ -5,10 +5,12 @@ import BrauerGroup.Composition
 import BrauerGroup.Con
 import BrauerGroup.Dual
 import BrauerGroup.GaloisDescent.Basic
+import BrauerGroup.LinearMap
 import BrauerGroup.MoritaEquivalence
 import BrauerGroup.PiTensorProduct
 import BrauerGroup.QuadraticExtension
 import BrauerGroup.QuatBasic
 import BrauerGroup.Quaternion
 import BrauerGroup.TensorOfTypePQ.Basic
+import BrauerGroup.TensorOfTypePQ.VectorSpaceWithTensorOfTypePQ
 import BrauerGroup.Wedderburn

@@ -1,0 +1,155 @@
+
+
+-- #exit
+-- section PiTensorProduct.fin
+
+-- variable {n : ℕ} (k K : Type*) [CommSemiring k] [CommSemiring K] [Algebra k K]
+-- variable (V : Fin (n + 1) → Type*) [Π i, AddCommMonoid (V i)] [Π i, Module k (V i)]
+-- variable (W : Fin (n + 1) → Type*) [Π i, AddCommMonoid (W i)] [Π i, Module k (W i)]
+
+-- def PiTensorProduct.succ : (⨂[k] i, V i) ≃ₗ[k] V 0 ⊗[k] (⨂[k] i : Fin n, V i.succ) :=
+-- LinearEquiv.ofLinear
+--   (PiTensorProduct.lift
+--     { toFun := fun v => v 0 ⊗ₜ[k] tprod k fun i => v i.succ
+--       map_add' := by
+--         intro _ v i x y
+--         simp only
+--         by_cases h : i = 0
+--         · subst h
+--           simp only [Function.update_same]
+--           rw [add_tmul]
+--           congr 3 <;>
+--           · ext i
+--             rw [Function.update_noteq (h := Fin.succ_ne_zero i),
+--               Function.update_noteq (h :=  Fin.succ_ne_zero i)]
+
+--         rw [Function.update_noteq (Ne.symm h), Function.update_noteq (Ne.symm h),
+--           Function.update_noteq (Ne.symm h), ← tmul_add]
+--         congr 1
+--         have eq1 : (fun j : Fin n ↦ Function.update v i (x + y) j.succ) =
+--           Function.update (fun i : Fin n ↦ v i.succ) (i.pred h)
+--             (cast (by simp) x + cast (by simp) y):= by
+--           ext j
+--           simp only [Function.update, eq_mpr_eq_cast]
+--           aesop
+--         rw [eq1, (tprod k).map_add]
+--         congr 2 <;>
+--         ext j <;>
+--         simp only [Function.update] <;>
+--         have eq : (j = i.pred h) = (j.succ = i) := by
+--           rw [← iff_eq_eq]
+--           constructor
+--           · rintro rfl
+--             exact Fin.succ_pred i h
+--           · rintro rfl
+--             simp only [Fin.pred_succ]
+--         · simp_rw [eq] <;> aesop
+--         · simp_rw [eq] <;> aesop
+--       map_smul' := by
+--         intro _ v i a x
+--         simp only
+--         rw [smul_tmul', smul_tmul]
+--         by_cases h : i = 0
+--         · subst h
+--           simp only [Function.update_same, tmul_smul]
+--           rw [smul_tmul']
+--           congr 2
+--           ext j
+--           rw [Function.update_noteq (Fin.succ_ne_zero j),
+--             Function.update_noteq (Fin.succ_ne_zero j)]
+--         · rw [Function.update_noteq (Ne.symm h), Function.update_noteq (Ne.symm h)]
+--           congr 1
+--           have eq1 : (fun j : Fin n ↦ Function.update v i (a • x) j.succ) =
+--             Function.update (fun i : Fin n ↦ v i.succ) (i.pred h)
+--               (a • cast (by simp) x):= by
+--             ext j
+--             simp only [Function.update, eq_mpr_eq_cast]
+--             aesop
+--           rw [eq1, (tprod k).map_smul]
+--           congr
+--           ext j
+--           simp only [Function.update]
+--           have eq : (j = i.pred h) = (j.succ = i) := by
+--             rw [← iff_eq_eq]
+--             constructor
+--             · rintro rfl
+--               exact Fin.succ_pred i h
+--             · rintro rfl
+--               simp only [Fin.pred_succ]
+--           simp_rw [eq] <;> aesop })
+--   (TensorProduct.lift
+--     { toFun := fun v₀ => PiTensorProduct.lift
+--         { toFun := fun v => tprod k $ Fin.cases v₀ v
+--           map_add' := sorry
+--           map_smul' := sorry }
+--       map_add' := sorry
+--       map_smul' := sorry }) sorry sorry
+
+-- end PiTensorProduct.fin
+
+
+-- section PiTensorProduct.fin
+
+-- variable {k K : Type*} [Field k] [Field K] [Algebra k K]
+-- variable {V W : Type*} [AddCommGroup V] [AddCommGroup W] [Module k V] [Module k W]
+
+-- variable (k) in
+-- def zeroPower (ι : Type*) (V : ι → Type*) [hι: IsEmpty ι]
+--   [∀ i, AddCommGroup $ V i]  [∀ i, Module k $ V i]: (⨂[k] i : ι, V i) ≃ₗ[k] k :=
+--   LinearEquiv.ofLinear
+--     (PiTensorProduct.lift
+--       { toFun := fun _ ↦ 1
+--         map_add' := by
+--           intros; exact hι.elim (by assumption)
+--         map_smul' := by
+--           intros; exact hι.elim (by assumption) })
+--     { toFun := fun a ↦ a • tprod k fun x ↦ hι.elim x
+--       map_add' := by
+--         intro x y
+--         simp only [self_eq_add_right, add_smul]
+--       map_smul' := by
+--         intro m x
+--         simp [mul_smul]
+--       }
+--     (by
+--       refine LinearMap.ext_ring ?h
+--       simp only [LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, one_smul,
+--         lift.tprod, MultilinearMap.coe_mk, LinearMap.id_coe, id_eq])
+--     (by
+--       ext x
+--       simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, LinearMap.coe_mk,
+--         AddHom.coe_mk, Function.comp_apply, lift.tprod, MultilinearMap.coe_mk, one_smul,
+--         LinearMap.id_coe, id_eq]
+--       refine MultilinearMap.congr_arg (tprod k) ?_
+--       ext y
+--       exact hι.elim y)
+
+-- variable (k) in
+-- def PiTensorProduct.tensorCommutes (n : ℕ) :
+--     ∀ (V W : Fin n → Type*)
+--     [∀ i, AddCommGroup (V i)] [∀ i, Module k (V i)]
+--     [∀ i, AddCommGroup (W i)] [∀ i, Module k (W i)],
+--     (⨂[k] i : Fin n, V i) ⊗[k] (⨂[k] i : Fin n, W i) ≃ₗ[k]
+--     ⨂[k] i : Fin n, (V i ⊗[k] W i) :=
+--   n.recOn
+--   (fun V W _ _ _ _ ↦ LinearEquiv.symm $ zeroPower k (Fin 0) (fun i : (Fin 0) ↦ V i ⊗[k] W i) ≪≫ₗ
+--       (TensorProduct.lid k k).symm ≪≫ₗ TensorProduct.congr (zeroPower k (Fin 0) _).symm
+--       (zeroPower k (Fin 0) _).symm)
+--   (fun m em V W _ _ _ _ ↦
+--       (TensorProduct.congr (PiTensorProduct.succ k (fun i : Fin (m+1) ↦ V i))
+--       (PiTensorProduct.succ k (fun i : Fin (m+1) ↦ W i))) ≪≫ₗ
+--       (TensorProduct.AlgebraTensorModule.tensorTensorTensorComm k k _ _ _ _) ≪≫ₗ
+--       LinearEquiv.symm
+--         ((PiTensorProduct.succ (n := m) k (V := fun i : Fin (m.succ) ↦ (V i ⊗[k] W i))) ≪≫ₗ
+--           TensorProduct.congr (LinearEquiv.refl _ _)
+--             (em (fun i => V i.succ) (fun i => W i.succ)).symm))
+
+-- theorem PiTensorProduct.tensorCommutes_apply (n : ℕ) (V W : Fin n → Type*)
+--     [hi1 : ∀ i, AddCommGroup (V i)] [hi2 : ∀ i, Module k (V i)]
+--     [hi1' : ∀ i, AddCommGroup (W i)] [hi2' : ∀ i, Module k (W i)]
+--     (v : Π i : Fin n, V i) (w : Π i : Fin n, W i) :
+--     PiTensorProduct.tensorCommutes k n V W ((tprod k v) ⊗ₜ (tprod k w)) =
+--     tprod k (fun i ↦ v i ⊗ₜ w i) := by
+--     sorry
+
+-- end PiTensorProduct.fin
