@@ -1,12 +1,14 @@
 import BrauerGroup.TensorOfTypePQ.VectorSpaceWithTensorOfTypePQ
 
+import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
+
 suppress_compilation
 
-open TensorProduct PiTensorProduct
+open TensorProduct PiTensorProduct CategoryTheory
 
 variable {k K : Type*} {p q : ℕ} [Field k] [Field K] [Algebra k K]
-variable {V W : VectorSpaceWithTensorOfType k p q}
-variable {ιV ιW : Type*} (bV : Basis ιV k V) (bW : Basis ιW k W)
+variable {V W W' : VectorSpaceWithTensorOfType k p q}
+variable {ιV ιW ιW' : Type*} (bV : Basis ιV k V) (bW : Basis ιW k W) (bW' : Basis ιW' k W')
 
 open VectorSpaceWithTensorOfType
 
@@ -49,9 +51,53 @@ lemma indeucedByGalAux_comm (σ : K ≃ₐ[k] K)
   simp only [extendScalars_carrier, ← LinearMap.comp_assoc]
   rfl
 
-def inducedByGal (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ⟶ W.extendScalars K bW) :
+variable {bV bW} in
+def homInducedByGal (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ⟶ W.extendScalars K bW) :
     V.extendScalars K bV ⟶ W.extendScalars K bW where
-  __ :=   LinearMap.galAct σ f.toLinearMap
+  __ := LinearMap.galAct σ f.toLinearMap
   comm := by
     simp only [extendScalars_carrier, extendScalars_tensor]
     apply indeucedByGalAux_comm
+
+instance : SMul (K ≃ₐ[k] K) (V.extendScalars K bV ⟶ W.extendScalars K bW) where
+  smul σ f := homInducedByGal σ f
+
+@[simp]
+lemma homInducedByGal_toLinearMap
+    (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ⟶ W.extendScalars K bW) :
+    (homInducedByGal σ f).toLinearMap = LinearMap.galAct σ f.toLinearMap := rfl
+
+lemma homInducedByGal_comp (σ : K ≃ₐ[k] K)
+    (f : V.extendScalars K bV ⟶ W.extendScalars K bW)
+    (g : W.extendScalars K bW ⟶ W'.extendScalars K bW') :
+    homInducedByGal σ (f ≫ g) =
+    homInducedByGal σ f ≫ homInducedByGal σ g :=
+  Hom.toLinearMap_injective _ _ $ by
+    simp only [extendScalars_carrier, homInducedByGal_toLinearMap, comp_toLinearMap]
+    rw [LinearMap.galAct_comp]
+
+variable {bV bW} in
+@[simps]
+def isoInducedByGal (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ≅ W.extendScalars K bW) :
+    V.extendScalars K bV ≅ W.extendScalars K bW where
+  hom := homInducedByGal σ f.hom
+  inv := homInducedByGal σ f.inv
+  hom_inv_id := Hom.toLinearMap_injective _ _ $ by
+    simp only [extendScalars_carrier, comp_toLinearMap, homInducedByGal_toLinearMap, id_toLinearMap]
+    rw [← LinearMap.galAct_comp, ← comp_toLinearMap, f.hom_inv_id, id_toLinearMap,
+      LinearMap.galAct_id]
+  inv_hom_id := Hom.toLinearMap_injective _ _ $ by
+    simp only [extendScalars_carrier, comp_toLinearMap, homInducedByGal_toLinearMap, id_toLinearMap]
+    rw [← LinearMap.galAct_comp, ← comp_toLinearMap, f.inv_hom_id, id_toLinearMap,
+      LinearMap.galAct_id]
+
+variable {bV} in
+abbrev autInducedByGal (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ≅ V.extendScalars K bV) :
+    V.extendScalars K bV ≅ V.extendScalars K bV :=
+  isoInducedByGal σ f
+
+lemma autInducedByGal_trans (σ : K ≃ₐ[k] K) (f g : V.extendScalars K bV ≅ V.extendScalars K bV) :
+    autInducedByGal σ (f ≪≫ g) =
+    autInducedByGal σ f ≪≫ autInducedByGal σ g := by
+  ext
+  simp only [autInducedByGal, isoInducedByGal_hom, Iso.trans_hom, homInducedByGal_comp]

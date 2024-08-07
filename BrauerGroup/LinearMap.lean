@@ -76,6 +76,11 @@ def _root_.LinearMap.galAct (σ : K ≃ₐ[k] K) (f : K ⊗[k] V →ₗ[K] K ⊗
       simp_rw [smul_tmul', smul_eq_mul, mul_assoc]
     | add => aesop
 
+lemma _root_.LinearMap.galAct_restrictScalars (σ : K ≃ₐ[k] K) (f : K ⊗[k] V →ₗ[K] K ⊗[k] W) :
+    (f.galAct σ).restrictScalars k =
+    σ.toLinearMap.rTensor W ∘ₗ f.restrictScalars k ∘ₗ σ.symm.toLinearMap.rTensor V :=
+  rfl
+
 @[simp]
 lemma _root_.LinearMap.galAct_extendScalars_apply
     (σ : K ≃ₐ[k] K) (f : K ⊗[k] V →ₗ[K] K ⊗[k] W) (a : K) (v : V) :
@@ -103,5 +108,31 @@ lemma _root_.LinearMap.restrictScalars_comp
     (LinearMap.restrictScalars k (g ∘ₗ f)) =
     LinearMap.restrictScalars k g ∘ₗ LinearMap.restrictScalars k f := by
   ext; rfl
+
+lemma _root_.LinearMap.galAct_comp
+    (σ : K ≃ₐ[k] K) (f : K ⊗[k] V →ₗ[K] K ⊗[k] W) (g : K ⊗[k] W →ₗ[K] K ⊗[k] W') :
+    (LinearMap.galAct σ (g ∘ₗ f)) = LinearMap.galAct σ g ∘ₗ LinearMap.galAct σ f :=
+  LinearMap.restrictScalars_injective k $ by
+    simp only [LinearMap.galAct_restrictScalars, LinearMap.restrictScalars_comp,
+      LinearMap.comp_assoc]
+    conv_rhs => rw [← LinearMap.comp_assoc (f := f.restrictScalars k ∘ₗ _),
+      ← LinearMap.rTensor_comp,
+      show σ.symm.toLinearMap = σ.toLinearEquiv.symm.toLinearMap from rfl,
+      show σ.toLinearMap = σ.toLinearEquiv.toLinearMap from rfl,
+      show σ.toLinearEquiv.symm.toLinearMap ∘ₗ σ.toLinearEquiv.toLinearMap = LinearMap.id by aesop]
+    simp
+
+lemma _root_.LinearMap.galAct_id (σ : K ≃ₐ[k] K) :
+    (LinearMap.id : K ⊗[k] V →ₗ[K] K ⊗[k] V).galAct σ = LinearMap.id :=
+  LinearMap.restrictScalars_injective k $ by
+    simp only [LinearMap.galAct_restrictScalars]
+    rw [show (LinearMap.id : K ⊗[k] V →ₗ[K] K ⊗[k] V).restrictScalars k =
+      LinearMap.id by ext; rfl]
+    simp only [LinearMap.id_comp]
+    rw [← LinearMap.rTensor_comp,
+      show σ.symm.toLinearMap = σ.toLinearEquiv.symm.toLinearMap from rfl,
+      show σ.toLinearMap = σ.toLinearEquiv.toLinearMap from rfl,
+      show σ.toLinearEquiv.toLinearMap ∘ₗ σ.toLinearEquiv.symm.toLinearMap = LinearMap.id by aesop,
+      LinearMap.rTensor_id]
 
 end
