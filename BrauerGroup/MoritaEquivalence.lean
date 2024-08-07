@@ -285,7 +285,7 @@ def matrix.unitIso :
 
 
 @[simps!]
-noncomputable def test (M : ModuleCat M[ι, R]) :
+noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
     M ≅ (fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι).obj M :=
   LinearEquiv.toModuleIso $ LinearEquiv.ofBijective
     ({toFun := fun m i => ⟨(stdBasisMatrix default i 1 : M[ι, R]) • m, by
@@ -376,7 +376,7 @@ noncomputable def test (M : ModuleCat M[ι, R]) :
 @[simps]
 noncomputable def matrix.counitIsoHom :
     fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι ⟶ 𝟭 (ModuleCat M[ι, R]) where
-  app M := (test R ι M).inv
+  app M := (matrix.counitIsoHomMap R ι M).inv
   naturality X Y f := by
     simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj, toModuleCatOverMatrix_obj,
       Functor.id_obj, Functor.comp_map, Functor.id_map]
@@ -389,13 +389,13 @@ noncomputable def matrix.counitIsoHom :
     rw [fromModuleCatOverMatrix_map_apply_coe]
     change _ = _ • _
     rw [← f.map_smul]
-    erw [test_hom_apply_coe]
+    rfl
 
 @[simps]
 noncomputable def matrix.counitIsoInv :
     𝟭 (ModuleCat M[ι, R]) ⟶
     fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι where
-  app M := (test R ι M).hom
+  app M := (matrix.counitIsoHomMap R ι M).hom
   naturality X Y f := by
     simp only [Functor.id_obj, Functor.comp_obj, fromModuleCatOverMatrix_obj,
       toModuleCatOverMatrix_obj, Functor.id_map, Functor.comp_map]
@@ -403,9 +403,9 @@ noncomputable def matrix.counitIsoInv :
     simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj, toModuleCatOverMatrix_obj,
       ModuleCat.coe_comp, Function.comp_apply]
     refine funext fun i => Subtype.ext ?_
-    erw [test_hom_apply_coe]
+    erw [counitIsoHomMap_hom_apply_coe]
     rw [toModuleCatOverMatrix_map_apply, fromModuleCatOverMatrix_map_apply_coe]
-    erw [test_hom_apply_coe]
+    erw [counitIsoHomMap_hom_apply_coe]
     rw [f.map_smul]
 
 @[simps]
@@ -429,11 +429,11 @@ noncomputable def moritaEquivalentToMatrix : ModuleCat R ≌ ModuleCat M[ι, R] 
     ext (x : ι → X)
     simp only [matrix.counitIsoHom_app, Functor.comp_obj, fromModuleCatOverMatrix_obj,
       toModuleCatOverMatrix_obj, ModuleCat.coe_comp, Function.comp_apply, ModuleCat.id_apply]
-    apply_fun (test R ι _).hom using LinearEquiv.injective _
-    erw [Iso.inv_hom_id_apply (test R ι _)]
+    apply_fun (matrix.counitIsoHomMap R ι _).hom using LinearEquiv.injective _
+    erw [Iso.inv_hom_id_apply (matrix.counitIsoHomMap R ι _)]
     simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj, toModuleCatOverMatrix_obj]
     refine funext fun i => Subtype.ext ?_
-    erw [test_hom_apply_coe]
+    erw [matrix.counitIsoHomMap_hom_apply_coe]
     rw [toModuleCatOverMatrix_map_apply]
     refine funext fun j => ?_
     erw [matrix.unitIsoInv_app_apply_coe]

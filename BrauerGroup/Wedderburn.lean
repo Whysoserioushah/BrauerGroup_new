@@ -3,6 +3,7 @@ import Mathlib.RingTheory.Artinian
 import BrauerGroup.Con
 import Mathlib.Algebra.Ring.Equiv
 import Mathlib.LinearAlgebra.Matrix.IsDiag
+
 import BrauerGroup.MoritaEquivalence
 
 variable (A : Type*) [Ring A]
