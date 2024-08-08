@@ -211,19 +211,190 @@ lemma directSum_simple_module_over_simple_ring'
 lemma linearEquiv_iff_finrank_eq_over_simple_ring
     (M N : Type v) [AddCommGroup M] [Module A M] [AddCommGroup N] [Module A N]
     [Module.Finite A M] [Module.Finite A N] :
-    Nonempty (M ≃ₗ[A] N) ↔ Module.rank A M = Module.rank A N := by
+  -- We view `M` as a `k`-module by restricting scalars along `k →+* A`.
+  let inst0 := Module.compHom M (Algebra.ofId k A).toRingHom
+  -- We view `N` as a `k`-module by restricting scalars along `k →+* A`.
+  let inst1 := Module.compHom N (Algebra.ofId k A).toRingHom
+  let inst2 : IsScalarTower k A M :=
+    { smul_assoc := fun a b c => by
+        simp only [Algebra.smul_def, mul_smul]
+        rfl }
+  let inst3 : IsScalarTower k A N :=
+    { smul_assoc := fun a b c => by
+        simp only [Algebra.smul_def, mul_smul]
+        rfl }
+
+  -- Then `M` and `N` are both finite dimensional `k`-modules.
+  let _ : FiniteDimensional k M := Module.Finite.trans A M
+  let _ : FiniteDimensional k N := Module.Finite.trans A N
+
+  -- Then `M` and `N` are isomorphic as `A`-modules if and only if they have the same `k`-dimension.
+  Nonempty (M ≃ₗ[A] N) ↔
+  FiniteDimensional.finrank k M = FiniteDimensional.finrank k N := by
+
+  letI := Module.compHom M (Algebra.ofId k A).toRingHom
+  letI := Module.compHom N (Algebra.ofId k A).toRingHom
+  haveI : IsScalarTower k A M :=
+    { smul_assoc := fun a b c => by
+        simp only [Algebra.smul_def, mul_smul]
+        rfl }
+  haveI : IsScalarTower k A N :=
+    { smul_assoc := fun a b c => by
+        simp only [Algebra.smul_def, mul_smul]
+        rfl }
+
+  haveI : FiniteDimensional k M := Module.Finite.trans A M
+  haveI : FiniteDimensional k N := Module.Finite.trans A N
+
   fconstructor
   · rintro ⟨iso⟩
-    exact iso.rank_eq
+    refine LinearEquiv.finrank_eq { iso with map_smul' := ?_ }
+    intros a m
+    simp only [AlgHom.toRingHom_eq_coe, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
+      LinearMap.map_smul_of_tower, LinearEquiv.coe_coe, RingHom.id_apply]
   · intro h
     obtain ⟨S, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring k A M
     obtain ⟨ι', ⟨iso'⟩⟩ := directSum_simple_module_over_simple_ring' k A N S
-    have eq := iso.rank_eq
-    have eq' := iso'.rank_eq
-    have EQ : Module.rank A (ι →₀ S) = Module.rank A (ι' →₀ S) := by
+
+    by_cases HS : Subsingleton S
+    · letI : Unique S := ⟨⟨0⟩, fun x => Subsingleton.elim _ _⟩
+      letI : Unique (ι →₀ S) := inferInstance
+      letI : Unique (ι' →₀ S) := inferInstance
+      let e : (ι →₀ S) ≃ₗ[A] (ι' →₀ S) :=
+        { toFun := 0
+          map_add' := by simp
+          map_smul' := by simp
+          invFun := 0
+          left_inv := by
+            intro x
+            apply Subsingleton.elim
+          right_inv := by
+            intro x
+            apply Subsingleton.elim }
+      refine ⟨iso ≪≫ₗ e ≪≫ₗ iso'.symm⟩
+
+    replace HS : Nontrivial S := not_subsingleton_iff_nontrivial.mp HS
+
+    by_cases Hιι' : IsEmpty ι ∨ IsEmpty ι'
+    · rcases Hιι' with (Hι|Hι')
+      · letI : Unique (ι →₀ S) := inferInstance
+        letI : Unique M := ⟨⟨0⟩, by
+          intros a
+          apply_fun iso using LinearEquiv.injective _
+          apply Subsingleton.elim⟩
+        have eq : FiniteDimensional.finrank k M = 0 := by
+          rw [FiniteDimensional.finrank_eq_zero_iff]
+          exact fun m => ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
+        have eq' : FiniteDimensional.finrank k N = 0 := by
+          rw [← h, eq]
+        haveI : Unique N := ⟨⟨0⟩, by
+          rw [FiniteDimensional.finrank_zero_iff] at eq'
+          intro n
+          exact Subsingleton.elim _ _⟩
+        refine ⟨⟨0, 0, fun x => Subsingleton.elim _ _, fun x => Subsingleton.elim _ _⟩⟩
+      · letI : Unique (ι' →₀ S) := inferInstance
+        letI : Unique N := ⟨⟨0⟩, by
+          intros a
+          apply_fun iso' using LinearEquiv.injective _
+          apply Subsingleton.elim⟩
+        have eq : FiniteDimensional.finrank k N = 0 := by
+          rw [FiniteDimensional.finrank_eq_zero_iff]
+          exact fun m => ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
+        have eq' : FiniteDimensional.finrank k M = 0 := by
+          rw [h, eq]
+        haveI : Unique M := ⟨⟨0⟩, by
+          rw [FiniteDimensional.finrank_zero_iff] at eq'
+          intro n
+          exact Subsingleton.elim _ _⟩
+        refine ⟨⟨0, 0, fun x => Subsingleton.elim _ _, fun x => Subsingleton.elim _ _⟩⟩
+
+    push_neg at Hιι'
+    rw [not_isEmpty_iff, not_isEmpty_iff] at Hιι'
+    obtain ⟨Hι, -⟩ := Hιι'
+
+    letI := Module.compHom S (Algebra.ofId k A).toRingHom
+    let ISO : M ≃ₗ[k] ι →₀ S :=
+    { iso with
+      map_smul' := by
+        intros a m
+        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe,
+          RingHom.id_apply]
+        change iso (algebraMap k A a • _) = algebraMap k A a • _
+        rw [map_smul] }
+    have eq := LinearEquiv.finrank_eq ISO
+
+    let ISO' : N ≃ₗ[k] ι' →₀ S :=
+    { iso' with
+      map_smul' := by
+        intros a m
+        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe,
+          RingHom.id_apply]
+        change iso' (algebraMap k A a • _) = algebraMap k A a • _
+        rw [map_smul] }
+    have eq' := LinearEquiv.finrank_eq ISO'
+    have EQ : FiniteDimensional.finrank k (ι →₀ S) = FiniteDimensional.finrank k (ι' →₀ S) := by
       rw [← eq, h, eq']
 
-    -- I am stuck because I don't have **StrongRankCondition**
-    sorry
+    haveI : Module.Finite k (ι →₀ S) := Module.Finite.equiv ISO
+    haveI : Module.Finite k (ι' →₀ S) := Module.Finite.equiv ISO'
+    haveI : Module.Finite k S := by
+      suffices : IsNoetherian k S
+      · infer_instance
+      rw [IsNoetherian.iff_rank_lt_aleph0]
+      apply_fun ((↑) : ℕ → Cardinal) at eq
+      rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp] at eq
+      have ineq : Module.rank k M < Cardinal.aleph0 := by
+        rw [Module.rank_lt_alpeh0_iff]; infer_instance
+      rw [eq] at ineq
+      simp only [Cardinal.lift_id] at ineq
+      have ineq2 := @Cardinal.le_mul_right (Module.rank k S) (Cardinal.mk ι)
+        (by rw [Cardinal.mk_ne_zero_iff]; infer_instance)
+      rw [mul_comm] at ineq2
+      exact lt_of_le_of_lt ineq2 ineq
+
+    haveI : Fintype ι := by
+      refine (@Cardinal.lt_aleph0_iff_fintype ι).1 ?_ |>.some
+      apply_fun ((↑) : ℕ → Cardinal) at eq
+      rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp] at eq
+      have ineq : Module.rank k M < Cardinal.aleph0 := by
+        rw [Module.rank_lt_alpeh0_iff]; infer_instance
+      rw [eq] at ineq
+      simp only [Cardinal.lift_id] at ineq
+      have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ι) (Module.rank k S)
+        (by
+          suffices : 0 < Module.rank k S
+          · exact Ne.symm (ne_of_lt this)
+          apply rank_pos)
+      rw [mul_comm] at ineq2
+      exact lt_of_le_of_lt ineq2 ineq
+
+    haveI : Fintype ι' := by
+      refine (@Cardinal.lt_aleph0_iff_fintype ι').1 ?_ |>.some
+      apply_fun ((↑) : ℕ → Cardinal) at eq'
+      rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp] at eq'
+      have ineq : Module.rank k N < Cardinal.aleph0 := by
+        rw [Module.rank_lt_alpeh0_iff]; infer_instance
+      rw [eq'] at ineq
+      simp only [Cardinal.lift_id] at ineq
+      have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ι') (Module.rank k S)
+        (by
+          suffices : 0 < Module.rank k S
+          · exact Ne.symm (ne_of_lt this)
+          apply rank_pos)
+      rw [mul_comm] at ineq2
+      exact lt_of_le_of_lt ineq2 ineq
+
+    rw [FiniteDimensional.finrank_finsupp,  FiniteDimensional.finrank_finsupp] at EQ
+    simp only [Cardinal.lift_id] at EQ
+    simp only [mul_eq_mul_right_iff] at EQ
+    replace EQ := EQ.resolve_right
+      (by have := FiniteDimensional.finrank_pos (R := k) (M := S); omega)
+    rw [Fintype.card_eq] at EQ
+    obtain ⟨e⟩ := EQ
+    let E : (ι →₀ S) ≃ₗ[A] (ι' →₀ S) :=
+      { Finsupp.equivCongrLeft e with
+        map_add' := by intros a b; ext; simp
+        map_smul' := by intros a b; ext; simp }
+    refine ⟨iso ≪≫ₗ E ≪≫ₗ iso'.symm⟩
 
 end simple
