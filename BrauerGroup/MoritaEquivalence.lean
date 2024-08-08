@@ -30,6 +30,14 @@ instance (M : Type*) [AddCommGroup M] [Module R M] : Module M[ι, R] (ι → M) 
     simp [add_smul, Finset.sum_add_distrib]
   zero_smul v := funext fun i => show ∑ _, _ = _ by simp
 
+lemma matrix_smul_vec_def {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M) :
+    N • v = fun i => ∑ j : ι, N i j • v j := rfl
+
+lemma matrix_smul_vec_apply {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M)
+    (i : ι) :
+    (N • v) i = ∑ j : ι, N i j • v j := rfl
+
+
 @[simps]
 def toModuleCatOverMatrix : ModuleCat R ⥤ ModuleCat M[ι, R] where
   obj M := ModuleCat.of M[ι, R] (ι → M)
