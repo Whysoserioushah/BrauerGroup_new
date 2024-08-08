@@ -211,26 +211,27 @@ lemma directSum_simple_module_over_simple_ring'
 lemma linearEquiv_iff_finrank_eq_over_simple_ring
     (M N : Type v) [AddCommGroup M] [Module A M] [AddCommGroup N] [Module A N]
     [Module.Finite A M] [Module.Finite A N] :
-  -- We view `M` as a `k`-module by restricting scalars along `k →+* A`.
-  let inst0 := Module.compHom M (Algebra.ofId k A).toRingHom
-  -- We view `N` as a `k`-module by restricting scalars along `k →+* A`.
-  let inst1 := Module.compHom N (Algebra.ofId k A).toRingHom
-  let inst2 : IsScalarTower k A M :=
-    { smul_assoc := fun a b c => by
-        simp only [Algebra.smul_def, mul_smul]
-        rfl }
-  let inst3 : IsScalarTower k A N :=
-    { smul_assoc := fun a b c => by
-        simp only [Algebra.smul_def, mul_smul]
-        rfl }
 
-  -- Then `M` and `N` are both finite dimensional `k`-modules.
-  let _ : FiniteDimensional k M := Module.Finite.trans A M
-  let _ : FiniteDimensional k N := Module.Finite.trans A N
+    Nonempty (M ≃ₗ[A] N) ↔
+    -- We view `M` as a `k`-module by restricting scalars along `k →+* A`.
+    let inst0 := Module.compHom M (Algebra.ofId k A).toRingHom
+    -- We view `N` as a `k`-module by restricting scalars along `k →+* A`.
+    let inst1 := Module.compHom N (Algebra.ofId k A).toRingHom
+    let inst2 : IsScalarTower k A M :=
+      { smul_assoc := fun a b c => by
+          simp only [Algebra.smul_def, mul_smul]
+          rfl }
+    let inst3 : IsScalarTower k A N :=
+      { smul_assoc := fun a b c => by
+          simp only [Algebra.smul_def, mul_smul]
+          rfl }
 
-  -- Then `M` and `N` are isomorphic as `A`-modules if and only if they have the same `k`-dimension.
-  Nonempty (M ≃ₗ[A] N) ↔
-  FiniteDimensional.finrank k M = FiniteDimensional.finrank k N := by
+    -- Then `M` and `N` are both finite dimensional `k`-modules.
+    let _ : FiniteDimensional k M := Module.Finite.trans A M
+    let _ : FiniteDimensional k N := Module.Finite.trans A N
+
+    -- Then `M` and `N` are isomorphic as `A`-modules if and only if they have the same `k`-dimension.
+    FiniteDimensional.finrank k M = FiniteDimensional.finrank k N := by
 
   letI := Module.compHom M (Algebra.ofId k A).toRingHom
   letI := Module.compHom N (Algebra.ofId k A).toRingHom
