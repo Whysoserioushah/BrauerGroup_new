@@ -224,22 +224,70 @@ variable (n : ℕ) [NeZero n] (k K A : Type u) [Field k] [Field K] [Algebra k K]
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
   (ℒ : Set (IntermediateField k K))
   (l_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1) ℒ)
-  (h : ⨆ (L ∈ ℒ), L = K)
+  (h : ⨆ (L ∈ ℒ), L = ⊤)
+
+lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
+    (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L) := by
+  rintro _ ⟨⟨L1, hL1⟩, rfl⟩ _ ⟨⟨L2, hL2⟩, rfl⟩
+  obtain ⟨L3, hL3⟩ := l_direct L1 hL1 L2 hL2
+  refine ⟨intermediateTensor k K A L3, ⟨⟨L3, hL3.1⟩, rfl⟩,
+      ⟨intermediateTensor_mono k K A hL3.2.1, intermediateTensor_mono k K A hL3.2.2⟩⟩
+
+lemma SetOfInterField_nonempty : (Set.range fun (L : IntermediateField k K) ↦
+    intermediateTensor k K A L).Nonempty := by
+  sorry
+
+def qqq (ℒ : Set (IntermediateField k K)) : Set (Subfield K) := by
+
+  sorry
 
 theorem tensor_union_eq :
     ⨆ (L : ℒ), (intermediateTensor k K A L) = ⊤ := by
-  sorry
+  rw [eq_top_iff]
+  rintro x -
+  induction x using TensorProduct.induction_on with
+  |zero => simp only [Submodule.zero_mem]
+  |tmul x a =>
+    obtain h₀ := IntermediateField.mem_top (F := k) (E := K) (x := x)
+    have h1 : ℒ.Nonempty := by
+      sorry
+    -- rw [← h, ← sSup_eq_iSup] at h₀
+    -- obtain := Subfield.mem_sSup_of_directedOn (K := K) (S := ℒ)
+    have h1 : ∃ L, L ∈ ℒ ∧ x ∈ L := by
+      sorry
+    rcases h1 with ⟨L, ⟨hL1, hL2⟩⟩
+    have h1 : (x ⊗ₜ[k] a) ∈ intermediateTensor k K A L := by
+      sorry
+    have h2 : (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L).Nonempty := by
+      refine Set.nonempty_def.mpr ?_
+      tauto
+    refine Submodule.mem_sSup_of_directed h2 (is_direct k K A ℒ l_direct) |>.2 ?_
+    tauto
+  |add x y hx hy =>
+    exact AddMemClass.add_mem hx hy
 
 theorem extension_element_in (x : K ⊗[k] A):
     ∃ (F : ℒ), x ∈ intermediateTensor k K A F := by
   have mem : x ∈ (⊤ : Submodule k _) := ⟨⟩
-  rw [← tensor_union_eq k K A ℒ] at mem
-  sorry
+  rw [← tensor_union_eq k K A ℒ l_direct] at mem
+  have h1 : ℒ.Nonempty := by
+    sorry
+  have h2 : (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L).Nonempty := by
+    refine Set.nonempty_def.mpr ?_
+    use intermediateTensor k K A h1.choose
+    simp only [Set.mem_range, Subtype.exists, exists_prop]
+    use h1.choose
+    simp only [and_true]
+    exact h1.choose_spec
+  obtain ⟨_, ⟨⟨⟨L, hL1⟩, rfl⟩, hL⟩⟩ := Submodule.mem_sSup_of_directed h2
+    (is_direct k K A ℒ l_direct) (z := x) |>.1 mem
+  simp only [Subtype.exists, exists_prop]
+  tauto
 
 def subfieldOf (x : K ⊗[k] A) : IntermediateField k K :=
-  extension_element_in k K A ℒ x|>.choose
+  extension_element_in k K A ℒ l_direct x|>.choose
 
-lemma subfieldOf_in (x : K ⊗[k] A) : (subfieldOf k K A ℒ x) ∈ ℒ := by
+lemma subfieldOf_in (x : K ⊗[k] A) : (subfieldOf k K A ℒ l_direct x) ∈ ℒ := by
   rw [subfieldOf]
   simp only [Subtype.coe_prop]
 
@@ -255,20 +303,13 @@ lemma ee_apply (i : Fin n × Fin n) : iso (e i) = Matrix.stdBasis K (Fin n) (Fin
   have := Basis.map_apply (Matrix.stdBasis K (Fin n) (Fin n)) iso.symm.toLinearEquiv i
   erw [← this]
 
-lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
-    (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L) := by
-  rintro _ ⟨⟨L1, hL1⟩, rfl⟩ _ ⟨⟨L2, hL2⟩, rfl⟩
-  obtain ⟨L3, hL3⟩ := l_direct L1 hL1 L2 hL2
-  refine ⟨intermediateTensor k K A L3, ⟨⟨L3, hL3.1⟩, rfl⟩,
-      ⟨intermediateTensor_mono k K A hL3.2.1, intermediateTensor_mono k K A hL3.2.2⟩⟩
-
 lemma L_sup :
-    ∃ L, L ∈ ℒ ∧ (∀ (i : Fin n × Fin n), subfieldOf k K A ℒ (e i) ≤ L) := by
+    ∃ L, L ∈ ℒ ∧ (∀ (i : Fin n × Fin n), subfieldOf k K A ℒ l_direct (e i) ≤ L) := by
   sorry
 
-def ℒℒ : IntermediateField k K := (L_sup n k K A iso ℒ).choose
+def ℒℒ : IntermediateField k K := (L_sup n k K A iso ℒ l_direct).choose
 
-local notation "ℒ₁" => ℒℒ n k K A iso ℒ
+local notation "ℒ₁" => ℒℒ n k K A iso ℒ l_direct
 
 def isoRestrict' : ℒ₁ ⊗[k] A ≃ₐ[ℒ₁] Matrix (Fin n) (Fin n) ℒ₁ := sorry
 
@@ -288,9 +329,9 @@ lemma spilt_iff_left (A : CSA k) (𝓁 : Set (IntermediateField k K))
     isSplit k A K → (∃ L ∈ 𝓁, isSplit k A L) := by
   rintro ⟨n, ⟨hn, hnL⟩⟩
   obtain hnL' := hnL.some; clear hnL
-  use (L_sup n k K A hnL' 𝓁).choose
+  use (L_sup n k K A hnL' 𝓁 l_direct).choose
   constructor
-  · exact (L_sup n k K A hnL' 𝓁).choose_spec.1
+  · exact (L_sup n k K A hnL' 𝓁 l_direct).choose_spec.1
   · use n; use hn
     obtain h1 := isoRestrict' n k K A hnL' 𝓁
     simp [ℒℒ] at h1
