@@ -398,6 +398,7 @@ lemma simple_mod_of_wedderburn (n : ℕ) [NeZero n]
   exact IsMoritaEquivalent.division_ring.IsSimpleModule.functor (Matrix (Fin n) (Fin n) D) A
     e.symm (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → D))
 
+set_option maxHeartbeats 500000 in
 /--
 074E (3) first part
 -/
@@ -611,9 +612,40 @@ lemma end_simple_mod_of_wedderburn' (n : ℕ) [NeZero n]
   haveI : IsSimpleModule A (Fin n → D) := simple_mod_of_wedderburn k A n D wdb
   obtain ⟨iso⟩ := linearEquiv_of_isSimpleModule_over_simple_ring k A M (Fin n → D)
   refine Nonempty.intro $ AlgEquiv.trans (AlgEquiv.ofLinearEquiv ?_ ?_ ?_) e
-  · sorry
-  · sorry
-  · sorry
+  · exact LinearEquiv.ofLinear
+      { toFun := fun f => iso.toLinearMap ∘ₗ f ∘ₗ iso.symm.toLinearMap
+        map_add' := fun f g => by ext; simp
+        map_smul' := fun a f => by
+          ext v i
+          simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
+            AlgEquiv.toRingEquiv_toRingHom, LinearMap.coe_comp, LinearEquiv.coe_coe,
+            Function.comp_apply, LinearMap.smul_apply, RingHom.id_apply, Pi.smul_apply]
+          rw [algebra_compatible_smul A, iso.map_smul]
+          rw [algebraMap_smul]
+          rfl }
+      { toFun := fun f => iso.symm.toLinearMap ∘ₗ f ∘ₗ iso.toLinearMap
+        map_add' := fun f g => by ext; simp
+        map_smul' := fun a f => by
+          ext m
+          simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
+            AlgEquiv.toRingEquiv_toRingHom, LinearMap.coe_comp, LinearEquiv.coe_coe,
+            Function.comp_apply, LinearMap.smul_apply, RingHom.id_apply]
+          rw [algebra_compatible_smul A, iso.symm.map_smul]
+          rw [algebraMap_smul] }
+      (by ext; simp) (by ext; simp)
+  · ext
+    simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
+      AlgEquiv.toRingEquiv_toRingHom, Pi.smul_apply, smul_eq_mul, id_eq, Matrix.smul_apply,
+      eq_mpr_eq_cast, LinearEquiv.ofLinear_apply, LinearMap.coe_mk, AddHom.coe_mk,
+      LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.one_apply,
+      LinearEquiv.apply_symm_apply]
+  · intros f g
+    ext
+    simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
+      AlgEquiv.toRingEquiv_toRingHom, Pi.smul_apply, smul_eq_mul, id_eq, Matrix.smul_apply,
+      eq_mpr_eq_cast, LinearEquiv.ofLinear_apply, LinearMap.coe_mk, AddHom.coe_mk,
+      LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mul_apply,
+      LinearEquiv.symm_apply_apply]
 
 
 end simple
