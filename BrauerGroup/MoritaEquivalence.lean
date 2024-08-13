@@ -33,10 +33,15 @@ instance (M : Type*) [AddCommGroup M] [Module R M] : Module M[ι, R] (ι → M) 
 lemma matrix_smul_vec_def {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M) :
     N • v = fun i => ∑ j : ι, N i j • v j := rfl
 
+lemma matrix_smul_vec_def' {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M) :
+    N • v = ∑ j : ι, fun i => N i j • v j := by
+  rw [matrix_smul_vec_def]
+  ext
+  simp
+
 lemma matrix_smul_vec_apply {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M)
     (i : ι) :
     (N • v) i = ∑ j : ι, N i j • v j := rfl
-
 
 @[simps]
 def toModuleCatOverMatrix : ModuleCat R ⥤ ModuleCat M[ι, R] where
