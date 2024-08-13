@@ -647,5 +647,72 @@ lemma end_simple_mod_of_wedderburn' (n : ℕ) [NeZero n]
       LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mul_apply,
       LinearEquiv.symm_apply_apply]
 
+lemma Wedderburn_Artin_uniqueness₀
+    (n n' : ℕ) [NeZero n] [NeZero n']
+    (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
+    (D' : Type v) [DivisionRing D'] [Algebra k D'] (wdb' : A ≃ₐ[k] Matrix (Fin n') (Fin n') D') :
+    Nonempty $ D ≃ₐ[k] D' := by
+  let _ : Module A (Fin n → D) := Module.compHom _ wdb.toRingEquiv.toRingHom
+  have : IsScalarTower k (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
+  { smul_assoc := fun a b x => by
+      ext i
+      simp only [matrix_smul_vec_apply, Matrix.smul_apply, smul_eq_mul, Algebra.smul_mul_assoc,
+        Pi.smul_apply, Finset.smul_sum] }
+  letI _ : IsScalarTower k A (Fin n → D) :=
+  { smul_assoc := fun a b x => by
+      change wdb (a • b) • x = _
+      rw [map_smul, Algebra.smul_def, mul_smul]
+      rw [algebraMap_smul]
+      rfl }
+  letI _ : SMulCommClass A k (Fin n → D) :=
+    { smul_comm := fun a b x => by
+        change wdb a • b • x = b • wdb a • x
+        ext i
+        simp only [matrix_smul_vec_apply, Pi.smul_apply, smul_eq_mul, Algebra.mul_smul_comm,
+          Finset.smul_sum] }
+  haveI : IsSimpleModule A (Fin n → D) := simple_mod_of_wedderburn k A n D wdb
+  have ⟨iso⟩ := end_simple_mod_of_wedderburn' k A n D wdb (Fin n → D)
+  have ⟨iso'⟩ := end_simple_mod_of_wedderburn' k A n' D' wdb' (Fin n → D)
+  let e := iso.symm.trans iso'
+  exact Nonempty.intro {
+    toFun := fun x => e (MulOpposite.op x) |>.unop
+    invFun := fun x => e.symm (MulOpposite.op x) |>.unop
+    left_inv := fun x => by simp
+    right_inv := fun x => by simp
+    map_mul' := fun x y => by simp
+    map_add' := fun x y => by simp
+    commutes' := fun x => by
+      simp only
+      have := e.commutes x
+      simp only [MulOpposite.algebraMap_apply] at this
+      rw [this]
+      simp
+  }
+
+lemma Wedderburn_Artin_uniqueness₁
+    (n n' : ℕ) [NeZero n] [NeZero n']
+    (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
+    (D' : Type v) [DivisionRing D'] [Algebra k D'] (wdb' : A ≃ₐ[k] Matrix (Fin n') (Fin n') D') :
+    n = n' := by
+  have ⟨iso⟩ := Wedderburn_Artin_uniqueness₀ k A n n' D wdb D' wdb'
+  let e : Matrix (Fin n) (Fin n) D ≃ₐ[k] Matrix (Fin n') (Fin n') D :=
+    wdb.symm.trans (wdb'.trans $ AlgEquiv.mapMatrix iso.symm)
+  have eq1 := rank_matrix D (Fin n) (Fin n)
+  have eq2 := rank_matrix D (Fin n') (Fin n')
+  simp only [Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
+    Cardinal.lift_natCast] at eq1 eq2
+  have eq11 : Module.rank k (Matrix (Fin n) (Fin n) D) = n * n * Module.rank k D := by
+    rw [← rank_mul_rank k D (Matrix (Fin n) (Fin n) D), eq1]
+    ring
+  have eq21 : Module.rank k (Matrix (Fin n') (Fin n') D) = n' * n' * Module.rank k D := by
+    rw [← rank_mul_rank k D (Matrix (Fin n') (Fin n') D), eq2]
+    ring
+  have eq3 : n * n * Module.rank k D = n' * n' * Module.rank k D := by
+    rw [← eq11, ← eq21]
+    exact LinearEquiv.rank_eq e
+
+  -- hmmm, what if `D` is infinite dimensional?
+
+  sorry
 
 end simple
