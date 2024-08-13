@@ -210,39 +210,12 @@ lemma directSum_simple_module_over_simple_ring'
 
 lemma linearEquiv_iff_finrank_eq_over_simple_ring
     (M N : Type v) [AddCommGroup M] [Module A M] [AddCommGroup N] [Module A N]
+    [Module k M] [Module k N]
+    [IsScalarTower k A M] [IsScalarTower k A N]
     [Module.Finite A M] [Module.Finite A N] :
 
     Nonempty (M ≃ₗ[A] N) ↔
-    -- We view `M` as a `k`-module by restricting scalars along `k →+* A`.
-    let inst0 := Module.compHom M (Algebra.ofId k A).toRingHom
-    -- We view `N` as a `k`-module by restricting scalars along `k →+* A`.
-    let inst1 := Module.compHom N (Algebra.ofId k A).toRingHom
-    let inst2 : IsScalarTower k A M :=
-      { smul_assoc := fun a b c => by
-          simp only [Algebra.smul_def, mul_smul]
-          rfl }
-    let inst3 : IsScalarTower k A N :=
-      { smul_assoc := fun a b c => by
-          simp only [Algebra.smul_def, mul_smul]
-          rfl }
-
-    -- Then `M` and `N` are both finite dimensional `k`-modules.
-    let _ : FiniteDimensional k M := Module.Finite.trans A M
-    let _ : FiniteDimensional k N := Module.Finite.trans A N
-
-    -- Then `M` and `N` are isomorphic as `A`-modules if and only if they have the same `k`-dimension.
     FiniteDimensional.finrank k M = FiniteDimensional.finrank k N := by
-
-  letI := Module.compHom M (Algebra.ofId k A).toRingHom
-  letI := Module.compHom N (Algebra.ofId k A).toRingHom
-  haveI : IsScalarTower k A M :=
-    { smul_assoc := fun a b c => by
-        simp only [Algebra.smul_def, mul_smul]
-        rfl }
-  haveI : IsScalarTower k A N :=
-    { smul_assoc := fun a b c => by
-        simp only [Algebra.smul_def, mul_smul]
-        rfl }
 
   haveI : FiniteDimensional k M := Module.Finite.trans A M
   haveI : FiniteDimensional k N := Module.Finite.trans A N
@@ -320,6 +293,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
         intros a m
         simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe,
           RingHom.id_apply]
+        rw [algebra_compatible_smul A]
         change iso (algebraMap k A a • _) = algebraMap k A a • _
         rw [map_smul] }
     have eq := LinearEquiv.finrank_eq ISO
@@ -330,6 +304,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
         intros a m
         simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe,
           RingHom.id_apply]
+        rw [algebra_compatible_smul A]
         change iso' (algebraMap k A a • _) = algebraMap k A a • _
         rw [map_smul] }
     have eq' := LinearEquiv.finrank_eq ISO'
@@ -397,5 +372,28 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
         map_add' := by intros a b; ext; simp
         map_smul' := by intros a b; ext; simp }
     refine ⟨iso ≪≫ₗ E ≪≫ₗ iso'.symm⟩
+
+/--
+074E (3) first part
+-/
+lemma simple_mod_of_wedderburn (n : ℕ) [NeZero n]
+    (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D) :
+    let _ : Module A (Fin n → D) := Module.compHom _ wdb.toRingEquiv.toRingHom
+    IsSimpleModule A (Fin n → D) := by
+  letI : Module A (Fin n → D) := Module.compHom _ wdb.toRingEquiv.toRingHom
+
+  let e : ModuleCat.{v} A ≌ ModuleCat (Matrix (Fin n) (Fin n) D) :=
+    ModuleCat.restrictScalarsEquivalenceOfRingEquiv wdb.toRingEquiv.symm
+
+  have inst1 : IsSimpleModule (Matrix (Fin n) (Fin n) D) (Fin n → D) := by
+    haveI : IsSimpleModule D (ModuleCat.of D D) := inferInstanceAs $ IsSimpleModule D D
+    exact IsMoritaEquivalent.division_ring.IsSimpleModule.functor D (Matrix (Fin n) (Fin n) D)
+      (moritaEquivalentToMatrix D (Fin n)) (ModuleCat.of D D)
+
+  have : IsSimpleModule (Matrix (Fin n) (Fin n) D)
+    (ModuleCat.of (Matrix (Fin n) (Fin n) D) $ Fin n → D) := inst1
+
+  exact IsMoritaEquivalent.division_ring.IsSimpleModule.functor (Matrix (Fin n) (Fin n) D) A
+    e.symm (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → D))
 
 end simple

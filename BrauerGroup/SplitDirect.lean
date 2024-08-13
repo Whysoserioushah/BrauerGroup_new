@@ -310,4 +310,6 @@ theorem spilt_iff (A : CSA k) (𝓁 : Set (IntermediateField k K))
     isSplit k A K ↔ (∃ L ∈ 𝓁, isSplit k A L) := by
   exact ⟨spilt_iff_left _ _ _ _ l_direct h, spilt_iff_right _ _ _ _⟩
 
+end
+
 end split_direct
