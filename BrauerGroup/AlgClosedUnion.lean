@@ -451,7 +451,7 @@ lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
   have eq := congr($(comm_square n k k_bar A iso) (x * y))
   conv_rhs at eq =>
     rw [LinearMap.comp_apply]
-    erw [(inclusion n k k_bar A iso).map_mul, iso.map_mul]
+    erw [(inclusion n k k_bar A iso).map_mul, _root_.map_mul (f := iso)]
   have eq₁ := congr($(comm_square n k k_bar A iso) x)
   have eq₂ := congr($(comm_square n k k_bar A iso) y)
   simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, AlgHom.toLinearMap_apply,
