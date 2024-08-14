@@ -95,6 +95,66 @@ lemma comp_toLinearMap (f : V ⟶ V₁) (g : V₁ ⟶ V₂) :
 instance : LinearMapClass (V ⟶ W) k V W :=
   inferInstanceAs (LinearMapClass (Hom V W) k V W)
 
+instance : Zero (V ⟶ W) where
+  zero :=
+  { (0 : V →ₗ[k] W) with
+    comm := by
+      simp only
+      fapply Basis.ext (b := piTensorBasis _ _ _ _ fun _ => Basis.ofVectorSpace k V)
+      intro v
+      simp only [piTensorBasis_apply, Basis.coe_ofVectorSpace, LinearMap.coe_comp,
+        Function.comp_apply, map_tprod, LinearMap.zero_apply]
+
+      sorry }
+
+instance : SMul ℕ (V ⟶ W) where
+  smul n f :=
+  { n • f.toLinearMap with
+    comm := sorry }
+
+instance : SMul ℤ (V ⟶ W) where
+  smul n f :=
+  { n • f.toLinearMap with
+    comm := sorry }
+
+instance : Neg (V ⟶ W) where
+  neg f :=
+  { -f.toLinearMap with
+    comm := sorry }
+
+instance : Sub (V ⟶ W) where
+  sub f g :=
+  { f.toLinearMap - g.toLinearMap with
+    comm := sorry }
+
+instance : Add (V ⟶ W) where
+  add f g :=
+  { f.toLinearMap + g.toLinearMap with
+    comm := by
+      fapply Basis.ext (b := piTensorBasis _ _ _ _ fun _ => Basis.ofVectorSpace k V)
+      intro v
+      simp only [piTensorBasis_apply, Basis.coe_ofVectorSpace, LinearMap.coe_comp,
+        Function.comp_apply, map_tprod, LinearMap.add_apply]
+
+      sorry }
+
+instance : AddCommGroup (V ⟶ W) :=
+  Function.Injective.addCommGroup (Hom.toLinearMap) sorry sorry sorry sorry sorry sorry sorry
+
+@[simp]
+lemma add_toLinearMap (f g : V ⟶ W) :
+    (f + g).toLinearMap = f.toLinearMap + g.toLinearMap := rfl
+
+instance : Preadditive (VectorSpaceWithTensorOfType k p q) where
+  add_comp := by
+    intros
+    apply Hom.toLinearMap_injective
+    simp only [comp_toLinearMap, add_toLinearMap, LinearMap.comp_add]
+  comp_add := by
+    intros
+    apply Hom.toLinearMap_injective
+    simp only [comp_toLinearMap, add_toLinearMap, LinearMap.add_comp]
+
 end basic
 
 section extendScalars

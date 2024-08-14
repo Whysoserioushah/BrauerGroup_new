@@ -1,13 +1,16 @@
 import BrauerGroup.TensorOfTypePQ.VectorSpaceWithTensorOfTypePQ
 
 import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
+import Mathlib.FieldTheory.Galois
 
 suppress_compilation
 
+universe u v w
+
 open TensorProduct PiTensorProduct CategoryTheory
 
-variable {k K : Type*} {p q : ℕ} [Field k] [Field K] [Algebra k K]
-variable {V W W' : VectorSpaceWithTensorOfType k p q}
+variable {k K : Type u} {p q : ℕ} [Field k] [Field K] [Algebra k K]
+variable {V W W' : VectorSpaceWithTensorOfType.{u, u} k p q}
 variable {ιV ιW ιW' : Type*} (bV : Basis ιV k V) (bW : Basis ιW k W) (bW' : Basis ιW' k W')
 
 open VectorSpaceWithTensorOfType
@@ -101,3 +104,36 @@ lemma autInducedByGal_trans (σ : K ≃ₐ[k] K) (f g : V.extendScalars K bV ≅
     autInducedByGal σ f ≪≫ autInducedByGal σ g := by
   ext
   simp only [autInducedByGal, isoInducedByGal_hom, Iso.trans_hom, homInducedByGal_comp]
+
+variable (K) in
+def rep : Rep (ULift ℤ) (K ≃ₐ[k] K) :=
+  .of (V := (V.extendScalars K bV) ⟶ W.extendScalars K bW)
+  { toFun := fun σ =>
+    { toFun := fun f => homInducedByGal σ f
+      map_add' := sorry
+      map_smul' := sorry }
+    map_one' := sorry
+    map_mul' := sorry }
+
+section
+
+variable [IsGalois k K] (g : V.extendScalars K bV ⟶ W.extendScalars K bW)
+
+lemma homInducedByGal_extendScalarsMap_eq (f : V ⟶ W) (σ : K ≃ₐ[k] K) :
+    homInducedByGal σ (extendScalarsMap f bV bW) = extendScalarsMap f bV bW := by
+  apply Hom.toLinearMap_injective
+  simp only [extendScalars_carrier, homInducedByGal_toLinearMap, extendScalarsMap_toLinearMap]
+  ext v
+  simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+    LinearMap.galAct_extendScalars_apply, _root_.map_one, LinearMap.extendScalars_apply,
+    LinearMap.rTensor_tmul, AlgEquiv.toLinearMap_apply]
+
+example (f : V ⟶ W) : extendScalarsMap f bV bW ∈ groupCohomology.H0 (rep K bV bW) := by
+  rw [Representation.mem_invariants]
+  intro σ
+  simp only [rep, Rep.coe_of, Rep.of_ρ, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.coe_mk,
+    AddHom.coe_mk]
+  apply homInducedByGal_extendScalarsMap_eq
+
+
+end
