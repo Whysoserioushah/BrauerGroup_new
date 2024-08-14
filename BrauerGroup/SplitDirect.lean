@@ -248,21 +248,20 @@ theorem tensor_union_eq :
   |zero => simp only [Submodule.zero_mem]
   |tmul x a =>
     obtain h₀ := IntermediateField.mem_top (F := k) (E := K) (x := x)
-    have h1 : ℒ.Nonempty := by
+    have h1 : Nonempty ℒ := by
       -- by_contra!
       -- have : ⨆ L ∈ ℒ, L = ⊥ := by simp_all
       -- rw [this] at h
       sorry
     rw [← h] at h₀
-    change x ∈ ((⨆ L ∈ ℒ, L : IntermediateField k K): Set K) at h₀
+    replace h₀ : x ∈ (⨆ (L : ℒ), L.1) := by
+      convert h₀
+      rw [iSup_subtype]
+    change x ∈ ((iSup (fun i : ℒ => i.1) : IntermediateField k K): Set K) at h₀
     rw [IntermediateField.coe_iSup_of_directed] at h₀
-    ·
-      have h1 : ∃ L, L ∈ ℒ ∧ x ∈ L := by
-        simp only [Set.mem_iUnion, SetLike.mem_coe] at h₀
-        rcases h₀ with ⟨L, hL⟩
-        change x ∈ ((⨆ (_ : L ∈ ℒ), L : _) : Set K) at hL
-        use L
-        sorry
+    · simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at h₀
+
+      have h1 : ∃ L, L ∈ ℒ ∧ x ∈ L :=  h₀
       rcases h1 with ⟨L, ⟨hL1, hL2⟩⟩
       have h1 : (x ⊗ₜ[k] a) ∈ intermediateTensor k K A L := by
         sorry
