@@ -1,4 +1,5 @@
 import BrauerGroup.Wedderburn
+import BrauerGroup.BrauerGroup
 
 import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
 import Mathlib.Algebra.Category.ModuleCat.Adjunctions
@@ -675,7 +676,177 @@ instance end_simple_mod_finite
   have : FiniteDimensional k Dᵐᵒᵖ := E.symm.finiteDimensional
   refine iso.symm.toLinearEquiv.finiteDimensional
 
+instance (D : Type v) [DivisionRing D] : Module.Finite Dᵐᵒᵖ D := by
+  rw [Module.finite_def]
+  refine ⟨{1}, eq_top_iff.2 fun x _ => ?_⟩
+  simp only [Finset.coe_singleton]
+  rw [show x = (MulOpposite.op x : Dᵐᵒᵖ) • 1 by simp]
+  exact Submodule.smul_mem _ _ $ Submodule.subset_span rfl
 
+private noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
+    Basis (Fin n) Dᵐᵒᵖ (Fin n → D) :=
+  .mk (v := fun i => Pi.single i 1)
+    (by
+      rw [linearIndependent_iff]
+      intro c hc
+      ext i
+      replace hc := congr_fun hc i
+      simpa only [Finsupp.total, Finsupp.coe_lsum, Finsupp.sum, LinearMap.coe_smulRight,
+        LinearMap.id_coe, id_eq, Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_ite,
+        MulOpposite.smul_eq_mul_unop, one_mul, smul_zero, Finset.sum_ite_eq,
+        Finsupp.mem_support_iff, ne_eq, Pi.zero_apply, ite_eq_right_iff,
+        MulOpposite.unop_eq_zero_iff, _root_.not_imp_self, Finsupp.coe_zero] using hc )
+    (by
+      rintro v -
+      have eq1 : v = ∑ i : Fin n, (MulOpposite.op $ v i) • Pi.single i 1 := by
+        ext i
+        simp only [Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_ite,
+          MulOpposite.smul_eq_mul_unop, MulOpposite.unop_op, one_mul, smul_zero, Finset.sum_ite_eq,
+          Finset.mem_univ, ↓reduceIte]
+      rw [eq1]
+      refine Submodule.sum_mem _ fun i _ => Submodule.smul_mem _ _ $ Submodule.subset_span ?_
+      simp)
+
+-- instance (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
+--     Module (Matrix (Fin n) (Fin n) D) (Module.End Dᵐᵒᵖ (Fin n → D)) where
+--   smul m f :=
+--     { toFun := fun v => f $ m • v
+--       map_add' := by simp
+--       map_smul' := fun d v => by
+--         ext j
+--         simp only [RingHom.id_apply, Pi.smul_apply, MulOpposite.smul_eq_mul_unop]
+--         rw [matrix_smul_vec_def', map_sum, matrix_smul_vec_def', map_sum]
+--         simp only [Pi.smul_apply, MulOpposite.smul_eq_mul_unop, smul_eq_mul, Finset.sum_apply,
+--           Finset.sum_mul]
+--         refine Finset.sum_congr rfl fun i _ => ?_
+--         change _ = (d • f _) _
+--         rw [← f.map_smul]
+--         congr!
+--         simp [mul_assoc] }
+--   one_smul := sorry
+--   mul_smul := sorry
+--   smul_zero := sorry
+--   smul_add := sorry
+--   add_smul := sorry
+--   zero_smul := sorry
+
+def end_end_iso_matrix_case (n : ℕ) [NeZero n]
+    (D : Type v) [DivisionRing D] [Algebra k D] [FiniteDimensional k D] :
+    Matrix (Fin n) (Fin n) D ≃ₐ[k] Module.End Dᵐᵒᵖ (Fin n → D) :=
+  sorry
+
+instance (M : Type v) [AddCommGroup M]
+    [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
+    Algebra k (Module.End (Module.End A M) M) where
+  toFun a :=
+    { toFun := fun m => a • m
+      map_add' := by simp
+      map_smul' := by simp }
+  map_one' := by ext; simp
+  map_mul' := by intros; ext; simp [mul_smul]
+  map_zero' := by ext; simp
+  map_add' := by intros; ext; simp [add_smul]
+  commutes' := by
+    intros r f
+    ext m
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.mul_apply,
+      LinearMap.coe_mk, AddHom.coe_mk]
+    let s : Module.End A M :=
+    { toFun := fun x => r • x
+      map_add' := by simp
+      map_smul' := fun a x => by
+        simp only [RingHom.id_apply]
+        rw [algebra_compatible_smul A, ← mul_smul, algebra_compatible_smul A, ← mul_smul]
+        congr 1
+        exact Algebra.commutes r a }
+    rw [show r • m = s • m by rfl, f.map_smul]
+    rfl
+  smul r f :=
+  { toFun := fun m => f $ r • m
+    map_add' := by simp
+    map_smul' := by
+      intro g m
+      simp only [LinearMap.smul_def, RingHom.id_apply]
+      let s : Module.End A M :=
+      { toFun := fun x => r • x
+        map_add' := by simp
+        map_smul' := fun a x => by
+          simp only [RingHom.id_apply]
+          rw [algebra_compatible_smul A, ← mul_smul, algebra_compatible_smul A, ← mul_smul]
+          congr 1
+          exact Algebra.commutes r a }
+      change f (s • g m) = g (f $ s • m)
+      rw [f.map_smul, f.map_smul]
+      simp only [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.map_smul_of_tower,
+        s]
+      change r • f (g • m) = _
+      rw [f.map_smul]
+      simp }
+  smul_def' := by
+    intro r f
+    ext m
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.mul_apply,
+      LinearMap.coe_mk, AddHom.coe_mk]
+    let s : Module.End A M :=
+      { toFun := fun x => r • x
+        map_add' := by simp
+        map_smul' := fun a x => by
+          simp only [RingHom.id_apply]
+          rw [algebra_compatible_smul A, ← mul_smul, algebra_compatible_smul A, ← mul_smul]
+          congr 1
+          exact Algebra.commutes r a }
+    change _ = s • f m
+    rw [← f.map_smul]
+    rfl
+
+noncomputable def end_end_iso
+    (M : Type v) [AddCommGroup M]
+    [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
+    A ≃ₐ[k] Module.End (Module.End A M) M :=
+  AlgEquiv.ofBijective
+    { toFun := fun a =>
+      { toFun := fun m => a • m
+        map_add' := by simp
+        map_smul' := by simp }
+      map_one' := by ext; simp
+      map_mul' := by intros; ext; simp [mul_smul]
+      map_zero' := by ext; simp
+      map_add' := by intros; ext; simp [add_smul]
+      commutes' := by
+        intro r
+        ext m
+        simp only [algebraMap_smul, LinearMap.coe_mk, AddHom.coe_mk]
+        rfl }
+    (by
+      obtain ⟨n, hn, D, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version k A
+      haveI : NeZero n := ⟨hn⟩
+      haveI : Module.Finite k D := by
+        haveI inst1 : Module.Finite k (Matrix (Fin n) (Fin n) D) := e.toLinearEquiv.finiteDimensional
+        rw [← Module.rank_lt_alpeh0_iff] at inst1 ⊢
+        have eq1 := rank_mul_rank k D (Matrix (Fin n) (Fin n) D)
+        simp only [rank_matrix', Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
+          Cardinal.lift_natCast] at eq1
+        rw [← eq1, mul_comm] at inst1
+        exact lt_of_le_of_lt (Cardinal.le_mul_left (a := Module.rank k D) (b := n * n) (by
+          simpa only [ne_eq, mul_eq_zero, Nat.cast_eq_zero, or_self] using NeZero.ne n)) inst1
+      have eq1 : FiniteDimensional.finrank k A =
+        FiniteDimensional.finrank k D * (n * n) := by
+        have eq1 := FiniteDimensional.finrank_matrix D (Fin n) (Fin n)
+        simp only [Fintype.card_fin] at eq1
+        rw [LinearEquiv.finrank_eq e.toLinearEquiv, ← FiniteDimensional.finrank_mul_finrank k D,
+          eq1]
+      let e : Module.End (Module.End A M) M ≃ₐ[k] Module.End Dᵐᵒᵖ (Fin n → D) := sorry
+      haveI : FiniteDimensional k (Module.End (Module.End A M) M) :=
+        e.symm.toLinearEquiv.finiteDimensional
+      apply bijective_of_dim_eq_of_isCentralSimple
+      rw [eq1, e.toLinearEquiv.finrank_eq]
+      conv_rhs => rw [← FiniteDimensional.finrank_mul_finrank k D]
+      have eq2 := FiniteDimensional.finrank_eq_card_basis (pow_basis n D)
+      have eq3 := FiniteDimensional.finrank_linearMap Dᵐᵒᵖ D (Fin n → D) (Fin n → D)
+      rw [eq3, eq2]
+      simp only [Fintype.card_fin, FiniteDimensional.finrank_fintype_fun_eq_card])
+
+#exit
 lemma Wedderburn_Artin_uniqueness₀
     (n n' : ℕ) [NeZero n] [NeZero n']
     (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
