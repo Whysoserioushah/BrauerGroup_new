@@ -1,4 +1,6 @@
 import BrauerGroup.BrauerGroup
+import BrauerGroup.«074E»
+
 import Mathlib.RingTheory.TensorProduct.Basic
 import Mathlib.Algebra.Opposites
 import Mathlib.RingTheory.SimpleModule
@@ -10,7 +12,9 @@ universe u v w
 
 open Classical MulOpposite
 open scoped TensorProduct
+
 variable (K : Type u) [Field K]
+
 -- variable {A B M: Type u} [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
 --         [csA : IsCentralSimple K A] [hSimple : IsSimpleOrder (RingCon B)]
 --         [AddCommGroup M][Module A M][IsSimpleModule A M]
@@ -159,85 +163,15 @@ instance tensor_is_simple (K A B M : Type u)
     [IsSimpleOrder (RingCon B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder
     (RingCon (B ⊗[K] (Module.End A M))) := by
-  haveI : IsCentralSimple K (Module.End A M) := {
-    is_central := by
-      intro l hl
-      rw [Subalgebra.mem_center_iff] at hl
-      obtain ⟨m, hm⟩ := IsSimpleModule.instIsPrincipal A (⊤ : Submodule A M)
-      let a : A := Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : l m ∈ Submodule.span A {m}) |>.choose
-      have ha : l m = a • m := Submodule.mem_span_singleton.1
-        (hm ▸ ⟨⟩ : l m ∈ Submodule.span A {m}) |>.choose_spec.symm
-      have hm' : ∀(m' : M), ∃(a' : A), a' • m = m' := fun m' ↦
-        Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : m' ∈ Submodule.span A {m})
-      have l_eq : l = ⟨⟨(a • ·), smul_add a⟩, fun a' mm ↦ by
-        simp only [RingHom.id_apply]
-        obtain ⟨aa, haa⟩ := hm' mm
-        rw [← haa]
-        sorry⟩ := sorry
-      have hl'' : ∀(l' : Module.End A M), ∃(b : A), b • m = l' m := fun l' ↦
-        Submodule.mem_span_singleton.1 (hm ▸ ⟨⟩ : l' m ∈ Submodule.span A {m})
-      have mem_a : a ∈ Subalgebra.center K A := by
-        rw [Subalgebra.mem_center_iff]
-        intro b
-        let 𝒷 : Module.End A M := ⟨⟨(b • ·), sorry⟩, sorry⟩
-        specialize hl 𝒷
-        have hl : b • l m = l (b • m) := congr($hl m)
-        simp only [l_eq, LinearMap.coe_mk, AddHom.coe_mk] at hl
-        rw [smul_smul, smul_smul] at hl
-        have hl' : ∀(l' : Module.End A M),(a * b) • (l' m) = (b * a) • (l' m) := by
-          intro l'
-          apply_fun l' at hl
-          simp only [LinearMapClass.map_smul] at hl
-          exact hl.symm
-        have hM : ∀(m' : M), ∃(l : Module.End A M), l m = m' := fun m' ↦ by
-          obtain ⟨a', ha⟩ := hm' m'
-          use ⟨⟨(a' • ·), sorry⟩, sorry⟩
-          exact ha
-        let ann : RingCon A := RingCon.fromIdeal {r | ∀(m : M), r • m = 0} (by simp)
-          (fun _ _ _ _ ↦ by simp_all [add_smul])
-          (by sorry) (fun x y hxy ↦ by
-            intro m
-            rw [← smul_smul, hxy, smul_zero]) (fun x y hxy ↦ by
-            intro m
-            change ∀(m : M), _ • _ = 0 at hxy
-            rw [← smul_smul, hxy (y • m)])
-        have isann : b * a - a * b ∈ ann := fun n ↦ by
-          simp only [sub_zero]
-          rw [← sub_eq_zero, ← sub_smul] at hl
-          obtain ⟨f', hf'⟩ := hM n
-          rw [← hf', ← map_smul, hl, map_zero]
-        have : ann = ⊥ := by
-          haveI := csa_A.2.2 ann
-          cases' this with h1 h2
-          exact h1
-          have nontriv : Nontrivial (Module.End A M) := GroupWithZero.toNontrivial
-          obtain ⟨φ, hφ⟩ := exists_ne (0 : Module.End A M)
-          obtain ⟨b, hb⟩:= hl'' φ
-          have φ_0 : φ = 0 := by
-            ext m'
-            obtain ⟨x, hx⟩ := hm' m'
-            rw [← hx, map_smul, map_smul]
-            have x_mem : x ∈ (⊤ : RingCon A) := ⟨⟩
-            rw [← h2] at x_mem
-            change ∀(m : _), _ = _ at x_mem
-            rw [sub_zero] at x_mem
-            rw [x_mem (φ m), LinearMap.zero_apply, smul_zero]
-          tauto
-        rw [this] at isann
-        change _ - _ = _ at isann
-        apply_fun (· + a * b) at isann
-        rw [zero_add] at isann
-        simp only [sub_add_cancel] at isann
-        exact isann
-      have := csa_A.1 mem_a
-      rw [Algebra.mem_bot] at *
-      rcases this with ⟨k, hk⟩
-      use k
-      rw [l_eq]
-      ext m
-      simp only [Module.algebraMap_end_apply, LinearMap.coe_mk, AddHom.coe_mk]
-      rw [← hk, algebraMap_smul]
-  }
+  haveI : IsCentralSimple K (Module.End A M) := by
+    have := csa_A.2
+    obtain ⟨n, hn, D, inst1, inst2, ⟨wdb⟩⟩ := Wedderburn_Artin_algebra_version K A
+    have : NeZero n := ⟨hn⟩
+    obtain ⟨h⟩ := end_simple_mod_of_wedderburn' K A n D wdb M
+    haveI : IsCentralSimple K D := by
+      apply CSA_implies_CSA _ _ _ _ _ _ wdb inferInstance
+      omega
+    exact h.symm.isCentralSimple
   exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M) _ _ _ _ _ this
 
 section modules_over_simple_ring
