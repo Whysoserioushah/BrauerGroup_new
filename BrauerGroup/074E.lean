@@ -697,22 +697,36 @@ lemma Wedderburn_Artin_uniqueness₁
   have ⟨iso⟩ := Wedderburn_Artin_uniqueness₀ k A n n' D wdb D' wdb'
   let e : Matrix (Fin n) (Fin n) D ≃ₐ[k] Matrix (Fin n') (Fin n') D :=
     wdb.symm.trans (wdb'.trans $ AlgEquiv.mapMatrix iso.symm)
-  have eq1 := rank_matrix D (Fin n) (Fin n)
-  have eq2 := rank_matrix D (Fin n') (Fin n')
-  simp only [Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
-    Cardinal.lift_natCast] at eq1 eq2
-  have eq11 : Module.rank k (Matrix (Fin n) (Fin n) D) = n * n * Module.rank k D := by
-    rw [← rank_mul_rank k D (Matrix (Fin n) (Fin n) D), eq1]
+
+  haveI : Module.Finite k D := by
+    haveI inst1 : Module.Finite k (Matrix (Fin n) (Fin n) D) := wdb.toLinearEquiv.finiteDimensional
+    rw [← Module.rank_lt_alpeh0_iff] at inst1 ⊢
+    have eq1 := rank_mul_rank k D (Matrix (Fin n) (Fin n) D)
+    simp only [rank_matrix', Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
+      Cardinal.lift_natCast] at eq1
+    rw [← eq1, mul_comm] at inst1
+    exact lt_of_le_of_lt (Cardinal.le_mul_left (a := Module.rank k D) (b := n * n) (by
+      simpa only [ne_eq, mul_eq_zero, Nat.cast_eq_zero, or_self] using NeZero.ne n)) inst1
+
+  have eq1 := FiniteDimensional.finrank_matrix D (Fin n) (Fin n)
+  have eq2 := FiniteDimensional.finrank_matrix D (Fin n') (Fin n')
+  simp only [Fintype.card_fin] at eq1 eq2
+  have eq11 :
+      FiniteDimensional.finrank k (Matrix (Fin n) (Fin n) D) =
+      n * n * FiniteDimensional.finrank k D := by
+    rw [← FiniteDimensional.finrank_mul_finrank k D (Matrix (Fin n) (Fin n) D), eq1]
     ring
-  have eq21 : Module.rank k (Matrix (Fin n') (Fin n') D) = n' * n' * Module.rank k D := by
-    rw [← rank_mul_rank k D (Matrix (Fin n') (Fin n') D), eq2]
+  have eq21 : FiniteDimensional.finrank k (Matrix (Fin n') (Fin n') D) =
+      n' * n' * FiniteDimensional.finrank k D := by
+    rw [← FiniteDimensional.finrank_mul_finrank k D (Matrix (Fin n') (Fin n') D), eq2]
     ring
-  have eq3 : n * n * Module.rank k D = n' * n' * Module.rank k D := by
+  have eq3 : n * n * FiniteDimensional.finrank k D = n' * n' * FiniteDimensional.finrank k D := by
     rw [← eq11, ← eq21]
-    exact LinearEquiv.rank_eq e
-
-  -- hmmm, what if `D` is infinite dimensional?
-
-  sorry
+    exact LinearEquiv.finrank_eq e
+  simp only [mul_eq_mul_right_iff] at eq3
+  replace eq3 := eq3.resolve_right (fun rid => by
+    rw [FiniteDimensional.finrank_zero_iff] at rid
+    simpa using rid.elim 0 1)
+  simpa [← pow_two] using eq3
 
 end simple
