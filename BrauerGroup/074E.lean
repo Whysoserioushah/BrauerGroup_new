@@ -730,10 +730,10 @@ private noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [Division
 --   add_smul := sorry
 --   zero_smul := sorry
 
-def end_end_iso_matrix_case (n : ℕ) [NeZero n]
-    (D : Type v) [DivisionRing D] [Algebra k D] [FiniteDimensional k D] :
-    Matrix (Fin n) (Fin n) D ≃ₐ[k] Module.End Dᵐᵒᵖ (Fin n → D) :=
-  sorry
+-- def end_end_iso_matrix_case (n : ℕ) [NeZero n]
+--     (D : Type v) [DivisionRing D] [Algebra k D] [FiniteDimensional k D] :
+--     Matrix (Fin n) (Fin n) D ≃ₐ[k] Module.End Dᵐᵒᵖ (Fin n → D) :=
+--   sorry
 
 instance (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
@@ -799,6 +799,49 @@ instance (M : Type v) [AddCommGroup M]
     rw [← f.map_smul]
     rfl
 
+lemma end_end_iso_aux (n : ℕ) [NeZero n]
+    (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
+    (M : Type v) [AddCommGroup M]
+    [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
+    Nonempty $ Module.End (Module.End A M) M ≃ₗ[k] Module.End Dᵐᵒᵖ (Fin n → D) := by
+  let _ : Module A (Fin n → D) := Module.compHom _ wdb.toRingEquiv.toRingHom
+  have : IsScalarTower k (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
+  { smul_assoc := fun a b x => by
+      ext i
+      simp only [matrix_smul_vec_apply, Matrix.smul_apply, smul_eq_mul, Algebra.smul_mul_assoc,
+        Pi.smul_apply, Finset.smul_sum] }
+  letI _ : IsScalarTower k A (Fin n → D) :=
+  { smul_assoc := fun a b x => by
+      change wdb (a • b) • x = _
+      rw [map_smul, Algebra.smul_def, mul_smul]
+      rw [algebraMap_smul]
+      rfl }
+  letI _ : SMulCommClass A k (Fin n → D) :=
+    { smul_comm := fun a b x => by
+        change wdb a • b • x = b • wdb a • x
+        ext i
+        simp only [matrix_smul_vec_apply, Pi.smul_apply, smul_eq_mul, Algebra.mul_smul_comm,
+          Finset.smul_sum] }
+  haveI : IsSimpleModule A (Fin n → D) := simple_mod_of_wedderburn k A n D wdb
+
+  obtain ⟨iso1⟩ := linearEquiv_of_isSimpleModule_over_simple_ring k A M (Fin n → D)
+  obtain ⟨iso2⟩ := end_simple_mod_of_wedderburn' k A n D wdb M
+  refine ⟨LinearEquiv.ofLinear
+    { toFun := fun x =>
+        ⟨⟨fun v => iso1 (x (iso1.symm v)), by intro v w; simp only [map_add]⟩, ?_⟩
+      map_add' := ?map_add'
+      map_smul' := ?map_smul' } ?_ ?_ ?_⟩ <;> sorry
+  -- · intro d v
+  --   simp only [RingHom.id_apply]
+  --   ext i
+  --   simp only [Pi.smul_apply, MulOpposite.smul_eq_mul_unop]
+
+  --   sorry
+  -- sorry
+  -- sorry
+  -- sorry
+
+
 noncomputable def end_end_iso
     (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
@@ -835,18 +878,17 @@ noncomputable def end_end_iso
         simp only [Fintype.card_fin] at eq1
         rw [LinearEquiv.finrank_eq e.toLinearEquiv, ← FiniteDimensional.finrank_mul_finrank k D,
           eq1]
-      let e : Module.End (Module.End A M) M ≃ₐ[k] Module.End Dᵐᵒᵖ (Fin n → D) := sorry
+      obtain ⟨e⟩ := end_end_iso_aux k A n D e M
       haveI : FiniteDimensional k (Module.End (Module.End A M) M) :=
-        e.symm.toLinearEquiv.finiteDimensional
+        e.symm.finiteDimensional
       apply bijective_of_dim_eq_of_isCentralSimple
-      rw [eq1, e.toLinearEquiv.finrank_eq]
+      rw [eq1, e.finrank_eq]
       conv_rhs => rw [← FiniteDimensional.finrank_mul_finrank k D]
       have eq2 := FiniteDimensional.finrank_eq_card_basis (pow_basis n D)
       have eq3 := FiniteDimensional.finrank_linearMap Dᵐᵒᵖ D (Fin n → D) (Fin n → D)
       rw [eq3, eq2]
       simp only [Fintype.card_fin, FiniteDimensional.finrank_fintype_fun_eq_card])
 
-#exit
 lemma Wedderburn_Artin_uniqueness₀
     (n n' : ℕ) [NeZero n] [NeZero n']
     (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
