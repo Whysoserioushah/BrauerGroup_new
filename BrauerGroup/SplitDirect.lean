@@ -238,7 +238,6 @@ lemma SetOfInterField_nonempty : (Set.range fun (L : IntermediateField k K) ↦
   sorry
 
 def qqq (ℒ : Set (IntermediateField k K)) : Set (Subfield K) := by
-
   sorry
 
 theorem tensor_union_eq :
@@ -249,27 +248,37 @@ theorem tensor_union_eq :
   |zero => simp only [Submodule.zero_mem]
   |tmul x a =>
     obtain h₀ := IntermediateField.mem_top (F := k) (E := K) (x := x)
-    have h1 : ℒ.Nonempty := by
+    have h1 : Nonempty ℒ := by
+      -- by_contra!
+      -- have : ⨆ L ∈ ℒ, L = ⊥ := by simp_all
+      -- rw [this] at h
       sorry
-    -- rw [← h, ← sSup_eq_iSup] at h₀
-    -- obtain := Subfield.mem_sSup_of_directedOn (K := K) (S := ℒ)
-    have h1 : ∃ L, L ∈ ℒ ∧ x ∈ L := by
-      sorry
-    rcases h1 with ⟨L, ⟨hL1, hL2⟩⟩
-    have h1 : (x ⊗ₜ[k] a) ∈ intermediateTensor k K A L := by
-      sorry
-    have h2 : (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L).Nonempty := by
-      refine Set.nonempty_def.mpr ?_
+    rw [← h] at h₀
+    replace h₀ : x ∈ (⨆ (L : ℒ), L.1) := by
+      convert h₀
+      rw [iSup_subtype]
+    change x ∈ ((iSup (fun i : ℒ => i.1) : IntermediateField k K): Set K) at h₀
+    rw [IntermediateField.coe_iSup_of_directed] at h₀
+    · simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at h₀
+
+      have h1 : ∃ L, L ∈ ℒ ∧ x ∈ L :=  h₀
+      rcases h1 with ⟨L, ⟨hL1, hL2⟩⟩
+      have h1 : (x ⊗ₜ[k] a) ∈ intermediateTensor k K A L := by
+        sorry
+      have h2 : (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L).Nonempty := by
+        refine Set.nonempty_def.mpr ?_
+        tauto
+      refine Submodule.mem_sSup_of_directed h2 (is_direct k K A ℒ l_direct) |>.2 ?_
       tauto
-    refine Submodule.mem_sSup_of_directed h2 (is_direct k K A ℒ l_direct) |>.2 ?_
-    tauto
+    ·
+      sorry
   |add x y hx hy =>
     exact AddMemClass.add_mem hx hy
 
 theorem extension_element_in (x : K ⊗[k] A):
     ∃ (F : ℒ), x ∈ intermediateTensor k K A F := by
   have mem : x ∈ (⊤ : Submodule k _) := ⟨⟩
-  rw [← tensor_union_eq k K A ℒ l_direct] at mem
+  rw [← tensor_union_eq k K A ℒ l_direct h] at mem
   have h1 : ℒ.Nonempty := by
     sorry
   have h2 : (Set.range fun (L : ℒ) ↦ intermediateTensor k K A L).Nonempty := by
@@ -285,9 +294,9 @@ theorem extension_element_in (x : K ⊗[k] A):
   tauto
 
 def subfieldOf (x : K ⊗[k] A) : IntermediateField k K :=
-  extension_element_in k K A ℒ l_direct x|>.choose
+  extension_element_in k K A ℒ l_direct h x|>.choose
 
-lemma subfieldOf_in (x : K ⊗[k] A) : (subfieldOf k K A ℒ l_direct x) ∈ ℒ := by
+lemma subfieldOf_in (x : K ⊗[k] A) : (subfieldOf k K A ℒ l_direct h x) ∈ ℒ := by
   rw [subfieldOf]
   simp only [Subtype.coe_prop]
 
@@ -304,12 +313,12 @@ lemma ee_apply (i : Fin n × Fin n) : iso (e i) = Matrix.stdBasis K (Fin n) (Fin
   erw [← this]
 
 lemma L_sup :
-    ∃ L, L ∈ ℒ ∧ (∀ (i : Fin n × Fin n), subfieldOf k K A ℒ l_direct (e i) ≤ L) := by
+    ∃ L, L ∈ ℒ ∧ (∀ (i : Fin n × Fin n), subfieldOf k K A ℒ l_direct h (e i) ≤ L) := by
   sorry
 
-def ℒℒ : IntermediateField k K := (L_sup n k K A iso ℒ l_direct).choose
+def ℒℒ : IntermediateField k K := (L_sup n k K A iso ℒ l_direct h).choose
 
-local notation "ℒ₁" => ℒℒ n k K A iso ℒ l_direct
+local notation "ℒ₁" => ℒℒ n k K A iso ℒ l_direct h
 
 def isoRestrict' : ℒ₁ ⊗[k] A ≃ₐ[ℒ₁] Matrix (Fin n) (Fin n) ℒ₁ := sorry
 
@@ -329,9 +338,12 @@ lemma spilt_iff_left (A : CSA k) (𝓁 : Set (IntermediateField k K))
     isSplit k A K → (∃ L ∈ 𝓁, isSplit k A L) := by
   rintro ⟨n, ⟨hn, hnL⟩⟩
   obtain hnL' := hnL.some; clear hnL
-  use (L_sup n k K A hnL' 𝓁 l_direct).choose
+  have h1 : ⨆ L ∈ 𝓁, L = ⊤ := by
+
+    sorry
+  use (L_sup n k K A hnL' 𝓁 l_direct h1).choose
   constructor
-  · exact (L_sup n k K A hnL' 𝓁 l_direct).choose_spec.1
+  · exact (L_sup n k K A hnL' 𝓁 l_direct h1).choose_spec.1
   · use n; use hn
     obtain h1 := isoRestrict' n k K A hnL' 𝓁
     simp [ℒℒ] at h1

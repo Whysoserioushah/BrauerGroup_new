@@ -1,4 +1,6 @@
 import BrauerGroup.BrauerGroup
+import BrauerGroup.«074E»
+
 import Mathlib.RingTheory.TensorProduct.Basic
 import Mathlib.Algebra.Opposites
 import Mathlib.RingTheory.SimpleModule
@@ -13,7 +15,9 @@ universe u v w
 
 open Classical MulOpposite
 open scoped TensorProduct
+
 variable (K : Type u) [Field K]
+
 -- variable {A B M: Type u} [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
 --         [csA : IsCentralSimple K A] [hSimple : IsSimpleOrder (RingCon B)]
 --         [AddCommGroup M][Module A M][IsSimpleModule A M]
@@ -185,11 +189,44 @@ instance (K A B M : Type u)
     change smul1 K A B M f m 0 = 0
     simp only [smul1, map_zero, smul_zero]
 
+instance (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A) :
+    IsScalarTower K (B ⊗[K] Module.End A M) (module_inst K A B M f) where
+  smul_assoc a x y := by
+    induction x using TensorProduct.induction_on with
+    | zero => simp
+    | tmul b z =>
+      change (smul1 K A B M f _ _) = _ • smul1 K A B M f _ _
+      simp
+    | add x y hx hy =>
+      rw [smul_add, add_smul, hx, hy, add_smul, smul_add]
+
+-- Is this even true?
+instance (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Ring B] [Algebra K B]
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A) :
+    Module.Finite (B ⊗[K] Module.End A M) (module_inst K A B M f) := by
+  sorry
+
 instance tensor_is_simple (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
     [IsSimpleOrder (RingCon B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder
     (RingCon (B ⊗[K] (Module.End A M))) := by
+  haveI : IsCentralSimple K (Module.End A M) := by
+    have := csa_A.2
+    obtain ⟨n, hn, D, inst1, inst2, ⟨wdb⟩⟩ := Wedderburn_Artin_algebra_version K A
+    have : NeZero n := ⟨hn⟩
+    obtain ⟨h⟩ := end_simple_mod_of_wedderburn' K A n D wdb M
+    haveI : IsCentralSimple K D := by
+      apply CSA_implies_CSA _ _ _ _ _ _ wdb inferInstance
+      omega
+    exact h.symm.isCentralSimple
   haveI := csa_A.2
   obtain ⟨n, hn, D, hD1, hD2, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version K A
   have : NeZero n := { out := hn }
@@ -203,10 +240,6 @@ section modules_over_simple_ring
 
 variable (N N' R : Type u) [Ring R] [Algebra K R] [FiniteDimensional K R]
   [IsSimpleOrder (RingCon R)] [AddCommGroup N] [Module R N] [AddCommGroup N'] [Module R N']
-
-theorem iso_iff_dim_eq (h : FiniteDimensional.finrank R N = FiniteDimensional.finrank R N'):
-    Nonempty (N ≃ₗ[R] N') := by
-  sorry
 
 end modules_over_simple_ring
 
@@ -226,7 +259,11 @@ lemma findimB : FiniteDimensional K B := FiniteDimensional.of_injective (K := K)
     simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
         one_ne_zero] at rid )
 
-def iso_fg : module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := sorry
+lemma iso_fg : Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
+  haveI := findimB K A B f
+  haveI := hA.2
+  rw [linearEquiv_iff_finrank_eq_over_simple_ring K]
+  rfl
 -- -- lemma SkolemNoether_aux (A : Type u) [Ring A] [Algebra K A]
 -- --   (M : Type u) [AddCommGroup M] [Module A M] [Module K M] [IsScalarTower K A M]
 -- --   (B : Type u) [Ring B] [Algebra K B] [Module B M] [IsScalarTower K B M]
@@ -234,6 +271,8 @@ def iso_fg : module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst
 -- --   ∃ (φ : M →ₗ[A] M), function.surjective φ := sorry
 -- -- variable (A: Type u ) [Ring A] [Algebra K A] [FiniteDimensional K A]:
 theorem SkolemNoether : ∃(x : Aˣ), ∀(b : B), f b = x * g b * x⁻¹ := by
+  obtain ⟨φ⟩ := iso_fg K A B M f g
+
     -- let L:= Module.End A M
     -- let _: DivisionRing L := by sorry
     -- -- have module_f:= M
@@ -247,4 +286,4 @@ theorem SkolemNoether : ∃(x : Aˣ), ∀(b : B), f b = x * g b * x⁻¹ := by
     -- have : FiniteDimensional K (B ⊗[K] Lᵐᵒᵖ) := sorry
     -- have : (module_inst K A B M f) ≃ₗ[B ⊗[K] Lᵐᵒᵖ] (module_inst K A B M g) := sorry
     -- have :
-    sorry
+  sorry

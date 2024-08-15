@@ -647,6 +647,35 @@ lemma end_simple_mod_of_wedderburn' (n : ℕ) [NeZero n]
       LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mul_apply,
       LinearEquiv.symm_apply_apply]
 
+instance end_simple_mod_finite
+    (M : Type v) [AddCommGroup M]
+    [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
+    FiniteDimensional k (Module.End A M) := by
+  obtain ⟨n, hn, D, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version k A
+  haveI : NeZero n := ⟨hn⟩
+  obtain ⟨iso⟩ := end_simple_mod_of_wedderburn' k A n D e M
+  let E : Dᵐᵒᵖ ≃ₗ[k] D := LinearEquiv.ofLinear
+    { toFun := MulOpposite.unop
+      map_add' := by simp
+      map_smul' := by simp }
+    { toFun := MulOpposite.op
+      map_add' := by simp
+      map_smul' := by simp }
+    (by ext; simp) (by ext; simp)
+  have : Module.Finite k D := by
+    haveI inst1 : Module.Finite k (Matrix (Fin n) (Fin n) D) := e.toLinearEquiv.finiteDimensional
+    rw [← Module.rank_lt_alpeh0_iff] at inst1 ⊢
+    have eq1 := rank_mul_rank k D (Matrix (Fin n) (Fin n) D)
+    simp only [rank_matrix', Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
+      Cardinal.lift_natCast] at eq1
+    rw [← eq1, mul_comm] at inst1
+    exact lt_of_le_of_lt (Cardinal.le_mul_left (a := Module.rank k D) (b := n * n) (by
+      simpa only [ne_eq, mul_eq_zero, Nat.cast_eq_zero, or_self] using NeZero.ne n)) inst1
+
+  have : FiniteDimensional k Dᵐᵒᵖ := E.symm.finiteDimensional
+  refine iso.symm.toLinearEquiv.finiteDimensional
+
+
 lemma Wedderburn_Artin_uniqueness₀
     (n n' : ℕ) [NeZero n] [NeZero n']
     (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
