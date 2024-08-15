@@ -63,6 +63,8 @@ instance : CoeSort ProfiniteGrp (Type u) where
 
 instance (G : ProfiniteGrp) : Group G := G.group
 
+instance (G : ProfiniteGrp) : TopologicalGroup G := G.topologicalGroup
+
 def of (G : Type u) [Group G] [TopologicalSpace G] [TopologicalGroup G]
     [CompactSpace G] [TotallyDisconnectedSpace G] : ProfiniteGrp where
   toCompHaus :=
@@ -133,6 +135,14 @@ def ofFiniteGrp (G : FiniteGrp) : ProfiniteGrp :=
   letI : DiscreteTopology G := ⟨rfl⟩
   letI : TopologicalGroup G := {}
   of G
+
+def ofClosedSubgroup {G : ProfiniteGrp}
+    (H : Subgroup G) (hH : IsClosed (H : Set G)) : ProfiniteGrp :=
+  letI : CompactSpace H := ClosedEmbedding.compactSpace (f := H.subtype)
+    { induced := rfl
+      inj := H.subtype_injective
+      isClosed_range := by simpa }
+  of H
 
 section
 
