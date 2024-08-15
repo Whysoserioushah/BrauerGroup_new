@@ -136,7 +136,7 @@ def ofFiniteGrp (G : FiniteGrp) : ProfiniteGrp :=
 
 section
 
-variable {J : Type v} [Category J] [IsFiltered J] (F : J ⥤ FiniteGrp)
+variable {J : Type v} [Category J] (F : J ⥤ FiniteGrp)
 
 attribute [local instance] ConcreteCategory.instFunLike ConcreteCategory.hasCoeToSort
 
