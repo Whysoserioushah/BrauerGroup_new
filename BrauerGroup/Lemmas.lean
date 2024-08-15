@@ -47,6 +47,22 @@ def center_ofA_eqv (n : ℕ) (_ : n ≠ 0) (D : Type u) [DivisionRing D] [Algebr
       NonUnitalSubsemiring.coe_toAddSubmonoid, map_add, AddSubmonoid.mk_add_mk]
     commutes' := fun _ ↦ by simp only [Subalgebra.coe_algebraMap, AlgEquiv.commutes]; rfl }
 
+def CenterEquiv.ofAlgEquiv (A B R : Type u) [CommSemiring R] [Semiring A] [Semiring B]
+    [Algebra R A] [Algebra R B] (e : A ≃ₐ[R] B) :
+  Subalgebra.center R A ≃ₐ[R] Subalgebra.center R B where
+  toFun := fun ⟨a, ha⟩ ↦ ⟨e a, by
+    rw [Subalgebra.mem_center_iff] at *
+    exact fun b ↦ by rw [← e.apply_symm_apply b, ← _root_.map_mul, ← _root_.map_mul, ha]⟩
+  invFun := fun ⟨b, hb⟩ ↦ ⟨e.symm b, by
+    rw [Subalgebra.mem_center_iff] at *
+    exact fun a ↦ by rw [← e.symm_apply_apply a, ← _root_.map_mul, ← _root_.map_mul, hb]⟩
+  left_inv x := by simp only [AlgEquiv.symm_apply_apply, Subtype.coe_eta]
+  right_inv y := by simp only [AlgEquiv.apply_symm_apply, Subtype.coe_eta]
+  map_mul' := by simp
+  map_add' := by simp
+  commutes' := fun r ↦ by simp only [RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe,
+    MonoidHom.toOneHom_coe, MonoidHom.coe_coe, Subalgebra.coe_algebraMap, AlgEquiv.commutes]; congr
+
 def centerMatrixAlgEquiv (n : ℕ) (_ : n ≠ 0) :
     Subalgebra.center k (Matrix (Fin n) (Fin n) A) ≃ₐ[k] Subalgebra.center k A := {
       __ := Matrix.centerEquivBase n (by omega) A
@@ -80,47 +96,6 @@ theorem center_is_ext (hA : IsCentralSimple k A) [FiniteDimensional k A] :
 
 -- variable (D : Type u) [DivisionRing D] [Algebra k D]
 
-variable (M B : Type u) [AddCommGroup M] [Module k M] [Ring B] [Algebra k B]
 
-def MM (M : Type u) [AddCommGroup M] [Module k M] (f : B →ₐ[k] Module.End k M):= M
-
-instance (f : B →ₐ[k] Module.End k M): AddCommGroup (MM k B M f) :=
-  inferInstanceAs (AddCommGroup M)
-
-instance (f : B →ₐ[k] Module.End k M): Module k (MM k B M f) :=
-  inferInstanceAs (Module k M)
-
-instance BopModule (f : B →ₐ[k] Module.End k M) : Module B (MM k B M f) where
-  smul bop m := (f bop) m
-  one_smul m := by
-    change f (1 : Bᵐᵒᵖ).unop m = m
-    simp only [MulOpposite.unop_one, _root_.map_one, LinearMap.one_apply]
-  mul_smul b1 b2 m := by
-    change f (b1 * b2) m = f b1 (f b2 m)
-    simp only [MulOpposite.unop_mul, _root_.map_mul, LinearMap.mul_apply]
-  smul_zero b := by
-    change f b 0 = 0
-    simp only [LinearMap.map_zero]
-  smul_add b m1 m2 := by
-    change f b (m1 + m2) = f b m1 + f b m2
-    simp only [LinearMap.map_add]
-  add_smul b1 b2 m := by
-    change f (b1 + b2) m = f b1 m + f b2 m
-    simp only [map_add, LinearMap.add_apply]
-  zero_smul m := by
-    change f 0 m = 0
-    simp only [map_zero, LinearMap.zero_apply]
-
-variable [FiniteDimensional k B] (hB : IsSimpleOrder (RingCon B))
-
-def LinearEquiv.of_dimeq_simple_ring (M1 M2 : Type u) [AddCommGroup M1] [AddCommGroup M2]
-    [Module B M1] [Module B M2]
-    (dimeq : FiniteDimensional.finrank B M1 = FiniteDimensional.finrank B M2): M1 ≃ₗ[B] M2 := sorry
-
-
-def inst_eqv (f g : B →ₐ[k] Module.End k M) : (MM k B M f) ≃ₗ[B] (MM k B M g) := sorry
-
-lemma skolem_aux1 (f g : B →ₐ[k] Module.End k M) : ∃(θ : (Module.End k M)ˣ), ∀(b : B),
-    f b = θ * (g b) * θ⁻¹ := by sorry
 
 -- theorem SkolemNoethoer
