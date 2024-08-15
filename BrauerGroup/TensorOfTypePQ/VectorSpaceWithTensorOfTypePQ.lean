@@ -100,8 +100,34 @@ instance : Zero (V ⟶ W) where
   { (0 : V →ₗ[k] W) with
     comm := by
       simp only
+      have eq₁ : W.tensor ∘ₗ (PiTensorProduct.map fun x : Fin q ↦ (0 : V →ₗ[k] W)) = 0 := by
+        ext v
+        simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, Function.comp_apply,
+          map_tprod, LinearMap.zero_apply]
+        by_cases hq : q = 0
+        · subst hq; sorry
+        have : NeZero q := ⟨hq⟩
+        erw [(tprod k).map_zero]
+        rw [map_zero]
+      rw [eq₁]; symm
+      ext v
+      simp only [LinearMap.compMultilinearMap_apply, LinearMap.coe_comp, Function.comp_apply,
+        LinearMap.zero_apply]
+      have : V.tensor ((tprod k) v) ∈ (⊤ : Submodule k _) := ⟨⟩
+      rw [← span_tprod_eq_top, mem_span_set] at this
+      obtain ⟨s, hs, hs'⟩ := this
+      rw [← hs', Finsupp.sum, map_sum]
+      apply Finset.sum_eq_zero
+      intro v hv
+      specialize hs hv
+      simp only [Set.mem_range] at hs
+      obtain ⟨w, rfl⟩ := hs
+
+      have := span_tprod_eq_top (R := k) (s := fun i : Fin p => V)
       fapply Basis.ext (b := piTensorBasis _ _ _ _ fun _ => Basis.ofVectorSpace k V)
       intro v
+      simp only [piTensorBasis_apply, Basis.coe_ofVectorSpace, LinearMap.coe_comp,
+        Function.comp_apply, LinearMap.zero_apply]
       simp only [piTensorBasis_apply, Basis.coe_ofVectorSpace, LinearMap.coe_comp,
         Function.comp_apply, map_tprod, LinearMap.zero_apply]
 
@@ -131,12 +157,33 @@ instance : Add (V ⟶ W) where
   add f g :=
   { f.toLinearMap + g.toLinearMap with
     comm := by
-      fapply Basis.ext (b := piTensorBasis _ _ _ _ fun _ => Basis.ofVectorSpace k V)
-      intro v
-      simp only [piTensorBasis_apply, Basis.coe_ofVectorSpace, LinearMap.coe_comp,
-        Function.comp_apply, map_tprod, LinearMap.add_apply]
-
-      sorry }
+      simp only
+      have eq1 : (PiTensorProduct.map fun x ↦ f.toLinearMap + g.toLinearMap) =
+        PiTensorProduct.piTensorHomMap (tprod k fun x : Fin p => f.toLinearMap + g.toLinearMap) := by
+        simp only [piTensorHomMap_tprod_eq_map]
+      rw [eq1]
+      have eq2 : (PiTensorProduct.map fun x : Fin q ↦ f.toLinearMap + g.toLinearMap) =
+        PiTensorProduct.piTensorHomMap (tprod k fun x : Fin q => f.toLinearMap + g.toLinearMap) := by
+        simp only [piTensorHomMap_tprod_eq_map]
+      rw [eq2]
+      let x : Fin 2 → (V →ₗ[k] W) := ![f, g]
+      have eq3 : f.toLinearMap + g.toLinearMap = ∑ i : Fin 2, x i := by
+        simp only [Fin.sum_univ_two, Fin.isValue, Matrix.cons_val_zero, Matrix.cons_val_one,
+          Matrix.head_cons, x]; rfl
+      rw [eq3, (tprod k).map_sum_finset, (tprod k).map_sum_finset, map_sum, map_sum]
+      have eq4 : W.tensor ∘ₗ
+        ∑ s ∈ Fintype.piFinset fun x ↦ Finset.univ, piTensorHomMap ((tprod k) fun i ↦ x (s i)) =
+        ∑ s ∈ Fintype.piFinset fun x ↦ Finset.univ, W.tensor ∘ₗ
+          piTensorHomMap ((tprod k) fun i ↦ x (s i)) := by
+        sorry
+      rw [eq4]
+      have eq5 : (∑ s ∈ Fintype.piFinset fun x ↦ Finset.univ,
+          piTensorHomMap ((tprod k) fun i ↦ x (s i))) ∘ₗ V.tensor =
+          ∑ s ∈ Fintype.piFinset fun x ↦ Finset.univ, (piTensorHomMap ((tprod k) fun i ↦ x (s i)))
+            ∘ₗ V.tensor := by sorry
+      rw [eq5]
+      sorry
+       }
 
 instance : AddCommGroup (V ⟶ W) :=
   Function.Injective.addCommGroup (Hom.toLinearMap) sorry sorry sorry sorry sorry sorry sorry
