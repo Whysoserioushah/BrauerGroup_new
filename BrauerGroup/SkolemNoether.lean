@@ -1,11 +1,5 @@
 import BrauerGroup.BrauerGroup
 import BrauerGroup.«074E»
-
-import Mathlib.RingTheory.TensorProduct.Basic
-import Mathlib.Algebra.Opposites
-import Mathlib.RingTheory.SimpleModule
-import Mathlib.LinearAlgebra.TensorProduct.Opposite
-import BrauerGroup.«074E»
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.Lemmas
 
@@ -218,15 +212,6 @@ instance tensor_is_simple (K A B M : Type u)
     [IsSimpleOrder (RingCon B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder
     (RingCon (B ⊗[K] (Module.End A M))) := by
-  haveI : IsCentralSimple K (Module.End A M) := by
-    have := csa_A.2
-    obtain ⟨n, hn, D, inst1, inst2, ⟨wdb⟩⟩ := Wedderburn_Artin_algebra_version K A
-    have : NeZero n := ⟨hn⟩
-    obtain ⟨h⟩ := end_simple_mod_of_wedderburn' K A n D wdb M
-    haveI : IsCentralSimple K D := by
-      apply CSA_implies_CSA _ _ _ _ _ _ wdb inferInstance
-      omega
-    exact h.symm.isCentralSimple
   haveI := csa_A.2
   obtain ⟨n, hn, D, hD1, hD2, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version K A
   have : NeZero n := { out := hn }
