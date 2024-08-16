@@ -79,6 +79,12 @@ lemma homInducedByGal_comp (σ : K ≃ₐ[k] K)
     simp only [extendScalars_carrier, homInducedByGal_toLinearMap, comp_toLinearMap]
     rw [LinearMap.galAct_comp]
 
+@[simp]
+lemma homInducedByGal_one (σ : K ≃ₐ[k] K) : homInducedByGal σ (𝟙 (V.extendScalars K bV)) = 𝟙 _ :=
+  Hom.toLinearMap_injective _ _ $ by
+    simp only [extendScalars_carrier, homInducedByGal_toLinearMap, id_toLinearMap]
+    rw [LinearMap.galAct_id]
+
 variable {bV bW} in
 @[simps]
 def isoInducedByGal (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ≅ W.extendScalars K bW) :
@@ -99,6 +105,11 @@ abbrev autInducedByGal (σ : K ≃ₐ[k] K) (f : V.extendScalars K bV ≅ V.exte
     V.extendScalars K bV ≅ V.extendScalars K bV :=
   isoInducedByGal σ f
 
+lemma autoInducedByGal_id (σ : K ≃ₐ[k] K) :
+    autInducedByGal σ (Iso.refl $ V.extendScalars K bV) = Iso.refl _ := by
+  ext
+  simp only [autInducedByGal, isoInducedByGal_hom, Iso.refl_hom, homInducedByGal_one]
+
 lemma autInducedByGal_trans (σ : K ≃ₐ[k] K) (f g : V.extendScalars K bV ≅ V.extendScalars K bV) :
     autInducedByGal σ (f ≪≫ g) =
     autInducedByGal σ f ≪≫ autInducedByGal σ g := by
@@ -106,14 +117,25 @@ lemma autInducedByGal_trans (σ : K ≃ₐ[k] K) (f g : V.extendScalars K bV ≅
   simp only [autInducedByGal, isoInducedByGal_hom, Iso.trans_hom, homInducedByGal_comp]
 
 variable (K) in
-def rep : Rep (ULift ℤ) (K ≃ₐ[k] K) :=
-  .of (V := (V.extendScalars K bV) ⟶ W.extendScalars K bW)
-  { toFun := fun σ =>
-    { toFun := fun f => homInducedByGal σ f
-      map_add' := sorry
-      map_smul' := sorry }
-    map_one' := sorry
-    map_mul' := sorry }
+@[simps]
+def act : Action (Type u) (MonCat.of $ K ≃ₐ[k] K) where
+  V := Aut (V.extendScalars K bV)
+  ρ :=
+  { toFun := fun σ => autInducedByGal σ
+    map_one' := funext fun i => Iso.ext $ Hom.toLinearMap_injective _ _ $
+      AlgebraTensorModule.curry_injective $ LinearMap.ext_ring $ LinearMap.ext fun x ↦ by
+        simp [show (1 : K →ₗ[k] K) = LinearMap.id by rfl]
+    map_mul' := fun σ τ => funext fun i => Iso.ext $ Hom.toLinearMap_injective _ _ $
+      AlgebraTensorModule.curry_injective $ LinearMap.ext_ring $ LinearMap.ext fun x ↦ by
+        change _ = (autInducedByGal _ _).hom.toLinearMap (1 ⊗ₜ x)
+        simp only [extendScalars_carrier, autInducedByGal, MonCat.mul_of, isoInducedByGal_hom,
+          homInducedByGal_toLinearMap, AlgebraTensorModule.curry_apply, curry_apply,
+          LinearMap.coe_restrictScalars, LinearMap.galAct_extendScalars_apply,
+          show (AlgEquiv.toLinearMap (σ * τ)) = σ.toLinearMap ∘ₗ τ.toLinearMap by rfl,
+          LinearMap.rTensor_comp, _root_.map_one, LinearMap.coe_comp, Function.comp_apply] }
+
+variable (K) in
+def rep : Rep (ULift ℤ) (K ≃ₐ[k] K) := Rep.linearization _ _ |>.obj $ act K bV
 
 section
 
@@ -128,12 +150,22 @@ lemma homInducedByGal_extendScalarsMap_eq (f : V ⟶ W) (σ : K ≃ₐ[k] K) :
     LinearMap.galAct_extendScalars_apply, _root_.map_one, LinearMap.extendScalars_apply,
     LinearMap.rTensor_tmul, AlgEquiv.toLinearMap_apply]
 
-example (f : V ⟶ W) : extendScalarsMap f bV bW ∈ groupCohomology.H0 (rep K bV bW) := by
-  rw [Representation.mem_invariants]
+-- this is weird, we need non-abelian group cohomology
+example (n : ℤ) (e : Aut V) :
+    Finsupp.single (autExtendScalars (K := K) e bV) ⟨n⟩  ∈ groupCohomology.H0 (rep K bV) := by
+  classical
+  simp only [rep, Representation.mem_invariants]
   intro σ
-  simp only [rep, Rep.coe_of, Rep.of_ρ, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.coe_mk,
-    AddHom.coe_mk]
-  apply homInducedByGal_extendScalarsMap_eq
+  erw [Rep.linearization_obj_ρ]
+  simp only [Finsupp.lmapDomain_apply, Finsupp.mapDomain_single]
+  simp only [act_V, act_ρ_apply]
+  ext f
+  have eq : autInducedByGal σ (autExtendScalars e bV) = autExtendScalars e bV := by
+    ext
+    simp only [isoInducedByGal_hom, autExtendScalars_hom]
+    apply homInducedByGal_extendScalarsMap_eq
+  rw [eq]
+
 
 
 end
