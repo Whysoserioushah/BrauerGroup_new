@@ -592,15 +592,14 @@ end gal
 
 section twisedForm
 
-variable (p q : ℕ)
+variable {p q : ℕ}
 variable {k : Type*} (K : Type*) [Field k] [Field K] [Algebra k K]
 variable (V W : VectorSpaceWithTensorOfType k p q)
 
-structure twisedForm extends
-  VectorSpaceWithTensorOfType k p q,
-  (V.extendScalars K (Basis.ofVectorSpace k V)) ≅
-  (toVectorSpaceWithTensorOfType.extendScalars K
-    (Basis.ofVectorSpace k toVectorSpaceWithTensorOfType))
+structure TwisedForm where
+  carrier : VectorSpaceWithTensorOfType k p q
+  exists_iso : Nonempty $ (V.extendScalars K (Basis.ofVectorSpace k V)) ≅
+  (carrier.extendScalars K (Basis.ofVectorSpace k carrier))
 
 end twisedForm
 
