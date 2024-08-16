@@ -117,18 +117,16 @@ instance : Inhabited (ContinuousH₀ Γ A) where
 
 end ContinuousH₀
 
-structure ContinuousOneCocycle extends ContinuousMonoidHom Γ A where
+structure ContinuousOneCocycle extends ContinuousMap Γ A where
   cocyle : ∀ σ τ : Γ,
-    toContinuousMonoidHom (σ * τ) =
-    toContinuousMonoidHom σ * (σ • toContinuousMonoidHom τ)
+    toContinuousMap (σ * τ) =
+    toContinuousMap σ * (σ • toContinuousMap τ)
 
 instance : FunLike (ContinuousOneCocycle Γ A) Γ A where
-  coe f := f.toContinuousMonoidHom
+  coe f := f.toContinuousMap
   coe_injective' f g h := by cases f; cases g; aesop
 
-instance : ContinuousMonoidHomClass (ContinuousOneCocycle Γ A) Γ A where
-  map_mul f := f.toMonoidHom.map_mul
-  map_one f := f.toMonoidHom.map_one
+instance : ContinuousMapClass (ContinuousOneCocycle Γ A) Γ A where
   map_continuous f := f.toContinuousMap.continuous
 
 variable {Γ A} in
@@ -168,11 +166,8 @@ namespace ContinuousH₁
 
 instance : Inhabited (ContinuousH₁ Γ A) where
   default := Quotient.mk _
-    { toFun := fun x => 1
-      map_one' := rfl
-      map_mul' := by simp
-      continuous_toFun := by
-        simp only; continuity
+    { toFun := fun _ => 1
+      continuous_toFun := by continuity
       cocyle := fun σ _ => show 1 = 1 * σ • 1 by simp }
 
 end ContinuousH₁
