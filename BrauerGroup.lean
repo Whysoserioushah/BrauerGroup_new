@@ -8,8 +8,10 @@ import BrauerGroup.Dual
 import BrauerGroup.ExtendScalar
 import BrauerGroup.GaloisDescent.Basic
 import BrauerGroup.Lemmas
+import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.MoritaEquivalence
 import BrauerGroup.PiTensorProduct
+import BrauerGroup.Profinite.Basic
 import BrauerGroup.QuadraticExtension
 import BrauerGroup.QuatBasic
 import BrauerGroup.Quaternion
