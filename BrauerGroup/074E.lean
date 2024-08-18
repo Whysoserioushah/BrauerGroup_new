@@ -469,34 +469,7 @@ abbrev endCatEquiv (n : ℕ) [NeZero n]
     commutes' := by intros; ext; simp }
   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
-    -- AlgEquiv.ofAlgHom
-    --   { toFun := fun f =>
-    --     { f with
-    --       map_smul' := fun a v => by
-    --         simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
-    --         rw [show a • v = wdb.symm a • v by change a • v = wdb (wdb.symm a) • v; simp, map_smul]
-    --         change wdb (wdb.symm a) • f v = _
-    --         simp }
-    --     map_one' := by rfl
-    --     map_mul' := by intros; ext; rfl
-    --     map_zero' := by rfl
-    --     map_add' := by intros; ext; rfl
-    --     commutes' := by intros; ext; simp }
-    --   { toFun := fun f =>
-    --     { f with
-    --       map_smul' := fun a b => by
-    --         simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
-    --         change f (wdb a • b) = wdb a • f b
-    --         rw [map_smul] }
-    --     map_one' := by rfl
-    --     map_mul' := by intros; ext; rfl
-    --     map_zero' := by rfl
-    --     map_add' := by intros; ext; rfl
-    --     commutes' := by intros; ext; simp }
-    --   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
-    --   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
 
-#exit
 set_option maxHeartbeats 500000 in
 /--
 074E (3) first part
@@ -552,7 +525,7 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
   haveI :  E.inverse.Additive := CategoryTheory.Equivalence.inverse_additive E
 
   let e₁ : Module.End A (Fin n → D) ≃ₐ[k] Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
-    endCatEquiv k A n D wdb
+    endCatEquiv k A n D wdb $ fun _ _ => rfl
 
   let e₂ : Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D) ≃ₐ[k] Module.End D D :=
     AlgEquiv.ofAlgHom
