@@ -1,10 +1,7 @@
 import BrauerGroup.BrauerGroup
 import BrauerGroup.«074E»
-
-import Mathlib.RingTheory.TensorProduct.Basic
-import Mathlib.Algebra.Opposites
-import Mathlib.RingTheory.SimpleModule
-import Mathlib.LinearAlgebra.TensorProduct.Opposite
+import BrauerGroup.MatrixCenterEquiv
+import BrauerGroup.Lemmas
 
 suppress_compilation
 
@@ -134,6 +131,32 @@ lemma mul_smul1 (K A B M : Type u)
     · simp_all [mul_add]
   · simp_all [add_mul]
 
+lemma smul1_add (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A):  ∀ (r : (B ⊗[K] (Module.End A M)))
+    (m1 m2 : module_inst K A B M f),
+    smul1 K A B M f (m1 + m2) r = smul1 K A B M f m1 r + smul1 K A B M f m2 r := fun r m1 m2 ↦ by
+  induction r using TensorProduct.induction_on
+  · simp only [map_zero, smul_zero, add_zero]
+  · simp only [smul1, smul1AddHom, smul1AddHom', map_add, smul_add, ZeroHom.toFun_eq_coe,
+      AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
+      AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+  · rename_i a b ha hb
+    simp_all only [smul1, smul1AddHom, smul1AddHom', map_add, smul_add, ZeroHom.toFun_eq_coe,
+      AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, ← add_assoc, add_left_inj]
+    nth_rw 2 [add_assoc]; nth_rw 4 [add_comm]
+    rw [← add_assoc]
+
+lemma add_smul1 (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleModule A M] (f: B →ₐ[K] A): ∀ (r s : B ⊗[K] Module.End A M)
+    (x : module_inst K A B M f), smul1 K A B M f x (r + s) =
+    smul1 K A B M f x r + smul1 K A B M f x s := fun r s x ↦ by
+  simp only [smul1, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add, LinearMap.coe_mk,
+    AddHom.coe_mk]
+
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
@@ -154,21 +177,11 @@ instance (K A B M : Type u)
         AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
         AddMonoidHom.coe_mk, ZeroHom.coe_mk]
     · simp_all [map_add]
-  smul_add a x y := by
-    change smul1 K A B M f (x + y) a = smul1 K A B M f x a + smul1 K A B M f y a
-    induction a using TensorProduct.induction_on with
-    | zero => simp
-    | tmul a a' =>
-      simp only [smul1, smul1AddHom, smul1AddHom', map_add, smul_add, ZeroHom.toFun_eq_coe,
-        AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
-        AddMonoidHom.coe_mk, ZeroHom.coe_mk]
-    | add x y hx hy =>
-      simp only [map_add, hx, hy]
-      abel
-  add_smul a b x := by
-    change smul1 K A B M f x (a + b) = smul1 K A B M f x a + smul1 K A B M f x b
-    rw [map_add]
-  zero_smul x := show smul1 K A B M f x 0 = 0 by rw [map_zero]
+  smul_add := smul1_add K A B M f
+  add_smul := add_smul1 K A B M f
+  zero_smul m := by
+    change smul1 K A B M f m 0 = 0
+    simp only [smul1, map_zero, smul_zero]
 
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
@@ -199,15 +212,13 @@ instance tensor_is_simple (K A B M : Type u)
     [IsSimpleOrder (RingCon B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder
     (RingCon (B ⊗[K] (Module.End A M))) := by
-  haveI : IsCentralSimple K (Module.End A M) := by
-    have := csa_A.2
-    obtain ⟨n, hn, D, inst1, inst2, ⟨wdb⟩⟩ := Wedderburn_Artin_algebra_version K A
-    have : NeZero n := ⟨hn⟩
-    obtain ⟨h⟩ := end_simple_mod_of_wedderburn' K A n D wdb M
-    haveI : IsCentralSimple K D := by
-      apply CSA_implies_CSA _ _ _ _ _ _ wdb inferInstance
-      omega
-    exact h.symm.isCentralSimple
+  haveI := csa_A.2
+  obtain ⟨n, hn, D, hD1, hD2, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version K A
+  have : NeZero n := { out := hn }
+  obtain ⟨e1⟩ := end_simple_mod_of_wedderburn' K A n D iso M
+  haveI : IsCentralSimple K (Module.End A M) :=
+    AlgEquiv.isCentralSimple (hcs := CSA_op_is_CSA K D $
+      CSA_implies_CSA K A n D (by omega) _ iso csa_A) e1.symm
   exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M) _ _ _ _ _ this
 
 section modules_over_simple_ring
