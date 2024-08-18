@@ -438,33 +438,35 @@ noncomputable section wedderburn
 
 abbrev endCatEquiv (n : ℕ) [NeZero n]
     (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
-    (_ : Module A (Fin n → D) := Module.compHom (Fin n → D) wdb.toRingEquiv.toRingHom)
+    [Module A (Fin n → D)] (smul_def : ∀ (a : A) (v : Fin n → D), a • v = wdb a • v)
     [IsScalarTower k (Matrix (Fin n) (Fin n) D) (Fin n → D)] [IsScalarTower k A (Fin n → D)]
-    [SMulCommClass A k (Fin n → D)] [Algebra k (Module.End A (Fin n → D))] :
+    [SMulCommClass A k (Fin n → D)]  :
   Module.End A (Fin n → D) ≃ₐ[k] Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
   AlgEquiv.ofAlgHom {
     toFun := fun f ↦ {
       toFun := f
       map_add' := f.map_add
-      map_smul' := fun a v => by sorry
+      map_smul' := fun a v => by
+        simp only [RingHom.id_apply]
+        rw [show a • v = wdb.symm a • v by simp [smul_def], map_smul, smul_def]
+        simp
     }
     map_one' := rfl
     map_mul' := fun _ _ => rfl
     map_zero' := rfl
     map_add' := fun _ _ => rfl
-    commutes' := sorry }
+    commutes' := by intros; ext; simp }
   { toFun := fun f => {
       toFun := f
       map_add' := f.map_add
       map_smul' := fun a b => by
-        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
-        sorry
+        simp only [smul_def, LinearMapClass.map_smul, RingHom.id_apply]
     }
     map_one' := rfl
     map_mul' := fun _ _ => rfl
     map_zero' := rfl
     map_add' := fun _ _ => rfl
-    commutes' := sorry }
+    commutes' := by intros; ext; simp }
   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
     -- AlgEquiv.ofAlgHom
@@ -493,6 +495,8 @@ abbrev endCatEquiv (n : ℕ) [NeZero n]
     --     commutes' := by intros; ext; simp }
     --   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
     --   (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
+
+#exit
 set_option maxHeartbeats 500000 in
 /--
 074E (3) first part
