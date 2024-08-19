@@ -204,8 +204,24 @@ instance (K A B M : Type u)
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] (f: B →ₐ[K] A) :
     Module.Finite (B ⊗[K] Module.End A M) (module_inst K A B M f) := by
-  -- leave to xyz
-  sorry
+  have : Module.Finite A M := ⟨⟨{gen A M}, eq_top_iff.2 fun x _ => by
+    obtain ⟨a, rfl⟩ := gen_spec A M x
+    apply Submodule.smul_mem
+    refine Submodule.subset_span ?_
+    aesop⟩⟩
+  obtain ⟨s, hs⟩ : Module.Finite K M := Module.Finite.trans A M
+  refine ⟨⟨s, eq_top_iff.2 ?_⟩⟩
+  rintro x -
+  have mem : (x : M) ∈ (Submodule.span K s : Submodule K M) := hs ▸ ⟨⟩
+  obtain ⟨c, hc1, rfl⟩ := mem_span_set (R := K) (M := M) |>.1 mem
+  refine Submodule.sum_mem _ fun k hk => ?_
+  simp only
+  rw [show (c k • k : module_inst K A B M f) =
+    ((algebraMap K (B ⊗[K] Module.End A M) (c k)) • (show module_inst K A B M f from k)) by sorry]
+  refine Submodule.smul_mem _ _ ?_
+  simp only
+  refine Submodule.subset_span ?_
+  exact hc1 hk
 
 instance tensor_is_simple (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
