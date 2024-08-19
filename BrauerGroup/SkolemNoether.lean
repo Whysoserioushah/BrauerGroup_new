@@ -217,7 +217,12 @@ instance (K A B M : Type u)
   refine Submodule.sum_mem _ fun k hk => ?_
   simp only
   rw [show (c k • k : module_inst K A B M f) =
-    ((algebraMap K (B ⊗[K] Module.End A M) (c k)) • (show module_inst K A B M f from k)) by sorry]
+    ((algebraMap K (B ⊗[K] Module.End A M) (c k)) • (show module_inst K A B M f from k)) by
+      simp only [Algebra.TensorProduct.algebraMap_apply]
+      change _ = smul1 K A B M f k _
+      simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+        LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
+        ZeroHom.coe_mk, AlgHom.commutes, algebraMap_smul, LinearMap.one_apply]]
   refine Submodule.smul_mem _ _ ?_
   simp only
   refine Submodule.subset_span ?_
