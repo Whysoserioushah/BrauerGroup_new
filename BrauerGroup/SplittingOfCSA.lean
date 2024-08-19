@@ -4,7 +4,7 @@ import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
-import Mathlib.FieldTheory.IsSepclosed
+import Mathlib.FieldTheory.IsSepClosed
 
 suppress_compilation
 
