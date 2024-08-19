@@ -21,7 +21,7 @@ variable {K K_bar A} in
 abbrev b (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (i j : Fin e.n) (x : Fin (FiniteDimensional.finrank K A.carrier)) : K_bar :=
   ((Basis_of_K K K_bar A).repr
-    (e.iso.symm (Matrix.stdBasisMatrix i j 1))) $ Fin.cast sorry x
+    (e.iso.symm (Matrix.stdBasisMatrix i j 1))) x
 
 lemma b_spec (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (i j : Fin e.n) :
@@ -134,7 +134,10 @@ def basis' (e : split K A K_bar := split_by_alg_closure K K_bar A) :
     basisOfLinearIndependentOfCardEqFinrank (lin_ind := basis'_li (e := e)) $ by
       simp only [Fintype.card_prod, Fintype.card_fin, FiniteDimensional.finrank_tensorProduct,
         FiniteDimensional.finrank_self, one_mul]
-      sorry
+      have := LinearEquiv.finrank_eq (R := K_bar) e.iso.toLinearEquiv
+      simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
+        FiniteDimensional.finrank_matrix, Fintype.card_fin] at this ⊢
+      exact this.symm
 
 @[simp]
 lemma basis'_apply (e : split K A K_bar := split_by_alg_closure K K_bar A)
