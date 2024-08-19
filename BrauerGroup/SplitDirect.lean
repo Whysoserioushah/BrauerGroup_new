@@ -1,5 +1,5 @@
 import Mathlib.LinearAlgebra.FiniteDimensional
-import Mathlib.FieldTheory.IsSepclosed
+import Mathlib.FieldTheory.IsSepClosed
 import BrauerGroup.BrauerGroup
 import BrauerGroup.ExtendScalar
 import BrauerGroup.Quaternion
