@@ -56,11 +56,10 @@ lemma bijective_of_dim_eq_of_isCentralSimple
       exact this
 
 lemma bijective_of_surj_of_isCentralSimple
-    [csa_source : IsCentralSimple K A]
+    [csa_source : IsSimpleOrder (RingCon A)]
     (f : A →ₐ[K] B) [Nontrivial B] (h : Function.Surjective f) :
     Function.Bijective f :=
   ⟨by
-    letI : IsSimpleOrder (RingCon A) := csa_source.2
     haveI : Nontrivial A := inferInstance
     have := RingCon.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 inferInstance f.toRingHom
     refine this.resolve_left ?_
@@ -762,6 +761,7 @@ def e3 [csa_A : IsCentralSimple K A] :
         letI : Nontrivial (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := by
             have := e3Aux2' (K := K) (E := E) A m hm |>.2
             exact RingCon.instNontrivialOfIsSimpleOrder_brauerGroup _
+        have := csa.2
         apply bijective_of_surj_of_isCentralSimple E _ _ _ $ e3Aux5 (K := K) (E := E) A m
 
 def e4 :

@@ -198,13 +198,13 @@ instance (K A B M : Type u)
     | add x y hx hy =>
       rw [smul_add, add_smul, hx, hy, add_smul, smul_add]
 
--- Is this even true?
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] (f: B →ₐ[K] A) :
     Module.Finite (B ⊗[K] Module.End A M) (module_inst K A B M f) := by
+  -- leave to xyz
   sorry
 
 instance tensor_is_simple (K A B M : Type u)

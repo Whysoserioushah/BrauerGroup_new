@@ -757,36 +757,7 @@ private noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [Division
       refine Submodule.sum_mem _ fun i _ => Submodule.smul_mem _ _ $ Submodule.subset_span ?_
       simp)
 
--- instance (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
---     Module (Matrix (Fin n) (Fin n) D) (Module.End Dᵐᵒᵖ (Fin n → D)) where
---   smul m f :=
---     { toFun := fun v => f $ m • v
---       map_add' := by simp
---       map_smul' := fun d v => by
---         ext j
---         simp only [RingHom.id_apply, Pi.smul_apply, MulOpposite.smul_eq_mul_unop]
---         rw [matrix_smul_vec_def', map_sum, matrix_smul_vec_def', map_sum]
---         simp only [Pi.smul_apply, MulOpposite.smul_eq_mul_unop, smul_eq_mul, Finset.sum_apply,
---           Finset.sum_mul]
---         refine Finset.sum_congr rfl fun i _ => ?_
---         change _ = (d • f _) _
---         rw [← f.map_smul]
---         congr!
---         simp [mul_assoc] }
---   one_smul := sorry
---   mul_smul := sorry
---   smul_zero := sorry
---   smul_add := sorry
---   add_smul := sorry
---   zero_smul := sorry
-
--- def end_end_iso_matrix_case (n : ℕ) [NeZero n]
---     (D : Type v) [DivisionRing D] [Algebra k D] [FiniteDimensional k D] :
---     Matrix (Fin n) (Fin n) D ≃ₐ[k] Module.End Dᵐᵒᵖ (Fin n → D) :=
---   sorry
-
-instance (M : Type v) [AddCommGroup M]
-    [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
+instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower k A M] :
     Algebra k (Module.End (Module.End A M) M) where
   toFun a :=
     { toFun := fun m => a • m
@@ -849,48 +820,168 @@ instance (M : Type v) [AddCommGroup M]
     rw [← f.map_smul]
     rfl
 
-lemma end_end_iso_aux (n : ℕ) [NeZero n]
-    (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
-    (M : Type v) [AddCommGroup M]
-    [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
-    Nonempty $ Module.End (Module.End A M) M ≃ₗ[k] Module.End Dᵐᵒᵖ (Fin n → D) := by
-  let _ : Module A (Fin n → D) := Module.compHom _ wdb.toRingEquiv.toRingHom
-  have : IsScalarTower k (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
-  { smul_assoc := fun a b x => by
+private lemma exists_gen (M : Type v) [AddCommGroup M]
+    [Module A M] [IsSimpleModule A M] :
+    ∃ m : M, m ≠ 0 ∧ ∀ m', ∃ a : A, m' = a • m := by
+    have i : Submodule.IsPrincipal (⊤ : Submodule A M) := inferInstance
+
+    refine ⟨i.1.choose, ?_, fun m => by
+      classical
+      have : m ∈ Submodule.span A {i.1.choose} := by
+        rw [← i.1.choose_spec]; trivial
+      rw [Submodule.mem_span_singleton] at this
+      simpa [Eq.comm]⟩
+    intro h
+    have := i.1.choose_spec
+    rw [h] at this
+    simp only [Submodule.span_zero_singleton, top_ne_bot] at this
+
+noncomputable def gen (M : Type v) [AddCommGroup M]
+    [Module A M] [IsSimpleModule A M]: M :=
+    (exists_gen A M).choose
+
+lemma gen_ne_zero (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M] :
+    gen A M ≠ 0 := (exists_gen A M).choose_spec.1
+
+lemma gen_spec (M : Type v) [AddCommGroup M]
+    [Module A M] [IsSimpleModule A M] (m' : M) :
+    ∃ a : A, m' = a • gen A M := (exists_gen A M).choose_spec.2 m'
+
+@[simps]
+def toEndEnd (M : Type v) [AddCommGroup M] [Module A M] : A →ₗ[A] Module.End (Module.End A M) M where
+  toFun a := DistribMulAction.toLinearMap _ _ a
+  map_add' := by intros; ext; simp [add_smul]
+  map_smul' := by intros; ext; simp [mul_smul]
+
+
+def toEndEndAlgHom (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower k A M] :
+    A →ₐ[k] Module.End (Module.End A M) M where
+  __ := toEndEnd A M
+  map_one' := by ext; simp
+  map_mul' a b := by ext; simp [mul_smul]
+  map_zero' := by ext; simp
+  commutes' a := by ext; simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, toEndEnd_apply,
+    DistribMulAction.toLinearMap_apply, algebraMap_smul]; rfl
+
+lemma toEndEnd_injective
+    (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
+    [Module k M] [IsScalarTower k A M] :
+    Function.Injective (toEndEnd A M) := by
+  refine RingCon.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 inferInstance
+    (toEndEndAlgHom k A M).toRingHom |>.resolve_left ?_
+  intro h
+  have eq : 1 ∈ RingCon.ker (toEndEndAlgHom k A M) := h ▸ ⟨⟩
+  simp only [RingCon.mem_ker, map_one] at eq
+  haveI : Nontrivial M := IsSimpleModule.nontrivial A M
+  have eq' := congr($eq (gen A M))
+  simp only [LinearMap.one_apply, LinearMap.zero_apply] at eq'
+  exact gen_ne_zero A M eq'
+
+class IsBalanced (M : Type v) [AddCommGroup M] [Module A M] : Prop where
+  surj : Function.Surjective (toEndEnd A M)
+
+instance : IsBalanced A A where
+  surj f := ⟨f 1, by
+    ext x
+    simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, smul_eq_mul]
+    let X : Module.End A A :=
+      { toFun := fun y => y * x
+        map_add' := by simp [add_mul]
+        map_smul' := by simp [mul_assoc] }
+    have eq1 := f.map_smul X 1
+    simp only [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, one_mul, X] at eq1
+    exact eq1.symm⟩
+
+lemma IsBalanced.congr_aux (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module A M] [Module A N]
+    (l : M ≃ₗ[A] N) (h : IsBalanced A M) : IsBalanced A N := by
+  refine ⟨fun a => ?_⟩
+  let a' : Module.End (Module.End A M) M :=
+  { toFun := fun m => l.symm $ a $ l m
+    map_add' := by simp
+    map_smul' := fun x y => by
+      simp only [LinearMap.smul_def, RingHom.id_apply]
+      let L := l.toLinearMap ∘ₗ x ∘ₗ l.symm.toLinearMap
+      have := a.map_smul L (l $ y)
+      simp only [LinearMap.smul_def, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+        LinearEquiv.symm_apply_apply, L] at this
+      simp [this] }
+  obtain ⟨b, hb⟩ := h.1 a'
+  refine ⟨b, ?_⟩
+  ext n
+  simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply]
+  have := congr($hb $ l.symm n)
+  simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
+    LinearEquiv.apply_symm_apply, a'] at this
+  apply_fun l at this
+  simpa using this
+
+lemma IsBalanced.congr {M N : Type v} [AddCommGroup M] [AddCommGroup N] [Module A M] [Module A N]
+    (l : M ≃ₗ[A] N) : IsBalanced A M ↔ IsBalanced A N := by
+  constructor
+  · apply IsBalanced.congr_aux; exact l
+  · apply IsBalanced.congr_aux; exact l.symm
+
+
+lemma isBalanced_of_simpleMod (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
+    [Module k M] [IsScalarTower k A M] : IsBalanced A M := by
+  classical
+  obtain ⟨ι, ⟨e⟩⟩ := directSum_simple_module_over_simple_ring' k A A M
+  haveI : IsBalanced A A := inferInstance
+  haveI b : IsBalanced A (ι →₀ M) := by
+    rw [← IsBalanced.congr A e]
+    infer_instance
+  refine ⟨fun g => ?_⟩
+  let G : Module.End (Module.End A (ι →₀ M)) (ι →₀ M) :=
+  { toFun := fun v => Finsupp.mapRange g (by simp) v
+    map_add' := by intros; ext; simp
+    map_smul' := by
+      intro f v
       ext i
-      simp only [matrix_smul_vec_apply, Matrix.smul_apply, smul_eq_mul, Algebra.smul_mul_assoc,
-        Pi.smul_apply, Finset.smul_sum] }
-  letI _ : IsScalarTower k A (Fin n → D) :=
-  { smul_assoc := fun a b x => by
-      change wdb (a • b) • x = _
-      rw [map_smul, Algebra.smul_def, mul_smul]
-      rw [algebraMap_smul]
-      rfl }
-  letI _ : SMulCommClass A k (Fin n → D) :=
-    { smul_comm := fun a b x => by
-        change wdb a • b • x = b • wdb a • x
-        ext i
-        simp only [matrix_smul_vec_apply, Pi.smul_apply, smul_eq_mul, Algebra.mul_smul_comm,
-          Finset.smul_sum] }
-  haveI : IsSimpleModule A (Fin n → D) := simple_mod_of_wedderburn k A n D wdb
-
-  obtain ⟨iso1⟩ := linearEquiv_of_isSimpleModule_over_simple_ring k A M (Fin n → D)
-  obtain ⟨iso2⟩ := end_simple_mod_of_wedderburn' k A n D wdb M
-  refine ⟨LinearEquiv.ofLinear
-    { toFun := fun x =>
-        ⟨⟨fun v => iso1 (x (iso1.symm v)), by intro v w; simp only [map_add]⟩, ?_⟩
-      map_add' := ?map_add'
-      map_smul' := ?map_smul' } ?_ ?_ ?_⟩ <;> sorry
-  -- · intro d v
-  --   simp only [RingHom.id_apply]
-  --   ext i
-  --   simp only [Pi.smul_apply, MulOpposite.smul_eq_mul_unop]
-
-  --   sorry
-  -- sorry
-  -- sorry
-  -- sorry
-
+      simp only [LinearMap.smul_def, Finsupp.mapRange_apply, RingHom.id_apply]
+      let x (i j : ι) : Module.End A M :=
+      { toFun := fun m => f (Finsupp.single i m) j
+        map_add' := by simp
+        map_smul' := by
+          intro a m
+          simp only [RingHom.id_apply]
+          rw [← Finsupp.smul_single, map_smul]
+          rfl }
+      have eq (i j k : ι) := g.map_smul (x i j) (v k)
+      simp only [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, x] at eq
+      conv_lhs => rw [show v = ∑ i ∈ v.support, Finsupp.single i (v i) by
+        ext j
+        simp only [Finsupp.coe_finset_sum, Finset.sum_apply, Finsupp.single_apply,
+          Finset.sum_ite_eq', Finsupp.mem_support_iff, ne_eq, ite_not]
+        aesop]
+      simp only [map_sum, Finsupp.coe_finset_sum, Finset.sum_apply]
+      change ∑ j ∈ _, _ = _
+      simp_rw [eq]
+      rw [show ∑ x ∈ v.support, (f (Finsupp.single x (g (v x)))) i =
+        (∑ x ∈ v.support, f (Finsupp.single x (g (v x)))) i by simp [Finsupp.coe_finset_sum],
+        ← map_sum]
+      congr
+      ext j
+      simp only [Finsupp.coe_finset_sum, Finset.sum_apply, Finsupp.single_apply, Finset.sum_ite_eq',
+        Finsupp.mem_support_iff, ne_eq, ite_not, Finsupp.mapRange_apply, ite_eq_right_iff]
+      aesop }
+  obtain ⟨a, ha⟩ := b.1 G
+  refine ⟨a, ?_⟩
+  ext m
+  haveI : Nonempty ι := by
+    refine isEmpty_or_nonempty ι |>.resolve_left ?_
+    intro H
+    haveI : Subsingleton (ι →₀ M) := inferInstance
+    haveI : Subsingleton A := Equiv.subsingleton e.toEquiv
+    have eq1 : (1 : A) = 0 := Subsingleton.elim _ _
+    have : Nontrivial A := inferInstance
+    exact one_ne_zero eq1
+  obtain ⟨j⟩ := this
+  have := congr($ha (Finsupp.single j m))
+  simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, Finsupp.smul_single,
+    LinearMap.coe_mk, AddHom.coe_mk, Finsupp.mapRange_single, G] at this ⊢
+  have := congr($this j)
+  simp only [Finsupp.single_eq_same] at this
+  exact this
 
 noncomputable def end_end_iso
     (M : Type v) [AddCommGroup M]
@@ -910,34 +1001,8 @@ noncomputable def end_end_iso
         ext m
         simp only [algebraMap_smul, LinearMap.coe_mk, AddHom.coe_mk]
         rfl }
-    (by
-      obtain ⟨n, hn, D, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version k A
-      haveI : NeZero n := ⟨hn⟩
-      haveI : Module.Finite k D := by
-        haveI inst1 : Module.Finite k (Matrix (Fin n) (Fin n) D) := e.toLinearEquiv.finiteDimensional
-        rw [← Module.rank_lt_alpeh0_iff] at inst1 ⊢
-        have eq1 := rank_mul_rank k D (Matrix (Fin n) (Fin n) D)
-        simp only [rank_matrix', Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
-          Cardinal.lift_natCast] at eq1
-        rw [← eq1, mul_comm] at inst1
-        exact lt_of_le_of_lt (Cardinal.le_mul_left (a := Module.rank k D) (b := n * n) (by
-          simpa only [ne_eq, mul_eq_zero, Nat.cast_eq_zero, or_self] using NeZero.ne n)) inst1
-      have eq1 : FiniteDimensional.finrank k A =
-        FiniteDimensional.finrank k D * (n * n) := by
-        have eq1 := FiniteDimensional.finrank_matrix D (Fin n) (Fin n)
-        simp only [Fintype.card_fin] at eq1
-        rw [LinearEquiv.finrank_eq e.toLinearEquiv, ← FiniteDimensional.finrank_mul_finrank k D,
-          eq1]
-      obtain ⟨e⟩ := end_end_iso_aux k A n D e M
-      haveI : FiniteDimensional k (Module.End (Module.End A M) M) :=
-        e.symm.finiteDimensional
-      apply bijective_of_dim_eq_of_isCentralSimple
-      rw [eq1, e.finrank_eq]
-      conv_rhs => rw [← FiniteDimensional.finrank_mul_finrank k D]
-      have eq2 := FiniteDimensional.finrank_eq_card_basis (pow_basis n D)
-      have eq3 := FiniteDimensional.finrank_linearMap Dᵐᵒᵖ D (Fin n → D) (Fin n → D)
-      rw [eq3, eq2]
-      simp only [Fintype.card_fin, FiniteDimensional.finrank_fintype_fun_eq_card])
+    ⟨toEndEnd_injective k A M, isBalanced_of_simpleMod k A M |>.1⟩
+
 
 lemma Wedderburn_Artin_uniqueness₀
     (n n' : ℕ) [NeZero n] [NeZero n']
