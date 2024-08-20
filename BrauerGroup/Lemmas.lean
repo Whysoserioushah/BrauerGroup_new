@@ -1,5 +1,5 @@
 import Mathlib.RingTheory.TensorProduct.Basic
-import BrauerGroup.BrauerGroup
+import BrauerGroup.CentralSimple
 
 universe u
 

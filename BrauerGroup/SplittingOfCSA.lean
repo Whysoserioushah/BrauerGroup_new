@@ -4,7 +4,6 @@ import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
-import Mathlib.FieldTheory.IsSepClosed
 
 suppress_compilation
 
@@ -13,7 +12,7 @@ variable (k A K: Type u) [Field k] [Field K] [Algebra k K] [Ring A]
   [Algebra k A]
 
 variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
-  (k_s : Type u) [Field k_s] [Algebra k k_s] [IsSepClosure k k_s]
+  (k_s : Type u) [Field k_s] [Algebra k k_s] --[IsSepClosure k k_s]
 
 open scoped TensorProduct
 open RingCon

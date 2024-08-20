@@ -1,5 +1,7 @@
 import BrauerGroup.QuatBasic
-import BrauerGroup.BrauerGroup
+import BrauerGroup.CentralSimple
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.LinearAlgebra.FreeModule.PID
 
 suppress_compilation
 

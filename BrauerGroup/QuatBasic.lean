@@ -1,7 +1,9 @@
 import Mathlib.Algebra.QuaternionBasis
 import BrauerGroup.QuadraticExtension
 import BrauerGroup.Con
-import Mathlib.Tactic
+import Mathlib.LinearAlgebra.FiniteDimensional
+import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
+import Mathlib.RingTheory.Valuation.ValuationRing
 
 suppress_compilation
 

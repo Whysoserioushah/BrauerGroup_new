@@ -1,6 +1,9 @@
 import BrauerGroup.CentralSimple
 import BrauerGroup.Composition
 import Mathlib.LinearAlgebra.Matrix.ToLin
+import Mathlib.Analysis.Complex.Polynomial
+import Mathlib.LinearAlgebra.FreeModule.PID
+import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
 
 
 suppress_compilation
