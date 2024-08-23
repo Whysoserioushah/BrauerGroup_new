@@ -1,8 +1,6 @@
 import BrauerGroup.Wedderburn
-import BrauerGroup.BrauerGroup
 
 import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
-import Mathlib.Algebra.Category.ModuleCat.Adjunctions
 import Mathlib.FieldTheory.Finiteness
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.CategoryTheory.Preadditive.AdditiveFunctor
@@ -353,8 +351,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     haveI : Module.Finite k (ι →₀ S) := Module.Finite.equiv ISO
     haveI : Module.Finite k (ι' →₀ S) := Module.Finite.equiv ISO'
     haveI : Module.Finite k S := by
-      suffices : IsNoetherian k S
-      · infer_instance
+      suffices IsNoetherian k S from inferInstance
       rw [IsNoetherian.iff_rank_lt_aleph0]
       apply_fun ((↑) : ℕ → Cardinal) at eq
       rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp] at eq
@@ -377,8 +374,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
       simp only [Cardinal.lift_id] at ineq
       have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ι) (Module.rank k S)
         (by
-          suffices : 0 < Module.rank k S
-          · exact Ne.symm (ne_of_lt this)
+          suffices 0 < Module.rank k S by exact Ne.symm (ne_of_lt this)
           apply rank_pos)
       rw [mul_comm] at ineq2
       exact lt_of_le_of_lt ineq2 ineq
@@ -393,8 +389,8 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
       simp only [Cardinal.lift_id] at ineq
       have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ι') (Module.rank k S)
         (by
-          suffices : 0 < Module.rank k S
-          · exact Ne.symm (ne_of_lt this)
+          suffices 0 < Module.rank k S from
+            Ne.symm (ne_of_lt this)
           apply rank_pos)
       rw [mul_comm] at ineq2
       exact lt_of_le_of_lt ineq2 ineq

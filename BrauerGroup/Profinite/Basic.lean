@@ -1,6 +1,6 @@
-import Mathlib.Topology.Category.Profinite.AsLimit
 import Mathlib.Topology.ContinuousFunction.Basic
-import Mathlib.Algebra.Category.Grp.FilteredColimits
+import Mathlib.Algebra.Category.Grp.Basic
+import Mathlib.Topology.Category.Profinite.Basic
 
 /-!
 

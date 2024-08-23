@@ -1,5 +1,4 @@
-import Mathlib.NumberTheory.Zsqrtd.Basic
-import Mathlib.Tactic
+import Mathlib.Analysis.RCLike.Basic
 
 suppress_compilation
 

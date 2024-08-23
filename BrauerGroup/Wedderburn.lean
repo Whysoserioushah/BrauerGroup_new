@@ -5,6 +5,7 @@ import Mathlib.Algebra.Ring.Equiv
 import Mathlib.LinearAlgebra.Matrix.IsDiag
 
 import BrauerGroup.MoritaEquivalence
+import Mathlib.FieldTheory.IsAlgClosed.Basic
 
 variable (A : Type*) [Ring A]
 

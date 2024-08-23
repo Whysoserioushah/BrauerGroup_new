@@ -1,7 +1,5 @@
 import BrauerGroup.BrauerGroup
 import BrauerGroup.«074E»
-import BrauerGroup.MatrixCenterEquiv
-import BrauerGroup.Lemmas
 
 suppress_compilation
 

@@ -1,4 +1,3 @@
-import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import Mathlib.LinearAlgebra.FiniteDimensional
 import Mathlib.RingTheory.Finiteness
 import Mathlib.RingTheory.Flat.Basic

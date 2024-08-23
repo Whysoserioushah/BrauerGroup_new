@@ -1,4 +1,8 @@
-import Mathlib.Tactic
+import Mathlib.Algebra.CharP.Defs
+import Mathlib.Algebra.Module.Opposites
+import Mathlib.LinearAlgebra.Alternating.Basic
+import Mathlib.RingTheory.Congruence.Basic
+import Mathlib.RingTheory.Ideal.Basic
 
 variable {M : Type*} [AddCommMonoid M] (r : AddCon M) {ι : Type*} (s : Finset ι)
 variable {R : Type*} [Ring R] (t : RingCon R)

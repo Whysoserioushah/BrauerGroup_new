@@ -1,5 +1,7 @@
 import Mathlib.LinearAlgebra.PiTensorProduct
-import BrauerGroup.Dual
+import Mathlib.GroupTheory.MonoidLocalization
+import Mathlib.LinearAlgebra.Finsupp
+import Mathlib.Algebra.Algebra.Basic
 
 suppress_compilation
 

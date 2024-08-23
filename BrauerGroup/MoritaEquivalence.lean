@@ -1,5 +1,4 @@
 import Mathlib.Algebra.Category.ModuleCat.Abelian
-import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
 import Mathlib.CategoryTheory.Elementwise
 import Mathlib.Algebra.Module.LinearMap.End
 import Mathlib.RingTheory.SimpleModule
