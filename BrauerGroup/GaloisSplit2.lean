@@ -80,21 +80,6 @@ instance (e : split K A K_bar) :
     exact Algebra.IsIntegral.isIntegral i
   apply finiteDimensional_iSup_of_finset
 
---instance (e : split K A K_bar) :
---   Algebra ((K'' K K_bar A e)) ((K'' K K_bar A e) ⊗[K] A.carrier) := inferInstance
-
--- instance (e : split K A K_bar) :
---   Module ((K'' K K_bar A e)) ((K'' K K_bar A e) ⊗[K] A.carrier) := inferInstance
-
--- instance (e : split K A K_bar) :
---   DistribSMul ((K'' K K_bar A e)) ((K'' K K_bar A e) ⊗[K] A.carrier) := inferInstance
-
-variable (e : split K A K_bar) in
-#synth Algebra (K'' K K_bar A e) K_bar--(K_bar ⊗[K] A.carrier)
-
-variable (e : split K A K_bar) in
-#synth Algebra (K'' K K_bar A e) (K_bar ⊗[K] A.carrier)
-
 private def emb (e : split K A K_bar) :
     K'' K K_bar A e ⊗[K] A →ₐ[K'' K K_bar A e] K_bar ⊗[K] A :=
   Algebra.TensorProduct.map (Algebra.ofId (K'' (e := e)) _) (AlgHom.id _ _)
@@ -105,8 +90,6 @@ private lemma emb_tmul (e : split K A K_bar) :
   intros
   simp only [emb, Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq]
   rfl
-
--- set_option synthInstance.maxHeartbeats 60000 in
 
 lemma basis'_li (e) : LinearIndependent (K'' K K_bar A e) fun i : Fin e.n × Fin e.n ↦
   ∑ j : Fin (FiniteDimensional.finrank K A.carrier),
@@ -193,12 +176,6 @@ lemma emb'_inj (e : split K A K_bar):
 
 lemma foobar2 (e : split K A K_bar) (x : K'' K K_bar A e) : (algebraMap (K'' K K_bar A e) K_bar) x = Subtype.val x := rfl
 
--- def embemb (e : split K A K_bar := split_by_alg_closure K K_bar A) :
---     (K' K K_bar A e) ⊗[K] A →ₐ[K' K K_bar A e] K_bar ⊗[K] A :=
---   Algebra.TensorProduct.map (Algebra.ofId (K' (e := e)) _) (AlgHom.id _ _)
-
-instance (e) : NonUnitalNonAssocSemiring ((K'' K K_bar A e) ⊗[K] A.carrier) := inferInstance
-
 instance (e) : LinearMap.CompatibleSMul (K_bar ⊗[K] A.carrier) (Matrix (Fin e.n) (Fin e.n) K_bar) (K'' K K_bar A e) K_bar := by
   unfold K''
   infer_instance
@@ -216,16 +193,10 @@ lemma emb_comm_square (e : split K A K_bar):
   simp only [emb, Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq]
   simp only [Algebra.ofId, AlgHom.coe_mk, IntermediateField.algebraMap_apply]
   rw [← map_sum]
-  --unfold K' algebraMap Algebra.toRingHom
   simp_rw [foobar2, coe_b_as_K']
   rw [← b_spec (e := e)]
   ext
   simp only [Matrix.stdBasisMatrix, Matrix.map_apply, RingHom.map_ite_one_zero]
-
--- set_option synthInstance.maxHeartbeats 60000 in
--- instance (e : split K A K_bar):
---   HMul (↥(K' K K_bar A e) ⊗[K] A.carrier) (↥(K' K K_bar A e) ⊗[K] A.carrier)
---   (↥(K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
 lemma e'_map_mul (e : split K A K_bar)
     (x y : (K'' K K_bar A e) ⊗[K] A) :
@@ -242,7 +213,6 @@ lemma e'_map_mul (e : split K A K_bar)
     ← eqx, ← eqy]
   rfl
 
-
 lemma e'_map_one (e : split K A K_bar) :
     (e'Aux K K_bar A e) 1 = 1 := by
   have eq := congr($(emb_comm_square (e := e)) 1)
@@ -251,8 +221,6 @@ lemma e'_map_one (e : split K A K_bar) :
   simp only [LinearMap.coe_comp, LinearMap.coe_restrictScalars, Function.comp_apply,
     AlgHom.toLinearMap_apply, AlgEquiv.toLinearMap_apply, LinearEquiv.coe_coe] at eq
   erw [← eq, (emb (e := e)).map_one, _root_.map_one (f := e.iso), (emb' (e := e)).map_one]
-
-
 
 def e' (e : split K A K_bar) :
     (K'' K K_bar A e) ⊗[K] A ≃ₐ[K'' K K_bar A e]

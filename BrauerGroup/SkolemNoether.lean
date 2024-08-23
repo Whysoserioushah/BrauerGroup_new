@@ -157,7 +157,7 @@ lemma add_smul1 (K A B M : Type u)
   simp only [smul1, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add, LinearMap.coe_mk,
     AddHom.coe_mk]
 
-instance (K A B M : Type u)
+instance IsMod (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
@@ -241,13 +241,6 @@ instance tensor_is_simple (K A B M : Type u)
     AlgEquiv.isCentralSimple (hcs := CSA_op_is_CSA K D $
       CSA_implies_CSA K A n D (by omega) _ iso csa_A) e1.symm
   exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M) _ _ _ _ _ this
-
-section modules_over_simple_ring
-
-variable (N N' R : Type u) [Ring R] [Algebra K R] [FiniteDimensional K R]
-  [IsSimpleOrder (RingCon R)] [AddCommGroup N] [Module R N] [AddCommGroup N'] [Module R N']
-
-end modules_over_simple_ring
 
 variable (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
