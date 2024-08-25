@@ -4,7 +4,7 @@ universe u
 
 suppress_compilation
 
-open BigOperators TensorProduct
+open BigOperators TensorProduct MulOpposite
 
 section def_and_lemmas
 
@@ -38,6 +38,7 @@ end def_and_lemmas
 
 variable (K A: Type u) [Field K] [Ring A] [Algebra K A] (B : Subalgebra K A)
 
+set_option linter.unusedVariables false in
 def A_inst (K A: Type u) [Field K] [Ring A] [Algebra K A] (B : Subalgebra K A) := A
 
 instance: AddCommGroup $ A_inst K A B := inferInstanceAs $ AddCommGroup A
@@ -53,78 +54,355 @@ instance : HMul A (A_inst K A B) A where
     unfold A_inst at a'
     exact a * a'
 
-def smulAAddHom'  (K A: Type u) [Field K] [Ring A] [Algebra K A]
-    (B : Subalgebra K A): (A_inst K A B) → A →+ B →+ A :=
-  fun a ↦ {
-    toFun := fun x ↦ {
-      toFun := fun ⟨b, _⟩ ↦ b * x * a
-      map_zero' := by simp only [zero_mul]
-      map_add' := fun a1 a2 ↦ by simp only [add_mul]
-    }
-    map_zero' := by ext; simp only [mul_zero, zero_mul, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
-      AddMonoidHom.zero_apply]
-    map_add' := fun b1 b2 ↦ by ext; simp only [mul_add, add_mul, AddMonoidHom.coe_mk,
-      ZeroHom.coe_mk, AddMonoidHom.add_apply] }
+instance : HMul (A_inst K A B) A A where
+  hMul := fun a a' ↦ by
+    unfold A_inst at a
+    exact a * a'
 
-def smulAAddHom  (K A: Type u)
-    [Field K] [Ring A] [Algebra K A] (B : Subalgebra K A):
-    (A_inst K A B) → A ⊗[K] B →+ A_inst K A B := fun a ↦
-  TensorProduct.liftAddHom (smulAAddHom' K A B a) $ fun k a' ⟨b, _⟩ ↦ by
-  unfold A_inst at a
-  simp only [smulAAddHom', SetLike.mk_smul_mk]
-  change _ * (k • a') * _ = _ * a' * _
-  simp only [Algebra.mul_smul_comm, Algebra.smul_mul_assoc]
+instance : Module A (A_inst K A B) := inferInstanceAs $ Module A A
 
-def smulA (K A: Type u)
-    [Field K] [Ring A] [Algebra K A] (B : Subalgebra K A):
-    (A_inst K A B) → A ⊗[K] B →ₗ[K] A_inst K A B := fun a ↦ {
-  __ := smulAAddHom K A B a
-  map_smul' := fun k ab ↦ by
-    simp only [smulAAddHom, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, RingHom.id_apply]
-    induction ab using TensorProduct.induction_on
-    · simp only [smul_zero, map_zero]
-    · rename_i a' b
-      obtain ⟨b, hb⟩ := b
-      simp only [smulAAddHom', liftAddHom_tmul, TensorProduct.smul_tmul',
-        SetLike.mk_smul_mk, liftAddHom_tmul]
-      change _ * (k • a') * a = k • (_ * a' * _)
-      simp only [Algebra.mul_smul_comm, Algebra.smul_mul_assoc]
-    · rename_i x y hx hy
-      simp only [smul_add, map_add, hx, add_right_inj, hy]
-  }
+instance : IsScalarTower K A (A_inst K A B) := inferInstanceAs $ IsScalarTower K A A
 
-lemma smulA_mul_smul : ∀ (x y : A ⊗[K] B) (b : A_inst K A B), smulA K A B b (x * y) =
-    smulA K A B (smulA K A B b y) x := fun x y a ↦ by
-  dsimp only [smulA, smulAAddHom, smulAAddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
-    LinearMap.coe_mk, AddHom.coe_mk]
-  induction x using TensorProduct.induction_on
-  · simp only [zero_mul, map_zero]
-  · rename_i a' b
-    induction y using TensorProduct.induction_on
-    · simp only [mul_zero, map_zero, liftAddHom_tmul]; rfl
-    · rename_i a1 b1
-      obtain ⟨b1, hb1⟩ := b1; obtain ⟨b, hb⟩ := b
-      unfold A_inst at *
-      simp only [Algebra.TensorProduct.tmul_mul_tmul, Submonoid.mk_mul_mk, liftAddHom_tmul,
-        AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+-- def smulAAddHom'  (K A: Type u) [Field K] [Ring A] [Algebra K A]
+--     (B : Subalgebra K A): (A_inst K A B) → A →+ Bᵐᵒᵖ →+ A :=
+--   fun a ↦ {
+--     toFun := fun x ↦ {
+--       toFun := fun b ↦ b.unop * a * x
+--       map_zero' := by simp only [MulOpposite.unop_zero, ZeroMemClass.coe_zero, zero_mul]
+--       map_add' := fun b1 b2 ↦ by
+--         change (b1 + b2).unop * _ * x = _ * _ * _ + _ * _ * _
+--         simp only [MulOpposite.unop_add, Subsemiring.coe_add, Subalgebra.coe_toSubsemiring, add_mul]
+--     }
+--     map_zero' := by
+--       ext; simp only [zero_mul, AddEquiv.toAddMonoidHom_eq_coe, AddMonoidHom.coe_comp,
+--         AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.coe_coe, MulOpposite.opAddEquiv_apply,
+--         Function.comp_apply, AddMonoidHom.zero_comp, AddMonoidHom.zero_apply, mul_zero]
+--     map_add' := fun _ _ ↦ by
+--       ext; simp only [add_mul, AddEquiv.toAddMonoidHom_eq_coe, AddMonoidHom.coe_comp,
+--         AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.coe_coe, MulOpposite.opAddEquiv_apply,
+--         Function.comp_apply, MulOpposite.unop_op, AddMonoidHom.add_apply, mul_add]}
 
-      sorry
-    sorry
+-- def smulAAddHom  (K A: Type u)
+--     [Field K] [Ring A] [Algebra K A] (B : Subalgebra K A):
+--     (A_inst K A B) → A ⊗[K] Bᵐᵒᵖ →+ A_inst K A B := fun a ↦
+--   TensorProduct.liftAddHom (smulAAddHom' K A B a) $ fun k a' bop ↦ by
+--   unfold A_inst at a
+--   simp only [smulAAddHom']
+--   change _ * a *_ = (k • bop).unop  * _ * _
+--   simp only [Algebra.smul_mul_assoc, MulOpposite.unop_smul, SetLike.val_smul, Algebra.mul_smul_comm]
+
+-- def smulA (K A: Type u)
+--     [Field K] [Ring A] [Algebra K A] (B : Subalgebra K A):
+--     (A_inst K A B) → A ⊗[K] Bᵐᵒᵖ →ₗ[K] A_inst K A B := fun a ↦ {
+--   __ := smulAAddHom K A B a
+--   map_smul' := fun k ab ↦ by
+--     simp only [smulAAddHom, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, RingHom.id_apply]
+--     induction ab using TensorProduct.induction_on
+--     · simp only [smul_zero, map_zero]
+--     · rename_i a' b
+--       obtain ⟨b, hb⟩ := b
+--       simp only [smulAAddHom', liftAddHom_tmul, TensorProduct.smul_tmul',
+--         SetLike.mk_smul_mk, liftAddHom_tmul]
+--       change _ * a * _ = k • (_ * a * _)
+--       simp only [Algebra.mul_smul_comm, Algebra.smul_mul_assoc]
+--     · rename_i x y hx hy
+--       simp only [smul_add, map_add, hx, add_right_inj, hy]
+--   }
+
+-- set_option synthInstance.maxHeartbeats 40000 in
+-- instance : ZeroHomClass (A ⊗[K] Bᵐᵒᵖ →ₗ[K] A_inst K A B) _ _ := inferInstance
+
+-- lemma smulA_add (a b : A_inst K A B) (x : A ⊗[K] Bᵐᵒᵖ):
+--     smulA K A B (a + b) x = smulA K A B a x + smulA K A B b x := by
+--   induction x using TensorProduct.induction_on
+--   · simp only [map_zero, add_zero]
+--   · rename_i a' bop
+--     simp only [smulA, smulAAddHom, smulAAddHom', mul_add, add_mul, ZeroHom.toFun_eq_coe,
+--       AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, liftAddHom_tmul]
+--     change bop.unop * _ * a' + bop.unop * _ * a' = _ * _ * _ + _ * _ * _
+--     rfl
+--   · rename_i x y hx hy
+--     simp only [map_add]
+--     rw [hx, hy]
+--     abel
+
+-- lemma smulA_mul_smul : ∀ (x y : A ⊗[K] Bᵐᵒᵖ) (b : A_inst K A B), smulA K A B b (x * y) =
+--     smulA K A B (smulA K A B b y) x := fun x y a ↦ by
+--   induction x using TensorProduct.induction_on
+--   · simp only [zero_mul, map_zero, mul_zero]
+--   · rename_i a' b
+--     induction y using TensorProduct.induction_on
+--     · dsimp only [smulA, smulAAddHom, smulAAddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+--          LinearMap.coe_mk, AddHom.coe_mk]
+--       simp only [mul_zero, map_zero, liftAddHom_tmul, zero_mul]; rfl
+--     · dsimp only [smulA, smulAAddHom, smulAAddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+--          LinearMap.coe_mk, AddHom.coe_mk]
+--       rename_i a1 b1
+--       obtain ⟨b1, hb1⟩ := b1; obtain ⟨b, hb⟩ := b
+--       unfold A_inst at *
+--       simp only [Algebra.TensorProduct.tmul_mul_tmul, Submonoid.mk_mul_mk, liftAddHom_tmul,
+--         AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+--       rw [← mul_assoc, ← mul_assoc, ← mul_assoc]
+--     · rename_i x y hx hy
+--       simp only [mul_add, map_add, hx, liftAddHom_tmul, hy, smulA_add]
+--   · rename_i x y' hx hy
+--     simp only [add_mul, map_add, hx, hy]
+
+-- lemma smulA_zero : ∀ (x : A ⊗[K] (↥B)ᵐᵒᵖ), smulA K A B 0 x = 0 := fun x ↦ by
+--   simp only [smulA, smulAAddHom, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+--       LinearMap.coe_mk, AddHom.coe_mk]
+--   induction x using TensorProduct.induction_on
+--   · simp only [map_zero]
+--   · simp only [smulAAddHom', mul_zero, zero_mul, liftAddHom_tmul]; rfl
+--   · simp_all only [map_add, zero_add]
+
+-- instance : Module (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) where
+--   smul := fun x a ↦ smulA K A B a x
+--   one_smul := fun a ↦ by
+--     change smulA K A B _ _ = _
+--     simp only [smulA, smulAAddHom, smulAAddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+--       Algebra.TensorProduct.one_def, LinearMap.coe_mk, AddHom.coe_mk, liftAddHom_tmul]
+--     change _ * _ * _ = a
+--     simp only [one_mul, MulOpposite.unop_one, OneMemClass.coe_one, mul_one]
+--   mul_smul := smulA_mul_smul K A B
+--   smul_zero := smulA_zero K A B
+--   smul_add := fun _ _ _ ↦ smulA_add K A B _ _ _
+--   add_smul := fun x y a ↦ by
+--     change smulA K A B _ _  = smulA K A B _ _ + smulA K A B _ _
+--     simp only [map_add]
+--   zero_smul := fun a ↦ by
+--     change smulA K A B _ 0 = 0
+--     simp only [map_zero]
+
+-- lemma smulA_apply (a : A) (bop : Bᵐᵒᵖ) : ∀(a' : A_inst K A B), smulA K A B a' (a ⊗ₜ bop)
+--     = a * a' * bop.unop.1 := fun a' ↦ by
+--   simp only [smulA, smulAAddHom, smulAAddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+--     LinearMap.coe_mk, AddHom.coe_mk, liftAddHom_tmul]; rfl
+
+-- def C_iso_toFun_toFun (B : Subalgebra K A) [IsSimpleOrder (RingCon B)]
+--     (c : (Subalgebra.centralizer (A := A) K B)):
+--     Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) where
+--   toFun := fun a ↦ c.1 * a
+--   map_add' := fun a1 a2 ↦ by simp only [mul_add]
+--   map_smul' := fun x a ↦ by
+--     simp only [RingHom.id_apply]
+--     induction x using TensorProduct.induction_on with
+--     | zero => simp only [zero_smul, mul_zero]
+--     | tmul a' bop =>
+--         obtain ⟨c, hc⟩ := c
+--         change c * smulA K A B _ _  = smulA K A B (c * a) _
+--         simp only [smulA_apply]
+--         rw [Subalgebra.mem_centralizer_iff] at hc
+--         simp only [← mul_assoc]
+--         sorry
+--     | add x y hx hy => sorry
+
+abbrev inclusion1 : A ⊗[K] Bᵐᵒᵖ →ₐ[K] Module.End K A :=
+  tensor_self_op.toEnd K A|>.comp $ (Algebra.TensorProduct.map (AlgHom.id _ _) $ AlgHom.op B.val)
+
+/--this takes ten seconds someone should fix this -/
+instance IsModA : Module (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) where
+  smul := fun x a1 ↦ inclusion1 K A B x a1
+  one_smul := fun a ↦ by
+    change inclusion1 K A B _ _ = _
+    simp only [_root_.map_one, LinearMap.one_apply]
+  mul_smul := fun x y a ↦ by
+    change inclusion1 K A B _ _ = inclusion1 K A B _ (inclusion1 K A B _ _)
+    simp only [_root_.map_mul, AlgHom.coe_comp, Function.comp_apply, LinearMap.mul_apply]
+  smul_zero := fun x ↦ by
+    change inclusion1 K A B _ _ = 0
+    simp only [AlgHom.coe_comp, Function.comp_apply, map_zero]
+  smul_add := fun x a1 a2 ↦ by
+    change inclusion1 K A B _ _ = inclusion1 K A B _ _ + inclusion1 K A B _ _
+    simp only [AlgHom.coe_comp, Function.comp_apply, map_add]
+  add_smul := fun x y a ↦ by
+    change inclusion1 K A B _ _ = _ + _
+    simp only [map_add, AlgHom.coe_comp, Function.comp_apply, LinearMap.add_apply]; rfl
+  zero_smul := fun a ↦ by
+    change inclusion1 K A B _ _ = 0
+    simp only [map_zero, LinearMap.zero_apply]
+
+lemma inclusion1_apply (a : A) (bop : Bᵐᵒᵖ) (x : A_inst K A B):
+    inclusion1 K A B (a ⊗ₜ bop) x = a * x * bop.unop := by
+  simp only [AlgHom.coe_comp, tensor_self_op.toEnd, Function.comp_apply,
+    Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq, AlgHom.op_apply_apply, Subalgebra.coe_val,
+    Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
+    unop_op, LinearMap.mul_apply, LinearMap.coe_mk, AddHom.coe_mk]
+  exact mul_assoc a x bop.unop|>.symm
+
+instance : IsScalarTower K (A ⊗[K] (↥B)ᵐᵒᵖ) (A_inst K A B) where
+  smul_assoc := fun k x a ↦ by
+    change inclusion1 K A B _ _ = k • inclusion1 K A B _ _
+    simp only [LinearMapClass.map_smul, AlgHom.coe_comp, Function.comp_apply, LinearMap.smul_apply]
+
+def C_iso_toFun_toFun (B : Subalgebra K A)
+    (c : (Subalgebra.centralizer (A := A) K B)):
+    Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) where
+  toFun := fun a ↦ a * c.1
+  map_add' := fun a1 a2 ↦ by simp only [add_mul]
+  map_smul' := fun x a ↦ by
+    simp only [RingHom.id_apply]
+    induction x using TensorProduct.induction_on with
+    | zero => simp only [zero_smul, zero_mul]
+    | tmul a' bop =>
+        obtain ⟨c, hc⟩ := c
+        change inclusion1 K A B _ _ * c = inclusion1 K A B _ (a * c)
+        rw [inclusion1_apply, inclusion1_apply, mul_assoc (a' * a) _ _, hc, ← mul_assoc,
+          ← mul_assoc]
+        obtain ⟨_, hb⟩ := bop.unop
+        exact hb
+    | add x y hx hy =>
+        simp only [add_smul, add_mul, hx, hy]
+
+lemma C_iso_mapmul (B : Subalgebra K A) :
+    ∀(x y : Subalgebra.centralizer (A := A) K B), C_iso_toFun_toFun K A B (x * y) =
+    C_iso_toFun_toFun K A B x * C_iso_toFun_toFun K A B y := fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
+  ext a
+  simp only [C_iso_toFun_toFun, Submonoid.mk_mul_mk, Submonoid.mk_smul, LinearMap.coe_mk,
+    AddHom.coe_mk, LinearMap.mul_apply, mul_smul]
   sorry
 
-instance : Module (A ⊗[K] B) (A_inst K A B) where
-  smul := fun x a ↦ smulA K A B a x
-  one_smul := fun a ↦ by
-    change smulA K A B _ _  = _
-    simp only [smulA, smulAAddHom, smulAAddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
-      Algebra.TensorProduct.one_def, LinearMap.coe_mk, AddHom.coe_mk, liftAddHom_tmul]
-    change _ * _ * _ = a
-    simp only [OneMemClass.coe_one, mul_one, one_mul]
-  mul_smul := smulA_mul_smul K A B
-  smul_zero := sorry
-  smul_add := sorry
-  add_smul := sorry
-  zero_smul := sorry
+abbrev ksmul : K → Module.End (A ⊗[K] (↥B)ᵐᵒᵖ) (A_inst K A B) → A_inst K A B →ₗ[A ⊗[K] (↥B)ᵐᵒᵖ]
+    A_inst K A B := fun k l ↦ {
+  toFun := fun a ↦ k • l a
+  map_add' := fun a1 a2 ↦ by simp only [map_add, smul_add]
+  map_smul' := fun k' a ↦ by
+    simp only [LinearMapClass.map_smul, RingHom.id_apply]
+    exact smul_comm _ _ _
+}
+
+-- set_option synthInstance.maxHeartbeats 60000 in
+instance : Algebra K (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) where
+  smul := ksmul K A B
+  toFun := fun k ↦ ⟨⟨(k • ·), smul_add _⟩, smul_comm _ ⟩
+  map_one' := by ext; simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply]
+  map_mul' := fun k1 k2 ↦ by
+    ext a
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearMap.map_smul_of_tower]
+    rw [mul_comm, mul_smul]
+  map_zero' := by simp only [zero_smul]; rfl
+  map_add' := fun k1 k2 ↦ by ext; simp only [add_smul, LinearMap.coe_mk, AddHom.coe_mk,
+    LinearMap.add_apply]
+  smul_def' := fun k l ↦ by
+    ext a
+    change _ = k • (l a)
+    rfl
+  commutes' := fun k l ↦ by
+    ext a
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.mul_apply,
+      LinearMap.coe_mk, AddHom.coe_mk, LinearMap.map_smul_of_tower]
+
+/-- C →ₐ[K] End (B ⊗ L) M -/
+def C_iso_toFun (B : Subalgebra K A):
+    (Subalgebra.centralizer (A := A) K B) →ₐ[K]
+    Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) where
+  toFun c := C_iso_toFun_toFun K A B c
+  map_one' := by
+    ext a
+    simp only [C_iso_toFun_toFun, OneMemClass.coe_one, mul_one, LinearMap.coe_mk, AddHom.coe_mk,
+      LinearMap.one_apply]
+  map_mul' := C_iso_mapmul K A B
+  map_zero' := by
+    ext
+    simp only [C_iso_toFun_toFun, ZeroMemClass.coe_zero, mul_zero, LinearMap.coe_mk, AddHom.coe_mk,
+      LinearMap.zero_apply]
+  map_add' := fun x y ↦ by
+    ext m
+    simp only [C_iso_toFun_toFun, Subsemiring.coe_add, Subalgebra.coe_toSubsemiring,
+      Subalgebra.coe_centralizer, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply, mul_add]
+  commutes' := fun k ↦ by
+    ext m
+    simp only [C_iso_toFun_toFun]
+    change m * _ = k • m
+    simp only [Subalgebra.coe_algebraMap]
+    unfold A_inst at *
+    rw [← Algebra.commutes (R := K) k m, Algebra.smul_def]
+
+lemma C_iso_inj (B : Subalgebra K A): Function.Injective
+    (C_iso_toFun K A B) := RingHom.injective_iff_ker_eq_bot (C_iso_toFun K A B)|>.2 $ by
+  ext ⟨c, hc⟩
+  constructor
+  · intro hhc
+    -- change c = 0
+    change C_iso_toFun K A B ⟨c, hc⟩ = (0 : Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) at hhc
+    simp only [C_iso_toFun, C_iso_toFun_toFun, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
+      OneHom.coe_mk, Submonoid.mk_smul] at hhc
+    have : c = 0 := by
+      have := DFunLike.ext_iff.1 hhc (1 : A)
+      change 1 * c = 0 at this
+      simp only [one_mul] at this ⊢
+      exact this
+    change ⟨c, hc⟩ = (0 : Subalgebra.centralizer K B)
+    exact Eq.symm $ SetCoe.ext (id this.symm)
+  · intro hhc
+    simp only [Ideal.mem_bot] at hhc ⊢
+    simp only [hhc, Submodule.zero_mem]
+
+lemma C_iso_surj: Function.Surjective (C_iso_toFun K A B) := by
+  intro l
+  let c := l 1
+  have eq1 : ∀(b : B), l (((1 : A) ⊗ₜ[K] (op b)) • 1) = l b.1 := fun b ↦ by
+    change l (inclusion1 K A B _ _) = _
+    rw [inclusion1_apply]
+    simp only [mul_one, unop_op, one_mul]
+  have eq2 : ∀(b : B), b.1 * c = b.1 ⊗ₜ[K] (1 : Bᵐᵒᵖ) • c := fun b ↦ by
+    change  _ = inclusion1 K A B _ _
+    rw [inclusion1_apply]
+    simp only [unop_one, OneMemClass.coe_one, mul_one]
+  have eq3 : ∀(b : B), l (b.1 ⊗ₜ[K] (1 : Bᵐᵒᵖ) • 1) = l b.1 := fun b ↦ by
+    change l (inclusion1 K A B _ _) = _
+    rw [inclusion1_apply]
+    simp only [mul_one, unop_one, OneMemClass.coe_one]
+  have eq4 : ∀(b : B), c * b.1 = (1 : A) ⊗ₜ[K] (op b) • c := fun b ↦ by
+    change _ = inclusion1 K A B _ _
+    rw [inclusion1_apply]
+    simp only [one_mul, unop_op]
+  have abel1: ∀(b : B), b.1 * c = l b.1 := fun b ↦ by
+    rw [eq2]
+    change _ • l 1 = _
+    rw [← LinearMap.map_smul, eq3]
+  have abelll: ∀(b : B), b.1 * c = c * b.1 := fun b ↦ by
+    rw [abel1, eq4, show c = l 1 from rfl, ← LinearMap.map_smul, eq1]
+  have hc : c ∈ Subalgebra.centralizer (A := A) K B := by
+    rw [Subalgebra.mem_centralizer_iff]
+    unfold A_inst at *
+    convert abelll using 1
+    simp_all only [LinearMapClass.map_smul, Subtype.forall, SetLike.coe_mem, Subtype.coe_eta, SetLike.mem_coe,
+      implies_true, c]
+  use ⟨c, hc⟩
+  ext (a : A)
+  simp only [C_iso_toFun, C_iso_toFun_toFun, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
+    OneHom.coe_mk, LinearMap.coe_mk, AddHom.coe_mk]
+  rw [show a * c = (a : A) ⊗ₜ[K] (1 : Bᵐᵒᵖ) • c by
+    change _ = inclusion1 K A B _ _
+    rw [inclusion1_apply]; simp only [unop_one, OneMemClass.coe_one, mul_one],
+    show c = l 1 from rfl, ← LinearMap.map_smul]
+  change l (inclusion1 K A B _ _) = _
+  rw [inclusion1_apply]
+  simp only [mul_one, unop_one, OneMemClass.coe_one]
+
+def C_iso (B : Subalgebra K A) [IsSimpleOrder (RingCon B)]:
+    (Subalgebra.centralizer (A := A) K B) ≃ₐ[K]
+    Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) :=
+  AlgEquiv.ofBijective (C_iso_toFun K A B) ⟨C_iso_inj K A B, C_iso_surj K A B⟩
+
+section centralsimple
+
+variable [hA : IsCentralSimple K A] [FiniteDimensional K A] [IsSimpleOrder (RingCon B)]
+
+instance : IsSimpleOrder (RingCon (A ⊗[K] Bᵐᵒᵖ)) :=
+  (OrderIso.isSimpleOrder_iff (RingCon.orderIsoOfRingEquiv
+    (Algebra.TensorProduct.comm K A Bᵐᵒᵖ))).2 $
+    @IsCentralSimple.TensorProduct.simple K _ Bᵐᵒᵖ A _ _ _ _ _ hA
+
+instance : FiniteDimensional K (A ⊗[K] Bᵐᵒᵖ) := inferInstance
+
+lemma centralizer_is_simple : IsSimpleOrder (RingCon (Subalgebra.centralizer (A := A) K B)) := sorry
+
+
+end centralsimple
+
+--GIVE UPPPPPPPPP
 -- lemma finiteM: Module.Finite A M := by
 --   have i : Submodule.IsPrincipal (⊤ : Submodule A M) := inferInstance
 --   refine ⟨⟨{i.1.choose}, ?_⟩⟩
