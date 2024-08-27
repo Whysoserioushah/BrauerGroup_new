@@ -397,7 +397,52 @@ instance : IsSimpleOrder (RingCon (A ⊗[K] Bᵐᵒᵖ)) :=
 
 instance : FiniteDimensional K (A ⊗[K] Bᵐᵒᵖ) := inferInstance
 
-lemma centralizer_is_simple : IsSimpleOrder (RingCon (Subalgebra.centralizer (A := A) K B)) := sorry
+set_option synthInstance.maxHeartbeats 40000 in
+instance : Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) := inferInstance 
+
+variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
+instance : HSMul (A ⊗[K] (↥B)ᵐᵒᵖ) (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) 
+    (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) where
+  hSMul := fun x mn ↦ {
+    toFun := fun im ↦ {
+      support := im.support
+      toFun := fun i ↦ x • im i
+      mem_support_toFun := fun j ↦ sorry
+    }
+    map_add' := sorry
+    map_smul' := 
+    sorry
+  }
+
+variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
+instance modK: Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) where
+  smul k := fun x ↦ algebraMap K (A ⊗[K] Bᵐᵒᵖ) k • x 
+  one_smul := sorry
+  mul_smul := sorry
+  smul_zero := sorry
+  smul_add := sorry
+  add_smul := sorry
+  zero_smul := sorry
+
+variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
+instance isring : Ring (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) := inferInstance
+
+variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
+instance : Algebra K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) := sorry
+-- {
+--   modK K A B ι M, isring K A B ι M with
+--   <;> sorry
+-- }
+
+lemma centralizer_is_simple : IsSimpleOrder (RingCon (Subalgebra.centralizer (A := A) K B)) := by 
+  haveI := hA.2
+  obtain ⟨M, _, _, _, ι, ⟨iso⟩⟩:= directSum_simple_module_over_simple_ring K (A ⊗[K] Bᵐᵒᵖ) $ 
+    A_inst K A B
+  let D := Module.End (A ⊗[K] Bᵐᵒᵖ) M 
+  have := C_iso K A B 
+  have e1 : Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) ≃ₗ[K] Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M) := sorry
+  
+  sorry
 
 
 end centralsimple
