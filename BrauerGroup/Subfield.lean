@@ -1,4 +1,5 @@
 import BrauerGroup.SkolemNoether
+import BrauerGroup.Lemmas
 
 universe u
 
@@ -13,6 +14,19 @@ structure SubField (K A : Type u) [Field K] [Semiring A] [Algebra K A] extends S
 
 def IsMaximalSubfield (K A : Type u) [Field K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
   := ∀ (B : SubField K A), L.1 ≤ B.1 → B = L
+
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempty (SubField K A) :=
+  ⟨⟨⊥, by
+    change IsField (⊥ : Subalgebra K A)
+    change IsField (Algebra.ofId K A).range
+    have e : K ≃ₐ[K] (Algebra.ofId K A).range := AlgEquiv.ofBijective
+      (Algebra.ofId K A).rangeRestrict ⟨by
+        suffices Function.Injective (Algebra.ofId K A) from
+          (AlgHom.injective_codRestrict (Algebra.ofId K A) (Algebra.ofId K A).range
+            (AlgHom.mem_range_self (Algebra.ofId K A))).2 this
+        exact NoZeroSMulDivisors.algebraMap_injective K A,
+        AlgHom.rangeRestrict_surjective (Algebra.ofId K A)⟩
+    exact IsField.ofRingEquiv K _ e.toRingEquiv $ Semifield.toIsField K ⟩⟩
 
 -- variable (K A N: Type u) [Field K] [Ring A] [Algebra K A] [AddCommGroup N] [Module A N]
 --     [Module K N]
@@ -398,10 +412,10 @@ instance : IsSimpleOrder (RingCon (A ⊗[K] Bᵐᵒᵖ)) :=
 instance : FiniteDimensional K (A ⊗[K] Bᵐᵒᵖ) := inferInstance
 
 set_option synthInstance.maxHeartbeats 40000 in
-instance : Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) := inferInstance 
+instance : Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) := inferInstance
 
 variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
-instance : HSMul (A ⊗[K] (↥B)ᵐᵒᵖ) (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) 
+instance : HSMul (A ⊗[K] (↥B)ᵐᵒᵖ) (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M))
     (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) where
   hSMul := fun x mn ↦ {
     toFun := fun im ↦ {
@@ -410,13 +424,13 @@ instance : HSMul (A ⊗[K] (↥B)ᵐᵒᵖ) (Module.End (A ⊗[K] Bᵐᵒᵖ) (�
       mem_support_toFun := fun j ↦ sorry
     }
     map_add' := sorry
-    map_smul' := 
+    map_smul' :=
     sorry
   }
 
 variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
 instance modK: Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) where
-  smul k := fun x ↦ algebraMap K (A ⊗[K] Bᵐᵒᵖ) k • x 
+  smul k := fun x ↦ algebraMap K (A ⊗[K] Bᵐᵒᵖ) k • x
   one_smul := sorry
   mul_smul := sorry
   smul_zero := sorry
@@ -434,19 +448,25 @@ instance : Algebra K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) := sorry
 --   <;> sorry
 -- }
 
-lemma centralizer_is_simple : IsSimpleOrder (RingCon (Subalgebra.centralizer (A := A) K B)) := by 
+lemma centralizer_is_simple : IsSimpleOrder (RingCon (Subalgebra.centralizer (A := A) K B)) := by
   haveI := hA.2
-  obtain ⟨M, _, _, _, ι, ⟨iso⟩⟩:= directSum_simple_module_over_simple_ring K (A ⊗[K] Bᵐᵒᵖ) $ 
+  obtain ⟨M, _, _, _, ι, ⟨iso⟩⟩:= directSum_simple_module_over_simple_ring K (A ⊗[K] Bᵐᵒᵖ) $
     A_inst K A B
-  let D := Module.End (A ⊗[K] Bᵐᵒᵖ) M 
-  have := C_iso K A B 
-  have e1 : Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) ≃ₗ[K] Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M) := sorry
-  
+  let D := Module.End (A ⊗[K] Bᵐᵒᵖ) M
+  have := C_iso K A B
+  have e1 : Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) ≃ₐ[K] Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M) := sorry
+
   sorry
 
-
+-- def endEquivMat (R M ι: Type u) [Ring R] [AddCommGroup M] [Module R M] [DecidableEq ι] [Fintype ι]:
+--     Module.End R (ι → M) ≃ₗ[R] Matrix ι ι (Module.End R M) := sorry
 end centralsimple
 
+variable (K A : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [hA : IsCentralSimple K A] (B : Subalgebra K A)
+theorem doubleCentralizer: Subalgebra.centralizer (A := A) K
+    (Subalgebra.centralizer (A := A) K B) = B := by
+  sorry
 --GIVE UPPPPPPPPP
 -- lemma finiteM: Module.Finite A M := by
 --   have i : Submodule.IsPrincipal (⊤ : Submodule A M) := inferInstance
