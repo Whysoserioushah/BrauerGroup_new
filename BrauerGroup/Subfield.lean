@@ -446,15 +446,11 @@ instance : HSMul (A ⊗[K] (↥B)ᵐᵒᵖ) (Module.End (A ⊗[K] Bᵐᵒᵖ) (�
     sorry
   }
 
+set_option synthInstance.maxHeartbeats 40000 in
 variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
-instance modK: Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) where
-  smul k := fun x ↦ algebraMap K (A ⊗[K] Bᵐᵒᵖ) k • x
-  one_smul := sorry
-  mul_smul := sorry
-  smul_zero := sorry
-  smul_add := sorry
-  add_smul := sorry
-  zero_smul := sorry
+instance modK: Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) :=
+  -- Module.compHom (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) $ algebraMap K (A ⊗[K] Bᵐᵒᵖ)
+  sorry
 
 variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
 instance isring : Ring (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) := inferInstance

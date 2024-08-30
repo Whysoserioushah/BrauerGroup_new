@@ -105,7 +105,7 @@ section JacobsonNoether
 -- Jacobson-Noether
 
 variable (K K_bar: Type u) [Field K] [Field K_bar] [Algebra K K_bar] [IsAlgClosure K K_bar]
-
+-- #check algEquivMatrix
 theorem JacobsonNoether (D : Type u) [DivisionRing D] [Algebra K D] [Algebra.IsAlgebraic K D]
     [FiniteDimensional K D] (hD1 : FiniteDimensional.finrank K D > 1):
     ∃ x ∈ {x | (x ∉ (⊥ : Subalgebra K D))}, IsSeparable K x := by
