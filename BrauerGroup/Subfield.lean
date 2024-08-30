@@ -270,11 +270,10 @@ def C_iso_toFun_toFun (B : Subalgebra K A)
 
 lemma C_iso_mapmul (B : Subalgebra K A) :
     ∀(x y : Subalgebra.centralizer (A := A) K B), C_iso_toFun_toFun K A B (x * y) =
-    C_iso_toFun_toFun K A B x * C_iso_toFun_toFun K A B y := fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
+    C_iso_toFun_toFun K A B y * C_iso_toFun_toFun K A B x := fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
   ext a
   simp only [C_iso_toFun_toFun, Submonoid.mk_mul_mk, Submonoid.mk_smul, LinearMap.coe_mk,
-    AddHom.coe_mk, LinearMap.mul_apply, mul_smul]
-  sorry
+    AddHom.coe_mk, LinearMap.mul_apply, mul_smul, mul_assoc]
 
 abbrev ksmul : K → Module.End (A ⊗[K] (↥B)ᵐᵒᵖ) (A_inst K A B) → A_inst K A B →ₗ[A ⊗[K] (↥B)ᵐᵒᵖ]
     A_inst K A B := fun k l ↦ {
@@ -306,29 +305,43 @@ instance : Algebra K (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) where
     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.mul_apply,
       LinearMap.coe_mk, AddHom.coe_mk, LinearMap.map_smul_of_tower]
 
+set_option synthInstance.maxHeartbeats  40000 in
 /-- C →ₐ[K] End (B ⊗ L) M -/
 def C_iso_toFun (B : Subalgebra K A):
     (Subalgebra.centralizer (A := A) K B) →ₐ[K]
-    Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) where
-  toFun c := C_iso_toFun_toFun K A B c
+    (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B))ᵐᵒᵖ where
+  toFun c := MulOpposite.op $ C_iso_toFun_toFun K A B c
   map_one' := by
+    apply MulOpposite.unop_injective
     ext a
-    simp only [C_iso_toFun_toFun, OneMemClass.coe_one, mul_one, LinearMap.coe_mk, AddHom.coe_mk,
-      LinearMap.one_apply]
-  map_mul' := C_iso_mapmul K A B
+    simp only [C_iso_toFun_toFun, OneMemClass.coe_one, mul_one, unop_op, LinearMap.coe_mk,
+      AddHom.coe_mk, unop_one, LinearMap.one_apply]
+  map_mul' x y := by
+    apply MulOpposite.unop_injective
+    ext a
+    simp only [C_iso_toFun_toFun, Submonoid.coe_mul, Subsemiring.coe_toSubmonoid,
+      Subalgebra.coe_toSubsemiring, Subalgebra.coe_centralizer, unop_op, LinearMap.coe_mk,
+      AddHom.coe_mk, unop_mul, LinearMap.mul_apply, mul_assoc]
+
   map_zero' := by
-    ext
-    simp only [C_iso_toFun_toFun, ZeroMemClass.coe_zero, mul_zero, LinearMap.coe_mk, AddHom.coe_mk,
-      LinearMap.zero_apply]
-  map_add' := fun x y ↦ by
+    apply MulOpposite.unop_injective
+    ext a
+    simp only [C_iso_toFun_toFun, ZeroMemClass.coe_zero, mul_zero, unop_op, LinearMap.coe_mk,
+      AddHom.coe_mk, unop_zero, LinearMap.zero_apply]
+  map_add' x y := by
+    apply unop_injective
     ext m
     simp only [C_iso_toFun_toFun, Subsemiring.coe_add, Subalgebra.coe_toSubsemiring,
-      Subalgebra.coe_centralizer, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply, mul_add]
-  commutes' := fun k ↦ by
+      Subalgebra.coe_centralizer, mul_add, unop_op, LinearMap.coe_mk, AddHom.coe_mk, unop_add,
+      LinearMap.add_apply]
+  commutes' k := by
+    apply unop_injective
     ext m
-    simp only [C_iso_toFun_toFun]
-    change m * _ = k • m
-    simp only [Subalgebra.coe_algebraMap]
+    -- ext m
+    simp only [C_iso_toFun_toFun, Subalgebra.coe_algebraMap, unop_op, LinearMap.coe_mk,
+      AddHom.coe_mk, MulOpposite.algebraMap_apply, Module.algebraMap_end_apply]
+    -- change m * _ = k • m
+    -- simp only [Subalgebra.coe_algebraMap]
     unfold A_inst at *
     rw [← Algebra.commutes (R := K) k m, Algebra.smul_def]
 
@@ -397,7 +410,7 @@ lemma C_iso_surj: Function.Surjective (C_iso_toFun K A B) := by
 
 def C_iso (B : Subalgebra K A) [IsSimpleOrder (RingCon B)]:
     (Subalgebra.centralizer (A := A) K B) ≃ₐ[K]
-    Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) :=
+    (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B))ᵐᵒᵖ :=
   AlgEquiv.ofBijective (C_iso_toFun K A B) ⟨C_iso_inj K A B, C_iso_surj K A B⟩
 
 section centralsimple
