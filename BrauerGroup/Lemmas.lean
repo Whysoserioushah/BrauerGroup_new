@@ -1,9 +1,13 @@
 import Mathlib.RingTheory.TensorProduct.Basic
 import BrauerGroup.CentralSimple
+import Mathlib.FieldTheory.PurelyInseparable
+import Mathlib.RingTheory.IntegralClosure
 
 universe u
 
 open TensorProduct BigOperators
+
+section lemmapart1
 
 variable (A k : Type u) [Field k] [Ring A] [Algebra k A]
 
@@ -95,7 +99,65 @@ theorem center_is_ext (hA : IsCentralSimple k A) [FiniteDimensional k A] :
   exact IsField.ofRingEquiv _ _ e1.symm this
 
 -- variable (D : Type u) [DivisionRing D] [Algebra k D]
+end lemmapart1
 
+section JacobsonNoether
+-- Jacobson-Noether
 
+variable (K K_bar: Type u) [Field K] [Field K_bar] [Algebra K K_bar] [IsAlgClosure K K_bar]
 
--- theorem SkolemNoethoer
+theorem JacobsonNoether (D : Type u) [DivisionRing D] [Algebra K D] [Algebra.IsAlgebraic K D]
+    [FiniteDimensional K D] (hD1 : FiniteDimensional.finrank K D > 1):
+    ∃ x ∈ {x | (x ∉ (⊥ : Subalgebra K D))}, IsSeparable K x := by
+  haveI : Algebra.IsIntegral K D := Algebra.IsIntegral.of_finite K D
+  have hS : Nonempty {x | ¬ (x ∈ (⊥ : Subalgebra K D))} := by
+    by_contra! hh
+    simp only [Set.coe_setOf, nonempty_subtype, not_exists, not_not] at hh
+    have : (⊥ : Subalgebra K D) = ⊤ := by
+      ext x
+      simp_all only [gt_iff_lt, Algebra.mem_top]
+    have hD2 : FiniteDimensional.finrank K D = 1 := by
+      rw [← finrank_top K D]
+      convert LinearEquiv.finrank_eq (Subalgebra.equivOfEq _ _ this.symm).toLinearEquiv
+      exact Eq.symm Subalgebra.finrank_bot
+    omega
+  if hK : CharZero K then sorry
+  else
+  rw [CharZero.charZero_iff_forall_prime_ne_zero] at hK
+  simp only [ne_eq, not_forall, Classical.not_imp, not_not] at hK
+  obtain ⟨p, hp⟩ := hK
+  simp only [exists_prop] at hp
+  have : CharP K p := ⟨fun x ↦ ⟨by
+    intro hx
+
+    sorry, fun hhp ↦ by
+    obtain ⟨k, hk⟩ := hhp
+    have : (x : K) = (p : K) * (k : ℕ) := by
+      subst hk
+      simp_all only [Nat.cast_mul, zero_mul]
+    rw [this, hp.2, zero_mul] ⟩⟩
+  by_contra! hD
+  obtain ⟨⟨x, hx⟩⟩ := hS
+  specialize hD x hx
+  have : IsAlgebraic K x := ⟨minpoly K x, ⟨minpoly.ne_zero (Algebra.IsIntegral.isIntegral x),
+      minpoly.aeval K x⟩⟩
+  -- let Kx := AdjoinRoot (minpoly K x)
+  -- haveI : Field Kx := @AdjoinRoot.instField K _ (minpoly K x)
+  --   (by
+  --     suffices Irreducible (minpoly K x) by exact { out := this }
+  --     exact minpoly.irreducible (Algebra.IsIntegral.isIntegral x))
+  -- haveI : Algebra K Kx := sorry
+  -- haveI : FiniteDimensional K Kx := sorry
+  -- have hD3 : IsPurelyInseparable K Kx := {
+  --   isIntegral := Algebra.IsIntegral.of_finite K Kx
+  --   inseparable' := fun y hy ↦ by
+  --     change y ∈ (⊥ : Subalgebra K Kx)
+
+  --     sorry
+  -- }
+  let Kx := Subfield.closure {x}
+  haveI : DivisionRing Kx := inferInstance
+  -- have : IsPurelyInseparable K D := sorry
+  sorry
+
+end JacobsonNoether
