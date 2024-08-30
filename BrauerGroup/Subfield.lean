@@ -351,10 +351,12 @@ lemma C_iso_inj (B : Subalgebra K A): Function.Injective
   constructor
   · intro hhc
     -- change c = 0
-    change C_iso_toFun K A B ⟨c, hc⟩ = (0 : Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) at hhc
+    change C_iso_toFun K A B ⟨c, hc⟩ = (0 : (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B))ᵐᵒᵖ) at hhc
     simp only [C_iso_toFun, C_iso_toFun_toFun, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
       OneHom.coe_mk, Submonoid.mk_smul] at hhc
     have : c = 0 := by
+      apply op_injective at hhc
+      simp only at hhc
       have := DFunLike.ext_iff.1 hhc (1 : A)
       change 1 * c = 0 at this
       simp only [one_mul] at this ⊢
@@ -367,29 +369,29 @@ lemma C_iso_inj (B : Subalgebra K A): Function.Injective
 
 lemma C_iso_surj: Function.Surjective (C_iso_toFun K A B) := by
   intro l
-  let c := l 1
-  have eq1 : ∀(b : B), l (((1 : A) ⊗ₜ[K] (op b)) • 1) = l b.1 := fun b ↦ by
-    change l (inclusion1 K A B _ _) = _
+  let c := l.1 1
+  have eq1 : ∀(b : B), l.1 (((1 : A) ⊗ₜ[K] (op b)) • 1) = l.1 b.1 := fun b ↦ by
+    change l.1 (inclusion1 K A B _ _) = _
     rw [inclusion1_apply]
     simp only [mul_one, unop_op, one_mul]
   have eq2 : ∀(b : B), b.1 * c = b.1 ⊗ₜ[K] (1 : Bᵐᵒᵖ) • c := fun b ↦ by
     change  _ = inclusion1 K A B _ _
     rw [inclusion1_apply]
     simp only [unop_one, OneMemClass.coe_one, mul_one]
-  have eq3 : ∀(b : B), l (b.1 ⊗ₜ[K] (1 : Bᵐᵒᵖ) • 1) = l b.1 := fun b ↦ by
-    change l (inclusion1 K A B _ _) = _
+  have eq3 : ∀(b : B), l.1 (b.1 ⊗ₜ[K] (1 : Bᵐᵒᵖ) • 1) = l.1 b.1 := fun b ↦ by
+    change l.1 (inclusion1 K A B _ _) = _
     rw [inclusion1_apply]
     simp only [mul_one, unop_one, OneMemClass.coe_one]
   have eq4 : ∀(b : B), c * b.1 = (1 : A) ⊗ₜ[K] (op b) • c := fun b ↦ by
     change _ = inclusion1 K A B _ _
     rw [inclusion1_apply]
     simp only [one_mul, unop_op]
-  have abel1: ∀(b : B), b.1 * c = l b.1 := fun b ↦ by
+  have abel1: ∀(b : B), b.1 * c = l.1 b.1 := fun b ↦ by
     rw [eq2]
-    change _ • l 1 = _
+    change _ • l.1 1 = _
     rw [← LinearMap.map_smul, eq3]
   have abelll: ∀(b : B), b.1 * c = c * b.1 := fun b ↦ by
-    rw [abel1, eq4, show c = l 1 from rfl, ← LinearMap.map_smul, eq1]
+    rw [abel1, eq4, show c = l.1 1 from rfl, ← LinearMap.map_smul, eq1]
   have hc : c ∈ Subalgebra.centralizer (A := A) K B := by
     rw [Subalgebra.mem_centralizer_iff]
     unfold A_inst at *
@@ -397,16 +399,19 @@ lemma C_iso_surj: Function.Surjective (C_iso_toFun K A B) := by
     simp_all only [LinearMapClass.map_smul, Subtype.forall, SetLike.coe_mem, Subtype.coe_eta, SetLike.mem_coe,
       implies_true, c]
   use ⟨c, hc⟩
+  apply unop_injective
   ext (a : A)
   simp only [C_iso_toFun, C_iso_toFun_toFun, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-    OneHom.coe_mk, LinearMap.coe_mk, AddHom.coe_mk]
+    OneHom.coe_mk, unop_op, LinearMap.coe_mk, AddHom.coe_mk]
+
   rw [show a * c = (a : A) ⊗ₜ[K] (1 : Bᵐᵒᵖ) • c by
     change _ = inclusion1 K A B _ _
     rw [inclusion1_apply]; simp only [unop_one, OneMemClass.coe_one, mul_one],
-    show c = l 1 from rfl, ← LinearMap.map_smul]
-  change l (inclusion1 K A B _ _) = _
+    show c = l.1 1 from rfl, ← LinearMap.map_smul]
+  change l.1 (inclusion1 K A B _ _) = _
   rw [inclusion1_apply]
   simp only [mul_one, unop_one, OneMemClass.coe_one]
+  rfl
 
 def C_iso (B : Subalgebra K A) [IsSimpleOrder (RingCon B)]:
     (Subalgebra.centralizer (A := A) K B) ≃ₐ[K]
