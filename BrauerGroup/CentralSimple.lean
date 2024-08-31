@@ -974,7 +974,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type*)
     [hbc : IsSimpleOrder (RingCon (B ⊗[K] C))] :
     IsSimpleOrder (RingCon B) := by
   have hB : Subsingleton B ∨ Nontrivial B := subsingleton_or_nontrivial B
-  have hC : Subsingleton C ∨ Nontrivial C := subsingleton_or_nontrivial B
+  have hC : Subsingleton C ∨ Nontrivial C := subsingleton_or_nontrivial C
   rcases hB with hB|hB
   · have : Subsingleton (B ⊗[K] C) := by
       rw [← subsingleton_iff_zero_eq_one, show (0 : B ⊗[K] C) = 0 ⊗ₜ 0 by simp,
