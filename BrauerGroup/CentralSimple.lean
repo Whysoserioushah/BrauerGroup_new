@@ -562,6 +562,25 @@ lemma center_tensorProduct [Small.{v, u} K]
   rw [eq5] at this
   rw [this]
 
+noncomputable def centerTensor [Small.{v, u} K]
+    (B C : Type v) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
+    Subalgebra.center K B ⊗[K] Subalgebra.center K C ≃ₗ[K]
+    Subalgebra.center K (B ⊗[K] C) :=
+  LinearEquiv.ofBijective
+    (TensorProduct.lift
+      { toFun := fun b =>
+        { toFun := fun c => ⟨b ⊗ₜ c, sorry⟩
+          map_add' := by sorry
+          map_smul' := by sorry }
+        map_add' := by sorry
+        map_smul' := by sorry })
+    ⟨by
+      rw [← LinearMap.ker_eq_bot]
+      rw [eq_bot_iff]
+      intro x hx
+      change _ = 0 at hx
+      sorry, sorry⟩
+
 lemma TensorProduct.isCentral [Small.{v, u} K]
     (A B : Type v) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     (isCentral_A : Subalgebra.center K A ≤ ⊥)

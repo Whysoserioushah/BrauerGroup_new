@@ -44,151 +44,139 @@ lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (_ : IsCentralSimpl
     tauto
   simp; tauto
 
-lemma RingCon_Injective_top [FiniteDimensional k K] {I : RingCon A}
-    (Is_CSA : IsCentralSimple K (K ⊗[k] A))
-    (h : (RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i} : RingCon (K ⊗[k] A)) = ⊤) :
-    I = ⊤ := by
-  let f : RingCon A → RingCon (K ⊗[k] A) :=
-    fun I => RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i}
-  let g : RingCon (K ⊗[k] A) → RingCon A :=
-    fun J => RingCon.span {x| 1 ⊗ₜ x ∈ J}
-  have hf : Function.Injective f := by
-    apply Function.LeftInverse.injective (g := g)
-    intro J
-    apply LE.le.antisymm'
-    · simp [f, g]
-      rw [le_iff]
-      intro a ha
-      simp only [SetLike.mem_coe]
-      suffices a ∈ {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}} by
-        have := subset_span {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}}
-        apply this
-        tauto
-      simp only [Set.mem_setOf_eq]
-      suffices (1 : K) ⊗ₜ[k] a ∈ {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i} by
-        have := subset_span {x | ∃ a : K, ∃ i ∈ J, x = a ⊗ₜ[k] i}
-        apply this
-        tauto
-      simp only [Set.mem_setOf_eq]
-      tauto
-    · simp only [g, f]
-      rw [← span_le]
-      intro x hx
-      simp only [Set.mem_setOf_eq] at hx
-      simp only [SetLike.mem_coe]
-      -- rw [le_iff]
-      -- intro a ha
-      -- obtain ⟨ι, m, xA, yA, hι, ha'⟩ := RingCon.mem_span_iff_exists_fin
-      --   {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}} a|>.1 ha
-      sorry
-  suffices f ⊤ = ⊤ by rw [← this] at h; tauto
-  rw [← top_le_iff, le_iff]
-  intro x _
-  simp only [SetLike.mem_coe, f]
-  induction x using TensorProduct.induction_on with
-  | zero =>
-    exact RingCon.zero_mem _
-  | tmul b c =>
-    suffices b ⊗ₜ[k] c ∈ ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A)) by
-      have := subset_span ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A))
-      apply this; tauto
-    use b; use c; tauto
-  | add b c hb hc =>
-    simp only [SetLike.mem_coe] at hb hc
-    exact add_mem _ (hb (show b ∈ ⊤ by tauto)) (hc (show c ∈ ⊤ by tauto))
+-- lemma RingCon_Injective_top [FiniteDimensional k K] {I : RingCon A}
+--     (Is_CSA : IsCentralSimple K (K ⊗[k] A))
+--     (h : (RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i} : RingCon (K ⊗[k] A)) = ⊤) :
+--     I = ⊤ := by
+--   let f : RingCon A → RingCon (K ⊗[k] A) :=
+--     fun I => RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i}
+--   let g : RingCon (K ⊗[k] A) → RingCon A :=
+--     fun J => RingCon.span {x| 1 ⊗ₜ x ∈ J}
+--   have hf : Function.Injective f := by
+--     apply Function.LeftInverse.injective (g := g)
+--     intro J
+--     apply LE.le.antisymm'
+--     · simp [f, g]
+--       rw [le_iff]
+--       intro a ha
+--       simp only [SetLike.mem_coe]
+--       suffices a ∈ {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}} by
+--         have := subset_span {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}}
+--         apply this
+--         tauto
+--       simp only [Set.mem_setOf_eq]
+--       suffices (1 : K) ⊗ₜ[k] a ∈ {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i} by
+--         have := subset_span {x | ∃ a : K, ∃ i ∈ J, x = a ⊗ₜ[k] i}
+--         apply this
+--         tauto
+--       simp only [Set.mem_setOf_eq]
+--       tauto
+--     · simp only [g, f]
+--       rw [← span_le]
+--       intro x hx
+--       simp only [Set.mem_setOf_eq] at hx
+--       simp only [SetLike.mem_coe]
+--       -- rw [le_iff]
+--       -- intro a ha
+--       -- obtain ⟨ι, m, xA, yA, hι, ha'⟩ := RingCon.mem_span_iff_exists_fin
+--       --   {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}} a|>.1 ha
+--       sorry
+--   suffices f ⊤ = ⊤ by rw [← this] at h; tauto
+--   rw [← top_le_iff, le_iff]
+--   intro x _
+--   simp only [SetLike.mem_coe, f]
+--   induction x using TensorProduct.induction_on with
+--   | zero =>
+--     exact RingCon.zero_mem _
+--   | tmul b c =>
+--     suffices b ⊗ₜ[k] c ∈ ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A)) by
+--       have := subset_span ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A))
+--       apply this; tauto
+--     use b; use c; tauto
+--   | add b c hb hc =>
+--     simp only [SetLike.mem_coe] at hb hc
+--     exact add_mem _ (hb (show b ∈ ⊤ by tauto)) (hc (show c ∈ ⊤ by tauto))
 
 set_option synthInstance.maxHeartbeats 50000 in
-theorem is_simple_A [FiniteDimensional k A] [FiniteDimensional k K]
+theorem is_simple_A
     (hAt : IsCentralSimple K (K ⊗[k] A)):
     IsSimpleOrder (RingCon A) := by
   haveI := hAt.2
   apply IsSimpleRing.right_of_tensor k K A
 
-lemma one_tensor_bot_Algebra [FiniteDimensional k K] {x : A} (Is_CSA : IsCentralSimple K (K ⊗[k] A))
-    (sim : IsSimpleOrder (RingCon A))
-    (h : 1 ⊗ₜ[k] x ∈ (⊥ : Subalgebra K (K ⊗[k] A))) : x ∈ (⊥ : Subalgebra k A) := by
-  --rw [Algebra.mem_bot] at h ⊢
-  --simp only [Set.mem_range, Algebra.id.map_eq_id, RingHom.id_apply] at h ⊢
-  -- obtain ⟨y, hy⟩ := h
-  -- rw [Algebra.algebraMap_eq_smul_one, Algebra.TensorProduct.one_def,
-  --   TensorProduct.smul_tmul'] at hy
-  -- simp_rw [Algebra.algebraMap_eq_smul_one]
-  -- sorry
-  have h' : 1 ⊗ₜ[k] x ∈ Subalgebra.center K (K ⊗[k] A) := by
-    simp only [IsCentralSimple.center_eq K (K ⊗[k] A), h]
-  simp only [Subalgebra.mem_center_iff] at h'
-  have h'' := fun a ↦ h' (1 ⊗ₜ[k] a)
-  simp_rw [Algebra.TensorProduct.tmul_mul_tmul, one_mul] at h''
-  have hx : ∀(a : A), a * x = x * a := fun a ↦ by
-    have inj: Function.Injective
-      (Algebra.TensorProduct.includeRight (R := k) (B := A) (A := K)) := by
-      have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective A|>.1 sim
-      specialize @H (K ⊗[k]A) _ (Algebra.TensorProduct.includeRight (R := k) (B := A) (A := K))
-      refine H.resolve_left fun rid => ?_
-      rw [eq_top_iff, RingCon.le_iff] at rid
-      specialize @rid 1 ⟨⟩
-      simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
-        one_ne_zero] at rid
-    exact inj (h'' a)
-  rw [← Subalgebra.mem_center_iff (R := k)] at hx
-  sorry
--- K ⊗ A <----> A
-
-example : RingCon (K ⊗[k] A) ≃ RingCon A where
-  toFun I := I.comap (f := (Algebra.TensorProduct.includeRight : A →ₐ[k] (K ⊗[k] A)).toRingHom)
-  invFun J := RingCon.span { z | ∃ (a : J), z = 1 ⊗ₜ a.1 }
-  left_inv I := by
-    simp only
-    refine le_antisymm ?_ ?_
-    · rw [← RingCon.span_le]
-      rintro _ ⟨⟨a, ha⟩, b, rfl⟩
-      simp only [AlgHom.toRingHom_eq_coe, mem_comap, RingHom.coe_coe,
-        Algebra.TensorProduct.includeRight_apply] at ha
-      simp only [SetLike.mem_coe]
-      exact ha
-      -- rw [show b ⊗ₜ[k] a = (b ⊗ₜ[k] (1 : A)) • (1 ⊗ₜ a) by simp]
-      -- exact I.smul_mem _ ha
-    · rw [le_iff]
-      intro x hx
-      induction x using TensorProduct.induction_on with
-      | zero => exact RingCon.zero_mem _
-      | tmul a b =>
-        suffices ((1 : K) ⊗ₜ[k] b) ∈
-          RingCon.span {z | ∃ a : I.comap (Algebra.TensorProduct.includeRight : A →ₐ[k] (K ⊗[k] A)).toRingHom,
-            z = 1 ⊗ₜ[k] ↑a} by
-
-          sorry
-        refine RingCon.subset_span _ ?_
-        simp only [AlgHom.toRingHom_eq_coe, Subtype.exists, mem_comap, RingHom.coe_coe,
-          Algebra.TensorProduct.includeRight_apply, exists_prop, Set.mem_setOf_eq]
-        refine ⟨b, ?_⟩
-        -- simp only [AlgHom.toRingHom_eq_coe, Subtype.exists, mem_comap, RingHom.coe_coe,
-        --   Algebra.TensorProduct.includeRight_apply, exists_prop, SetLike.mem_coe]
-        sorry
-      | add => sorry
-      -- change (I : Set _) ⊆ _
-      sorry
-  right_inv := _
-
-theorem centralsimple_over_extension_iff [FiniteDimensional k K]:
+set_option synthInstance.maxHeartbeats 40000 in
+theorem centralsimple_over_extension_iff
+    [Nontrivial A]
+    [FiniteDimensional k A] [FiniteDimensional k K] :
     IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) where
   mp := fun hA ↦ IsCentralSimple.baseChange k A K
   mpr := fun hAt ↦ {
     is_central := by
-      obtain h := hAt.is_central
-      intro x hx
-      rw [Subalgebra.mem_center_iff] at hx
-      have h1 : ((1 : K) ⊗ₜ[k] x) ∈ Subalgebra.center K (K ⊗[k] A) := by
-        rw [Subalgebra.mem_center_iff]
-        intro b
-        induction b using TensorProduct.induction_on with
-        | zero => simp only [zero_mul, mul_zero]
-        | tmul b c =>
-          rw [Algebra.TensorProduct.tmul_mul_tmul, Algebra.TensorProduct.tmul_mul_tmul, mul_one,
-            one_mul, hx c]
-        | add b c hb hc => rw [add_mul, mul_add]; simp only [hb, hc]
-      exact one_tensor_bot_Algebra _ _ _ hAt (is_simple_A k A K hAt) (h h1)
-    is_simple := sorry -- is_simple_A k A K hAt
+      /-
+      let `Z(A)` denote the center of `A`,
+
+      if `Z(A) ≠ k`, then `1 < dim_k Z(A)`
+      we know `Z(K ⊗ₖ A) = K ⊗ₖ Z(A)`, so `dimₖ Z(K ⊗ₖ A) = dimₖ K * dimₖ Z(A)`
+      we want to show `K ⊗ₖ Z(A) = Z(K ⊗ₖ A) ≠ K`,
+      take `dimₖ` on both side
+      `lhs = dimₖ K * dimₖ Z(A)` and `rhs = dimₖ K` this works since `dimₖ Z(A) > 1`
+      -/
+      have hAt := hAt.1
+      by_contra h
+      simp only [le_bot_iff, ne_eq] at h
+      have : 1 < FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        have eq1 := Subalgebra.finrank_bot (F := k) (E := A)
+        have ineq1 := Submodule.finrank_lt_finrank_of_lt
+          (s := Subalgebra.toSubmodule (⊥ : Subalgebra k A))
+          (t := Subalgebra.toSubmodule (Subalgebra.center k A)) (by
+          simp only [OrderEmbedding.lt_iff_lt]
+          rw [bot_lt_iff_ne_bot]
+          exact h)
+        erw [eq1] at ineq1
+        exact ineq1
+      have h : (Subalgebra.center k (K ⊗[k] A) : Set (K ⊗[k] A)) =
+          Subalgebra.center K (K ⊗[k] A) := by
+        ext x
+        simp only [SetLike.mem_coe, Subalgebra.mem_center_iff]
+
+      have e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A)  := by
+        refine LinearEquiv.ofBijective (TensorProduct.lift
+          { toFun := fun a =>
+            { toFun := fun b => ⟨a ⊗ₜ b.1, ?_⟩
+              map_add' := ?map_add'
+              map_smul' := ?map_smul' }
+            map_add' := ?map_add'
+            map_smul' := ?map_smul' }) ?_
+        sorry
+      sorry }
+#exit
+      have eq1 : FiniteDimensional.finrank k (Subalgebra.center k (K ⊗[k] A)) =
+                FiniteDimensional.finrank k K *
+                FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        rw [LinearEquiv.finrank_eq e, FiniteDimensional.finrank_tensorProduct]
+      have eq2 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+                FiniteDimensional.finrank k K *
+                FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        rw [← eq1]; congr
+      have eq3 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+                FiniteDimensional.finrank k K *
+                FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
+        rw [FiniteDimensional.finrank_mul_finrank]
+
+      have eq4 : FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
+        simp only [le_bot_iff] at hAt
+        rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
+
+      rw [eq4, mul_one] at eq3
+      rw [eq3] at eq2
+      have ineq0 : 0 < FiniteDimensional.finrank k K := FiniteDimensional.finrank_pos
+      have ineq1 :
+        FiniteDimensional.finrank k K <
+        FiniteDimensional.finrank k K * FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        apply lt_mul_right <;> assumption
+      conv_lhs at ineq1 => rw [eq2]
+      exact Nat.lt_irrefl _ ineq1
+    is_simple := is_simple_A k A K hAt
     }
 
 def extension_CSA (A : CSA k) [FiniteDimensional k K]: CSA K where
