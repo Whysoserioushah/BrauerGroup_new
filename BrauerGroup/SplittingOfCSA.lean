@@ -20,29 +20,29 @@ open RingCon
 instance module_over_over (A : CSA k) (I : RingCon A):
     Module k I := Module.compHom I (algebraMap k A)
 
-lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (_ : IsCentralSimple K (K ⊗[k] A))
-  (h : 1 ⊗ₜ[k] x ∈ (⊥ : RingCon (K ⊗[k] A))) :
-    x ∈ (⊥ : RingCon A) := by
-  let h1 : k ⊗[k] A ≃ₐ[k] A := Algebra.TensorProduct.lid _ _
-  let h2 : k →ₗ[k] K := {
-    toFun := algebraMap k K
-    map_add' := by simp only [map_add, implies_true]
-    map_smul' := by intro x y; simp only [smul_eq_mul, map_mul, RingHom.id_apply, Algebra.smul_def]
-  }
-  have h4 : Function.Injective (LinearMap.rTensor A h2) := by
-    apply Module.Flat.rTensor_preserves_injective_linearMap
-    simp only [LinearMap.coe_mk, AddHom.coe_mk, h2]
-    exact Basis.algebraMap_injective (FiniteDimensional.finBasis k K)
-  suffices x = 0 by tauto
-  suffices (1 : k) ⊗ₜ[k] x = 0 by
-    obtain h := map_zero h1
-    rw [← this, Algebra.TensorProduct.lid_tmul, Algebra.smul_def] at h
-    simp_all
-  suffices (algebraMap k K) 1 ⊗ₜ[k] x = 0 by
-    have h : (LinearMap.rTensor A h2) (1 ⊗ₜ[k] x) = (algebraMap k K) 1 ⊗ₜ[k] x := by tauto
-    rw [this, show 0 = (LinearMap.rTensor A h2) 0 by simp ] at h
-    tauto
-  simp; tauto
+-- lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (_ : IsCentralSimple K (K ⊗[k] A))
+--   (h : 1 ⊗ₜ[k] x ∈ (⊥ : RingCon (K ⊗[k] A))) :
+--     x ∈ (⊥ : RingCon A) := by
+--   let h1 : k ⊗[k] A ≃ₐ[k] A := Algebra.TensorProduct.lid _ _
+--   let h2 : k →ₗ[k] K := {
+--     toFun := algebraMap k K
+--     map_add' := by simp only [map_add, implies_true]
+--     map_smul' := by intro x y; simp only [smul_eq_mul, map_mul, RingHom.id_apply, Algebra.smul_def]
+--   }
+--   have h4 : Function.Injective (LinearMap.rTensor A h2) := by
+--     apply Module.Flat.rTensor_preserves_injective_linearMap
+--     simp only [LinearMap.coe_mk, AddHom.coe_mk, h2]
+--     exact Basis.algebraMap_injective (FiniteDimensional.finBasis k K)
+--   suffices x = 0 by tauto
+--   suffices (1 : k) ⊗ₜ[k] x = 0 by
+--     obtain h := map_zero h1
+--     rw [← this, Algebra.TensorProduct.lid_tmul, Algebra.smul_def] at h
+--     simp_all
+--   suffices (algebraMap k K) 1 ⊗ₜ[k] x = 0 by
+--     have h : (LinearMap.rTensor A h2) (1 ⊗ₜ[k] x) = (algebraMap k K) 1 ⊗ₜ[k] x := by tauto
+--     rw [this, show 0 = (LinearMap.rTensor A h2) 0 by simp ] at h
+--     tauto
+--   simp; tauto
 
 -- lemma RingCon_Injective_top [FiniteDimensional k K] {I : RingCon A}
 --     (Is_CSA : IsCentralSimple K (K ⊗[k] A))
@@ -104,10 +104,28 @@ theorem is_simple_A
   haveI := hAt.2
   apply IsSimpleRing.right_of_tensor k K A
 
+theorem centralsimple_over_extension_iff_subsingleton
+    [Subsingleton A] [FiniteDimensional k A] [FiniteDimensional k K] :
+    IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) := by
+  have : Subsingleton (K ⊗[k] A) := by
+    rw [← subsingleton_iff_zero_eq_one, show (0 : K ⊗[k] A) = 0 ⊗ₜ 0 by simp,
+        show (1 : K ⊗[k] A) = 1 ⊗ₜ 1 by rfl, show (1 : A) = 0 from Subsingleton.elim _ _]
+    simp
+  constructor
+  · intro h
+    have := h.2
+    have : Nontrivial A := inferInstance
+    rw [← not_subsingleton_iff_nontrivial] at this
+    contradiction
+  · intro h
+    have := h.2
+    have : Nontrivial (K ⊗[k] A) := inferInstance
+    rw [← not_subsingleton_iff_nontrivial] at this
+    contradiction
+
 set_option synthInstance.maxHeartbeats 40000 in
-theorem centralsimple_over_extension_iff
-    [Nontrivial A]
-    [FiniteDimensional k A] [FiniteDimensional k K] :
+theorem centralsimple_over_extension_iff_nontrivial
+    [Nontrivial A] [FiniteDimensional k A] [FiniteDimensional k K] :
     IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) where
   mp := fun hA ↦ IsCentralSimple.baseChange k A K
   mpr := fun hAt ↦ {
@@ -129,55 +147,53 @@ theorem centralsimple_over_extension_iff
           Subalgebra.center K (K ⊗[k] A) := by
         ext x
         simp only [SetLike.mem_coe, Subalgebra.mem_center_iff]
+      let e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A) :=
+        (TensorProduct.congr (Submodule.topEquiv.symm ≪≫ₗ
+          show _ ≃ₗ[k] Subalgebra.toSubmodule (Subalgebra.center k K) from LinearEquiv.ofLinear
+          (Submodule.inclusion (by simp)) (Submodule.inclusion (by simp)) rfl rfl)
+          (LinearEquiv.refl _ _)) ≪≫ₗ
+        (IsCentralSimple.centerTensor k K A)
+      have eq1 : FiniteDimensional.finrank k (Subalgebra.center k (K ⊗[k] A)) =
+                FiniteDimensional.finrank k K *
+                FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        rw [LinearEquiv.finrank_eq e.symm, FiniteDimensional.finrank_tensorProduct]
+      have eq2 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+                FiniteDimensional.finrank k K *
+                FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        rw [← eq1]; congr
+      have eq3 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+                FiniteDimensional.finrank k K *
+                FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
+        rw [FiniteDimensional.finrank_mul_finrank]
 
-      have e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A) := by
-        exact LinearEquiv.ofBijective (TensorProduct.lift {
-          toFun := fun a => {
-            toFun := fun b => ⟨a ⊗ₜ b.1, sorry⟩
-            map_add' := sorry
-            map_smul' := sorry
-          }
-          map_add' := sorry
-          map_smul' := sorry } ) ⟨sorry, sorry⟩
-      sorry
-    is_simple := is_simple_A k A K hAt}
+      have eq4 : FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
+        simp only [le_bot_iff] at hAt
+        rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
 
-    --   have eq1 : FiniteDimensional.finrank k (Subalgebra.center k (K ⊗[k] A)) =
-    --             FiniteDimensional.finrank k K *
-    --             FiniteDimensional.finrank k (Subalgebra.center k A) := by
-    --     rw [LinearEquiv.finrank_eq e, FiniteDimensional.finrank_tensorProduct]
-    --   have eq2 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-    --             FiniteDimensional.finrank k K *
-    --             FiniteDimensional.finrank k (Subalgebra.center k A) := by
-    --     rw [← eq1]; congr
-    --   have eq3 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-    --             FiniteDimensional.finrank k K *
-    --             FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
-    --     rw [FiniteDimensional.finrank_mul_finrank]
+      rw [eq4, mul_one] at eq3
+      rw [eq3] at eq2
+      have ineq0 : 0 < FiniteDimensional.finrank k K := FiniteDimensional.finrank_pos
+      have ineq1 :
+        FiniteDimensional.finrank k K <
+        FiniteDimensional.finrank k K * FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        apply lt_mul_right <;> assumption
+      conv_lhs at ineq1 => rw [eq2]
+      exact Nat.lt_irrefl _ ineq1
+    is_simple := is_simple_A k A K hAt }
 
-    --   have eq4 : FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
-    --     simp only [le_bot_iff] at hAt
-    --     rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
+theorem centralsimple_over_extension_iff
+    [FiniteDimensional k A] [FiniteDimensional k K] :
+    IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) := by
+  obtain h|h := subsingleton_or_nontrivial A
+  · apply centralsimple_over_extension_iff_subsingleton
+  · apply centralsimple_over_extension_iff_nontrivial
 
-    --   rw [eq4, mul_one] at eq3
-    --   rw [eq3] at eq2
-    --   have ineq0 : 0 < FiniteDimensional.finrank k K := FiniteDimensional.finrank_pos
-    --   have ineq1 :
-    --     FiniteDimensional.finrank k K <
-    --     FiniteDimensional.finrank k K * FiniteDimensional.finrank k (Subalgebra.center k A) := by
-    --     apply lt_mul_right <;> assumption
-    --   conv_lhs at ineq1 => rw [eq2]
-    --   exact Nat.lt_irrefl _ ineq1
-    -- is_simple := is_simple_A k A K hAt
-    -- }
-
-#exit
 def extension_CSA (A : CSA k) [FiniteDimensional k K]: CSA K where
   carrier := K ⊗[k] A
   is_central_simple := centralsimple_over_extension_iff k A K|>.1 A.is_central_simple
   fin_dim := Module.Finite.base_change k K A.carrier
 
-def extension_inv [Nontrivial A] (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K ⊗[k] A)]
+def extension_inv [FiniteDimensional k A] (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K ⊗[k] A)]
     [FiniteDimensional k K]: CSA k where
   carrier := A
   is_central_simple := centralsimple_over_extension_iff k A K|>.2 hT

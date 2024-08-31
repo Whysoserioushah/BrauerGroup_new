@@ -562,24 +562,42 @@ lemma center_tensorProduct [Small.{v, u} K]
   rw [eq5] at this
   rw [this]
 
+noncomputable def centerTensorCenter (B C : Type v) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
+    (Subalgebra.center K B ⊗[K] Subalgebra.center K C) →ₗ[K] (B ⊗[K] C) :=
+  TensorProduct.map (Subalgebra.val _).toLinearMap (Subalgebra.val _).toLinearMap
+
+lemma centerTensorCenter_injective (B C : Type v) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
+    Function.Injective (centerTensorCenter K B C) := by
+  have : centerTensorCenter K B C =
+    ((Subalgebra.center K B).val.toLinearMap.rTensor _) ∘ₗ
+    ((Subalgebra.center K C).val.toLinearMap.lTensor _) := by
+    ext; simp [centerTensorCenter]
+  rw [this]
+  apply Function.Injective.comp (g := (Subalgebra.center K B).val.toLinearMap.rTensor _)
+  · apply Module.Flat.rTensor_preserves_injective_linearMap
+    exact Subtype.val_injective
+  · apply Module.Flat.lTensor_preserves_injective_linearMap
+    exact Subtype.val_injective
+
 noncomputable def centerTensor [Small.{v, u} K]
     (B C : Type v) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
     Subalgebra.center K B ⊗[K] Subalgebra.center K C ≃ₗ[K]
     Subalgebra.center K (B ⊗[K] C) :=
-  LinearEquiv.ofBijective
-    (TensorProduct.lift
-      { toFun := fun b =>
-        { toFun := fun c => ⟨b ⊗ₜ c, sorry⟩
-          map_add' := by sorry
-          map_smul' := by sorry }
-        map_add' := by sorry
-        map_smul' := by sorry })
-    ⟨by
-      rw [← LinearMap.ker_eq_bot]
-      rw [eq_bot_iff]
-      intro x hx
-      change _ = 0 at hx
-      sorry, sorry⟩
+    LinearEquiv.ofInjective (centerTensorCenter K B C) (centerTensorCenter_injective K B C) ≪≫ₗ
+    (show _ ≃ₗ[K] Subalgebra.toSubmodule (Subalgebra.center K (B ⊗[K] C)) from LinearEquiv.ofLinear
+      (Submodule.inclusion (by
+        rw [center_tensorProduct]
+        intro x hx
+        simp only [LinearMap.mem_range, Subalgebra.mem_toSubmodule, AlgHom.mem_range] at hx ⊢
+        obtain ⟨y, rfl⟩ := hx
+        refine ⟨y, rfl⟩))
+      (Submodule.inclusion (by
+        intro x hx
+        simp only [Subalgebra.mem_toSubmodule, LinearMap.mem_range] at hx ⊢
+        rw [center_tensorProduct] at hx
+        simp only [AlgHom.mem_range] at hx
+        obtain ⟨y, rfl⟩ := hx
+        refine ⟨y, rfl⟩)) rfl rfl)
 
 lemma TensorProduct.isCentral [Small.{v, u} K]
     (A B : Type v) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
