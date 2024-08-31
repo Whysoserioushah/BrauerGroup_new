@@ -112,15 +112,6 @@ theorem centralsimple_over_extension_iff
   mp := fun hA ↦ IsCentralSimple.baseChange k A K
   mpr := fun hAt ↦ {
     is_central := by
-      /-
-      let `Z(A)` denote the center of `A`,
-
-      if `Z(A) ≠ k`, then `1 < dim_k Z(A)`
-      we know `Z(K ⊗ₖ A) = K ⊗ₖ Z(A)`, so `dimₖ Z(K ⊗ₖ A) = dimₖ K * dimₖ Z(A)`
-      we want to show `K ⊗ₖ Z(A) = Z(K ⊗ₖ A) ≠ K`,
-      take `dimₖ` on both side
-      `lhs = dimₖ K * dimₖ Z(A)` and `rhs = dimₖ K` this works since `dimₖ Z(A) > 1`
-      -/
       have hAt := hAt.1
       by_contra h
       simp only [le_bot_iff, ne_eq] at h
@@ -139,52 +130,54 @@ theorem centralsimple_over_extension_iff
         ext x
         simp only [SetLike.mem_coe, Subalgebra.mem_center_iff]
 
-      have e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A)  := by
-        refine LinearEquiv.ofBijective (TensorProduct.lift
-          { toFun := fun a =>
-            { toFun := fun b => ⟨a ⊗ₜ b.1, ?_⟩
-              map_add' := ?map_add'
-              map_smul' := ?map_smul' }
-            map_add' := ?map_add'
-            map_smul' := ?map_smul' }) ?_
-        sorry
-      sorry }
+      have e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A) := by
+        exact LinearEquiv.ofBijective (TensorProduct.lift {
+          toFun := fun a => {
+            toFun := fun b => ⟨a ⊗ₜ b.1, sorry⟩
+            map_add' := sorry
+            map_smul' := sorry
+          }
+          map_add' := sorry
+          map_smul' := sorry } ) ⟨sorry, sorry⟩
+      sorry
+    is_simple := is_simple_A k A K hAt}
+
+    --   have eq1 : FiniteDimensional.finrank k (Subalgebra.center k (K ⊗[k] A)) =
+    --             FiniteDimensional.finrank k K *
+    --             FiniteDimensional.finrank k (Subalgebra.center k A) := by
+    --     rw [LinearEquiv.finrank_eq e, FiniteDimensional.finrank_tensorProduct]
+    --   have eq2 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+    --             FiniteDimensional.finrank k K *
+    --             FiniteDimensional.finrank k (Subalgebra.center k A) := by
+    --     rw [← eq1]; congr
+    --   have eq3 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+    --             FiniteDimensional.finrank k K *
+    --             FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
+    --     rw [FiniteDimensional.finrank_mul_finrank]
+
+    --   have eq4 : FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
+    --     simp only [le_bot_iff] at hAt
+    --     rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
+
+    --   rw [eq4, mul_one] at eq3
+    --   rw [eq3] at eq2
+    --   have ineq0 : 0 < FiniteDimensional.finrank k K := FiniteDimensional.finrank_pos
+    --   have ineq1 :
+    --     FiniteDimensional.finrank k K <
+    --     FiniteDimensional.finrank k K * FiniteDimensional.finrank k (Subalgebra.center k A) := by
+    --     apply lt_mul_right <;> assumption
+    --   conv_lhs at ineq1 => rw [eq2]
+    --   exact Nat.lt_irrefl _ ineq1
+    -- is_simple := is_simple_A k A K hAt
+    -- }
+
 #exit
-      have eq1 : FiniteDimensional.finrank k (Subalgebra.center k (K ⊗[k] A)) =
-                FiniteDimensional.finrank k K *
-                FiniteDimensional.finrank k (Subalgebra.center k A) := by
-        rw [LinearEquiv.finrank_eq e, FiniteDimensional.finrank_tensorProduct]
-      have eq2 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-                FiniteDimensional.finrank k K *
-                FiniteDimensional.finrank k (Subalgebra.center k A) := by
-        rw [← eq1]; congr
-      have eq3 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-                FiniteDimensional.finrank k K *
-                FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
-        rw [FiniteDimensional.finrank_mul_finrank]
-
-      have eq4 : FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
-        simp only [le_bot_iff] at hAt
-        rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
-
-      rw [eq4, mul_one] at eq3
-      rw [eq3] at eq2
-      have ineq0 : 0 < FiniteDimensional.finrank k K := FiniteDimensional.finrank_pos
-      have ineq1 :
-        FiniteDimensional.finrank k K <
-        FiniteDimensional.finrank k K * FiniteDimensional.finrank k (Subalgebra.center k A) := by
-        apply lt_mul_right <;> assumption
-      conv_lhs at ineq1 => rw [eq2]
-      exact Nat.lt_irrefl _ ineq1
-    is_simple := is_simple_A k A K hAt
-    }
-
 def extension_CSA (A : CSA k) [FiniteDimensional k K]: CSA K where
   carrier := K ⊗[k] A
   is_central_simple := centralsimple_over_extension_iff k A K|>.1 A.is_central_simple
   fin_dim := Module.Finite.base_change k K A.carrier
 
-def extension_inv (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K ⊗[k] A)]
+def extension_inv [Nontrivial A] (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K ⊗[k] A)]
     [FiniteDimensional k K]: CSA k where
   carrier := A
   is_central_simple := centralsimple_over_extension_iff k A K|>.2 hT
