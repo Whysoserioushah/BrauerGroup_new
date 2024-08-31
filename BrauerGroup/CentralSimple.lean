@@ -1005,8 +1005,77 @@ lemma isSimpleOrder_iff (α : Type*) [LE α] [BoundedOrder α] :
   · intro h; refine ⟨inferInstance, fun a => h.2 a⟩
   · rintro ⟨h, h'⟩; constructor; exact h'
 
+class Module.FaithfullyFlat (R : Type u) (M : Type v)
+    [CommRing R] [AddCommGroup M] [Module R M] : Prop where
+  out :
+    ∀ (N₁ N₂ N₃ : Type w) [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃]
+    [Module R N₁] [Module R N₂] [Module R N₃] (l₁₂ : N₁ →ₗ[R] N₂) (l₂₃ : N₂ →ₗ[R] N₃),
+    Function.Exact l₁₂ l₂₃ ↔
+    Function.Exact (l₁₂.lTensor M) (l₂₃.lTensor M)
+
+lemma Module.FaithfullyFlat.rTensor (R : Type u) (M : Type v)
+    [CommRing R] [AddCommGroup M] [Module R M] [h : Module.FaithfullyFlat.{_, _, w} R M]
+    (N₁ N₂ N₃ : Type w) [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃]
+    [Module R N₁] [Module R N₂] [Module R N₃]
+    (l₁₂ : N₁ →ₗ[R] N₂) (l₂₃ : N₂ →ₗ[R] N₃) :
+    Function.Exact l₁₂ l₂₃ ↔
+    Function.Exact (l₁₂.rTensor M) (l₂₃.rTensor M) := by
+  rw [h.1]
+  fapply Function.Exact.iff_of_ladder_linearEquiv
+    (e₁ := TensorProduct.comm _ _ _)
+    (e₂ := TensorProduct.comm _ _ _)
+    (e₃ := TensorProduct.comm _ _ _)
+  · ext; simp
+  · ext; simp
+  -- exact Iff.rfl
+
+instance (R : Type*) [CommRing R] : Module.FaithfullyFlat R R := by
+  constructor
+  intro N₁ N₂ N₃ _ _ _ _ _ _ f g
+  fapply Function.Exact.iff_of_ladder_linearEquiv (e₁ := TensorProduct.lid _ _)
+    (e₂ := TensorProduct.lid _ _) (e₃ := TensorProduct.lid _ _)
+  · ext n; simp
+  · ext n; simp
+
+open DirectSum
+
+
+
+universe uι in
 open TensorProduct in
-lemma IsSimpleRing.left_of_tensor (B C : Type*)
+instance Module.FaithfullyFlat.directSum (ι : Type uι) (R : Type u) [CommRing R]
+    (M : ι → Type v)
+    [∀ i, AddCommGroup (M i)] [∀ i, Module R (M i)]
+    [faithfully_flat : ∀ i, Module.FaithfullyFlat.{_, _, w} R (M i)] :
+    Module.FaithfullyFlat.{u, max v uι, w} R (⨁ i : ι, M i) := by
+  sorry
+
+universe v' in
+lemma Module.FaithfullyFlat.congr {R : Type u} {M : Type v} {N : Type v'}
+    [CommRing R] [AddCommGroup M] [AddCommGroup N]
+    [Module R M] [Module R N] [h : Module.FaithfullyFlat.{u, v, w} R M]
+    (e : M ≃ₗ[R] N) : Module.FaithfullyFlat.{u, v', w} R N := by
+  constructor
+  intro N₁ N₂ N₃ _ _ _ _ _ _ f g
+  rw [h.out]
+  fapply Function.Exact.iff_of_ladder_linearEquiv
+    (e₁ := TensorProduct.congr e.symm (LinearEquiv.refl _ _))
+    (e₂ := TensorProduct.congr e.symm (LinearEquiv.refl _ _))
+    (e₃ := TensorProduct.congr e.symm (LinearEquiv.refl _ _))
+  · ext; simp
+  · ext; simp
+
+instance (R : Type u) (M : Type v)
+    [CommRing R] [AddCommGroup M] [Module R M] [Module.Free R M] :
+    Module.FaithfullyFlat R M := by
+  have i1 : Module.FaithfullyFlat R (Module.Free.ChooseBasisIndex R M →₀ R) := by
+    apply Module.FaithfullyFlat.congr (M := ⨁ _ : Module.Free.ChooseBasisIndex R M, R)
+    exact (finsuppLEquivDirectSum R R (Module.Free.ChooseBasisIndex R M)).symm
+  exact Module.FaithfullyFlat.congr (Module.Free.repr R M).symm
+
+
+open TensorProduct in
+lemma IsSimpleRing.left_of_tensor (B C : Type v)
     [Ring B] [Ring C] [Algebra K C] [Algebra K B]
     [hbc : IsSimpleOrder (RingCon (B ⊗[K] C))] :
     IsSimpleOrder (RingCon B) := by
@@ -1055,7 +1124,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type*)
     refine ⟨fun _ => trivial, fun _ => Subsingleton.elim _ _⟩
   let F : B ⊗[K] C →ₐ[K] (B' ⊗[K] C) := Algebra.TensorProduct.map f (AlgHom.id _ _)
   have hF := RingCon.IsSimpleOrder.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
-  -- have h : (RingCon.ker F) = ⊥ ∨ (RingCon.ker F) = ⊤ := hbc.2 (RingCon.ker F)
+
   rcases hF with hF|hF
   · have : Nontrivial (B' ⊗[K] C) := by
       rw [← rank_pos_iff_nontrivial (R := K), rank_tensorProduct]
@@ -1064,13 +1133,29 @@ lemma IsSimpleRing.left_of_tensor (B C : Type*)
       aesop
     have : 1 ∈ RingCon.ker F := by rw [hF]; trivial
     simp only [RingCon.mem_ker, _root_.map_one, one_ne_zero] at this
-  · -- Since `F` is injective, `f` must be injective, this is because `C` is faithfully flat, but
-    -- we don't have this
+  · have h : Module.FaithfullyFlat.{u, v, v} K C := inferInstance
+    have : Function.Exact (0 : PUnit.{v + 1} →ₗ[K] _) F := by
+      intro x
+      simp only [Set.mem_range, LinearMap.zero_apply, exists_const]
+      rw [← show F 0 = 0 by simp, @Eq.comm _ 0 x]
+      constructor
+      · apply hF
+      · rintro rfl; simp
 
-    sorry
+    have : Function.Exact (0 : PUnit.{v + 1} →ₗ[K] _) f := by
+      refine Module.FaithfullyFlat.rTensor.{u, v, v} (h := h) (l₁₂ := (0 : PUnit →ₗ[K] _) )
+        (l₂₃ := f.toLinearMap) |>.2 ?_
+      intro x
+      change F x = 0 ↔ _
+      aesop
+
+    refine h2 fun x y hxy => ?_
+    specialize this (x - y)
+    simp only [map_sub, sub_eq_zero, Set.mem_range, LinearMap.zero_apply, exists_const] at this
+    simpa [Eq.comm, sub_eq_zero] using this.1 hxy
 
 open TensorProduct in
-lemma IsSimpleRing.right_of_tensor (B C : Type*)
+lemma IsSimpleRing.right_of_tensor (B C : Type u)
     [Ring B] [Ring C] [Algebra K C] [Algebra K B]
     [hbc : IsSimpleOrder (RingCon (B ⊗[K] C))] :
     IsSimpleOrder (RingCon C) := by

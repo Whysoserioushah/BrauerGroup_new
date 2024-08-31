@@ -143,10 +143,6 @@ theorem centralsimple_over_extension_iff_nontrivial
           exact h)
         erw [eq1] at ineq1
         exact ineq1
-      have h : (Subalgebra.center k (K ⊗[k] A) : Set (K ⊗[k] A)) =
-          Subalgebra.center K (K ⊗[k] A) := by
-        ext x
-        simp only [SetLike.mem_coe, Subalgebra.mem_center_iff]
       let e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A) :=
         (TensorProduct.congr (Submodule.topEquiv.symm ≪≫ₗ
           show _ ≃ₗ[k] Subalgebra.toSubmodule (Subalgebra.center k K) from LinearEquiv.ofLinear
