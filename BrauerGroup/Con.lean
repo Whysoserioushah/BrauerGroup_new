@@ -235,11 +235,20 @@ def comap {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (J : RingCon R') (f
   __ := J.toCon.comap f (map_mul f)
   __ := J.toAddCon.comap f (map_add f)
 
-@[simp] lemma mem_comap {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (J : RingCon R') (f : F) (x) :
+@[simp] lemma mem_comap {F : Type*} [FunLike F R R'] [RingHomClass F R R']
+    (J : RingCon R') (f : F) (x) :
     x ∈ J.comap f ↔ f x ∈ J := by
   change J (f x) (f 0) ↔ J (f x) 0
   simp
 
+lemma comap_injective {F : Type*} [FunLike F R R'] [RingHomClass F R R']
+    (f : F) (hf : Function.Surjective f) :
+    Function.Injective (fun J : RingCon _ ↦ J.comap f) := by
+  intro I J h
+  refine SetLike.ext fun x => ?_
+  simp only [mem_comap] at h
+  obtain ⟨x, rfl⟩ := hf x
+  rw [← mem_comap, ← mem_comap, h]
 
 instance : Module Rᵐᵒᵖ I where
   smul r x := ⟨x.1 * r.unop, I.mul_mem_right _ _ x.2⟩
@@ -447,6 +456,63 @@ lemma IsSimpleOrder.iff_eq_zero_or_injective [Nontrivial A] :
         rw [mem_ker]
         exact I.eq.mpr hx
       rw [h] at mem
+      exact mem
+
+lemma IsSimpleOrder.iff_eq_zero_or_injective'
+    (k : Type*) [CommRing k] [Algebra k A] [Nontrivial A] :
+    IsSimpleOrder (RingCon A) ↔
+    ∀ ⦃B : Type u⦄ [Ring B] [Algebra k B] (f : A →ₐ[k] B),
+      RingCon.ker f = ⊤ ∨ Function.Injective f := by
+  classical
+  constructor
+  · intro so B _ _ f
+    if hker : RingCon.ker f.toRingHom = ⊤
+    then exact Or.inl hker
+    else
+      replace hker := so.2 (RingCon.ker f) |>.resolve_right hker
+      rw [injective_iff_ker_eq_bot]
+      exact Or.inr hker
+  · intro h
+    refine ⟨fun I => ?_⟩
+    letI : Algebra k I.Quotient :=
+    { __ := I.mk'.comp (algebraMap k A)
+      smul := fun a => Quotient.map' (fun b => a • b) fun x y (h : I x y) => show I _ _ by
+        simp only
+        rw [Algebra.smul_def, Algebra.smul_def]
+        exact I.mul (I.refl (algebraMap k A a)) h
+      commutes' := by
+        simp only [RingHom.coe_comp, Function.comp_apply]
+        intro a b
+        induction b using Quotient.inductionOn' with
+        | h b =>
+          change _ * I.mk' b = I.mk' b * _
+          simp only [← map_mul, Algebra.commutes a b]
+
+      smul_def' := fun a b => by
+        simp only [RingHom.coe_comp, Function.comp_apply]
+        change Quotient.map' _ _ _ = _
+        induction b using Quotient.inductionOn' with
+        | h b =>
+          change _ = _ * I.mk' _
+          simp only [Quotient.map'_mk'', ← map_mul, Algebra.smul_def]
+          rfl }
+    rcases @h I.Quotient _ _ {I.mk' with commutes' := fun a => rfl } with h|h
+    · right
+      rw [eq_top_iff, le_iff]
+      rintro x -
+      simp only at h
+      have mem : x ∈ RingCon.ker I.mk' := by erw [h]; trivial
+      rw [mem_ker] at mem
+      change _ = I.mk' 0 at mem
+      exact I.eq.mp mem
+    · left
+      rw [injective_iff_ker_eq_bot] at h
+      rw [eq_bot_iff, le_iff]
+      intro x hx
+      have mem : x ∈ RingCon.ker I.mk' := by
+        rw [mem_ker]
+        exact I.eq.mpr hx
+      erw [h] at mem
       exact mem
 
 end IsSimpleOrder

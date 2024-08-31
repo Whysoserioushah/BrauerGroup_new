@@ -959,3 +959,89 @@ theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
 -- restrict to 4d case
 -- theorem exists_quaternionAlgebra_iso (hK : (2 : K) ≠ 0) :
 --     ∃ a b : K, Nonempty (D ≃ₐ[K] ℍ[K, a, b]) := sorry
+
+section
+
+lemma isSimpleOrder_iff (α : Type*) [LE α] [BoundedOrder α] :
+    IsSimpleOrder α ↔ Nontrivial α ∧ ∀ (a : α), a = ⊥ ∨ a = ⊤ := by
+  constructor
+  · intro h; refine ⟨inferInstance, fun a => h.2 a⟩
+  · rintro ⟨h, h'⟩; constructor; exact h'
+
+open TensorProduct in
+lemma IsSimpleRing.left_of_tensor (B C : Type*)
+    [Ring B] [Ring C] [Algebra K C] [Algebra K B]
+    [hbc : IsSimpleOrder (RingCon (B ⊗[K] C))] :
+    IsSimpleOrder (RingCon B) := by
+  have hB : Subsingleton B ∨ Nontrivial B := subsingleton_or_nontrivial B
+  have hC : Subsingleton C ∨ Nontrivial C := subsingleton_or_nontrivial B
+  rcases hB with hB|hB
+  · have : Subsingleton (B ⊗[K] C) := by
+      rw [← subsingleton_iff_zero_eq_one, show (0 : B ⊗[K] C) = 0 ⊗ₜ 0 by simp,
+        show (1 : B ⊗[K] C) = 1 ⊗ₜ 1 by rfl, show (1 : B) = 0 from Subsingleton.elim _ _]
+      simp only [tmul_zero, zero_tmul]
+    have : Subsingleton (RingCon (B ⊗[K] C)) := by
+      constructor
+      intro I J
+      refine SetLike.ext fun x => ?_
+      rw [show x = 0 from Subsingleton.elim _ _]
+      refine ⟨fun _ => RingCon.zero_mem _, fun _ => RingCon.zero_mem _⟩
+    have H := hbc.1
+    rw [← not_subsingleton_iff_nontrivial] at H
+    contradiction
+
+  rcases hC with hC|hC
+  · have : Subsingleton (B ⊗[K] C) := by
+      rw [← subsingleton_iff_zero_eq_one, show (0 : B ⊗[K] C) = 0 ⊗ₜ 0 by simp,
+        show (1 : B ⊗[K] C) = 1 ⊗ₜ 1 by rfl, show (1 : C) = 0 from Subsingleton.elim _ _]
+      simp only [tmul_zero, zero_tmul]
+    have : Subsingleton (RingCon (B ⊗[K] C)) := by
+      constructor
+      intro I J
+      refine SetLike.ext fun x => ?_
+      rw [show x = 0 from Subsingleton.elim _ _]
+      refine ⟨fun _ => RingCon.zero_mem _, fun _ => RingCon.zero_mem _⟩
+    have H := hbc.1
+    rw [← not_subsingleton_iff_nontrivial] at H
+    contradiction
+
+  by_contra h
+  rw [RingCon.IsSimpleOrder.iff_eq_zero_or_injective' (k := K) (A := B)] at h
+  push_neg at h
+  obtain ⟨B', _, _, f, h1, h2⟩ := h
+  have : Nontrivial B' := by
+    contrapose! h1
+    rw [← not_subsingleton_iff_nontrivial, not_not] at h1
+    refine SetLike.ext ?_
+    intro b
+    simp only [RingCon.mem_ker]
+    refine ⟨fun _ => trivial, fun _ => Subsingleton.elim _ _⟩
+  let F : B ⊗[K] C →ₐ[K] (B' ⊗[K] C) := Algebra.TensorProduct.map f (AlgHom.id _ _)
+  have hF := RingCon.IsSimpleOrder.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
+  -- have h : (RingCon.ker F) = ⊥ ∨ (RingCon.ker F) = ⊤ := hbc.2 (RingCon.ker F)
+  rcases hF with hF|hF
+  · have : Nontrivial (B' ⊗[K] C) := by
+      rw [← rank_pos_iff_nontrivial (R := K), rank_tensorProduct]
+      simp only [gt_iff_lt, CanonicallyOrderedCommSemiring.mul_pos, Cardinal.zero_lt_lift_iff]
+      rw [rank_pos_iff_nontrivial, rank_pos_iff_nontrivial]
+      aesop
+    have : 1 ∈ RingCon.ker F := by rw [hF]; trivial
+    simp only [RingCon.mem_ker, _root_.map_one, one_ne_zero] at this
+  · -- Since `F` is injective, `f` must be injective, this is because `C` is faithfully flat, but
+    -- we don't have this
+
+    sorry
+
+open TensorProduct in
+lemma IsSimpleRing.right_of_tensor (B C : Type*)
+    [Ring B] [Ring C] [Algebra K C] [Algebra K B]
+    [hbc : IsSimpleOrder (RingCon (B ⊗[K] C))] :
+    IsSimpleOrder (RingCon C) := by
+  haveI : IsSimpleOrder (RingCon (C ⊗[K] B)) := by
+    let e : C ⊗[K] B ≃ₐ[K] (B ⊗[K] C) := Algebra.TensorProduct.comm _ _ _
+    have := RingCon.orderIsoOfRingEquiv e.toRingEquiv
+    exact (OrderIso.isSimpleOrder_iff this).mpr hbc
+  apply IsSimpleRing.left_of_tensor (K := K) (B := C) (C := B)
+
+
+end
