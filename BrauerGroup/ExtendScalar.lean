@@ -178,8 +178,8 @@ def absorb_eqv : L ⊗[k] A ≃ₐ[L] L ⊗[K] K ⊗[k] A where
         simp only [TensorProduct.tmul_add, map_add, hx, hy]
     | add x y hx hy =>
       simp only [map_add, hx, hy]
-  map_mul' := release k K L A|>.map_mul
-  map_add' := release k K L A|>.map_add
+  map_mul' := map_mul _
+  map_add' := map_add _
   commutes' := release k K L A|>.commutes
 
 theorem absorb_eqv_apply (l : L) (a : A) : absorb_eqv k K L A (l ⊗ₜ a) = l ⊗ₜ[K] (1 : K) ⊗ₜ a :=

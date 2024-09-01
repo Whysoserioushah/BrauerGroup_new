@@ -228,9 +228,9 @@ instance (K A B M : Type u)
 
 instance tensor_is_simple (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [IsSimpleOrder (RingCon B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
+    [IsSimpleOrder (TwoSidedIdeal B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder
-    (RingCon (B ⊗[K] (Module.End A M))) := by
+    (TwoSidedIdeal (B ⊗[K] (Module.End A M))) := by
   haveI := csa_A.2
   obtain ⟨n, hn, D, hD1, hD2, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version K A
   have : NeZero n := { out := hn }
@@ -245,19 +245,26 @@ variable (K A B M : Type u)
     [Algebra K B] [hB : IsSimpleOrder (RingCon B)] [AddCommGroup M] [Module K M] [Module A M]
     [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A)
 
-lemma findimB : FiniteDimensional K B := FiniteDimensional.of_injective (K := K) (V₂ := A) f (by
+set_option linter.unusedVariables false in
+lemma findimB (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
+    [Algebra K B] [hB : IsSimpleOrder (TwoSidedIdeal B)] [AddCommGroup M] [Module K M] [Module A M]
+    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A):
+    FiniteDimensional K B := FiniteDimensional.of_injective (K := K) (V₂ := A) f (by
     haveI := hA.2
-    haveI : Nontrivial A := RingCon.instNontrivialOfIsSimpleOrder_brauerGroup A
+    haveI : Nontrivial A := TwoSidedIdeal.instNontrivialOfIsSimpleOrder_brauerGroup A
     change Function.Injective f
-    have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective B|>.1 hB (B := A) f
+    have H := TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective B|>.1 hB (B := A) f
     refine H.resolve_left fun rid => ?_
-    rw [eq_top_iff, RingCon.le_iff] at rid
+    rw [eq_top_iff, TwoSidedIdeal.le_iff] at rid
     specialize @rid 1 ⟨⟩
-    simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
+    simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, TwoSidedIdeal.mem_ker, _root_.map_one,
         one_ne_zero] at rid )
 
-lemma iso_fg : Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
-  haveI := findimB K A B f
+omit hB in
+lemma iso_fg [hB1 : IsSimpleOrder (TwoSidedIdeal B)]:
+  Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
+  haveI := findimB K A B M f g
   haveI := hA.2
   rw [linearEquiv_iff_finrank_eq_over_simple_ring K]
   rfl
@@ -270,7 +277,11 @@ lemma iso_fg : Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)
 /--
 End_End_A
 -/
-theorem SkolemNoether : ∃(x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
+theorem SkolemNoether (K A B M : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
+    [Algebra K B] [hB : IsSimpleOrder (TwoSidedIdeal B)] [AddCommGroup M] [Module K M] [Module A M]
+    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A):
+    ∃(x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
   obtain ⟨φ⟩ := iso_fg K A B M f g
   have := hA.2
   let ISO := end_end_iso K A M

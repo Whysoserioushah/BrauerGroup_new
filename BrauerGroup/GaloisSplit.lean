@@ -13,6 +13,7 @@ variable (K K_bar : Type u) [Field K] (A : CSA K)[Field K_bar] [Algebra K K_bar]
 def Basis_of_K : Basis (Fin (FiniteDimensional.finrank K A)) K_bar (K_bar ⊗[K] A):=
   Algebra.TensorProduct.basis K_bar (FiniteDimensional.finBasis K A)
 
+omit [IsAlgClosure K K_bar] in
 theorem Basis_apply (i : Fin (FiniteDimensional.finrank K A)) :
     Basis_of_K K K_bar A i = 1 ⊗ₜ (FiniteDimensional.finBasis K A i) :=
   Algebra.TensorProduct.basis_apply (FiniteDimensional.finBasis K A) i
@@ -29,9 +30,9 @@ lemma b_spec (e : split K A K_bar := split_by_alg_closure K K_bar A)
     e.iso (∑ k : Fin (FiniteDimensional.finrank K A.carrier),
       b e i j k ⊗ₜ FiniteDimensional.finBasis K A k) := by
   let x (i j : Fin e.n):= e.iso.symm $ Matrix.stdBasisMatrix i j (1 : K_bar)
-  have (i j : Fin e.n) := (Basis_of_K K K_bar A).total_repr (x i j)
-  simp only [Finsupp.total, Basis_apply, Finsupp.coe_lsum, Finsupp.sum, LinearMap.coe_smulRight,
-    LinearMap.id_coe, id_eq, smul_tmul', smul_eq_mul, mul_one, x] at this
+  have (i j : Fin e.n) := (Basis_of_K K K_bar A).linearCombination_repr (x i j)
+  simp only [Finsupp.linearCombination, Basis_apply, Finsupp.coe_lsum, Finsupp.sum,
+    LinearMap.coe_smulRight, LinearMap.id_coe, id_eq, smul_tmul', smul_eq_mul, mul_one, x] at this
   specialize this i j
   apply_fun e.iso.symm
   simp only [map_sum, AlgEquiv.symm_apply_apply]
@@ -91,22 +92,25 @@ private lemma emb_tmul (e : split K A K_bar := split_by_alg_closure K K_bar A) :
   simp only [emb, Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq]
   rfl
 
+set_option synthInstance.maxHeartbeats 160000 in
+set_option maxHeartbeats 400000 in
 lemma basis'_li (e) : LinearIndependent ↥(K' K K_bar A e) fun i : Fin e.n × Fin e.n ↦
   ∑ j : Fin (FiniteDimensional.finrank K A.carrier),
     b_as_K' K K_bar A e i.1 i.2 j ⊗ₜ[K] (FiniteDimensional.finBasis K A.carrier) j := by
         rw [linearIndependent_iff]
         intro c hc
         apply_fun (emb (e := e)) at hc
-        dsimp only [Finsupp.total, Finsupp.coe_lsum, LinearMap.coe_smulRight, LinearMap.id_coe,
-          id_eq, Finsupp.sum] at hc
-        rw [(emb (e := e)).map_sum] at hc
-        simp_rw [Finset.smul_sum, smul_tmul', (emb (e := e)).map_sum, emb_tmul, smul_eq_mul] at  hc
+        dsimp only [Finsupp.linearCombination, Finsupp.coe_lsum, LinearMap.coe_smulRight,
+          LinearMap.id_coe, id_eq, Finsupp.sum] at hc
+        rw [map_sum (g := emb (e := e))] at hc
+        simp_rw [Finset.smul_sum, smul_tmul', map_sum (g := emb (e := e)), emb_tmul,
+          smul_eq_mul] at hc
         push_cast at hc
         simp_rw [coe_b_as_K', ← smul_eq_mul, ← smul_tmul', ← Finset.smul_sum] at hc
         apply_fun e.iso at hc
         rw [map_sum] at hc
         simp_rw [map_smul, ← b_spec] at hc
-        rw [(emb (e := e)).map_zero, map_zero] at hc
+        rw [map_zero, map_zero] at hc
         ext ⟨i, j⟩
         have := Matrix.ext_iff.2 hc i j
         simp only [Matrix.smul_stdBasisMatrix, smul_eq_mul, mul_one, Matrix.zero_apply] at this
@@ -197,6 +201,7 @@ instance (e : split K A K_bar := split_by_alg_closure K K_bar A):
   HMul (↥(K' K K_bar A e) ⊗[K] A.carrier) (↥(K' K K_bar A e) ⊗[K] A.carrier)
   (↥(K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
+set_option synthInstance.maxHeartbeats 40000 in
 lemma e'_map_mul (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (x y : (K' K K_bar A e) ⊗[K] A) :
     (e'Aux K K_bar A e) (x * y) =
@@ -207,16 +212,18 @@ lemma e'_map_mul (e : split K A K_bar := split_by_alg_closure K K_bar A)
   apply_fun emb' (e := e) using emb'_inj (e := e)
   simp only [LinearMap.coe_comp, LinearMap.coe_restrictScalars, Function.comp_apply,
     AlgHom.toLinearMap_apply, AlgEquiv.toLinearMap_apply, LinearEquiv.coe_coe] at eq eqx eqy
-  rw [← eq, (emb (e := e)).map_mul, _root_.map_mul (f := e.iso), (emb' (e := e)).map_mul,
-    ← eqx, ← eqy]
+  rw [← eq, _root_.map_mul (f := emb (e := e)), _root_.map_mul (f := e.iso),
+    _root_.map_mul (f := emb' (e := e)), ← eqx, ← eqy]
 
+set_option synthInstance.maxHeartbeats 60000 in
 lemma e'_map_one (e : split K A K_bar := split_by_alg_closure K K_bar A) :
     (e'Aux K K_bar A e) 1 = 1 := by
   have eq := congr($(emb_comm_square (e := e)) 1)
   apply_fun emb' (e := e) using emb'_inj (e := e)
   simp only [LinearMap.coe_comp, LinearMap.coe_restrictScalars, Function.comp_apply,
     AlgHom.toLinearMap_apply, AlgEquiv.toLinearMap_apply, LinearEquiv.coe_coe] at eq
-  rw [← eq, (emb (e := e)).map_one, _root_.map_one (f := e.iso), (emb' (e := e)).map_one]
+  rw [← eq, _root_.map_one (f := emb (e := e)), _root_.map_one (f := e.iso),
+    _root_.map_one (f := emb' (e := e))]
 
 def e' (e : split K A K_bar := split_by_alg_closure K K_bar A) :
     (K' K K_bar A e) ⊗[K] A ≃ₐ[K' K K_bar A e]
