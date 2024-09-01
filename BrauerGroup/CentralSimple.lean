@@ -1043,6 +1043,13 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
     Module.FaithfullyFlat.{_, _, w} R M ↔
     Module.Flat R M ∧
     (∀ (N : Type v) [AddCommGroup N] [Module R N], Nontrivial N → Nontrivial (M ⊗[R] N)) := by
+  constructor
+  · intro hM
+    constructor
+    · sorry
+    · intro N _ _ hN
+
+      sorry
   sorry
 
 universe uι in
