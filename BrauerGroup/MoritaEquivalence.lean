@@ -1,5 +1,6 @@
 import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.CategoryTheory.Elementwise
+import Mathlib.CategoryTheory.Adjunction.Limits
 import Mathlib.Algebra.Module.LinearMap.End
 import Mathlib.RingTheory.SimpleModule
 import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
@@ -318,7 +319,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
 
         simp_rw [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one, ← Finset.sum_smul]
         congr 2
-        conv_lhs => rw [matrix_eq_sum_std_basis x]
+        conv_lhs => rw [Matrix.matrix_eq_sum_stdBasisMatrix x]
         rw [Finset.mul_sum]
         simp_rw [Finset.mul_sum]
         rw [Finset.sum_eq_single_of_mem (a := i)]
