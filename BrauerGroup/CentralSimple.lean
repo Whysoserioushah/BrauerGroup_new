@@ -35,7 +35,7 @@ of `D` is exactly `K` and that `D` is a simple ring.
 class IsCentralSimple
     (K : Type u) [Field K] (D : Type v) [Ring D] [Algebra K D] : Prop where
   is_central : Subalgebra.center K D ≤ ⊥
-  [is_simple : IsSimpleOrder (RingCon D)]
+  [is_simple : IsSimpleOrder (TwoSidedIdeal D)]
 
 lemma IsCentralSimple.center_eq
     (K D : Type*) [Field K] [Ring D] [Algebra K D] [IsCentralSimple K D] :
@@ -87,7 +87,7 @@ lemma TensorProduct.eq_repr_basis_right
   let ℬ := Basis.ofVectorSpace K B
   let 𝒯 := Basis.tensorProduct ℬ 𝒞
   have eq1 := calc x
-      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) ij • 𝒯 ij := 𝒯.total_repr x |>.symm
+      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) ij • 𝒯 ij := 𝒯.linearCombination_repr x |>.symm
       _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) (ij.1, ij.2) • 𝒯 (ij.1, ij.2) :=
           Finset.sum_congr rfl <| by simp
       _ = ∑ i ∈ (𝒯.repr x).support.image Prod.fst, ∑ j ∈ (𝒯.repr x).support.image Prod.snd,
@@ -129,7 +129,7 @@ lemma TensorProduct.eq_repr_basis_left
   let 𝒞 := Basis.ofVectorSpace K C
   let 𝒯 := Basis.tensorProduct ℬ 𝒞
   have eq1 := calc x
-      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) ij • 𝒯 ij := 𝒯.total_repr x |>.symm
+      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) ij • 𝒯 ij := 𝒯.linearCombination_repr x |>.symm
       _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) (ij.1, ij.2) • 𝒯 (ij.1, ij.2) :=
           Finset.sum_congr rfl <| by simp
       _ = ∑ i ∈ (𝒯.repr x).support.image Prod.fst, ∑ j ∈ (𝒯.repr x).support.image Prod.snd,
@@ -175,7 +175,7 @@ lemma TensorProduct.sum_tmul_basis_right_eq_zero
       _ = ∑ i ∈ s, (∑ k ∈ (ℬ.repr (b i)).support, (ℬ.repr (b i)) k • ℬ k) ⊗ₜ[K] 𝒞 i := by
           refine Finset.sum_congr rfl fun z _ => ?_
           congr
-          exact ℬ.total_repr (b z) |>.symm
+          exact ℬ.linearCombination_repr (b z) |>.symm
       _ = ∑ i ∈ s, ∑ k ∈ (ℬ.repr (b i)).support, (ℬ.repr (b i)) k • (ℬ k ⊗ₜ[K] 𝒞 i) := by
           refine Finset.sum_congr rfl fun z _ => ?_
           rw [TensorProduct.sum_tmul]
@@ -201,7 +201,7 @@ lemma TensorProduct.sum_tmul_basis_right_eq_zero
   rw [linearIndependent_iff'] at LI
   specialize LI (I ×ˢ s) _ eq1.symm
   intro i hi
-  rw [← ℬ.total_repr (b i)]
+  rw [← ℬ.linearCombination_repr (b i)]
   change ∑ _ ∈ _, _ = 0
   simp only [LinearMap.coe_smulRight, LinearMap.id_coe, id_eq]
   refine Finset.sum_eq_zero fun j hj => ?_
@@ -225,7 +225,7 @@ lemma TensorProduct.sum_tmul_basis_left_eq_zero
       _ = ∑ i ∈ s, (ℬ i ⊗ₜ[K] (∑ k ∈ (𝒞.repr (c i)).support, (𝒞.repr (c i)) k • 𝒞 k)) := by
           refine Finset.sum_congr rfl fun z _ => ?_
           congr
-          exact 𝒞.total_repr (c z) |>.symm
+          exact 𝒞.linearCombination_repr (c z) |>.symm
       _ = ∑ i ∈ s, ∑ k ∈ (𝒞.repr (c i)).support, (𝒞.repr (c i)) k • (ℬ i ⊗ₜ[K] 𝒞 k) := by
           refine Finset.sum_congr rfl fun z _ => ?_
           rw [TensorProduct.tmul_sum]
@@ -249,7 +249,7 @@ lemma TensorProduct.sum_tmul_basis_left_eq_zero
   rw [linearIndependent_iff'] at LI
   specialize LI (s ×ˢ I) _ eq1.symm
   intro i hi
-  rw [← 𝒞.total_repr (c i)]
+  rw [← 𝒞.linearCombination_repr (c i)]
   change ∑ _ ∈ _, _ = 0
   simp only [LinearMap.coe_smulRight, LinearMap.id_coe, id_eq]
   refine Finset.sum_eq_zero fun j hj => ?_
@@ -645,7 +645,7 @@ a non-zero element in an ideal that can be represented as a sum of tensor produc
 -/
 structure is_obtainable_by_sum_tmul
     {ιA A B : Type*} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : RingCon $ A ⊗[K] B) (n : ℕ) : Prop :=
+    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : TwoSidedIdeal $ A ⊗[K] B) (n : ℕ) : Prop :=
   mem : x ∈ I
   ne_zero : x ≠ 0
   rep : ∃ (s : Finset ιA) (_ : s.card = n) (f : ιA → B),
@@ -655,7 +655,7 @@ variable {K} in
 lemma is_obtainable_by_sum_tmul.exists_minimal_element
     {A B : Type v} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     (ιA : Type*) (𝒜 : Basis ιA K A)
-    (I : RingCon (A ⊗[K] B)) (hI : I ≠ ⊥) :
+    (I : TwoSidedIdeal (A ⊗[K] B)) (hI : I ≠ ⊥) :
     ∃ (n : ℕ) (x : A ⊗[K] B), is_obtainable_by_sum_tmul x 𝒜 I n ∧
       ∀ (m : ℕ) (y : A ⊗[K] B) , is_obtainable_by_sum_tmul y 𝒜 I m → n ≤ m := by
   classical
@@ -683,10 +683,10 @@ lemma is_obtainable_by_sum_tmul.exists_minimal_element
 
 lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
     {A B : Type v} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    [isSimple_A : IsSimpleOrder $ RingCon A]
+    [isSimple_A : IsSimpleOrder $ TwoSidedIdeal A]
     [isCentralSimple_B : IsCentralSimple K B]
-    (I : RingCon (A ⊗[K] B)) :
-    I = RingCon.span
+    (I : TwoSidedIdeal (A ⊗[K] B)) :
+    I = TwoSidedIdeal.span
       (Set.image (Algebra.TensorProduct.includeLeft : A →ₐ[K] A ⊗[K] B) $
         I.comap (Algebra.TensorProduct.includeLeft : A →ₐ[K] A ⊗[K] B)) := by
   classical
@@ -696,7 +696,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
     else
 
     let f : A →ₐ[K] A ⊗[K] B := Algebra.TensorProduct.includeLeft
-    change I ≤ RingCon.span (Set.image f $ I.comap f)
+    change I ≤ TwoSidedIdeal.span (Set.image f $ I.comap f)
     let 𝒜 := Basis.ofVectorSpace K A
     obtain ⟨n, x, ⟨x_mem, x_ne_zero, ⟨s, card_s, b, rfl⟩⟩, H⟩ :=
       is_obtainable_by_sum_tmul.exists_minimal_element _ 𝒜 I I_ne_bot
@@ -749,15 +749,15 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
         · rintro (rfl|⟨_, hx2⟩) <;> assumption
 
 
-      have span_bi₀ : RingCon.span {b i₀} = ⊤ := isCentralSimple_B.2.2 _ |>.resolve_left fun r => by
-        have mem : b i₀ ∈ (⊥ : RingCon B) := by
+      have span_bi₀ : TwoSidedIdeal.span {b i₀} = ⊤ := isCentralSimple_B.2.2 _ |>.resolve_left fun r => by
+        have mem : b i₀ ∈ (⊥ : TwoSidedIdeal B) := by
           rw [← r]
-          apply RingCon.subset_span
+          apply TwoSidedIdeal.subset_span
           simp only [Set.mem_singleton_iff]
         exact b_ne_zero i₀ hi₀ mem
 
-      have one_mem : (1 : B) ∈ RingCon.span {b i₀} := by rw [span_bi₀]; trivial
-      rw [RingCon.mem_span_iff_exists_fin] at one_mem
+      have one_mem : (1 : B) ∈ TwoSidedIdeal.span {b i₀} := by rw [span_bi₀]; trivial
+      rw [TwoSidedIdeal.mem_span_iff_exists_fin] at one_mem
       obtain ⟨ℐ, inst1, xL, xR, y, one_eq⟩ := one_mem
 
       replace one_eq : 1 = ∑ i : ℐ, xL i * b i₀ * xR i := by
@@ -768,7 +768,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
 
       let ω := ∑ i ∈ s, 𝒜 i ⊗ₜ[K] b i
       let Ω := ∑ i : ℐ, (1 ⊗ₜ[K] xL i) * ω * (1 ⊗ₜ[K] xR i)
-      have Ω_in_I : Ω ∈ I := RingCon.sum_mem _ _ fun i _ => I.mul_mem_right _ _ $
+      have Ω_in_I : Ω ∈ I := TwoSidedIdeal.sum_mem _ _ fun i _ => I.mul_mem_right _ _ $
         I.mul_mem_left _ _ x_mem
 
       have Ω_eq :
@@ -838,7 +838,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
       rw [Ω_eq2] at Ω_in_I
       have hI : I.comap f = ⊤ := isSimple_A.2 _ |>.resolve_left fun r => by
         have mem : 𝒜 i₀ + (∑ i ∈ (s.erase i₀).attach, (k i.1 i.2 • 𝒜 i)) ∈ I.comap f := by
-          rw [RingCon.mem_comap]
+          rw [TwoSidedIdeal.mem_comap]
           exact Ω_in_I
         rw [r] at mem
         change _ = 0 at mem
@@ -867,56 +867,56 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
           rw [dif_pos i.2]) i₀ hi₀
         rw [if_pos rfl] at LI
         exact zero_ne_one LI.symm
-      rw [hI, RingCon.coe_top_set, RingCon.le_iff]
+      rw [hI, TwoSidedIdeal.coe_top_set, TwoSidedIdeal.le_iff]
       rintro x -
       rw [SetLike.mem_coe]
       induction x using TensorProduct.induction_on with
-      | zero => simp [RingCon.zero_mem]
+      | zero => simp [TwoSidedIdeal.zero_mem]
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
-        exact RingCon.mul_mem_right _ _ _ $ RingCon.subset_span _ $ ⟨a, ⟨⟩, rfl⟩
-      | add x y hx hy => exact RingCon.add_mem _ hx hy
+        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span _ $ ⟨a, ⟨⟩, rfl⟩
+      | add x y hx hy => exact TwoSidedIdeal.add_mem _ hx hy
 
-  · rw [← RingCon.span_le]
+  · rw [← TwoSidedIdeal.span_le]
     rintro _ ⟨x, hx, rfl⟩
-    rw [SetLike.mem_coe, RingCon.mem_comap] at hx
+    rw [SetLike.mem_coe, TwoSidedIdeal.mem_comap] at hx
     exact hx
 
 instance TensorProduct.simple
     (A B : Type v) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    [isSimple_A : IsSimpleOrder $ RingCon A]
+    [isSimple_A : IsSimpleOrder $ TwoSidedIdeal A]
     [isCentralSimple_B : IsCentralSimple K B] :
-    IsSimpleOrder (RingCon (A ⊗[K] B)) := by
+    IsSimpleOrder (TwoSidedIdeal (A ⊗[K] B)) := by
   haveI := isCentralSimple_B.2
   let f : A →ₐ[K] A ⊗[K] B := Algebra.TensorProduct.includeLeft
-  suffices eq1 : ∀ (I : RingCon (A ⊗[K] B)),
-      I = RingCon.span (Set.image f $ I.comap f) by
+  suffices eq1 : ∀ (I : TwoSidedIdeal (A ⊗[K] B)),
+      I = TwoSidedIdeal.span (Set.image f $ I.comap f) by
     refine ⟨fun I => ?_⟩
     specialize eq1 I
     rcases isSimple_A.2 (I.comap f) with h|h
     · left
-      rw [h, RingCon.coe_bot_set, Set.image_singleton, map_zero] at eq1
-      rw [eq1, eq_bot_iff, RingCon.le_iff]
+      rw [h, TwoSidedIdeal.coe_bot_set, Set.image_singleton, map_zero] at eq1
+      rw [eq1, eq_bot_iff, TwoSidedIdeal.le_iff]
       rintro x hx
-      rw [SetLike.mem_coe, RingCon.mem_span_iff_exists_fin] at hx
+      rw [SetLike.mem_coe, TwoSidedIdeal.mem_span_iff_exists_fin] at hx
       obtain ⟨ι, inst, xL, xR, y, rfl⟩ := hx
       rw [SetLike.mem_coe]
-      refine RingCon.sum_mem _ _ fun i _ => ?_
+      refine TwoSidedIdeal.sum_mem _ _ fun i _ => ?_
       have := (y i).2
       simp only [Set.mem_singleton_iff] at this
       rw [this, mul_zero, zero_mul]
       rfl
     · right
-      rw [h, RingCon.coe_top_set] at eq1
-      rw [eq1, eq_top_iff, RingCon.le_iff]
+      rw [h, TwoSidedIdeal.coe_top_set] at eq1
+      rw [eq1, eq_top_iff, TwoSidedIdeal.le_iff]
       rintro x -
       rw [SetLike.mem_coe]
       induction x using TensorProduct.induction_on with
-      | zero => simp [RingCon.zero_mem]
+      | zero => simp [TwoSidedIdeal.zero_mem]
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
-        exact RingCon.mul_mem_right _ _ _ $ RingCon.subset_span _ $ ⟨a, ⟨⟩, rfl⟩
-      | add x y hx hy => exact RingCon.add_mem _ hx hy
+        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span _ $ ⟨a, ⟨⟩, rfl⟩
+      | add x y hx hy => exact TwoSidedIdeal.add_mem _ hx hy
 
   apply TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
 
@@ -949,8 +949,8 @@ instance tensorProduct [Small.{v, u} K]
     IsCentralSimple K (A ⊗[K] B) where
   is_central := TensorProduct.isCentral _ _ _ csA.1 csB.1
   is_simple := by
-    haveI : IsSimpleOrder (RingCon A) := csA.2
-    haveI : IsSimpleOrder (RingCon B) := csB.2
+    haveI : IsSimpleOrder (TwoSidedIdeal A) := csA.2
+    haveI : IsSimpleOrder (TwoSidedIdeal B) := csB.2
     exact TensorProduct.simple K A B
 
 end IsCentralSimple
@@ -959,7 +959,7 @@ section CSA_implies_CSA
 variable (K : Type u) [Field K]
 variable (B : Type*) [Ring B]
 
-lemma top_eq_ring (R :Type*)[Ring R] : (⊤ : RingCon R) = (⊤ : Set R) := by
+lemma top_eq_ring (R :Type*)[Ring R] : (⊤ : TwoSidedIdeal R) = (⊤ : Set R) := by
   aesop
 
 lemma _root_.AlgEquiv.isCentralSimple {K B C : Type*}
@@ -973,7 +973,7 @@ lemma _root_.AlgEquiv.isCentralSimple {K B C : Type*}
     exact ⟨k, by simpa [Algebra.ofId_apply] using congr(e $hk)⟩
   is_simple := by
     haveI := hcs.is_simple
-    exact RingCon.orderIsoOfRingEquiv e.symm.toRingEquiv |>.isSimpleOrder
+    exact TwoSidedIdeal.orderIsoOfRingEquiv e.symm.toRingEquiv |>.isSimpleOrder
 
 theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
     (n : ℕ) (D : Type*) (hn : 0 < n) (h : DivisionRing D) [Algebra K D]
@@ -981,7 +981,7 @@ theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
     IsCentralSimple K B → IsCentralSimple K D := by
   intro BCS
   letI : Nonempty (Fin n) := ⟨0, hn⟩
-  haveI := RingCon.equivRingConMatrix' D (ι := (Fin n)) ⟨0, hn⟩ |>.isSimpleOrder
+  haveI := TwoSidedIdeal.equivRingConMatrix' D (ι := (Fin n)) ⟨0, hn⟩ |>.isSimpleOrder
   refine ⟨fun d hd => ?_⟩
   obtain ⟨k, hk⟩ := Wdb.isCentralSimple.is_central (show (Matrix.diagonal fun _ => d)  ∈ _ by
     rw [Matrix.mem_center_iff']
@@ -1116,8 +1116,8 @@ instance (R M : Type u) [Nontrivial M]
 open TensorProduct in
 lemma IsSimpleRing.left_of_tensor (B C : Type u)
     [Ring B] [Ring C] [Algebra K C] [Algebra K B]
-    [hbc : IsSimpleOrder (RingCon (B ⊗[K] C))] :
-    IsSimpleOrder (RingCon B) := by
+    [hbc : IsSimpleOrder (TwoSidedIdeal (B ⊗[K] C))] :
+    IsSimpleOrder (TwoSidedIdeal B) := by
   have hB : Subsingleton B ∨ Nontrivial B := subsingleton_or_nontrivial B
   have hC : Subsingleton C ∨ Nontrivial C := subsingleton_or_nontrivial C
   rcases hB with hB|hB
@@ -1125,12 +1125,12 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       rw [← subsingleton_iff_zero_eq_one, show (0 : B ⊗[K] C) = 0 ⊗ₜ 0 by simp,
         show (1 : B ⊗[K] C) = 1 ⊗ₜ 1 by rfl, show (1 : B) = 0 from Subsingleton.elim _ _]
       simp only [tmul_zero, zero_tmul]
-    have : Subsingleton (RingCon (B ⊗[K] C)) := by
+    have : Subsingleton (TwoSidedIdeal (B ⊗[K] C)) := by
       constructor
       intro I J
       refine SetLike.ext fun x => ?_
       rw [show x = 0 from Subsingleton.elim _ _]
-      refine ⟨fun _ => RingCon.zero_mem _, fun _ => RingCon.zero_mem _⟩
+      refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ => TwoSidedIdeal.zero_mem _⟩
     have H := hbc.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
@@ -1140,18 +1140,18 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       rw [← subsingleton_iff_zero_eq_one, show (0 : B ⊗[K] C) = 0 ⊗ₜ 0 by simp,
         show (1 : B ⊗[K] C) = 1 ⊗ₜ 1 by rfl, show (1 : C) = 0 from Subsingleton.elim _ _]
       simp only [tmul_zero, zero_tmul]
-    have : Subsingleton (RingCon (B ⊗[K] C)) := by
+    have : Subsingleton (TwoSidedIdeal (B ⊗[K] C)) := by
       constructor
       intro I J
       refine SetLike.ext fun x => ?_
       rw [show x = 0 from Subsingleton.elim _ _]
-      refine ⟨fun _ => RingCon.zero_mem _, fun _ => RingCon.zero_mem _⟩
+      refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ => TwoSidedIdeal.zero_mem _⟩
     have H := hbc.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
 
   by_contra h
-  rw [RingCon.IsSimpleOrder.iff_eq_zero_or_injective' (k := K) (A := B)] at h
+  rw [TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective' (k := K) (A := B)] at h
   push_neg at h
   obtain ⟨B', _, _, f, h1, h2⟩ := h
   have : Nontrivial B' := by
@@ -1159,10 +1159,10 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     rw [← not_subsingleton_iff_nontrivial, not_not] at h1
     refine SetLike.ext ?_
     intro b
-    simp only [RingCon.mem_ker]
+    simp only [TwoSidedIdeal.mem_ker]
     refine ⟨fun _ => trivial, fun _ => Subsingleton.elim _ _⟩
   let F : B ⊗[K] C →ₐ[K] (B' ⊗[K] C) := Algebra.TensorProduct.map f (AlgHom.id _ _)
-  have hF := RingCon.IsSimpleOrder.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
+  have hF := TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
 
   rcases hF with hF|hF
   · have : Nontrivial (B' ⊗[K] C) := by
@@ -1170,8 +1170,8 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       simp only [gt_iff_lt, CanonicallyOrderedCommSemiring.mul_pos, Cardinal.zero_lt_lift_iff]
       rw [rank_pos_iff_nontrivial, rank_pos_iff_nontrivial]
       aesop
-    have : 1 ∈ RingCon.ker F := by rw [hF]; trivial
-    simp only [RingCon.mem_ker, _root_.map_one, one_ne_zero] at this
+    have : 1 ∈ TwoSidedIdeal.ker F := by rw [hF]; trivial
+    simp only [TwoSidedIdeal.mem_ker, _root_.map_one, one_ne_zero] at this
   · have h : Module.FaithfullyFlat.{u, u, u} K C := inferInstance
     have : Function.Exact (0 : PUnit.{u + 1} →ₗ[K] _) F := by
       intro x
@@ -1196,11 +1196,11 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
 open TensorProduct in
 lemma IsSimpleRing.right_of_tensor (B C : Type u)
     [Ring B] [Ring C] [Algebra K C] [Algebra K B]
-    [hbc : IsSimpleOrder (RingCon (B ⊗[K] C))] :
-    IsSimpleOrder (RingCon C) := by
-  haveI : IsSimpleOrder (RingCon (C ⊗[K] B)) := by
+    [hbc : IsSimpleOrder (TwoSidedIdeal (B ⊗[K] C))] :
+    IsSimpleOrder (TwoSidedIdeal C) := by
+  haveI : IsSimpleOrder (TwoSidedIdeal (C ⊗[K] B)) := by
     let e : C ⊗[K] B ≃ₐ[K] (B ⊗[K] C) := Algebra.TensorProduct.comm _ _ _
-    have := RingCon.orderIsoOfRingEquiv e.toRingEquiv
+    have := TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv
     exact (OrderIso.isSimpleOrder_iff this).mpr hbc
   apply IsSimpleRing.left_of_tensor (K := K) (B := C) (C := B)
 
