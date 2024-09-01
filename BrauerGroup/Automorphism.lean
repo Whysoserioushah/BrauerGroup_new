@@ -36,29 +36,29 @@ abbrev toAut (n : ℕ): GeneralLinearGroup (Fin n) K →* Aut K n where
     invFun := fun A => C⁻¹ * A * C
     left_inv := fun A => by
       simp only [← mul_assoc]
-      rw [← GeneralLinearGroup.coe_mul, mul_left_inv, GeneralLinearGroup.coe_one, one_mul,
-        mul_assoc, ← GeneralLinearGroup.coe_mul, mul_left_inv, GeneralLinearGroup.coe_one, mul_one]
+      rw [← GeneralLinearGroup.coe_mul, inv_mul_cancel, GeneralLinearGroup.coe_one, one_mul,
+        mul_assoc, ← GeneralLinearGroup.coe_mul, inv_mul_cancel, GeneralLinearGroup.coe_one, mul_one]
     right_inv := fun A => by
       simp only [← mul_assoc]
-      rw [← GeneralLinearGroup.coe_mul, mul_right_inv, GeneralLinearGroup.coe_one, one_mul,
-        mul_assoc, ← GeneralLinearGroup.coe_mul, mul_right_inv, GeneralLinearGroup.coe_one, mul_one]
+      rw [← GeneralLinearGroup.coe_mul, mul_inv_cancel, GeneralLinearGroup.coe_one, one_mul,
+        mul_assoc, ← GeneralLinearGroup.coe_mul, mul_inv_cancel, GeneralLinearGroup.coe_one, mul_one]
     map_mul' := fun A B => by
       simp only [← mul_assoc]
-      rw [mul_assoc (C * A) _ C, ← GeneralLinearGroup.coe_mul, mul_left_inv,
+      rw [mul_assoc (C * A) _ C, ← GeneralLinearGroup.coe_mul, inv_mul_cancel,
         GeneralLinearGroup.coe_one, mul_one]
     map_add' := fun A B ↦ by simp only [coe_units_inv, mul_add, add_mul]
     commutes' := fun k ↦ by
       simp only [Algebra.algebraMap_eq_smul_one, mul_smul_comm, mul_one, smul_mul,
-        ← GeneralLinearGroup.coe_mul, mul_right_inv, GeneralLinearGroup.coe_one] }
+        ← GeneralLinearGroup.coe_mul, mul_inv_cancel, GeneralLinearGroup.coe_one] }
   map_one' := by simp only [Units.val_one, one_mul, inv_one, mul_one]; rfl
   map_mul' A B := by
     ext M : 1
-    simp only [Units.val_mul, _root_.mul_inv_rev, coe_units_inv, AlgEquiv.coe_mk,
+    simp only [Units.val_mul, _root_.mul_inv_rev, coe_units_inv, AlgEquiv.coe_mk, Equiv.coe_fn_mk,
       AlgEquiv.mul_apply, _root_.map_mul]
     rw [← mul_assoc, ← mul_assoc, ← mul_assoc, ← mul_assoc, ← mul_assoc,
       mul_assoc ((A : Matrix (Fin n) (Fin n) K) * B) _ A, ← GeneralLinearGroup.coe_inv A,
-      ← GeneralLinearGroup.coe_mul A⁻¹ A, mul_left_inv, GeneralLinearGroup.coe_one, mul_one,
-      mul_assoc (A * B * M) _ A, ← GeneralLinearGroup.coe_mul A⁻¹ A, mul_left_inv,
+      ← GeneralLinearGroup.coe_mul A⁻¹ A, inv_mul_cancel, GeneralLinearGroup.coe_one, mul_one,
+      mul_assoc (A * B * M) _ A, ← GeneralLinearGroup.coe_mul A⁻¹ A, inv_mul_cancel,
       GeneralLinearGroup.coe_one, mul_one]
 
 lemma toAut_is_surj (n : ℕ) : Function.Surjective (toAut K n) := by
@@ -134,7 +134,7 @@ lemma GL_center_commute_all (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.ce
     change (1 + _) * G.1 = G.1 * (1 + _) at this
     rw [add_mul, one_mul, mul_add, mul_one, add_right_inj] at this
     exact this.symm
-  rw [matrix_eq_sum_std_basis g, Finset.sum_mul, Finset.mul_sum]
+  rw [Matrix.matrix_eq_sum_stdBasisMatrix g, Finset.sum_mul, Finset.mul_sum]
   simp_rw [Finset.sum_mul, Finset.mul_sum]
   suffices ∀(i j : Fin n), ∀(k : K), stdBasisMatrix i j k * G = G * stdBasisMatrix i j k by
     simp only [this]
@@ -191,8 +191,7 @@ lemma toAut_ker (n : ℕ) :
     have :  G * C * G⁻¹ * G = C * G := by
       simp only [coe_units_inv, AlgEquiv.coe_mk, AlgEquiv.one_apply] at hσ
       have : G * C * G⁻¹ = C := by
-        ext i j : 2
-        simp_all only [Units.val_mul, coe_units_inv]
+        ext i j : 2; aesop
       exact congrFun (congrArg HMul.hMul this) G
     simp only [inv_mul_cancel_right] at this
     exact this.symm

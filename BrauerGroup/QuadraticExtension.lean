@@ -2,7 +2,7 @@ import Mathlib.Analysis.RCLike.Basic
 
 suppress_compilation
 
-variable {K: Type*} [Field K] [CharZero K]
+variable {K: Type*} [Field K]
 
 @[ext]
 structure Ksqrtd (d : K) where
@@ -122,7 +122,7 @@ instance addCommGroup : AddCommGroup (K√d) := by
     add_assoc := ?_
     zero_add := ?_
     add_zero := ?_
-    add_left_neg := ?_
+    neg_add_cancel := ?_
     add_comm := ?_ } <;>
   intros <;>
   ext <;>
@@ -136,7 +136,7 @@ theorem sub_re (z w : K√d) : (z - w).re = z.re - w.re := by
 theorem sub_im (z w : K√d) : (z - w).im = z.im - w.im := by
   exact Eq.symm (Mathlib.Tactic.Abel.unfold_sub z.im w.im (z - w).im rfl)
 
-instance addGroupWithOne : AddGroupWithOne (K√d) :=
+instance addGroupWithOne [CharZero K] : AddGroupWithOne (K√d) :=
 { Ksqrtd.addCommGroup with
   intCast := fun z => ⟨z, 0⟩
   natCast := fun n => ⟨n, 0⟩
@@ -151,7 +151,7 @@ instance addGroupWithOne : AddGroupWithOne (K√d) :=
   }
 
 
-instance commRing : CommRing (K√d) := by
+instance commRing [CharZero K] : CommRing (K√d) := by
   refine
   { Ksqrtd.addGroupWithOne with
     mul := (· * ·)
@@ -172,28 +172,86 @@ instance commRing : CommRing (K√d) := by
 
 instance : AddMonoid (K√d) := by infer_instance
 
-instance : Monoid (K√d) := by infer_instance
-
-instance : CommMonoid (K√d) := by infer_instance
-
-instance : CommSemigroup (K√d) := by infer_instance
-
-instance : Semigroup (K√d) := by infer_instance
-
-instance : AddCommSemigroup (K√d) := by infer_instance
-
-instance : AddSemigroup (K√d) := by infer_instance
-
-instance : CommSemiring (K√d) := by infer_instance
-
-instance : Semiring (K√d) := by infer_instance
-
-instance : Ring (K√d) := by infer_instance
-
-instance : Distrib (K√d) := by infer_instance
-
 instance : Star (K√d) where
   star z := ⟨z.1, -z.2⟩
+
+@[simp] theorem star_mk (x y : K) : star (⟨x, y⟩ : K√d) = ⟨x, -y⟩ :=
+  rfl
+
+@[simp] theorem star_re (z : K√d) : (star z).re = z.re :=
+  rfl
+
+@[simp]
+theorem star_im (z : K√d) : (star z).im = -z.im :=
+  rfl
+
+@[simp]
+theorem ratCast_re (q : ℚ) : ((q : K) : K√d).re = q := rfl
+
+@[simp]
+theorem ratCast_im (q : ℚ) : ((q : K) : K√d).im = 0 := rfl
+
+@[simp]
+theorem smul_val (n x y : K) : (n : K√d) * ⟨x, y⟩ = ⟨n * x, n * y⟩ := by ext <;> simp
+
+theorem smul_re (a : K) (b : K√d) : (↑a * b).re = a * b.re := by simp
+-- #align zsqrtd.smul_re Zsqrtd.smul_re
+
+theorem smul_im (a : K) (b : K√d) : (↑a * b).im = a * b.im := by simp
+-- #align zsqrtd.smul_im Zsqrtd.smul_im
+
+
+@[simp]
+theorem muld_val (x y : K) : sqrtd (d := d) * ⟨x, y⟩ = ⟨d * y, x⟩ := by ext <;> simp
+-- #align zsqrtd.muld_val Zsqrtd.muld_val
+
+@[simp]
+theorem dmuld : sqrtd (d := d) * sqrtd (d := d) = d := by ext <;> simp
+-- #align zsqrtd.dmuld Zsqrtd.dmuld
+
+
+@[simp]
+theorem smuld_val (n x y : K) : sqrtd * (n : K√d) * ⟨x, y⟩ = ⟨d * n * y, n * x⟩ := by ext <;> simp
+-- #align zsqrtd.smuld_val Zsqrtd.smuld_val
+
+theorem decompose {x y : K} : (⟨x, y⟩ : K√d) = x + sqrtd (d := d) * y := by ext <;> simp
+-- #align zsqrtd.decompose Zsqrtd.decompose
+
+section norm
+
+
+def norm (n : K√d) : K :=
+  n.re * n.re - d * n.im * n.im
+
+theorem norm_def (n : K√d) : n.norm = n.re * n.re - d * n.im * n.im :=
+  rfl
+
+@[simp]
+theorem norm_zero : norm (0 : K√d) = 0 := by simp [norm]
+
+@[simp]
+theorem norm_one : norm (1 : K√d) = 1 := by simp [norm]
+
+@[simp]
+theorem norm_mul (n m : K√d) : norm (n * m) = norm n * norm m := by
+  simp only [norm, mul_im, mul_re]
+  ring
+
+theorem norm_eq_mul_conj (n : K√d) : (norm n : K) = n * star n := by
+  ext <;> simp [norm, star, mul_comm, sub_eq_add_neg]
+
+@[simp]
+theorem norm_neg (x : K√d) : (-x).norm = x.norm := by simp [norm_def]
+
+@[simp]
+theorem norm_conj (x : K√d) : (star x).norm = x.norm := by
+  simp only [norm_def, star_re, star_im, mul_neg, neg_mul, neg_neg]
+
+end norm
+
+section
+
+variable [CharZero K]
 
 instance : Algebra K (K√d) :=
 {
@@ -207,26 +265,13 @@ instance : Algebra K (K√d) :=
   smul_def' := fun _ _ ↦ by ext <;> simp <;> rfl
 }
 
-
-@[simp]
-theorem star_mk (x y : K) : star (⟨x, y⟩ : K√d) = ⟨x, -y⟩ :=
-  rfl
-
-@[simp]
-theorem star_re (z : K√d) : (star z).re = z.re :=
-  rfl
-
-@[simp]
-theorem star_im (z : K√d) : (star z).im = -z.im :=
-  rfl
-
 instance : StarRing (K√d) where
-  star_involutive x := Ksqrtd.ext _ _ rfl (neg_neg _)
+  star_involutive x := Ksqrtd.ext rfl (neg_neg _)
   star_mul a b := by ext <;> simp <;> ring
-  star_add a b := Ksqrtd.ext _ _ rfl (neg_add _ _)
+  star_add a b := Ksqrtd.ext rfl (neg_add _ _)
 
 instance nontrivial : Nontrivial (K√d) :=
-  ⟨⟨0, 1, (Ksqrtd.ext_iff 0 1).not.mpr (by simp)⟩⟩
+  ⟨⟨0, 1, Ksqrtd.ext_iff.not.mpr (by simp)⟩⟩
 
 @[simp]
 theorem natCast_re (n : ℕ) : (n : K√d).re = n :=
@@ -258,37 +303,8 @@ theorem intCast_val (n : ℤ) : (n : K√d) = ⟨n, 0⟩ := by ext <;> simp
 instance : CharZero (K√d) where cast_injective m n := by simp [Ksqrtd.ext_iff]
 
 @[simp]
-theorem ratCast_re (q : ℚ) : ((q : K) : K√d).re = q := rfl
-
-@[simp]
-theorem ratCast_im (q : ℚ) : ((q : K) : K√d).im = 0 := rfl
-
-@[simp]
 theorem ofInt_eq_intCast (n : ℤ) : (ofField n : K√d) = n := rfl
 
-@[simp]
-theorem smul_val (n x y : K) : (n : K√d) * ⟨x, y⟩ = ⟨n * x, n * y⟩ := by ext <;> simp
-
-theorem smul_re (a : K) (b : K√d) : (↑a * b).re = a * b.re := by simp
--- #align zsqrtd.smul_re Zsqrtd.smul_re
-
-theorem smul_im (a : K) (b : K√d) : (↑a * b).im = a * b.im := by simp
--- #align zsqrtd.smul_im Zsqrtd.smul_im
-
-@[simp]
-theorem muld_val (x y : K) : sqrtd (d := d) * ⟨x, y⟩ = ⟨d * y, x⟩ := by ext <;> simp
--- #align zsqrtd.muld_val Zsqrtd.muld_val
-
-@[simp]
-theorem dmuld : sqrtd (d := d) * sqrtd (d := d) = d := by ext <;> simp
--- #align zsqrtd.dmuld Zsqrtd.dmuld
-
-@[simp]
-theorem smuld_val (n x y : K) : sqrtd * (n : K√d) * ⟨x, y⟩ = ⟨d * n * y, n * x⟩ := by ext <;> simp
--- #align zsqrtd.smuld_val Zsqrtd.smuld_val
-
-theorem decompose {x y : K} : (⟨x, y⟩ : K√d) = x + sqrtd (d := d) * y := by ext <;> simp
--- #align zsqrtd.decompose Zsqrtd.decompose
 
 theorem mul_star {x y : K} : (⟨x, y⟩ * star ⟨x, y⟩ : K√d) = x * x - d * y * y := by
   ext <;> simp [sub_eq_add_neg, mul_comm]
@@ -330,37 +346,11 @@ theorem intCast_dvd_intCast (a b : K) : (a : K√d) ∣ b ↔ a ∣ b := by
 
 section Norm
 
-def norm (n : K√d) : K :=
-  n.re * n.re - d * n.im * n.im
-
-theorem norm_def (n : K√d) : n.norm = n.re * n.re - d * n.im * n.im :=
-  rfl
-
-@[simp]
-theorem norm_zero : norm (0 : K√d) = 0 := by simp [norm]
-
-@[simp]
-theorem norm_one : norm (1 : K√d) = 1 := by simp [norm]
-
-@[simp]
-theorem norm_mul (n m : K√d) : norm (n * m) = norm n * norm m := by
-  simp only [norm, mul_im, mul_re]
-  ring
 
 def normMonoidHom : K√d →* K where
   toFun := norm
   map_mul' := norm_mul
   map_one' := norm_one
-
-theorem norm_eq_mul_conj (n : K√d) : (norm n : K) = n * star n := by
-  ext <;> simp [norm, star, mul_comm, sub_eq_add_neg]
-
-@[simp]
-theorem norm_neg (x : K√d) : (-x).norm = x.norm := by simp [norm_def]
-
-@[simp]
-theorem norm_conj (x : K√d) : (star x).norm = x.norm := by
-  simp only [norm_def, star_re, star_im, mul_neg, neg_mul, neg_neg]
 
 -- set_option maxHeartbeats 400000 in
 -- theorem norm_nonneg (d : ℚ) (hd : d ≤ 0) (n : (Ksqrtd (K := ℚ) d)) : 0 ≤ n.norm := by
@@ -389,7 +379,7 @@ lemma not_square_to_norm_not_zero (hd : ¬(IsSquare d)) : ∀(x : K√d), x ≠ 
   unfold norm at hnx
   if hxi : x.im = 0 then
     simp only [hxi, mul_zero, sub_zero, mul_eq_zero, or_self] at hnx
-    apply hx ; exact Ksqrtd.ext _ _ hnx hxi
+    apply hx ; exact Ksqrtd.ext hnx hxi
   else
     rw [← pow_two, mul_assoc, ← pow_two, sub_eq_zero] at hnx
     apply_fun fun m => m/(x.im ^ 2) at hnx
@@ -406,7 +396,7 @@ instance GroupWithZero (hd : ¬(IsSquare d)) : GroupWithZero (K√d) where
   mul_inv_cancel := fun a ha ↦ by
     simp only [nsmul_eq_mul, inv_of_this]; ext
     · simp only [show a⁻¹ = inv_of_this a from rfl, inv_of_this, mul_re, one_re];
-      ring_nf; rw [← sub_mul, mul_inv_cancel]
+      ring_nf; rw [← sub_mul, mul_inv_cancel₀]
       rw [pow_two, pow_two, ← mul_assoc, ← norm_def];
       exact not_square_to_norm_not_zero hd a ha
     · simp only [show a⁻¹ = inv_of_this a from rfl, inv_of_this, mul_im, one_im]; ring
@@ -432,7 +422,7 @@ theorem inv_norm_inv (hd : ¬(IsSquare d)) (x : K√d) : (norm x)⁻¹ = norm (x
     simp only [norm_def, zero_re, mul_zero, zero_im, sub_self, inv_zero]
   else
   have eq1 : (norm x⁻¹) * norm x = norm (x * x⁻¹) := by rw [mul_comm]; exact norm_mul x x⁻¹ |>.symm
-  rw [mul_inv_cancel h, norm_one] at eq1
+  rw [mul_inv_cancel₀ h, norm_one] at eq1
   exact Eq.symm (eq_inv_of_mul_eq_one_left eq1)
 
 theorem norm_eq_zero_iff (hd : ¬(IsSquare d)) (x : K√d) : norm x = 0 ↔ x = 0 := by
@@ -475,7 +465,7 @@ def lift (q : ℚ): { r : ℝ // r * r = ↑q } ≃ (Ksqrtd q →ₐ[ℚ] ℝ) w
         simp only [Rat.cast_zero, zero_mul, add_zero, eq_ratCast]
       }
   invFun f := ⟨f sqrtd, by
-    rw [← f.map_mul, dmuld, show ⟨q, 0⟩ = q • (1 : Ksqrtd q) by
+    rw [← map_mul, dmuld, show ⟨q, 0⟩ = q • (1 : Ksqrtd q) by
       ext; change q = _ ; rw [← Algebra.algebraMap_eq_smul_one]; change q = (q : Ksqrtd q).re; rfl;
       change 0 = _ ; rw [← Algebra.algebraMap_eq_smul_one]; change 0 = (q : Ksqrtd q).im; rfl]; simp⟩
   left_inv r := by
@@ -503,5 +493,7 @@ theorem toReal_injective {q : ℚ} (h0d : 0 ≤ q) (hd : ¬(IsSquare q)) :
     Function.Injective (toReal q h0d) := lift_injective q _ hd
 
 end Norm
+
+end
 
 end Ksqrtd
