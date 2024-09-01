@@ -232,14 +232,9 @@ def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivale
   refine ⟨⟨_, _, Nat.mul_ne_zero hp hn, Nat.mul_ne_zero hm hq,
     matrix_eqv' _ _ _ |>.symm.trans $ Matrix.comp_algHom _ _ _ _|>.symm.trans $
       iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.comp_algHom _ _ _ _|>.trans $ ?_⟩⟩
-  haveI : Algebra K (Matrix (Fin m × Fin p) (Fin m × Fin p) B) := inferInstance
-  haveI : Algebra K (Matrix (Fin p × Fin m) (Fin p × Fin m) B) := inferInstance
-  -- let eqv := Matrix.reindexAlgEquiv B (.prodComm (Fin p) (Fin m))
-  -- refine eqv.trans ?_
-  sorry
-      -- Matrix.reindexAlgEquiv K (.prodComm _ _) |>.trans $ Matrix.comp_algHom _ _ _ _|>.symm.trans $
-      -- iso2.mapMatrix.trans $ Matrix.comp_algHom _ _ _ _|>.trans $ matrix_eqv' _ _ _⟩⟩
-
+  exact Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans $
+    Matrix.comp_algHom (Fin m) (Fin p) B K|>.symm.trans $ iso2.mapMatrix.trans $
+    Matrix.comp_algHom _ _ _ _|>.trans $ matrix_eqv' _ _ _
 
 lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B := by
   exact ⟨⟨_, _, one_ne_zero, one_ne_zero, h.mapMatrix (m := (Fin 1))⟩⟩
