@@ -8,7 +8,7 @@ import BrauerGroup.Dual
 import BrauerGroup.ExtendScalar
 import BrauerGroup.GaloisDescent.Basic
 import BrauerGroup.GaloisSplit
-import BrauerGroup.GaloisSplit2
+-- import BrauerGroup.GaloisSplit2
 import BrauerGroup.Lemmas
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.MoritaEquivalence

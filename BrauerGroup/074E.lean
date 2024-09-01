@@ -11,16 +11,14 @@ universe u v w
 
 section simple
 
-variable (k : Type u) [Field k] (A : Type v)
-variable [Ring A] [Algebra k A] [IsSimpleOrder (RingCon A)] [FiniteDimensional k A]
-
 /--
 Stack 074E (1)
 -/
 lemma linearEquiv_of_isSimpleModule_over_simple_ring
-    (M N : Type w) [AddCommGroup M] [AddCommGroup N]
+    (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A] [IsSimpleOrder (TwoSidedIdeal A)]
+    [FiniteDimensional k A] (M N : Type w) [AddCommGroup M] [AddCommGroup N]
     [Module A M] [Module A N] [IsSimpleModule A M] [IsSimpleModule A N] : Nonempty (M ≃ₗ[A] N) := by
-  obtain ⟨n, hn, D, inst1, inst2, ⟨iso₁⟩⟩ := Wedderburn_Artin_algebra_version k A
+  obtain ⟨n, hn, D, _, _, ⟨iso₁⟩⟩ := Wedderburn_Artin_algebra_version k A
   letI : Inhabited (Fin n) := ⟨⟨0, by omega⟩⟩
   let e₁ := moritaEquivalentToMatrix.{_, _, w} D (Fin n)
   let e₂ : ModuleCat.{w} A ≌ ModuleCat (Matrix (Fin n) (Fin n) D) :=
@@ -41,7 +39,9 @@ lemma linearEquiv_of_isSimpleModule_over_simple_ring
       (e₃.unitIso.app (ModuleCat.of A N)).symm
   exact ⟨iso₅.toLinearEquiv⟩
 
-noncomputable abbrev iso₄_toFun (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
+noncomputable abbrev iso₄_toFun (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A]
+    [IsSimpleOrder (TwoSidedIdeal A)] [FiniteDimensional k A] (b M D: Type v) (n : ℕ)
+    [Inhabited (Fin n)] [DivisionRing D]
     [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
   ↑(ModuleCat.of A (b →₀ ↑((ModuleCat.restrictScalars iso₁.toRingEquiv.toRingHom).obj
   (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D)))))) → Fin n → b →₀ D :=
@@ -54,7 +54,9 @@ noncomputable abbrev iso₄_toFun (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] 
       change x.toFun y = 0 at hy
       rw [hy]; rfl
 
-noncomputable abbrev iso₄iso₄ (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
+noncomputable abbrev iso₄iso₄ (k : Type u) (A : Type v) [Field k]
+    [Ring A] [Algebra k A] [IsSimpleOrder (TwoSidedIdeal A)] [FiniteDimensional k A]
+    (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
     [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
   ModuleCat.of A (b →₀ ((ModuleCat.restrictScalars iso₁.symm.toRingEquiv.symm.toRingHom).obj
   (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D))))) ⟶
@@ -72,7 +74,9 @@ noncomputable abbrev iso₄iso₄ (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] 
         ZeroHom.coe_mk, smul_eq_mul, Finsupp.ofSupportFinite, Finset.sum_apply]
       rfl }
 
-noncomputable abbrev iso₄_invFun (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
+noncomputable abbrev iso₄_invFun (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A]
+    [IsSimpleOrder (TwoSidedIdeal A)]
+    [FiniteDimensional k A](b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
     [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
     (v : ↑(ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D (b →₀ D))))):
   ↑((ModuleCat.restrictScalars iso₁.toRingEquiv.toRingHom).obj
@@ -90,6 +94,9 @@ noncomputable abbrev iso₄_invFun (b M D: Type v) (n : ℕ) [Inhabited (Fin n)]
       simp_rw [show ∀ i, (v i).toFun y = 0 from hy, mul_zero]
       simp only [Finset.sum_const_zero]
       rfl
+
+variable (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A]
+    [IsSimpleOrder (TwoSidedIdeal A)] [FiniteDimensional k A]
 
 noncomputable abbrev iso₄inv' (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
     [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
@@ -207,7 +214,8 @@ lemma inv_hom_id_iso₄ (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionR
   rfl
 
 lemma directSum_simple_module_over_simple_ring
-    (M : Type v) [AddCommGroup M] [Module A M] :
+    (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A] [IsSimpleOrder (TwoSidedIdeal A)]
+    [FiniteDimensional k A] (M : Type v) [AddCommGroup M] [Module A M] :
     ∃ (S : Type v) (_ : AddCommGroup S) (_ : Module A S) (_ : IsSimpleModule A S)
       (ι : Type v), Nonempty (M ≃ₗ[A] (ι →₀ S)) := by
   obtain ⟨n, hn, D, inst1, inst2, ⟨iso₁⟩⟩ := Wedderburn_Artin_algebra_version k A
@@ -238,7 +246,8 @@ lemma directSum_simple_module_over_simple_ring
   exact iso₃ ≪≫ iso₄.symm |>.toLinearEquiv
 
 lemma directSum_simple_module_over_simple_ring'
-    (M : Type v) [AddCommGroup M] [Module A M]
+    (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A] [IsSimpleOrder (TwoSidedIdeal A)]
+    [FiniteDimensional k A] (M : Type v) [AddCommGroup M] [Module A M]
     (S : Type v) [AddCommGroup S] [Module A S] [IsSimpleModule A S] :
     ∃ (ι : Type v), Nonempty (M ≃ₗ[A] (ι →₀ S)) := by
   obtain ⟨T, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring k A M
@@ -408,6 +417,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
         map_smul' := by intros a b; ext; simp }
     refine ⟨iso ≪≫ₗ E ≪≫ₗ iso'.symm⟩
 
+omit [IsSimpleOrder (TwoSidedIdeal A)] [FiniteDimensional k A] in
 /--
 074E (3) first part
 -/
@@ -737,7 +747,7 @@ private noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [Division
       intro c hc
       ext i
       replace hc := congr_fun hc i
-      simpa only [Finsupp.total, Finsupp.coe_lsum, Finsupp.sum, LinearMap.coe_smulRight,
+      simpa only [Finsupp.linearCombination, Finsupp.coe_lsum, Finsupp.sum, LinearMap.coe_smulRight,
         LinearMap.id_coe, id_eq, Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_ite,
         MulOpposite.smul_eq_mul_unop, one_mul, smul_zero, Finset.sum_ite_eq,
         Finsupp.mem_support_iff, ne_eq, Pi.zero_apply, ite_eq_right_iff,
@@ -757,12 +767,19 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
     Algebra k (Module.End (Module.End A M) M) where
   toFun a :=
     { toFun := fun m => a • m
-      map_add' := by simp
-      map_smul' := by simp }
-  map_one' := by ext; simp
-  map_mul' := by intros; ext; simp [mul_smul]
-  map_zero' := by ext; simp
-  map_add' := by intros; ext; simp [add_smul]
+      map_add' := by simp only [smul_add, implies_true]
+      map_smul' := by
+        simp only [LinearMap.smul_def, RingHom.id_apply, LinearMap.map_smul_of_tower,
+          implies_true] }
+  map_one' := by ext; simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply]
+  map_mul' := by
+    intros; ext
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearMap.map_smul_of_tower]
+    rw [mul_comm, mul_smul]
+  map_zero' := by ext; simp only [zero_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply]
+  map_add' := by
+    intros; ext
+    simp only [add_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
   commutes' := by
     intros r f
     ext m
@@ -816,6 +833,7 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
     rw [← f.map_smul]
     rfl
 
+omit [IsSimpleOrder (TwoSidedIdeal A)] in
 private lemma exists_gen (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M] :
     ∃ m : M, m ≠ 0 ∧ ∀ m', ∃ a : A, m' = a • m := by
@@ -836,9 +854,11 @@ noncomputable def gen (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M]: M :=
     (exists_gen A M).choose
 
+omit [IsSimpleOrder (TwoSidedIdeal A)] in
 lemma gen_ne_zero (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M] :
     gen A M ≠ 0 := (exists_gen A M).choose_spec.1
 
+omit [IsSimpleOrder (TwoSidedIdeal A)] in
 lemma gen_spec (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M] (m' : M) :
     ∃ a : A, m' = a • gen A M := (exists_gen A M).choose_spec.2 m'
@@ -859,15 +879,16 @@ def toEndEndAlgHom (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsSc
   commutes' a := by ext; simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, toEndEnd_apply,
     DistribMulAction.toLinearMap_apply, algebraMap_smul]; rfl
 
+omit [FiniteDimensional k A] in
 lemma toEndEnd_injective
     (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
     [Module k M] [IsScalarTower k A M] :
     Function.Injective (toEndEnd A M) := by
-  refine RingCon.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 inferInstance
+  refine TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 inferInstance
     (toEndEndAlgHom k A M).toRingHom |>.resolve_left ?_
   intro h
-  have eq : 1 ∈ RingCon.ker (toEndEndAlgHom k A M) := h ▸ ⟨⟩
-  simp only [RingCon.mem_ker, map_one] at eq
+  have eq : 1 ∈ TwoSidedIdeal.ker (toEndEndAlgHom k A M) := h ▸ ⟨⟩
+  simp only [TwoSidedIdeal.mem_ker, map_one] at eq
   haveI : Nontrivial M := IsSimpleModule.nontrivial A M
   have eq' := congr($eq (gen A M))
   simp only [LinearMap.one_apply, LinearMap.zero_apply] at eq'
@@ -888,6 +909,7 @@ instance : IsBalanced A A where
     simp only [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, one_mul, X] at eq1
     exact eq1.symm⟩
 
+omit [IsSimpleOrder (TwoSidedIdeal A)] in
 lemma IsBalanced.congr_aux (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module A M] [Module A N]
     (l : M ≃ₗ[A] N) (h : IsBalanced A M) : IsBalanced A N := by
   refine ⟨fun a => ?_⟩
@@ -911,6 +933,7 @@ lemma IsBalanced.congr_aux (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Mod
   apply_fun l at this
   simpa using this
 
+omit [IsSimpleOrder (TwoSidedIdeal A)] in
 lemma IsBalanced.congr {M N : Type v} [AddCommGroup M] [AddCommGroup N] [Module A M] [Module A N]
     (l : M ≃ₗ[A] N) : IsBalanced A M ↔ IsBalanced A N := by
   constructor

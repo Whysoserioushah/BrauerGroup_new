@@ -17,7 +17,7 @@ variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure
 open scoped TensorProduct
 open RingCon
 
-instance module_over_over (A : CSA k) (I : RingCon A):
+instance module_over_over (A : CSA k) (I : TwoSidedIdeal A):
     Module k I := Module.compHom I (algebraMap k A)
 
 -- lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (_ : IsCentralSimple K (K ⊗[k] A))
@@ -100,7 +100,7 @@ instance module_over_over (A : CSA k) (I : RingCon A):
 set_option synthInstance.maxHeartbeats 50000 in
 theorem is_simple_A
     (hAt : IsCentralSimple K (K ⊗[k] A)):
-    IsSimpleOrder (RingCon A) := by
+    IsSimpleOrder (TwoSidedIdeal A) := by
   haveI := hAt.2
   apply IsSimpleRing.right_of_tensor k K A
 
@@ -207,17 +207,18 @@ def extension_inv [FiniteDimensional k A] (hT : IsCentralSimple K (K ⊗[k] A)) 
     have Isinj : Function.Injective to_ten := by
       haveI := this.is_simple
       haveI : Nontrivial A := inferInstance
-      exact RingCon.IsSimpleOrder.iff_eq_zero_or_injective A|>.1 inferInstance
+      exact TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective A|>.1 inferInstance
         to_ten.toRingHom|>.resolve_left (by
         intro h
         rw [SetLike.ext_iff] at h
         specialize h 1
-        simp only [RingCon.mem_ker, map_one, one_ne_zero, false_iff] at h
+        simp only [TwoSidedIdeal.mem_ker, map_one, one_ne_zero, false_iff] at h
         exact h ⟨⟩)
     haveI : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
     exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj
 
-theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
+theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
+    [hk_bar : IsAlgClosure k k_bar][hA : FiniteDimensional k A]:
     IsCentralSimple k A ↔ (∃(n : ℕ)(_ : n ≠ 0)(L : Type u)(_ : Field L)(_ : Algebra k L)
     (_ : FiniteDimensional k L), Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)) := by
   constructor
@@ -232,7 +233,8 @@ theorem CSA_iff_exist_split [hA : FiniteDimensional k A]:
     haveI : Nonempty (Fin n) := ⟨0, by omega⟩
     exact (centralsimple_over_extension_iff k A L).mpr $ AlgEquiv.isCentralSimple iso.symm
 
-lemma dim_is_sq (h : IsCentralSimple k A) [FiniteDimensional k A]:
+lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
+    (h : IsCentralSimple k A) [FiniteDimensional k A]:
     IsSquare (FiniteDimensional.finrank k A) := by
   haveI := hk_bar.1
   obtain ⟨n, _, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
@@ -272,7 +274,7 @@ def split_by_alg_closure (A : CSA k): split k A k_bar where
     have iso' := iso.some ; clear iso
     have e : Matrix (Fin n) (Fin n) k_bar ≃ₐ[k_bar] Matrix (Fin (deg k k_bar A))
       (Fin (deg k k_bar A)) k_bar := by
-      suffices n = deg k k_bar A from Matrix.reindexAlgEquiv k_bar (finCongr this)
+      suffices n = deg k k_bar A from Matrix.reindexAlgEquiv k_bar _ (finCongr this)
       have := deg_sq_eq_dim k k_bar A
       rw [pow_two] at this
       have e1 := LinearEquiv.finrank_eq iso'.toLinearEquiv|>.trans $
@@ -328,64 +330,66 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
         Fintype.card_fin] at e6
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
-    exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' (finCongr e5)
+    exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' _ (finCongr e5)
 
 variable [FiniteDimensional k A]
 
-theorem sepclosure_split (A : CSA k):
-    isSplit k A k_s := by
-  obtain ⟨n, hn, D, _, _, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version k_s (k_s ⊗[k] A)
-  refine ⟨deg k k_bar A, deg_pos k k_bar A, ⟨?_⟩⟩
-  haveI := is_fin_dim_of_wdb k_s (k_s ⊗[k] A) n D (by omega) iso
-  set d : ℕ := FiniteDimensional.finrank k_s D with d_eq
-  if hd' : d = 1 then
-    haveI : Nontrivial D := GroupWithZero.toNontrivial
-    haveI := FiniteDimensional.finrank_pos_iff (R := k_s) (M := D)|>.2 this
-    have k_s_sim: IsSimpleOrder (RingCon k_s) := instIsSimpleOrderRingCon_brauerGroup k_s
-    have inj : Function.Injective (Algebra.ofId k_s D) := by
-      have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective k_s|>.1 k_s_sim
-      specialize @H D _ (Algebra.ofId k_s D)
-      refine H.resolve_left fun rid => ?_
-      rw [eq_top_iff, RingCon.le_iff] at rid
-      specialize @rid 1 ⟨⟩
-      simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
-        one_ne_zero] at rid
-    have e : k_s ≃ₐ[k_s] D :=
-      AlgEquiv.ofBijective (Algebra.ofId k_s D) ⟨inj, by
-        change Function.Surjective (Algebra.ofId k_s D).toLinearMap
-        rw [← LinearMap.range_eq_top]
-        have eq := (Algebra.ofId k_s D).toLinearMap.finrank_range_add_finrank_ker
-        rw [FiniteDimensional.finrank_self, LinearMap.ker_eq_bot.2 inj, finrank_bot, add_zero] at eq
-        apply Submodule.eq_top_of_finrank_eq
-        rw [eq, ← d_eq, hd']⟩
-    have e1 := iso.trans $ e.mapMatrix (m := Fin n)|>.symm
-    have e2 : n = deg k k_bar A := by
-      have := deg_sq_eq_dim k k_bar A
-      rw [pow_two] at this
-      have e3 := LinearEquiv.finrank_eq e1.toLinearEquiv|>.trans $
-        FiniteDimensional.finrank_matrix k_s (Fin n) (Fin n)
-      simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
-        Fintype.card_fin] at e3
-      exact Nat.mul_self_inj.mp (id (this.trans e3).symm)
-    exact e1.trans $ Matrix.reindexAlgEquiv k_s $ finCongr e2
-  else
-  have hd : 1 < d := by
-    suffices d ≠ 0 by omega
-    by_contra! h
-    obtain d_eq := d_eq.symm
-    rw [h, FiniteDimensional.finrank_zero_iff (R := k_s) (M := D),
-      ← not_nontrivial_iff_subsingleton] at d_eq
-    tauto
-  -- suffices Matrix (Fin n) (Fin n) D ≃ₐ[k_s] Matrix (Fin (deg k k_bar A)) (Fin (deg k k_bar A)) k_s by
-  --   exact ((id this.symm).trans (id iso.symm)).symm
-  -- have e1 := deg_sq_eq_dim k k_bar A
-  -- have e2 := matrixEquivTensor (A := D) (R := k_s) (n := Fin n)
-  -- have e3 := LinearEquiv.finrank_eq e2.toLinearEquiv
-  -- have e4 := LinearEquiv.finrank_eq iso.toLinearEquiv
-  -- rw [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_matrix k_s (Fin n) (Fin n),
-  --   ← e4, FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
-  --   Fintype.card_fin, ← e1] at e3; clear e4 e1
-  sorry
+-- theorem sepclosure_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
+--     [hk_bar : IsAlgClosure k k_bar] (A : CSA k):
+--     isSplit k A k_s := by
+--   obtain ⟨n, hn, D, _, _, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version k_s (k_s ⊗[k] A)
+--   refine ⟨deg k k_bar A, deg_pos k k_bar A, ⟨?_⟩⟩
+--   haveI := is_fin_dim_of_wdb k_s (k_s ⊗[k] A) n D (by omega) iso
+--   set d : ℕ := FiniteDimensional.finrank k_s D with d_eq
+--   if hd' : d = 1 then
+--     haveI : Nontrivial D := GroupWithZero.toNontrivial
+--     haveI := FiniteDimensional.finrank_pos_iff (R := k_s) (M := D)|>.2 this
+--     have k_s_sim: IsSimpleOrder (TwoSidedIdeal k_s) := by exact
+--       instIsSimpleOrderTwoSidedIdeal_brauerGroup k_s
+--     have inj : Function.Injective (Algebra.ofId k_s D) := by
+--       have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective k_s|>.1 k_s_sim
+--       specialize @H D _ (Algebra.ofId k_s D)
+--       refine H.resolve_left fun rid => ?_
+--       rw [eq_top_iff, RingCon.le_iff] at rid
+--       specialize @rid 1 ⟨⟩
+--       simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
+--         one_ne_zero] at rid
+--     have e : k_s ≃ₐ[k_s] D :=
+--       AlgEquiv.ofBijective (Algebra.ofId k_s D) ⟨inj, by
+--         change Function.Surjective (Algebra.ofId k_s D).toLinearMap
+--         rw [← LinearMap.range_eq_top]
+--         have eq := (Algebra.ofId k_s D).toLinearMap.finrank_range_add_finrank_ker
+--         rw [FiniteDimensional.finrank_self, LinearMap.ker_eq_bot.2 inj, finrank_bot, add_zero] at eq
+--         apply Submodule.eq_top_of_finrank_eq
+--         rw [eq, ← d_eq, hd']⟩
+--     have e1 := iso.trans $ e.mapMatrix (m := Fin n)|>.symm
+--     have e2 : n = deg k k_bar A := by
+--       have := deg_sq_eq_dim k k_bar A
+--       rw [pow_two] at this
+--       have e3 := LinearEquiv.finrank_eq e1.toLinearEquiv|>.trans $
+--         FiniteDimensional.finrank_matrix k_s (Fin n) (Fin n)
+--       simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
+--         Fintype.card_fin] at e3
+--       exact Nat.mul_self_inj.mp (id (this.trans e3).symm)
+--     exact e1.trans $ Matrix.reindexAlgEquiv k_s $ finCongr e2
+--   else
+--   have hd : 1 < d := by
+--     suffices d ≠ 0 by omega
+--     by_contra! h
+--     obtain d_eq := d_eq.symm
+--     rw [h, FiniteDimensional.finrank_zero_iff (R := k_s) (M := D),
+--       ← not_nontrivial_iff_subsingleton] at d_eq
+--     tauto
+--   -- suffices Matrix (Fin n) (Fin n) D ≃ₐ[k_s] Matrix (Fin (deg k k_bar A)) (Fin (deg k k_bar A)) k_s by
+--   --   exact ((id this.symm).trans (id iso.symm)).symm
+--   -- have e1 := deg_sq_eq_dim k k_bar A
+--   -- have e2 := matrixEquivTensor (A := D) (R := k_s) (n := Fin n)
+--   -- have e3 := LinearEquiv.finrank_eq e2.toLinearEquiv
+--   -- have e4 := LinearEquiv.finrank_eq iso.toLinearEquiv
+--   -- rw [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_matrix k_s (Fin n) (Fin n),
+--   --   ← e4, FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
+--   --   Fintype.card_fin, ← e1] at e3; clear e4 e1
+--   sorry
 
 theorem finite_sep_split (A : CSA k): ∃(L : Type u)(_ : Field L)(_ : Algebra k L)
     (fin_dim : FiniteDimensional k L)(_ : Algebra.IsSeparable k L), isSplit k A L := sorry

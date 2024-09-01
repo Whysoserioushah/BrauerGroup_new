@@ -395,17 +395,17 @@ lemma C_iso_surj: Function.Surjective (C_iso_toFun K A B) := by
   rw [inclusion1_apply]
   simp only [mul_one, unop_one, OneMemClass.coe_one]
 
-def C_iso (B : Subalgebra K A) [IsSimpleOrder (RingCon B)]:
+def C_iso (B : Subalgebra K A) [IsSimpleOrder (TwoSidedIdeal B)]:
     (Subalgebra.centralizer (A := A) K B) ≃ₐ[K]
     Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B) :=
   AlgEquiv.ofBijective (C_iso_toFun K A B) ⟨C_iso_inj K A B, C_iso_surj K A B⟩
 
 section centralsimple
 
-variable [hA : IsCentralSimple K A] [FiniteDimensional K A] [IsSimpleOrder (RingCon B)]
+variable [hA : IsCentralSimple K A] [FiniteDimensional K A] [IsSimpleOrder (TwoSidedIdeal B)]
 
-instance : IsSimpleOrder (RingCon (A ⊗[K] Bᵐᵒᵖ)) :=
-  (OrderIso.isSimpleOrder_iff (RingCon.orderIsoOfRingEquiv
+instance : IsSimpleOrder (TwoSidedIdeal (A ⊗[K] Bᵐᵒᵖ)) :=
+  (OrderIso.isSimpleOrder_iff (TwoSidedIdeal.orderIsoOfRingEquiv
     (Algebra.TensorProduct.comm K A Bᵐᵒᵖ))).2 $
     @IsCentralSimple.TensorProduct.simple K _ Bᵐᵒᵖ A _ _ _ _ _ hA
 
@@ -448,7 +448,7 @@ instance : Algebra K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) := sorry
 --   <;> sorry
 -- }
 
-lemma centralizer_is_simple : IsSimpleOrder (RingCon (Subalgebra.centralizer (A := A) K B)) := by
+lemma centralizer_is_simple : IsSimpleOrder (TwoSidedIdeal (Subalgebra.centralizer (A := A) K B)) := by
   haveI := hA.2
   obtain ⟨M, _, _, _, ι, ⟨iso⟩⟩:= directSum_simple_module_over_simple_ring K (A ⊗[K] Bᵐᵒᵖ) $
     A_inst K A B
