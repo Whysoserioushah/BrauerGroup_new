@@ -53,7 +53,8 @@ def K'' (e : split K A K_bar) : Type u := K' K K_bar A e
 instance (e : split K A K_bar) : Field (K'' K K_bar A e) := by unfold K''; infer_instance
 instance (e : split K A K_bar) : Algebra K (K'' K K_bar A e) := by unfold K''; infer_instance
 instance (e : split K A K_bar) : Algebra (K'' K K_bar A e) K_bar := by unfold K''; infer_instance
-instance (e : split K A K_bar) : IsScalarTower K (K'' K K_bar A e) K_bar := by unfold K''; infer_instance
+instance (e : split K A K_bar) : IsScalarTower K (K'' K K_bar A e) K_bar := by
+  unfold K''; infer_instance
 
 def b_as_K' (e : split K A K_bar) (i j : Fin e.n)
     (k : Fin (FiniteDimensional.finrank K A)) :
@@ -65,8 +66,8 @@ def b_as_K' (e : split K A K_bar) (i j : Fin e.n)
 
 --open scoped algebraMap
 
-def foobar {K L : Type*} [Field K] [Field L] [Algebra K L] {A B : IntermediateField K L} (h : A = B) : A ≃ₗ[K] B :=
-  h ▸ LinearEquiv.refl _ _
+def foobar {K L : Type*} [Field K] [Field L] [Algebra K L] {A B : IntermediateField K L}
+    (h : A = B) : A ≃ₗ[K] B := h ▸ LinearEquiv.refl _ _
 
 omit [IsAlgClosure K K_bar] in
 lemma coe_b_as_K' (e : split K A K_bar) (i j : Fin e.n)
@@ -102,8 +103,8 @@ lemma basis'_li (e) : LinearIndependent (K'' K K_bar A e) fun i : Fin e.n × Fin
         rw [linearIndependent_iff]
         intro c hc
         apply_fun (emb (e := e)) at hc
-        dsimp only [Finsupp.linearCombination, Finsupp.coe_lsum, LinearMap.coe_smulRight, LinearMap.id_coe,
-          id_eq, Finsupp.sum] at hc
+        dsimp only [Finsupp.linearCombination, Finsupp.coe_lsum, LinearMap.coe_smulRight,
+          LinearMap.id_coe, id_eq, Finsupp.sum] at hc
         rw [map_sum] at hc
         simp_rw [Finset.smul_sum, smul_tmul', map_sum, emb_tmul, smul_eq_mul] at  hc
         unfold K'' K' at hc
@@ -158,8 +159,8 @@ lemma e'Aux_apply_basis (e : split K A K_bar)
     (e'Aux (e := e) (∑ k, b_as_K' (e := e) i j k ⊗ₜ FiniteDimensional.finBasis K A k)) =
     Matrix.stdBasisMatrix i j 1 := by
   simp only [e'Aux]
-  have := (basis' (e := e)).equiv_apply (b' := Matrix.stdBasis (K'' K K_bar A e) (Fin e.n) (Fin e.n))
-    ⟨i, j⟩ (Equiv.refl _)
+  have := (basis' (e := e)).equiv_apply (b' := Matrix.stdBasis (K'' K K_bar A e)
+    (Fin e.n) (Fin e.n)) ⟨i, j⟩ (Equiv.refl _)
   rw [basis'_apply (e := e)] at this
   erw [this]
   ext
@@ -186,7 +187,8 @@ omit [IsAlgClosure K K_bar] in
 lemma foobar2 (e : split K A K_bar) (x : K'' K K_bar A e) :
     (algebraMap (K'' K K_bar A e) K_bar) x = Subtype.val x := rfl
 
-instance (e) : LinearMap.CompatibleSMul (K_bar ⊗[K] A.carrier) (Matrix (Fin e.n) (Fin e.n) K_bar) (K'' K K_bar A e) K_bar := by
+instance (e) : LinearMap.CompatibleSMul (K_bar ⊗[K] A.carrier) (Matrix (Fin e.n) (Fin e.n) K_bar)
+  (K'' K K_bar A e) K_bar := by
   unfold K''
   infer_instance
 
