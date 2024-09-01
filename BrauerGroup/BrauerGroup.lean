@@ -1,5 +1,5 @@
 import BrauerGroup.CentralSimple
-import BrauerGroup.Composition
+import Mathlib.Data.Matrix.Composition
 import Mathlib.LinearAlgebra.Matrix.ToLin
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
@@ -230,11 +230,11 @@ def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivale
   obtain ⟨n, m, hn, hm, iso1⟩ := hAB
   obtain ⟨p, q, hp, hq, iso2⟩ := hBC
   refine ⟨⟨_, _, Nat.mul_ne_zero hp hn, Nat.mul_ne_zero hm hq,
-    matrix_eqv' _ _ _ |>.symm.trans $ Matrix.comp_algHom _ _ _ _|>.symm.trans $
-      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.comp_algHom _ _ _ _|>.trans $ ?_⟩⟩
+    matrix_eqv' _ _ _ |>.symm.trans $ Matrix.compAlgEquiv _ _ _ _|>.symm.trans $
+      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.compAlgEquiv _ _ _ _|>.trans $ ?_⟩⟩
   exact Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans $
-    Matrix.comp_algHom (Fin m) (Fin p) B K|>.symm.trans $ iso2.mapMatrix.trans $
-    Matrix.comp_algHom _ _ _ _|>.trans $ matrix_eqv' _ _ _
+    Matrix.compAlgEquiv _ _ _ _|>.symm.trans $ iso2.mapMatrix.trans $
+    Matrix.compAlgEquiv _ _ _ _|>.trans $ matrix_eqv' _ _ _
 
 lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B := by
   exact ⟨⟨_, _, one_ne_zero, one_ne_zero, h.mapMatrix (m := (Fin 1))⟩⟩
@@ -336,9 +336,8 @@ open IsBrauerEquivalent
 def matrix_comp (n m : ℕ) (A : Type*) [Ring A] [Algebra K A]:
     Matrix (Fin n) (Fin n) (Matrix (Fin m) (Fin m) A) ≃ₐ[K]
     Matrix (Fin m) (Fin m) (Matrix (Fin n) (Fin n) A) :=
-  (Matrix.comp_algHom _ _ _ _).trans $ (Matrix.swap_algHom _ _ _ _).trans
-    (Matrix.comp_algHom _ _ _ _).symm
-
+  Matrix.compAlgEquiv _ _ _ _|>.trans $ Matrix.reindexAlgEquiv _ _ (.prodComm _ _) |>.trans $
+    Matrix.compAlgEquiv _ _ _ _|>.symm
 
 theorem eqv_mat (A : CSA K) (n : ℕ) (hn : n ≠ 0): IsBrauerEquivalent A (matrix_A _ hn A) := by
   refine ⟨⟨n, 1, hn, one_ne_zero, ?_⟩⟩
@@ -503,13 +502,30 @@ lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) o
   have := tensor_op_self K A
   exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso _|>.trans this⟩⟩
 
+variable (K R : Type*) [CommSemiring K] [Semiring R] [Algebra K R] in
+open BigOperators Matrix MulOpposite in
+/-- Mn(Rᵒᵖ) ≃ₐ[K] Mₙ(R)ᵒᵖ -/
+def matrixEquivMatrixMop_algebra (n : ℕ):
+    Matrix (Fin n) (Fin n) Rᵐᵒᵖ ≃ₐ[K] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
+  toFun := fun M => op (M.transpose.map (fun d => d.unop))
+  invFun := fun M => M.unop.transpose.map (fun d => op d)
+  left_inv a := by aesop
+  right_inv a := by aesop
+  map_mul' x y := unop_injective $ by ext; simp [transpose_map, transpose_apply, mul_apply]
+  map_add' x y := by aesop
+  commutes' k := by
+    simp only [MulOpposite.algebraMap_apply, op_inj]; ext i j
+    simp only [map_apply, transpose_apply, algebraMap_matrix_apply]
+    if h : i = j then simp only [h, ↓reduceIte, MulOpposite.algebraMap_apply, unop_op]
+    else simp only [MulOpposite.algebraMap_apply, h, ↓reduceIte, unop_eq_zero_iff, ite_eq_right_iff,
+      op_eq_zero_iff]; tauto
 
 lemma inv_eqv (A B: CSA K) (hAB : IsBrauerEquivalent A B):
     IsBrauerEquivalent (inv (K := K) A) (inv (K := K) B) := by
   unfold inv
   obtain ⟨n, m, hn, hm, iso⟩ := hAB
-  exact ⟨⟨n, m, hn, hm, (Matrix.matrixEquivMatrixMop_algebra _ _ _).trans
-    $ (AlgEquiv.op iso).trans (Matrix.matrixEquivMatrixMop_algebra _ _ _).symm⟩⟩
+  refine ⟨⟨n, m, hn, hm, (matrixEquivMatrixMop_algebra _ _ _).trans $
+    (AlgEquiv.op iso).trans (matrixEquivMatrixMop_algebra _ _ _).symm⟩⟩
 
 instance Inv: Inv (BrGroup (K := K)) := ⟨Quotient.lift (fun A ↦ Quotient.mk (CSA_Setoid) $ inv A)
 (by

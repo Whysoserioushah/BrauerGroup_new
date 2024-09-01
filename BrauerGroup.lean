@@ -2,7 +2,6 @@ import BrauerGroup.AlgClosedUnion
 import BrauerGroup.Automorphism
 import BrauerGroup.BrauerGroup
 import BrauerGroup.CentralSimple
-import BrauerGroup.Composition
 import BrauerGroup.Con
 import BrauerGroup.Dual
 import BrauerGroup.ExtendScalar
