@@ -1,5 +1,5 @@
 import Mathlib.LinearAlgebra.PiTensorProduct
-import Mathlib.GroupTheory.MonoidLocalization
+import Mathlib.GroupTheory.MonoidLocalization.Basic
 import Mathlib.LinearAlgebra.Finsupp
 import Mathlib.Algebra.Algebra.Basic
 

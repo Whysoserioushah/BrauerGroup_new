@@ -1,7 +1,7 @@
 import Mathlib.RingTheory.TensorProduct.Basic
 import BrauerGroup.CentralSimple
 import Mathlib.FieldTheory.PurelyInseparable
-import Mathlib.RingTheory.IntegralClosure
+import Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic
 
 universe u
 

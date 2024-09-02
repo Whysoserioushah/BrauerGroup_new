@@ -1,11 +1,12 @@
-import Mathlib.Algebra.CharP.Defs
-import Mathlib.Algebra.Module.Opposites
-import Mathlib.LinearAlgebra.Alternating.Basic
-import Mathlib.RingTheory.Congruence.Basic
+import Mathlib.RingTheory.Congruence.BigOperators
+import Mathlib.RingTheory.TwoSidedIdeal.Lattice
+import Mathlib.Algebra.BigOperators.Ring
+import Mathlib.Data.Fintype.BigOperators
 import Mathlib.RingTheory.Ideal.Basic
+import Mathlib.Algebra.Algebra.Hom
 
 variable {M : Type*} [AddCommMonoid M] (r : AddCon M) {ι : Type*} (s : Finset ι)
-variable {R : Type*} [Ring R] (t : RingCon R)
+variable {R : Type*} [Ring R] (t : TwoSidedIdeal R)
 
 open BigOperators MulOpposite
 
@@ -24,205 +25,115 @@ lemma sum {f g : ι → M} (h : ∀ i ∈ s, r (f i) (g i)) :
 
 end AddCon
 
-namespace RingCon
+namespace TwoSidedIdeal
 
 variable {t s}
 
-lemma sum {f g : ι → R} (h : ∀ i ∈ s, t (f i) (g i)) :
-    t (∑ i in s, f i) (∑ i in s, g i) :=
-  t.toAddCon.sum h
+lemma sum {f g : ι → R} (h : ∀ i ∈ s, t.ringCon (f i) (g i)) :
+    t.ringCon (∑ i in s, f i) (∑ i in s, g i) :=
+  t.ringCon.toAddCon.sum h
 
 variable (t)
 
-instance : SetLike (RingCon R) R where
-  coe t := {r | t r 0}
-  coe_injective' t₁ t₂ (h : {x | _} = {x | _}) := by
-    refine RingCon.ext fun a b ↦ ⟨fun H ↦ ?_, fun H ↦ ?_⟩
-    · have H' : a - b ∈ {x | t₁ x 0} := sub_self b ▸  t₁.sub H (t₁.refl b)
-      rw [h] at H'
-      convert t₂.add H' (t₂.refl b) using 1 <;> abel
-    · have H' : a - b ∈ {x | t₂ x 0} := sub_self b ▸  t₂.sub H (t₂.refl b)
-      rw [← h] at H'
-      convert t₁.add H' (t₁.refl b) using 1 <;> abel
+-- /--
+-- An alternative constructor for `RingCon`, making it obvious that we are view it as a
+-- two-sided-ideal.
+-- -/
+-- @[simps]
+-- def fromIdeal
+--     (carrier : Set R)
+--     (zero : 0 ∈ carrier)
+--     (add : ∀ a b, a ∈ carrier → b ∈ carrier → a + b ∈ carrier)
+--     (neg : ∀ a, a ∈ carrier → -a ∈ carrier)
+--     (left_absorb : ∀ a b, b ∈ carrier → a * b ∈ carrier)
+--     (right_absorb : ∀ a b, a ∈ carrier → a * b ∈ carrier) : RingCon R where
+--   r a b := a - b ∈ carrier
+--   iseqv :=
+--   { refl := fun a ↦ by simpa
+--     symm := fun {x y} h ↦ by
+--       simpa only [show y - x = -(x - y) by abel] using neg _ h
+--     trans := fun {a b c } h1 h2 ↦ by
+--       simpa only [show a - c = (a - b) + (b - c) by abel] using add _ _ h1 h2 }
+--   mul' {a b c d} h1 h2 := show _ - _ ∈ _ by
+--     change a * c - b * d ∈ carrier
+--     rw [show a * c - b * d = (a - b) * c + b * (c - d) by
+--       rw [sub_mul, mul_sub]; aesop]
+--     exact add _ _ (right_absorb _ _ h1) (left_absorb _ _ h2)
+--   add' {a b c d} h1 h2 := by
+--     change (a + c) - (b + d) ∈ carrier
+--     rw [show (a + c) - (b + d) = (a - b) + (c - d) by abel]
+--     exact add _ _ h1 h2
 
-/--
-An alternative constructor for `RingCon`, making it obvious that we are view it as a
-two-sided-ideal.
--/
-@[simps]
-def fromIdeal
-    (carrier : Set R)
-    (zero : 0 ∈ carrier)
-    (add : ∀ a b, a ∈ carrier → b ∈ carrier → a + b ∈ carrier)
-    (neg : ∀ a, a ∈ carrier → -a ∈ carrier)
-    (left_absorb : ∀ a b, b ∈ carrier → a * b ∈ carrier)
-    (right_absorb : ∀ a b, a ∈ carrier → a * b ∈ carrier) : RingCon R where
-  r a b := a - b ∈ carrier
-  iseqv :=
-  { refl := fun a ↦ by simpa
-    symm := fun {x y} h ↦ by
-      simpa only [show y - x = -(x - y) by abel] using neg _ h
-    trans := fun {a b c } h1 h2 ↦ by
-      simpa only [show a - c = (a - b) + (b - c) by abel] using add _ _ h1 h2 }
-  mul' {a b c d} h1 h2 := show _ - _ ∈ _ by
-    change a * c - b * d ∈ carrier
-    rw [show a * c - b * d = (a - b) * c + b * (c - d) by
-      rw [sub_mul, mul_sub]; aesop]
-    exact add _ _ (right_absorb _ _ h1) (left_absorb _ _ h2)
-  add' {a b c d} h1 h2 := by
-    change (a + c) - (b + d) ∈ carrier
-    rw [show (a + c) - (b + d) = (a - b) + (c - d) by abel]
-    exact add _ _ h1 h2
+-- @[simp] lemma mem_fromIdeal
+--     (carrier : Set R)
+--     (zero : 0 ∈ carrier)
+--     (add : ∀ a b, a ∈ carrier → b ∈ carrier → a + b ∈ carrier)
+--     (neg : ∀ a, a ∈ carrier → -a ∈ carrier)
+--     (left_absorb : ∀ a b, b ∈ carrier → a * b ∈ carrier)
+--     (right_absorb : ∀ a b, a ∈ carrier → a * b ∈ carrier)
+--     (x) :
+--     x ∈ fromIdeal carrier zero add neg left_absorb right_absorb ↔ x ∈ carrier := by
+--   simp only [fromIdeal]
+--   change _ ∈ carrier ↔ _
+--   rw [sub_zero]
 
-@[simp] lemma mem_fromIdeal
-    (carrier : Set R)
-    (zero : 0 ∈ carrier)
-    (add : ∀ a b, a ∈ carrier → b ∈ carrier → a + b ∈ carrier)
-    (neg : ∀ a, a ∈ carrier → -a ∈ carrier)
-    (left_absorb : ∀ a b, b ∈ carrier → a * b ∈ carrier)
-    (right_absorb : ∀ a b, a ∈ carrier → a * b ∈ carrier)
-    (x) :
-    x ∈ fromIdeal carrier zero add neg left_absorb right_absorb ↔ x ∈ carrier := by
-  simp only [fromIdeal]
-  change _ ∈ carrier ↔ _
-  rw [sub_zero]
-
-variable (I : RingCon R)
-
-lemma zero_mem : 0 ∈ I := I.refl 0
-
-lemma add_mem {x y} (hx : x ∈ I) (hy : y ∈ I) : x + y ∈ I := by
-  simpa using I.add hx hy
-
-lemma neg_mem {x} (hx : x ∈ I) : -x ∈ I := by
-  simpa using I.neg hx
-
-lemma sub_mem {x y} (hx : x ∈ I) (hy : y ∈ I) : x - y ∈ I := by
-  convert I.add_mem hx (I.neg_mem hy) using 1; abel
-
-lemma mul_mem_left (x y) (hy : y ∈ I) : x * y ∈ I := by
-  simpa using I.mul (I.refl x) hy
-
-lemma mul_mem_right (x y) (hx : x ∈ I) : x * y ∈ I := by
-  simpa using I.mul hx (I.refl y)
+variable (I : TwoSidedIdeal R)
 
 lemma smul_mem (r : R) {x} (hx : x ∈ I) : r • x ∈ I := by
-  simpa using I.mul (I.refl r) hx
+  simpa using I.ringCon.mul (I.ringCon.refl r) hx
 
 lemma sum_mem (f : ι → R) (h : ∀ i ∈ s, f i ∈ I) : ∑ i in s, f i ∈ I := by
   simpa using I.sum h
-
-instance : AddCommGroup I where
-  add x y := ⟨x.1 + y.1, I.add_mem x.2 y.2⟩
-  add_assoc x y z := by
-    ext; show x.1 + y.1 + z.1 = x.1 + (y.1 + z.1); abel
-  zero := ⟨0, I.zero_mem⟩
-  zero_add x := by
-    ext; show 0 + x.1 = x.1; abel
-  add_zero x := by
-    ext; show x.1 + 0 = x.1; abel
-  nsmul n x := ⟨n • x.1, n.rec (by simpa using I.zero_mem) fun n hn ↦ by
-    simpa only [Nat.succ_eq_add_one, add_smul, one_smul] using I.add_mem hn x.2⟩
-  nsmul_zero x := by
-    ext; show 0 • x.1 = 0; simp
-  nsmul_succ n x := by
-    ext; show (n + 1) • x.1 = n • x.1 + x.1; simp [add_mul]
-  neg x := ⟨-x.1, I.neg_mem x.2⟩
-  sub x y := ⟨x.1 - y.1, I.sub_mem x.2 y.2⟩
-  sub_eq_add_neg x y := by
-    ext; show x.1 - y.1 = x.1 + -y.1; abel
-  zsmul n x := ⟨n • x.1, n.rec (fun a ↦ a.rec (by simpa using I.zero_mem)
-    (fun a ha ↦ by
-      simp only [Nat.succ_eq_add_one, Int.ofNat_eq_coe, Nat.cast_add, Nat.cast_one,
-        Int.cast_add, Int.cast_natCast, Int.cast_one, add_smul, one_smul]
-      exact I.add_mem ha x.2))
-    (fun a ↦ a.rec (by simpa using I.neg_mem x.2)
-    (fun a ha ↦ by
-      simp only [Nat.succ_eq_add_one, negSucc_zsmul, nsmul_eq_mul, Nat.cast_add, Nat.cast_one,
-        add_mul, one_mul, neg_add_rev] at ha ⊢
-      exact I.add_mem (I.neg_mem x.2) ha))⟩
-  zsmul_zero' x := by
-    ext; show 0 • x.1 = 0; simp
-  zsmul_succ' n x := by
-    ext; show ((n : ℤ) + 1) • x.1 = (n : ℤ) • x.1 + x; simp [add_mul]
-  zsmul_neg' n x := by
-    ext; show _ • x.1 = - (_ • x.1); simp [add_mul]
-  add_left_neg x := by
-    ext; show (-x.1) + x = 0; abel
-  add_comm x y := by
-    ext; show x.1 + y.1 = y.1 + x.1; abel
-
-instance : Module R I where
-  smul r x := ⟨r * x.1, I.mul_mem_left _ _ x.2⟩
-  one_smul x := by ext; show 1 * x.1 = x.1; simp
-  mul_smul x y z := by
-    ext; show (x * y) * z.1 = x * (y * z.1); simp [mul_assoc]
-  smul_zero x := by
-    ext; show x * 0 = 0; simp
-  smul_add x y z := by
-    ext; show x • (y.1 + z.1) = x • y.1 + x • z.1; simp [mul_add]
-  add_smul x y z := by
-    ext; show (x + y) • z.1 = x • z.1 + y • z.1; simp [add_mul]
-  zero_smul x := by
-    ext; show 0 * x.1 = 0; simp
-
-/--
-For any `RingCon R`, when we view it as an ideal, `subtype` is the injective linear map.
--/
-@[simps]
-def subtype : I →ₗ[R] R where
-  toFun x := x.1
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
-
-/--
-For any `RingCon R`, when we view it as an ideal in `Rᵒᵖ`, `subtype` is the injective linear map.
--/
-@[simps]
-def subtypeMop : I →ₗ[R] Rᵐᵒᵖ where
-  toFun x := MulOpposite.op x.1
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
 
 /--
 Any two-sided-ideal in `A` corresponds to a two-sided-ideal in `Aᵒᵖ`.
 -/
 @[simps]
-def toMop (rel : RingCon R) : (RingCon Rᵐᵒᵖ) :=
-{ r := fun a b ↦ rel b.unop a.unop
+def toMop (rel : TwoSidedIdeal R) : (TwoSidedIdeal Rᵐᵒᵖ) :=
+.mk
+{ r := fun a b ↦ rel.ringCon b.unop a.unop
   iseqv :=
-  { refl := fun a ↦ rel.refl a.unop
-    symm := rel.symm
-    trans := fun h1 h2 ↦ rel.trans h2 h1 }
-  mul' := fun h1 h2 ↦ rel.mul h2 h1
-  add' := rel.add }
+  { refl := fun a ↦ rel.ringCon.refl a.unop
+    symm := rel.ringCon.symm
+    trans := fun h1 h2 ↦ rel.ringCon.trans h2 h1 }
+  mul' := fun h1 h2 ↦ rel.ringCon.mul h2 h1
+  add' := rel.ringCon.add }
 
 /--
 Any two-sided-ideal in `Aᵒᵖ` corresponds to a two-sided-ideal in `A`.
 -/
 @[simps]
-def fromMop (rel : RingCon Rᵐᵒᵖ) : (RingCon R) :=
-{ r := fun a b ↦ rel (op b) (op a)
+def fromMop (rel : TwoSidedIdeal Rᵐᵒᵖ) : (TwoSidedIdeal R) :=
+.mk
+{ r := fun a b ↦ rel.ringCon (op b) (op a)
   iseqv :=
-  { refl := fun a ↦ rel.refl (op a)
-    symm := rel.symm
-    trans := fun h1 h2 ↦ rel.trans h2 h1 }
-  mul' := fun h1 h2 ↦ rel.mul h2 h1
-  add' := rel.add }
+  { refl := fun a ↦ rel.ringCon.refl (op a)
+    symm := rel.ringCon.symm
+    trans := fun h1 h2 ↦ rel.ringCon.trans h2 h1 }
+  mul' := fun h1 h2 ↦ rel.ringCon.mul h2 h1
+  add' := rel.ringCon.add }
 
 /--
 Two-sided-ideals of `A` and that of `Aᵒᵖ` corresponds bijectively to each other.
 -/
 @[simps]
-def toMopOrderIso : (RingCon R) ≃o (RingCon Rᵐᵒᵖ) where
+def toMopOrderIso : (TwoSidedIdeal R) ≃o (TwoSidedIdeal Rᵐᵒᵖ) where
   toFun := toMop
   invFun := fromMop
   left_inv := unop_op
   right_inv := unop_op
   map_rel_iff' {a b} := by
-    constructor <;>
-    · intro h _ _ H
-      exact h H
+    constructor
+    · intro h x H
+      have := @h (.op x) (by simp only [toMop, mem_iff] at H ⊢; exact a.ringCon.symm H)
+      simp only [Equiv.coe_fn_mk, toMop, mem_iff, RingCon.rel_mk, Con.rel_mk, unop_zero,
+        unop_op] at this ⊢
+      exact b.ringCon.symm this
+    · intro h x H
+      have := @h (x.unop) (by simp only [toMop, mem_iff] at H ⊢; exact a.ringCon.symm H)
+      simp only [Equiv.coe_fn_mk, toMop, mem_iff, RingCon.rel_mk, Con.rel_mk, unop_zero,
+        unop_op] at this ⊢
+      exact b.ringCon.symm this
 
 variable {R' : Type*} [Ring R']
 
@@ -230,16 +141,27 @@ variable {R' : Type*} [Ring R']
 Pulling back a RingCon across a ring hom.
 -/
 @[simps!]
-def comap {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (J : RingCon R') (f : F) :
-    RingCon R where
-  __ := J.toCon.comap f (map_mul f)
-  __ := J.toAddCon.comap f (map_add f)
+def comap {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (J : TwoSidedIdeal R') (f : F) :
+    TwoSidedIdeal R :=
+  .mk {
+    __ := J.ringCon.toCon.comap f (map_mul f)
+    __ := J.ringCon.toAddCon.comap f (map_add f)
+    }
 
-@[simp] lemma mem_comap {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (J : RingCon R') (f : F) (x) :
+@[simp] lemma mem_comap {F : Type*} [FunLike F R R'] [RingHomClass F R R']
+    (J : TwoSidedIdeal R') (f : F) (x) :
     x ∈ J.comap f ↔ f x ∈ J := by
-  change J (f x) (f 0) ↔ J (f x) 0
+  change J.ringCon (f x) (f 0) ↔ J.ringCon (f x) 0
   simp
 
+lemma comap_injective {F : Type*} [FunLike F R R'] [RingHomClass F R R']
+    (f : F) (hf : Function.Surjective f) :
+    Function.Injective (fun J : TwoSidedIdeal _ ↦ J.comap f) := by
+  intro I J h
+  refine SetLike.ext fun x => ?_
+  simp only [mem_comap] at h
+  obtain ⟨x, rfl⟩ := hf x
+  rw [← mem_comap, ← mem_comap, h]
 
 instance : Module Rᵐᵒᵖ I where
   smul r x := ⟨x.1 * r.unop, I.mul_mem_right _ _ x.2⟩
@@ -255,23 +177,10 @@ instance : Module Rᵐᵒᵖ I where
   zero_smul x := by
     ext ; show _ * 0 = 0; simp only [mul_zero]
 
-lemma le_iff (I J : RingCon R) : I ≤ J ↔ (I : Set R) ⊆ (J : Set R) := by
-  constructor
-  · intro h x hx
-    exact h hx
-  · intro h x y hxy
-    have h' : J _ _ := h <| sub_self y ▸ I.sub hxy (I.refl y)
-    convert J.add h' (J.refl y) <;>
-    abel
-
-lemma lt_iff (I J : RingCon R) : I < J ↔ (I : Set R) ⊂ (J : Set R) := by
-  rw [lt_iff_le_and_ne, Set.ssubset_iff_subset_ne, le_iff]
-  simp
-
 
 @[simps]
 def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (f : F) :
-    RingCon R ≃o RingCon R' where
+    TwoSidedIdeal R ≃o TwoSidedIdeal R' where
   toFun := (comap · (RingEquivClass.toRingEquiv f).symm)
   invFun := (comap · (RingEquivClass.toRingEquiv f))
   left_inv := fun I => SetLike.ext $ fun x => by simp
@@ -288,19 +197,22 @@ def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (
       exact h hx
 
 protected def ker {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) :
-    RingCon R :=
-  fromIdeal {x | f x = 0} (map_zero f)
-    (fun a b ha hb => show f (a + b) = 0 by rw [map_add f, ha, hb, zero_add])
-    (fun a ha => show f (-a) = 0 by rw [map_neg f, ha, neg_zero])
-    (fun a b hb => show f (a * b) = 0 by rw [map_mul f, hb, mul_zero])
-    (fun a b ha => show f (a * b) = 0 by rw [map_mul f, ha, zero_mul])
+    TwoSidedIdeal R :=
+  .mk' {x | f x = 0} (map_zero f)
+    (fun {a b} ha hb => show f (a + b) = 0 by rw [map_add f, ha, hb, zero_add])
+    (fun {a} ha => show f (-a) = 0 by rw [map_neg f, ha, neg_zero])
+    (fun {a b} hb => show f (a * b) = 0 by rw [map_mul f, hb, mul_zero])
+    (fun {a b} ha => show f (a * b) = 0 by rw [map_mul f, ha, zero_mul])
 
 @[simp]
 lemma mem_ker {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) (x) :
-    x ∈ RingCon.ker f ↔ f x = 0 := by simp [RingCon.ker]
+    x ∈ TwoSidedIdeal.ker f ↔ f x = 0 := by
+      simp only [TwoSidedIdeal.ker, mem_mk']
+      generalize_proofs h1 h2 h3 h4 h5
+      rw [mem_mk']  <;> aesop
 
 lemma injective_iff_ker_eq_bot {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) :
-    Function.Injective f ↔ RingCon.ker f = ⊥ := by
+    Function.Injective f ↔ TwoSidedIdeal.ker f = ⊥ := by
   rw [Function.Injective, eq_bot_iff, le_iff]
   change _ ↔ ∀ _, _
   simp only [SetLike.mem_coe, mem_ker]
@@ -313,8 +225,8 @@ lemma injective_iff_ker_eq_bot {F : Type*} [FunLike F R R'] [RingHomClass F R R'
     rw [← sub_eq_zero]
     exact h
 
-def span (s : Set R) : RingCon R :=
-ringConGen (fun a b ↦ a - b ∈ s)
+def span (s : Set R) : TwoSidedIdeal R :=
+.mk $ ringConGen (fun a b ↦ a - b ∈ s)
 
 lemma subset_span (s : Set R) : s ⊆ span s := by
   intro x hx
@@ -322,19 +234,21 @@ lemma subset_span (s : Set R) : s ⊆ span s := by
   change ringConGen _ x 0
   exact RingConGen.Rel.of _ _ (by simpa using hx)
 
-def span' (s : Set R) : RingCon R := fromIdeal
+def span' (s : Set R) : TwoSidedIdeal R := .mk'
   {x | ∃ (ι : Type) (fin : Fintype ι) (xL : ι → R) (xR : ι → R) (y : ι → s),
     x = ∑ i : ι, xL i * y i * xR i}
   ⟨Empty, Fintype.instEmpty, Empty.elim, Empty.elim, Empty.elim, by simp⟩
   (by
     rintro _ _ ⟨na, fina, xLa, xRa, ya, rfl⟩ ⟨nb, finb, xLb, xRb, yb, rfl⟩
-    refine ⟨na ⊕ nb, inferInstance, Sum.elim xLa xLb, Sum.elim xRa xRb, Sum.elim ya yb, by simp⟩)
+    refine ⟨na ⊕ nb, inferInstance, Sum.elim xLa xLb, Sum.elim xRa xRb, Sum.elim ya yb, by
+      simp⟩)
   (by
     rintro _ ⟨n, finn, xL, xR, y, rfl⟩
     exact ⟨n, finn, -xL, xR, y, by simp⟩)
   (by
     rintro a _ ⟨n, finn, xL, xR, y, rfl⟩
-    exact ⟨n, finn, a • xL, xR, y, by simp [Finset.mul_sum, mul_assoc]⟩)
+    exact ⟨n, finn, a • xL, xR, y, by
+      rw [Finset.mul_sum]; simp only [mul_assoc, Pi.smul_apply, smul_eq_mul]⟩)
   (by
     rintro _ b ⟨n, finn, xL, xR, y, rfl⟩
     exact ⟨n, finn, xL, fun x ↦ xR x * b, y, by simp [Finset.sum_mul, mul_assoc]⟩)
@@ -344,6 +258,14 @@ lemma mem_span'_iff_exists_fin (s : Set R) (x : R) :
     ∃ (ι : Type) (fin : Fintype ι) (xL : ι → R) (xR : ι → R) (y : ι → s),
     x = ∑ i : ι, xL i * (y i : R) * xR i := by
   simp [span']
+  generalize_proofs h1 h2 h3 h4 h5
+  erw [mem_mk']
+  · rfl
+  · assumption
+  · assumption
+  · assumption
+  · assumption
+
 
 lemma mem_span_iff_exists_fin (s : Set R) (x : R) :
     x ∈ span s ↔
@@ -351,17 +273,31 @@ lemma mem_span_iff_exists_fin (s : Set R) (x : R) :
     x = ∑ i : ι, xL i * (y i : R) * xR i := by
   suffices eq1 : span s = span' s by
     rw [eq1]
-    simp only [span', mem_fromIdeal, Set.mem_setOf_eq]
-  rw [span, ringConGen_eq]
+    simp only [span', Set.mem_setOf_eq]
+    generalize_proofs h1 h2 h3 h4 h5
+    rw [mem_mk']
+    · rfl
+    · assumption
+    · assumption
+    · assumption
+    · assumption
+
+  rw [span, RingCon.ringConGen_eq]
+  apply ringCon_injective
   refine sInf_eq_of_forall_ge_of_forall_gt_exists_lt ?_ ?_
   · rintro I (hI : ∀ a b, _ → _)
-    rw [le_iff]
+    -- rw [le_iff]
+    suffices span' s ≤ .mk I by
+      rw [ringCon_le_iff] at this
+      exact this
     intro x h
-    rw [SetLike.mem_coe, mem_span'_iff_exists_fin] at h
+    rw [mem_span'_iff_exists_fin] at h
     obtain ⟨n, finn, xL, xR, y, rfl⟩ := h
-    exact I.sum_mem _ fun i _ ↦ I.mul_mem_right _ _ (I.mul_mem_left _ _ <| hI (y i) 0 (by simp))
+    rw [mem_iff]
+    refine TwoSidedIdeal.sum_mem _ _ fun i _ ↦ TwoSidedIdeal.mul_mem_right _ _ _
+      (TwoSidedIdeal.mul_mem_left _ _ _ <| hI (y i) 0 (by simp))
   · rintro I hI
-    exact ⟨span' s, fun a b H ↦ ⟨PUnit, inferInstance, fun _ ↦ 1, fun _ ↦ 1,
+    exact ⟨(span' s).ringCon, fun a b H ↦ ⟨PUnit, inferInstance, fun _ ↦ 1, fun _ ↦ 1,
       fun _ ↦ ⟨a - b, by simp [H]⟩, by simp⟩, hI⟩
 
 lemma mem_span_ideal_iff_exists_fin (s : Ideal R) (x : R) :
@@ -375,7 +311,7 @@ lemma mem_span_ideal_iff_exists_fin (s : Ideal R) (x : R) :
   · rintro ⟨n, fin, xR, y, rfl⟩
     exact ⟨n, fin, 1, xR, y, by simp⟩
 
-lemma span_le {s : Set R} {I : RingCon R} : s ⊆ I ↔ span s ≤ I := by
+lemma span_le {s : Set R} {I : TwoSidedIdeal R} : s ⊆ I ↔ span s ≤ I := by
   rw [le_iff]
   constructor
   · intro h x hx
@@ -385,12 +321,12 @@ lemma span_le {s : Set R} {I : RingCon R} : s ⊆ I ↔ span s ≤ I := by
   · intro h x hx
     exact h $ subset_span s hx
 
-lemma coe_bot_set : ((⊥ : RingCon R) : Set R) = {0} := by
+lemma coe_bot_set : ((⊥ : TwoSidedIdeal R) : Set R) = {0} := by
   ext x
   simp only [SetLike.mem_coe, Set.mem_singleton_iff]
   rfl
 
-lemma coe_top_set : ((⊤ : RingCon R) : Set R) = Set.univ := by
+lemma coe_top_set : ((⊤ : TwoSidedIdeal R) : Set R) = Set.univ := by
   ext x
   simp only [SetLike.mem_coe, Set.mem_univ]
   rfl
@@ -401,54 +337,112 @@ universe u
 
 variable (A : Type u) [Ring A]
 
-instance [so : IsSimpleOrder (RingCon A)] : Nontrivial A := by
+instance [so : IsSimpleOrder (TwoSidedIdeal A)] : Nontrivial A := by
   refine subsingleton_or_nontrivial A |>.resolve_left fun r => ?_
   obtain ⟨x, y, hxy⟩ := so.1
   exact hxy $ SetLike.ext fun a => (show a = 0 from Subsingleton.elim _ _) ▸
-    by simp [RingCon.zero_mem]
+    by simp [TwoSidedIdeal.zero_mem]
 
-instance [Nontrivial A] : Nontrivial (RingCon A) :=
+instance [Nontrivial A] : Nontrivial (TwoSidedIdeal A) :=
 ⟨⊥, ⊤, by
-      apply_fun (· 0 1)
+      apply_fun (fun I => I.ringCon 0 1)
       convert false_ne_true
       -- Change after https://github.com/leanprover-community/mathlib4/pull/12860
       exact iff_false_iff.mpr zero_ne_one⟩
 
-lemma eq_bot_or_eq_top [so : IsSimpleOrder (RingCon A)] (I : RingCon A) :
+lemma eq_bot_or_eq_top [so : IsSimpleOrder (TwoSidedIdeal A)] (I : TwoSidedIdeal A) :
     I = ⊥ ∨ I = ⊤ := so.2 I
 
 lemma IsSimpleOrder.iff_eq_zero_or_injective [Nontrivial A] :
-    IsSimpleOrder (RingCon A) ↔
-    ∀ ⦃B : Type u⦄ [Ring B] (f : A →+* B), RingCon.ker f = ⊤ ∨ Function.Injective f := by
+    IsSimpleOrder (TwoSidedIdeal A) ↔
+    ∀ ⦃B : Type u⦄ [Ring B] (f : A →+* B), TwoSidedIdeal.ker f = ⊤ ∨ Function.Injective f := by
   classical
   constructor
   · intro so B _ f
-    if hker : RingCon.ker f = ⊤
+    if hker : TwoSidedIdeal.ker f = ⊤
     then exact Or.inl hker
     else
-      replace hker := so.2 (RingCon.ker f) |>.resolve_right hker
+      replace hker := so.2 (TwoSidedIdeal.ker f) |>.resolve_right hker
       rw [injective_iff_ker_eq_bot]
       exact Or.inr hker
   · intro h
     refine ⟨fun I => ?_⟩
-    rcases h I.mk' with h|h
+    rcases h I.ringCon.mk' with h|h
     · right
       rw [eq_top_iff, le_iff]
       rintro x -
-      have mem : x ∈ RingCon.ker I.mk' := by rw [h]; trivial
+      have mem : x ∈ TwoSidedIdeal.ker I.ringCon.mk' := by rw [h]; trivial
       rw [mem_ker] at mem
-      change _ = I.mk' 0 at mem
-      exact I.eq.mp mem
+      change _ = I.ringCon.mk' 0 at mem
+      exact I.ringCon.eq.mp mem
     · left
       rw [injective_iff_ker_eq_bot] at h
       rw [eq_bot_iff, le_iff]
       intro x hx
-      have mem : x ∈ RingCon.ker I.mk' := by
+      have mem : x ∈ TwoSidedIdeal.ker I.ringCon.mk' := by
         rw [mem_ker]
-        exact I.eq.mpr hx
+        exact I.ringCon.eq.mpr hx
       rw [h] at mem
+      exact mem
+
+lemma IsSimpleOrder.iff_eq_zero_or_injective'
+    (k : Type*) [CommRing k] [Algebra k A] [Nontrivial A] :
+    IsSimpleOrder (TwoSidedIdeal A) ↔
+    ∀ ⦃B : Type u⦄ [Ring B] [Algebra k B] (f : A →ₐ[k] B),
+      TwoSidedIdeal.ker f = ⊤ ∨ Function.Injective f := by
+  classical
+  constructor
+  · intro so B _ _ f
+    if hker : TwoSidedIdeal.ker f.toRingHom = ⊤
+    then exact Or.inl hker
+    else
+      replace hker := so.2 (TwoSidedIdeal.ker f) |>.resolve_right hker
+      rw [injective_iff_ker_eq_bot]
+      exact Or.inr hker
+  · intro h
+    refine ⟨fun I => ?_⟩
+    letI : Algebra k I.ringCon.Quotient :=
+    { __ := I.ringCon.mk'.comp (algebraMap k A)
+      smul := fun a => Quotient.map' (fun b => a • b) fun x y (h : I.ringCon x y) =>
+        show I.ringCon _ _ by
+        simp only
+        rw [Algebra.smul_def, Algebra.smul_def]
+        exact I.ringCon.mul (I.ringCon.refl (algebraMap k A a)) h
+      commutes' := by
+        simp only [RingHom.coe_comp, Function.comp_apply]
+        intro a b
+        induction b using Quotient.inductionOn' with
+        | h b =>
+          change _ * I.ringCon.mk' b = I.ringCon.mk' b * _
+          simp only [← map_mul, Algebra.commutes a b]
+
+      smul_def' := fun a b => by
+        simp only [RingHom.coe_comp, Function.comp_apply]
+        change Quotient.map' _ _ _ = _
+        induction b using Quotient.inductionOn' with
+        | h b =>
+          change _ = _ * I.ringCon.mk' _
+          simp only [Quotient.map'_mk'', ← map_mul, Algebra.smul_def]
+          rfl }
+    rcases @h I.ringCon.Quotient _ _ {I.ringCon.mk' with commutes' := fun a => rfl } with h|h
+    · right
+      rw [eq_top_iff, le_iff]
+      rintro x -
+      simp only at h
+      have mem : x ∈ TwoSidedIdeal.ker I.ringCon.mk' := by erw [h]; trivial
+      rw [mem_ker] at mem
+      change _ = I.ringCon.mk' 0 at mem
+      exact I.ringCon.eq.mp mem
+    · left
+      rw [injective_iff_ker_eq_bot] at h
+      rw [eq_bot_iff, le_iff]
+      intro x hx
+      have mem : x ∈ TwoSidedIdeal.ker I.ringCon.mk' := by
+        rw [mem_ker]
+        exact I.ringCon.eq.mpr hx
+      erw [h] at mem
       exact mem
 
 end IsSimpleOrder
 
-end RingCon
+end TwoSidedIdeal

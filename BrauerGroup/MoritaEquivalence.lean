@@ -1,5 +1,6 @@
 import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.CategoryTheory.Elementwise
+import Mathlib.CategoryTheory.Adjunction.Limits
 import Mathlib.Algebra.Module.LinearMap.End
 import Mathlib.RingTheory.SimpleModule
 import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
@@ -29,15 +30,18 @@ instance (M : Type*) [AddCommGroup M] [Module R M] : Module M[ι, R] (ι → M) 
     simp [add_smul, Finset.sum_add_distrib]
   zero_smul v := funext fun i => show ∑ _, _ = _ by simp
 
+omit [Inhabited ι] in
 lemma matrix_smul_vec_def {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M) :
     N • v = fun i => ∑ j : ι, N i j • v j := rfl
 
+omit [Inhabited ι] in
 lemma matrix_smul_vec_def' {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M) :
     N • v = ∑ j : ι, fun i => N i j • v j := by
   rw [matrix_smul_vec_def]
   ext
   simp
 
+omit [Inhabited ι] in
 lemma matrix_smul_vec_apply {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M)
     (i : ι) :
     (N • v) i = ∑ j : ι, N i j • v j := rfl
@@ -315,7 +319,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
 
         simp_rw [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one, ← Finset.sum_smul]
         congr 2
-        conv_lhs => rw [matrix_eq_sum_std_basis x]
+        conv_lhs => rw [Matrix.matrix_eq_sum_stdBasisMatrix x]
         rw [Finset.mul_sum]
         simp_rw [Finset.mul_sum]
         rw [Finset.sum_eq_single_of_mem (a := i)]
