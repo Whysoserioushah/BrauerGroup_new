@@ -414,21 +414,40 @@ instance : FiniteDimensional K (A ⊗[K] Bᵐᵒᵖ) := inferInstance
 set_option synthInstance.maxHeartbeats 40000 in
 instance : Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (A_inst K A B)) := inferInstance
 
-variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
+-- set_option synthInstance.maxHeartbeats 80000 in
+set_option maxHeartbeats 500000 in
+variable (ι M : Type u) [AddCommGroup M] [Module K M]
+    [Module (A ⊗[K] Bᵐᵒᵖ) M] [DecidableEq M]
+    [IsScalarTower K (A ⊗[K] Bᵐᵒᵖ) M] in
 instance : HSMul (A ⊗[K] (↥B)ᵐᵒᵖ) (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M))
     (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) where
   hSMul := fun x mn ↦ {
     toFun := fun im ↦ {
-      support := im.support
+      support := im.support.filter fun j => (x • im j) ≠ 0
       toFun := fun i ↦ x • im i
-      mem_support_toFun := fun j ↦ sorry
-    }
-    map_add' := sorry
-    map_smul' :=
-    sorry
+      mem_support_toFun := fun j ↦ ⟨fun hj ↦ by
+        simp only [ne_eq, Finset.mem_filter, Finsupp.mem_support_iff] at hj
+        exact hj.2, fun hj ↦ by
+          simp only [ne_eq, Finset.mem_filter, Finsupp.mem_support_iff]
+          simp only [ne_eq] at hj
+          constructor
+          · by_contra! hj'
+            simp only [hj', smul_zero, not_true_eq_false] at hj
+          · exact hj  ⟩}
+    map_add' := fun nm1 nm2 ↦ by
+      simp only [Finsupp.coe_add, Pi.add_apply, smul_add, ne_eq]
+      ext
+      simp only [Finsupp.coe_mk, Finsupp.coe_add, Pi.add_apply]
+    map_smul' := fun k nm ↦ by
+      ext i
+      simp only [Finsupp.coe_smul, Pi.smul_apply, ne_eq, Finsupp.coe_mk, RingHom.id_apply]
+      -- conv_lhs => sorry
+      sorry
+      -- rw [smul_comm]
+
   }
 
-variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] in
+variable (ι M : Type u) [AddCommGroup M] [Module (A ⊗[K] Bᵐᵒᵖ) M] [DecidableEq M] in
 instance modK: Module K (Module.End (A ⊗[K] Bᵐᵒᵖ) (ι →₀ M)) where
   smul k := fun x ↦ algebraMap K (A ⊗[K] Bᵐᵒᵖ) k • x
   one_smul := sorry
