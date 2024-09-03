@@ -961,8 +961,7 @@ def baseChange_idem.Aux (F K E : Type u) [Field F] [Field K] [Field E]
   TensorProduct.AlgebraTensorModule.congr
     (TensorProduct.AlgebraTensorModule.rid _ _ _) (LinearEquiv.refl _ _)
 
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 400000 in
+set_option maxHeartbeats 400000 in
 def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
     [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] (A : CSA F) :
     E ⊗[K] K ⊗[F] A ≃ₐ[E] (E ⊗[F] A.carrier) :=
@@ -971,7 +970,7 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
         rw [Algebra.smul_def, Algebra.smul_def, ← _root_.mul_assoc, mul_comm (algebraMap _ _ a),
           Algebra.smul_def, Algebra.smul_def, _root_.mul_assoc] }
   AlgEquiv.ofLinearEquiv (baseChange_idem.Aux F K E A)
-    (by sorry) -- simp [baseChange_idem.Aux,Algebra.TensorProduct.one_def]
+    (by simp [baseChange_idem.Aux,Algebra.TensorProduct.one_def])
     (by
       intro x y
       induction x using TensorProduct.induction_on -- with e a e a he ha
@@ -981,23 +980,33 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
         · rw [mul_zero, (baseChange_idem.Aux F K E A).map_zero, mul_zero]
         · rename_i x1 y1 x2 y2
           simp only [Aux, Algebra.TensorProduct.tmul_mul_tmul, LinearEquiv.trans_apply]
+          set f := (TensorProduct.AlgebraTensorModule.congr
+            (TensorProduct.AlgebraTensorModule.rid K E E) (LinearEquiv.refl F A))
+          set g := (TensorProduct.AlgebraTensorModule.assoc F K E E K A.carrier).symm
+          change f (g _) = _
+          save
           induction y1 using TensorProduct.induction_on -- with f b e a he ha
-          ·
-            sorry
+          · rw [zero_mul, TensorProduct.tmul_zero, g.map_zero,
+              f.map_zero, TensorProduct.tmul_zero,
+              g.map_zero, f.map_zero, zero_mul]
           · induction y2 using TensorProduct.induction_on -- with f b e a he ha
-            · sorry
-            · rename_i k1 a1 k2 a2
-              simp only [Algebra.TensorProduct.tmul_mul_tmul,
-                TensorProduct.AlgebraTensorModule.assoc_symm_tmul,
-                TensorProduct.AlgebraTensorModule.congr_tmul,
-                TensorProduct.AlgebraTensorModule.rid_tmul, LinearEquiv.refl_apply,
-                Algebra.mul_smul_comm, Algebra.smul_mul_assoc, ← mul_smul]
+            · rw [mul_zero, TensorProduct.tmul_zero, TensorProduct.tmul_zero,
+                g.map_zero, f.map_zero, mul_zero]
+            · simp only [Algebra.TensorProduct.tmul_mul_tmul,
+              TensorProduct.AlgebraTensorModule.assoc_symm_tmul,
+              TensorProduct.AlgebraTensorModule.congr_tmul,
+              TensorProduct.AlgebraTensorModule.rid_tmul, LinearEquiv.refl_apply,
+              Algebra.mul_smul_comm, Algebra.smul_mul_assoc, ← mul_smul, f, g]
               rw [mul_comm]
-            · sorry
-          · sorry
-          -- erw [TensorProduct.AlgebraTensorModule.assoc_symm_tmul]
-        · sorry
-      · sorry)
+            · rename_i a b c d h
+              simp only [mul_add, TensorProduct.tmul_add, g.map_add, f.map_add, d, h]
+          · rename_i a b c
+            simp only [add_mul, TensorProduct.tmul_add, g.map_add, f.map_add, b, c]
+        · rename_i a b
+          rw [mul_add, (Aux F K E A).map_add, a, b,
+            (Aux F K E A).map_add, mul_add]
+      · rename_i a b c d
+        simp only [add_mul, (Aux F K E A).map_add, c, d])
 
 
 
