@@ -4,7 +4,8 @@ import Mathlib.LinearAlgebra.Matrix.ToLin
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
 import Mathlib.Analysis.Complex.Polynomial.Basic
-
+import Mathlib.Algebra.Category.Ring.Basic
+import BrauerGroup.FieldCat
 
 suppress_compilation
 universe u v v₁ v₂ w
@@ -761,12 +762,12 @@ lemma e3Aux5 : Function.Surjective (e3Aux4 (K := K) (E := E) A m) := by
       rcases h₁ with ⟨a, h₁⟩
       refine ⟨a + m, ?_⟩
       convert congr($h₁+ $h₂) using 1
-      · exact _root_.map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
+      · exact map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
       · rw [TensorProduct.tmul_add]
   · rcases he with ⟨e, rfl⟩
     rcases ha with ⟨a, rfl⟩
     refine ⟨e + a, ?_⟩
-    exact _root_.map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
+    exact map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
 
 def e3 [csa_A : IsCentralSimple K A] :
     (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) ≃ₐ[E]
@@ -935,6 +936,122 @@ lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
   induction' A using Quotient.inductionOn' with A ;
   simp only [Quotient.map'_mk'']; apply Quotient.sound
   exact BrauerGroup.Alg_closed_equiv_one _
+
+instance IsAbelBrauer : CommGroup (BrGroup (K := K)) := {
+  __ := BrauerGroup.Bruaer_Group
+  mul_comm := fun A B ↦ by
+    induction' A using Quotient.inductionOn' with A
+    induction' B using Quotient.inductionOn' with B
+    apply Quotient.sound'
+    change IsBrauerEquivalent _ _
+    unfold mul
+    exact ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.mapMatrix $ Algebra.TensorProduct.comm _ _ _ ⟩⟩
+}
+
+open CategoryTheory
+
+def baseChange_idem.Aux (F K E : Type u) [Field F] [Field K] [Field E]
+    [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] (A : CSA F) :
+    E ⊗[K] K ⊗[F] A ≃ₗ[E] (E ⊗[F] A.carrier) :=
+  have : SMulCommClass F K E :=
+    { smul_comm := fun a b c => by
+        rw [Algebra.smul_def, Algebra.smul_def, ← _root_.mul_assoc, mul_comm (algebraMap _ _ a),
+          Algebra.smul_def, Algebra.smul_def, _root_.mul_assoc] }
+  (TensorProduct.AlgebraTensorModule.assoc F K E E K A).symm ≪≫ₗ
+  TensorProduct.AlgebraTensorModule.congr
+    (TensorProduct.AlgebraTensorModule.rid _ _ _) (LinearEquiv.refl _ _)
+
+set_option maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 400000 in
+def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
+    [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] (A : CSA F) :
+    E ⊗[K] K ⊗[F] A ≃ₐ[E] (E ⊗[F] A.carrier) :=
+  have : SMulCommClass F K E :=
+    { smul_comm := fun a b c => by
+        rw [Algebra.smul_def, Algebra.smul_def, ← _root_.mul_assoc, mul_comm (algebraMap _ _ a),
+          Algebra.smul_def, Algebra.smul_def, _root_.mul_assoc] }
+  AlgEquiv.ofLinearEquiv (baseChange_idem.Aux F K E A)
+    (by sorry) -- simp [baseChange_idem.Aux,Algebra.TensorProduct.one_def]
+    (by
+      intro x y
+      induction x using TensorProduct.induction_on -- with e a e a he ha
+
+      · rw [zero_mul, (baseChange_idem.Aux F K E A).map_zero, zero_mul]
+      · induction y using TensorProduct.induction_on -- with f b e a he ha
+        · rw [mul_zero, (baseChange_idem.Aux F K E A).map_zero, mul_zero]
+        · rename_i x1 y1 x2 y2
+          simp only [Aux, Algebra.TensorProduct.tmul_mul_tmul, LinearEquiv.trans_apply]
+          induction y1 using TensorProduct.induction_on -- with f b e a he ha
+          ·
+            sorry
+          · induction y2 using TensorProduct.induction_on -- with f b e a he ha
+            · sorry
+            · rename_i k1 a1 k2 a2
+              simp only [Algebra.TensorProduct.tmul_mul_tmul,
+                TensorProduct.AlgebraTensorModule.assoc_symm_tmul,
+                TensorProduct.AlgebraTensorModule.congr_tmul,
+                TensorProduct.AlgebraTensorModule.rid_tmul, LinearEquiv.refl_apply,
+                Algebra.mul_smul_comm, Algebra.smul_mul_assoc, ← mul_smul]
+              rw [mul_comm]
+            · sorry
+          · sorry
+          -- erw [TensorProduct.AlgebraTensorModule.assoc_symm_tmul]
+        · sorry
+      · sorry)
+
+
+
+
+
+lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
+    [Algebra F K] [Algebra F E] [Algebra K E] :
+    BrauerGroupHom.BaseChange (K := F) (E := E) =
+    (BrauerGroupHom.BaseChange (K := K) (E := E)).comp
+    BrauerGroupHom.BaseChange := by
+  ext A
+  simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.coe_comp, Function.comp_apply]
+  induction' A using Quotient.inductionOn' with A
+  simp only [Quotient.map'_mk'', Quotient.eq'']
+  change IsBrauerEquivalent _ _
+  refine ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.mapMatrix ?_⟩⟩
+  symm
+  -- letI : Algebra F A := inferInstance
+  -- letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
+  -- letI : Algebra F K := RingHom.toAlgebra f
+  -- letI : Algebra K E := RingHom.toAlgebra g
+  -- refine AlgEquiv.ofAlgHom ?_ ?_ ?_ ?_
+  sorry
+
+def Br : FieldCat ⥤ CommGrp where
+  obj F := .of $ BrGroup (K := F)
+  map {F K} f := @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f)
+  map_id F := by
+    ext A
+    simp only [CommGrp.coe_of, MonoidHom.coe_mk, OneHom.coe_mk, CommGrp.coe_id', id_eq]
+    simp only [CommGrp.coe_of] at A
+    induction' A using Quotient.inductionOn' with A
+    simp only [Quotient.map'_mk'', Quotient.eq'']
+    change IsBrauerEquivalent _ _
+    refine ⟨1, 1, by omega, by omega, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
+  map_comp {F K E} f g := by
+    ext A
+    simp only [CommGrp.coe_of, MonoidHom.coe_mk, OneHom.coe_mk, CommGrp.coe_comp',
+      Function.comp_apply]
+    simp only [CommGrp.coe_of] at A
+    induction' A using Quotient.inductionOn' with A
+    simp only [Quotient.map'_mk'', Quotient.eq'']
+    change IsBrauerEquivalent _ _
+    refine ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.mapMatrix ?_⟩⟩
+    symm
+    letI : Algebra F A := inferInstance
+    letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
+    letI : Algebra F K := RingHom.toAlgebra f
+    letI : Algebra K E := RingHom.toAlgebra g
+    refine AlgEquiv.ofAlgHom ?_ ?_ ?_ ?_
+    -- have := Algebra.TensorProduct.assoc
+    -- refine AlgEquiv.ofLinearEquiv ?_ ?_ ?_
+    -- refine @Algebra.TensorProduct.assoc F E K A.carrier _ _ (RingHom.toAlgebra (g.comp f)) _
+    --   (RingHom.toAlgebra f) _ A.algebra |>.symm.trans ?_
 
 end Q_to_C
 
