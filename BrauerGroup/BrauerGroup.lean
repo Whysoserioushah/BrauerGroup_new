@@ -1038,13 +1038,12 @@ def Br : FieldCat ⥤ CommGrp where
     change IsBrauerEquivalent _ _
     refine ⟨1, 1, by omega, by omega, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
   map_comp {F K E} f g := by
-    apply (config := {allowSynthFailures := true }) baseChange_idem
+    apply (config := { allowSynthFailures := true }) baseChange_idem
 
     letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
     letI : Algebra F K := RingHom.toAlgebra f
     letI : Algebra K E := RingHom.toAlgebra g
     exact IsScalarTower.of_algebraMap_smul fun r ↦ congrFun rfl
-
 end Q_to_C
 
 end BrauerGroupHom
