@@ -1013,7 +1013,7 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
 
 
 lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
-    [Algebra F K] [Algebra F E] [Algebra K E] :
+    [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] :
     BrauerGroupHom.BaseChange (K := F) (E := E) =
     (BrauerGroupHom.BaseChange (K := K) (E := E)).comp
     BrauerGroupHom.BaseChange := by
@@ -1024,12 +1024,7 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
   change IsBrauerEquivalent _ _
   refine ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.mapMatrix ?_⟩⟩
   symm
-  -- letI : Algebra F A := inferInstance
-  -- letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
-  -- letI : Algebra F K := RingHom.toAlgebra f
-  -- letI : Algebra K E := RingHom.toAlgebra g
-  -- refine AlgEquiv.ofAlgHom ?_ ?_ ?_ ?_
-  sorry
+  apply baseChange_idem.Aux'
 
 def Br : FieldCat ⥤ CommGrp where
   obj F := .of $ BrGroup (K := F)
@@ -1043,24 +1038,12 @@ def Br : FieldCat ⥤ CommGrp where
     change IsBrauerEquivalent _ _
     refine ⟨1, 1, by omega, by omega, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
   map_comp {F K E} f g := by
-    ext A
-    simp only [CommGrp.coe_of, MonoidHom.coe_mk, OneHom.coe_mk, CommGrp.coe_comp',
-      Function.comp_apply]
-    simp only [CommGrp.coe_of] at A
-    induction' A using Quotient.inductionOn' with A
-    simp only [Quotient.map'_mk'', Quotient.eq'']
-    change IsBrauerEquivalent _ _
-    refine ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.mapMatrix ?_⟩⟩
-    symm
-    letI : Algebra F A := inferInstance
+    apply (config := {allowSynthFailures := true }) baseChange_idem
+
     letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
     letI : Algebra F K := RingHom.toAlgebra f
     letI : Algebra K E := RingHom.toAlgebra g
-    refine AlgEquiv.ofAlgHom ?_ ?_ ?_ ?_
-    -- have := Algebra.TensorProduct.assoc
-    -- refine AlgEquiv.ofLinearEquiv ?_ ?_ ?_
-    -- refine @Algebra.TensorProduct.assoc F E K A.carrier _ _ (RingHom.toAlgebra (g.comp f)) _
-    --   (RingHom.toAlgebra f) _ A.algebra |>.symm.trans ?_
+    exact IsScalarTower.of_algebraMap_smul fun r ↦ congrFun rfl
 
 end Q_to_C
 
