@@ -937,6 +937,8 @@ lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
   simp only [Quotient.map'_mk'']; apply Quotient.sound
   exact BrauerGroup.Alg_closed_equiv_one _
 
+end Q_to_C
+
 instance IsAbelBrauer : CommGroup (BrGroup (K := K)) := {
   __ := BrauerGroup.Bruaer_Group
   mul_comm := fun A B ↦ by
@@ -1036,15 +1038,14 @@ def Br : FieldCat ⥤ CommGrp where
     induction' A using Quotient.inductionOn' with A
     simp only [Quotient.map'_mk'', Quotient.eq'']
     change IsBrauerEquivalent _ _
-    refine ⟨1, 1, by omega, by omega, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
+    exact ⟨1, 1, by omega, by omega, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
   map_comp {F K E} f g := by
     apply (config := { allowSynthFailures := true }) baseChange_idem
-
     letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
     letI : Algebra F K := RingHom.toAlgebra f
     letI : Algebra K E := RingHom.toAlgebra g
     exact IsScalarTower.of_algebraMap_smul fun r ↦ congrFun rfl
-end Q_to_C
+
 
 end BrauerGroupHom
 

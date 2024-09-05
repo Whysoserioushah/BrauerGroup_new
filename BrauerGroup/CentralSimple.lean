@@ -1005,17 +1005,17 @@ lemma isSimpleOrder_iff (α : Type*) [LE α] [BoundedOrder α] :
   · intro h; refine ⟨inferInstance, fun a => h.2 a⟩
   · rintro ⟨h, h'⟩; constructor; exact h'
 
-class Module.FaithfullyFlat (R : Type u) (M : Type v)
+class Module.FaithfullyFlat (R : Type u) (M : Type u)
     [CommRing R] [AddCommGroup M] [Module R M] : Prop where
   out :
-    ∀ (N₁ N₂ N₃ : Type w) [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃]
+    ∀ (N₁ N₂ N₃ : Type u) [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃]
     [Module R N₁] [Module R N₂] [Module R N₃] (l₁₂ : N₁ →ₗ[R] N₂) (l₂₃ : N₂ →ₗ[R] N₃),
     Function.Exact l₁₂ l₂₃ ↔
     Function.Exact (l₁₂.lTensor M) (l₂₃.lTensor M)
 
-lemma Module.FaithfullyFlat.rTensor (R : Type u) (M : Type v)
-    [CommRing R] [AddCommGroup M] [Module R M] [h : Module.FaithfullyFlat.{_, _, w} R M]
-    (N₁ N₂ N₃ : Type w) [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃]
+lemma Module.FaithfullyFlat.rTensor (R : Type u) (M : Type u)
+    [CommRing R] [AddCommGroup M] [Module R M] [h : Module.FaithfullyFlat R M]
+    (N₁ N₂ N₃ : Type u) [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃]
     [Module R N₁] [Module R N₂] [Module R N₃]
     (l₁₂ : N₁ →ₗ[R] N₂) (l₂₃ : N₂ →ₗ[R] N₃) :
     Function.Exact l₁₂ l₂₃ ↔
@@ -1039,26 +1039,68 @@ instance (R : Type*) [CommRing R] : Module.FaithfullyFlat R R := by
 open DirectSum TensorProduct
 
 lemma Module.FaithfullyFlat.iff_flat_and_faithful
-    (R : Type u) (M : Type v) [CommRing R] [AddCommGroup M] [Module R M] :
-    Module.FaithfullyFlat.{_, _, w} R M ↔
+    (R : Type u) (M : Type u) [CommRing R] [AddCommGroup M] [Module R M] :
+    Module.FaithfullyFlat R M ↔
     Module.Flat R M ∧
-    (∀ (N : Type v) [AddCommGroup N] [Module R N], Nontrivial N → Nontrivial (M ⊗[R] N)) := by
+    (∀ (N : Type u) [AddCommGroup N] [Module R N], Nontrivial N → Nontrivial (M ⊗[R] N)) := by
   constructor
   · intro hM
     constructor
-    · sorry
-    · intro N _ _ hN
-
+    ·
       sorry
-  sorry
+    · intro N _ _ hN
+      by_contra! hMN
+      have := subsingleton_or_nontrivial (M ⊗[R] N)
+      simp only [hMN, or_false] at this
+      have : (⊤ : Submodule R (M ⊗[R] N)) = 0 := Subsingleton.eq_zero ⊤
+      have hM' := hM.1 (0 : Submodule R N) N (0 : Submodule R N) 0 0 |>.2 (by
+          rw [LinearMap.exact_iff]
+          simp only [Submodule.zero_eq_bot, LinearMap.lTensor_zero, LinearMap.ker_zero,
+            LinearMap.range_zero, this] )
+      rw [LinearMap.exact_iff] at hM'
+      simp only [Submodule.zero_eq_bot, LinearMap.ker_zero, LinearMap.range_zero, top_ne_bot] at hM'
+  · rintro ⟨hM, hN⟩
+    refine ⟨fun N₁ N₂ N₃ _ _ _ _ _ _ l12 l23 ↦ ⟨fun hl ↦ ?_, fun hlt ↦ ?_⟩⟩
+    · have hl1 := Function.Exact.linearMap_ker_eq hl
+      have hl2 := Function.Exact.linearMap_comp_eq_zero hl
+      refine LinearMap.exact_of_comp_eq_zero_of_ker_le_range ?_ ?_
+      · ext m n1
+        simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+          LinearMap.coe_comp, Function.comp_apply, LinearMap.lTensor_tmul,
+          LinearMap.restrictScalars_zero, LinearMap.zero_apply]
+        have := DFunLike.ext_iff.1 hl2 n1
+        simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.zero_apply] at this
+        simp only [this, tmul_zero]
+      · sorry
+        -- intro x hx
+        -- simp only [LinearMap.mem_ker] at hx
+        -- induction x using TensorProduct.induction_on with
+        -- | zero => exact Submodule.zero_mem (LinearMap.range (LinearMap.lTensor M l12))
+        -- | tmul m n₂ =>
+        --   simp only [LinearMap.lTensor_tmul] at hx
+        --   if hm : m = 0 then
+        --   subst hm ; simp only [zero_tmul, LinearMap.mem_range]; exact ⟨0, rfl⟩
+        --   else
+        --   apply SetLike.ext_iff.1 at hl1
+        --   if hn2 : l23 n₂ ≠ 0 then
+        --   let E : Submodule R N₃ := Submodule.span R {l23 n₂}
+        --   have : Nontrivial E := ⟨⟨0, ⟨⟨l23 n₂, Submodule.mem_span_singleton_self _⟩,
+        --     Subtype.coe_ne_coe.1 hn2.symm⟩⟩⟩
+        --   specialize hN E this
+        --   sorry
+        --   else
+        --   simp only [ne_eq, Decidable.not_not] at hn2
+        --   have hn2' := hl1 n₂|>.1 hn2 ; obtain ⟨n₁, hn1⟩ := hn2'
+        --   exact ⟨m ⊗ₜ n₁,  by simp only [LinearMap.lTensor_tmul, hn1]⟩
+        -- | add x y hx' hy' => sorry
+    sorry
 
-universe uι in
 open TensorProduct in
-instance Module.FaithfullyFlat.directSum (ι : Type v) (R : Type u) [CommRing R]
-    (M : ι → Type v) [Small.{v, u} R] [Nonempty ι]
+instance Module.FaithfullyFlat.directSum (ι : Type u) (R : Type u) [CommRing R]
+    (M : ι → Type u) [Nonempty ι]
     [∀ i, AddCommGroup (M i)] [∀ i, Module R (M i)]
-    [faithfully_flat : ∀ i, Module.FaithfullyFlat.{_, _, v} R (M i)] :
-    Module.FaithfullyFlat.{u, v, w} R (⨁ i : ι, M i) := by
+    [faithfully_flat : ∀ i, Module.FaithfullyFlat R (M i)] :
+    Module.FaithfullyFlat R (⨁ i : ι, M i) := by
   rw [Module.FaithfullyFlat.iff_flat_and_faithful]
   haveI : ∀ i, Module.Flat R (M i) := by
     intro i
@@ -1086,14 +1128,13 @@ instance Module.FaithfullyFlat.directSum (ι : Type v) (R : Type u) [CommRing R]
     exact h
   exact Function.Surjective.nontrivial (LinearEquiv.surjective e)
 
-universe v' in
-lemma Module.FaithfullyFlat.congr {R : Type u} {M : Type v} {N : Type v'}
+lemma Module.FaithfullyFlat.congr {R : Type u} {M : Type u} {N : Type u}
     [CommRing R] [AddCommGroup M] [AddCommGroup N]
-    [Module R M] [Module R N] [h : Module.FaithfullyFlat.{u, v, w} R M]
-    (e : M ≃ₗ[R] N) : Module.FaithfullyFlat.{u, v', w} R N := by
+    [Module R M] [Module R N] [h : Module.FaithfullyFlat.{u} R M]
+    (e : M ≃ₗ[R] N) : Module.FaithfullyFlat.{u} R N := by
   constructor
   intro N₁ N₂ N₃ _ _ _ _ _ _ f g
-  rw [h.out]
+  rw [h.1]
   fapply Function.Exact.iff_of_ladder_linearEquiv
     (e₁ := TensorProduct.congr e.symm (LinearEquiv.refl _ _))
     (e₂ := TensorProduct.congr e.symm (LinearEquiv.refl _ _))
@@ -1179,7 +1220,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       aesop
     have : 1 ∈ TwoSidedIdeal.ker F := by rw [hF]; trivial
     simp only [TwoSidedIdeal.mem_ker, _root_.map_one, one_ne_zero] at this
-  · have h : Module.FaithfullyFlat.{u, u, u} K C := inferInstance
+  · have h : Module.FaithfullyFlat K C := inferInstance
     have : Function.Exact (0 : PUnit.{u + 1} →ₗ[K] _) F := by
       intro x
       simp only [Set.mem_range, LinearMap.zero_apply, exists_const]
@@ -1189,7 +1230,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       · rintro rfl; simp
 
     have : Function.Exact (0 : PUnit.{u + 1} →ₗ[K] _) f := by
-      refine Module.FaithfullyFlat.rTensor.{u, u, u} (h := h) (l₁₂ := (0 : PUnit →ₗ[K] _) )
+      refine Module.FaithfullyFlat.rTensor (h := h) (l₁₂ := (0 : PUnit →ₗ[K] _) )
         (l₂₃ := f.toLinearMap) |>.2 ?_
       intro x
       change F x = 0 ↔ _
