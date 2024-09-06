@@ -91,6 +91,7 @@ noncomputable abbrev iso₄_invFun (k : Type u) (A : Type v) [Field k] [Ring A] 
         Finsupp.mem_support_iff] at hy ⊢
       contrapose! hy
       refine funext fun i => ?_
+
       simp_rw [show ∀ i, (v i).toFun y = 0 from hy, mul_zero]
       simp only [Finset.sum_const_zero]
       rfl
@@ -291,6 +292,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           right_inv := by
             intro x
             apply Subsingleton.elim }
+      extract_goal
       refine ⟨iso ≪≫ₗ e ≪≫ₗ iso'.symm⟩
 
     replace HS : Nontrivial S := not_subsingleton_iff_nontrivial.mp HS
