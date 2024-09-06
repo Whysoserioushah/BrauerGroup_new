@@ -7,11 +7,12 @@ universe u
 
 suppress_compilation
 
-variable (R : Type u) [Ring R] (e : R) {I : Type*} [DecidableEq I]
+variable (R : Type u) [Ring R] (e : R)
 
 structure PrimitiveIdempotents: Prop where
   idem : IsIdempotentElem e
-  ne_sum_ortho : ∀(e' : I → R)(_ : OrthogonalIdempotents e')(i j : I), e ≠ e' i + e' j
+  ne_sum_ortho : ∀ {I : Type*} [DecidableEq I] (e' : I → R)
+    (_ : OrthogonalIdempotents (R := R) e') (i j : I), e ≠ e' i + e' j
 
 section
 
@@ -468,3 +469,22 @@ def ortho_idem_decomp_ring (I : Type u) [Fintype I] [DecidableEq I]
         map_smul' := by intros; rfl } rfl rfl
 
 end
+
+section indecomp
+
+def Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
+  Nontrivial M ∧ ∀(N N' : Submodule R M), ((N × N' ≃ₗ[R] M) → (N = ⊥ ∨ N' = ⊥))
+
+variable (e : R) (he : IsIdempotentElem e)
+
+include he in
+lemma indecomp_of_idem (he' : e ≠ (1 : R)): Module.Indecomposable R (Submodule.span R {e}) ↔
+    PrimitiveIdempotents R e := ⟨fun hI ↦ {
+      idem := he
+      ne_sum_ortho := by
+        by_contra! he
+
+        sorry
+    }, _⟩
+
+end indecomp
