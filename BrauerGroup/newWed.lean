@@ -417,6 +417,14 @@ lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodul
               Submodule.mem_span_singleton.2 ⟨1, by rw [one_smul]; exact heq⟩)|>.symm
         rw [hij] at hM
         sorry
-    }, sorry⟩
+    }, fun he => by
+      unfold Module.Indecomposable
+      constructor
+      · refine ⟨⟨e, Submodule.mem_span_singleton_self _⟩, ⟨0, by
+          by_contra! he0
+          -- obtain ⟨_, hno⟩ := he
+          -- have := hno ∅
+          sorry ⟩⟩
+      · sorry⟩
 
 end indecomp
