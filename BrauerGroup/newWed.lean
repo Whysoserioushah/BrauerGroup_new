@@ -325,7 +325,7 @@ def ortho_idem_directsum_equiv
     rw [show ∑ j : s, ortho_idem_directsum R I s e j ∘ₗ ortho_idem_directsum_inv_component R I s e i =
       ∑ j : s, if i = j then DirectSum.lof R s (fun i => Submodule.span R {e i}) i else 0 by
       refine Finset.sum_congr rfl ?_
-      intros j hj
+      intros j _
       rw [aux00]
       assumption]
     simp) (by
@@ -347,14 +347,14 @@ def ortho_idem_directsum_equiv
       simp only [Ideal.submodule_span_eq, smul_eq_mul, AddSubmonoid.coe_finset_sum,
         Submodule.coe_toAddSubmonoid]
       refine Finset.sum_congr rfl ?_
-      intro i hi
+      intro i _
       erw [orth_idem_directSum_apply_spec (he := he)]
       rfl
 
   simp only [Ideal.submodule_span_eq, ortho_idem_directsum_inv, smul_eq_mul,
     AddSubmonoid.coe_finset_sum, Submodule.coe_toAddSubmonoid]
   rw [← smul_eq_mul, Finset.smul_sum]
-  refine Finset.sum_congr rfl fun j hj ↦ by
+  refine Finset.sum_congr rfl fun j _ ↦ by
     unfold of --DFinsupp.singleAddHom
     simp only [toModule, DFinsupp.singleAddHom, smul_eq_mul]
     change (((DFinsupp.lsum ℕ) fun j ↦ ortho_idem_directsum_inv_component R I s e j)
@@ -363,7 +363,7 @@ def ortho_idem_directsum_equiv
     simp only [Ideal.submodule_span_eq, LinearMap.coe_mk, AddHom.coe_mk, mul_assoc,
       Finset.sum_coe_sort s e, OrthogonalIdempotents.mul_sum_of_mem he j.2] )
 
-def ortho_idem_decomp_ring (I : Type u) [Fintype I] [DecidableEq I] (s : Finset I)
+def ortho_idem_decomp_ring (I : Type u) [Fintype I] [DecidableEq I]
     (e : I → R) (he : ∑ i : I, e i  = 1) (he' : OrthogonalIdempotents e)
     [(i : I) → (x : ↥(Submodule.span R {e i})) → Decidable (x ≠ 0)] :
     (⨁ i : I, (Submodule.span R {e i})) ≃ₗ[R] R :=
