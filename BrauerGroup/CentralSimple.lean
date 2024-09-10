@@ -1038,8 +1038,12 @@ instance (R : Type*) [CommRing R] : Module.FaithfullyFlat R R := by
 
 open DirectSum TensorProduct
 
+lemma TensorProduct.puretensor_repr (R M N: Type u) [CommRing R] [AddCommGroup M] [Module R M]
+    [AddCommGroup N] [Module R N]: ∀(x : M ⊗[R] N), ∃(I : Finset (M ⊗[R] N)) (m : M ⊗[R] N → M)
+    (n : M ⊗[R] N → N), x = ∑ i in I, m i ⊗ₜ n i := by sorry
+
 lemma Module.FaithfullyFlat.iff_flat_and_faithful
-    (R : Type u) (M : Type u) [CommRing R] [AddCommGroup M] [Module R M] :
+    (R M : Type u) [CommRing R] [AddCommGroup M] [Module R M] :
     Module.FaithfullyFlat R M ↔
     Module.Flat R M ∧
     (∀ (N : Type u) [AddCommGroup N] [Module R N], Nontrivial N → Nontrivial (M ⊗[R] N)) := by
@@ -1071,7 +1075,29 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
         have := DFunLike.ext_iff.1 hl2 n1
         simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.zero_apply] at this
         simp only [this, tmul_zero]
-      · sorry
+      · have : LinearMap.lTensor M l23 ∘ₗ LinearMap.lTensor M l12 = 0 := by
+          ext m n1
+          simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+            LinearMap.coe_comp, Function.comp_apply, LinearMap.lTensor_tmul,
+            LinearMap.restrictScalars_zero, LinearMap.zero_apply]
+          have := DFunLike.ext_iff.1 hl2 n1
+          simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.zero_apply] at this
+          simp only [this, tmul_zero]
+        have : ∀(m : M)(n1 : N₁), (LinearMap.lTensor M l23 (LinearMap.lTensor M l12 (m ⊗ₜ n1)))
+          = 0 := fun m n1 ↦ by
+          have := DFunLike.ext_iff.1 this
+          simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.zero_apply] at this
+          exact this (m ⊗ₜ[R] n1)
+        simp only [LinearMap.lTensor_tmul] at this
+        intro x hx
+        simp only [LinearMap.mem_ker] at hx
+        obtain ⟨I, m, n, hx'⟩ := TensorProduct.puretensor_repr R M N₂ x
+        rw [hx', map_sum] at hx
+        simp only [LinearMap.lTensor_tmul] at hx
+        suffices ∀ x ∈ I, l23 (n x) = 0 by
+          have : ∃ (n1 : M ⊗[R] N₂ → N₁), ∀ x ∈ I, l12 (n1 x) = n x := by sorry
+          sorry
+        sorry
         -- intro x hx
         -- simp only [LinearMap.mem_ker] at hx
         -- induction x using TensorProduct.induction_on with
