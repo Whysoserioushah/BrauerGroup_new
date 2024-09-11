@@ -1040,18 +1040,44 @@ open DirectSum TensorProduct
 
 lemma TensorProduct.puretensor_repr (R M N: Type u) [CommRing R] [AddCommGroup M] [Module R M]
     [AddCommGroup N] [Module R N]: ∀(x : M ⊗[R] N), ∃(I : Finset (M ⊗[R] N)) (m : M ⊗[R] N → M)
-    (n : M ⊗[R] N → N), x = ∑ i in I, m i ⊗ₜ n i := by sorry
+    (n : M ⊗[R] N → N), x = ∑ i in I, m i ⊗ₜ n i := fun x => by
+  classical
+  have mem1 : x ∈ (⊤ : Submodule R _) := ⟨⟩
+  rw [← TensorProduct.span_tmul_eq_top, mem_span_set] at mem1
+  obtain ⟨r, hr, (eq1 : ∑ i in r.support, (_ • _) = _)⟩ := mem1
+  choose a a' haa' using hr
+  replace eq1 := calc _
+    x = ∑ i in r.support, r i • i := eq1.symm
+    _ = ∑ i in r.support.attach, (r i : R) • (i : (M ⊗[R] N))
+      := Finset.sum_attach _ _ |>.symm
+    _ = ∑ i in r.support.attach, (r i • a i.2 ⊗ₜ[R] a' i.2) := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [haa' i.2]
+    _ = ∑ i in r.support.attach, ((r i • a i.2) ⊗ₜ[R] a' i.2) := by
+      apply Finset.sum_congr rfl
+      intro i _
+      rw [TensorProduct.smul_tmul']
+  use r.support
+  use fun i => if h : i ∈ r.support then r i • a h else 0
+  use fun i => if h : i ∈ r.support then a' h else 0
+  rw [eq1] ; conv_rhs => rw [← Finset.sum_attach]
+  refine Finset.sum_congr rfl fun _ _ ↦ (by split_ifs with h <;> aesop)
 
 lemma Module.FaithfullyFlat.iff_flat_and_faithful
     (R M : Type u) [CommRing R] [AddCommGroup M] [Module R M] :
     Module.FaithfullyFlat R M ↔
     Module.Flat R M ∧
     (∀ (N : Type u) [AddCommGroup N] [Module R N], Nontrivial N → Nontrivial (M ⊗[R] N)) := by
+  classical
   constructor
   · intro hM
     constructor
-    ·
-      sorry
+    · obtain ⟨hM⟩ := hM
+      rw [Module.Flat.iff_lTensor_exact]
+      intro N₁ N₂ N₃ _ _ _ _ _ _ l12 l23
+      have := hM N₁ N₂ N₃ l12 l23
+      exact this.1
     · intro N _ _ hN
       by_contra! hMN
       have := subsingleton_or_nontrivial (M ⊗[R] N)
@@ -1091,34 +1117,44 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
         simp only [LinearMap.lTensor_tmul] at this
         intro x hx
         simp only [LinearMap.mem_ker] at hx
+        have hx1 := hx
         obtain ⟨I, m, n, hx'⟩ := TensorProduct.puretensor_repr R M N₂ x
         rw [hx', map_sum] at hx
         simp only [LinearMap.lTensor_tmul] at hx
-        suffices ∀ x ∈ I, l23 (n x) = 0 by
-          have : ∃ (n1 : M ⊗[R] N₂ → N₁), ∀ x ∈ I, l12 (n1 x) = n x := by sorry
-          sorry
-        sorry
-        -- intro x hx
-        -- simp only [LinearMap.mem_ker] at hx
-        -- induction x using TensorProduct.induction_on with
-        -- | zero => exact Submodule.zero_mem (LinearMap.range (LinearMap.lTensor M l12))
-        -- | tmul m n₂ =>
-        --   simp only [LinearMap.lTensor_tmul] at hx
-        --   if hm : m = 0 then
-        --   subst hm ; simp only [zero_tmul, LinearMap.mem_range]; exact ⟨0, rfl⟩
-        --   else
-        --   apply SetLike.ext_iff.1 at hl1
-        --   if hn2 : l23 n₂ ≠ 0 then
-        --   let E : Submodule R N₃ := Submodule.span R {l23 n₂}
-        --   have : Nontrivial E := ⟨⟨0, ⟨⟨l23 n₂, Submodule.mem_span_singleton_self _⟩,
-        --     Subtype.coe_ne_coe.1 hn2.symm⟩⟩⟩
-        --   specialize hN E this
-        --   sorry
-        --   else
-        --   simp only [ne_eq, Decidable.not_not] at hn2
-        --   have hn2' := hl1 n₂|>.1 hn2 ; obtain ⟨n₁, hn1⟩ := hn2'
-        --   exact ⟨m ⊗ₜ n₁,  by simp only [LinearMap.lTensor_tmul, hn1]⟩
-        -- | add x y hx' hy' => sorry
+        suffices ∀ i ∈ I, l23 (n i) = 0 by
+          have hni : ∀ i ∈ I, ∃ (n1 : N₁), l12 n1 = n i := fun i hi => by
+            have : n i ∈ LinearMap.range l12 := by
+              rw [← hl1]
+              simp only [LinearMap.mem_ker, this i hi]
+            simp only [LinearMap.mem_range] at this
+            exact ⟨this.choose, this.choose_spec⟩
+          have hnn1 : ∃ (n1 : M ⊗[R] N₂ → N₁), ∀ i ∈ I, l12 (n1 i) = n i := by
+            use fun i => if hi : i ∈ I then (hni i hi).choose else 0
+            intro i hi
+            simp only [hi, ↓reduceDIte]
+            exact (hni i hi).choose_spec
+          have n1 := hnn1.choose
+          have hx'' := hx'
+          replace hx' := calc _
+            ∑ i ∈ I, m i ⊗ₜ[R] n i = ∑ i ∈ I, m i ⊗ₜ[R] (l12 (hnn1.choose i)) := by
+              refine Finset.sum_congr rfl fun i hi => ?_
+              simp_rw [hnn1.choose_spec i hi]
+            _ = (LinearMap.lTensor M l12) (∑ i ∈ I, (m i ⊗ₜ[R] (hnn1.choose i))) := by
+              rw [map_sum]
+              refine Finset.sum_congr rfl fun i hi => ?_
+              simp only [LinearMap.lTensor_tmul]
+          have hx0 := hx''.trans hx'
+          exact ⟨(∑ i ∈ I, m i ⊗ₜ[R] hnn1.choose i), hx0.symm⟩
+        by_contra! hi
+        obtain ⟨j, hj', hj⟩ := hi
+        let E : Submodule R N₃ := Submodule.span R {l23 (n j)}
+        have : Nontrivial E := ⟨⟨0, ⟨⟨l23 (n j), Submodule.mem_span_singleton_self _⟩,
+          Subtype.coe_ne_coe.1 hj.symm⟩⟩⟩
+        specialize hN E this
+        have : (⊤ : Submodule R (M ⊗[R] E)) = (0 : Submodule R _) := sorry
+        have : (⊤ : Submodule R (M ⊗[R] E)) ≠ (0 : _) := sorry
+        tauto
+
     sorry
 
 open TensorProduct in
