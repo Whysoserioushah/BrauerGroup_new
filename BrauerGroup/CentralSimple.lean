@@ -1064,6 +1064,41 @@ lemma TensorProduct.puretensor_repr (R M N: Type u) [CommRing R] [AddCommGroup M
   rw [eq1] ; conv_rhs => rw [← Finset.sum_attach]
   refine Finset.sum_congr rfl fun _ _ ↦ (by split_ifs with h <;> aesop)
 
+noncomputable def QuotientTensorEquiv_toFun (M R L: Type u) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup L]
+    [Module R L] (N : Submodule R M) :
+    (M ⧸ N) ⊗[R] L →ₗ[R] (M ⊗[R] L)⧸ (LinearMap.range <| N.subtype.rTensor L) :=
+  TensorProduct.lift  <|
+    Submodule.liftQ _ {
+      toFun := fun m =>
+      { toFun := fun l => Submodule.Quotient.mk <| m ⊗ₜ[R] l
+        map_add' := sorry
+        map_smul' := sorry }
+      map_add' := sorry
+      map_smul' := sorry
+    } sorry
+
+noncomputable def QuotientTensorEquiv_invFun (M R L: Type u) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup L]
+    [Module R L] (N : Submodule R M) :
+    (M ⊗[R] L)⧸ (LinearMap.range <| N.subtype.rTensor L) →ₗ[R] (M ⧸ N) ⊗[R] L :=
+  Submodule.liftQ _ (TensorProduct.lift {
+    toFun := fun m => {
+      toFun := fun l => (Submodule.Quotient.mk m) ⊗ₜ[R] l
+      map_add' := sorry
+      map_smul' := sorry
+    }
+    map_add' := sorry
+    map_smul' := sorry
+  })  sorry
+
+noncomputable def QuotientTensorEquiv (M R L: Type u) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup L]
+    [Module R L] (N : Submodule R M) :
+    (M ⧸ N) ⊗[R] L ≃ₗ[R] (M ⊗[R] L)⧸ (LinearMap.range <| N.subtype.rTensor L) :=
+  LinearEquiv.ofLinear (QuotientTensorEquiv_toFun _ _ _ _) (QuotientTensorEquiv_invFun _ _ _ _) (by
+    ext ; simp only [QuotientTensorEquiv_toFun, QuotientTensorEquiv_invFun,
+      AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+      LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, Submodule.liftQ_apply,
+      lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.id_comp] ) sorry
+
 lemma Module.FaithfullyFlat.iff_flat_and_faithful
     (R M : Type u) [CommRing R] [AddCommGroup M] [Module R M] :
     Module.FaithfullyFlat R M ↔
@@ -1154,7 +1189,7 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
         have : (⊤ : Submodule R (M ⊗[R] E)) = (0 : Submodule R _) := sorry
         have : (⊤ : Submodule R (M ⊗[R] E)) ≠ (0 : _) := sorry
         tauto
-
+    have := QuotientTensorEquiv (LinearMap.ker l23) R M <| LinearMap.range _
     sorry
 
 open TensorProduct in
