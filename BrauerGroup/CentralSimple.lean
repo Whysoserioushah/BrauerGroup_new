@@ -1207,16 +1207,51 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
       --   have : (⊤ : Submodule R (M ⊗[R] E)) = (0 : Submodule R _) := sorry
       --   have : (⊤ : Submodule R (M ⊗[R] E)) ≠ (0 : _) := sorry
       --   tauto
-    · have le1 : (LinearMap.range l12) ≤ (LinearMap.ker l23) := sorry
+    · have hlt' : Function.Exact (LinearMap.rTensor M l12) (LinearMap.rTensor M l23) := by
+        fapply hlt.of_ladder_linearEquiv_of_exact (e₁ := TensorProduct.comm _ _ _)
+          (e₂ := TensorProduct.comm _ _ _) (e₃ := TensorProduct.comm _ _ _)
+        · ext
+          simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+            LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, comm_tmul,
+            LinearMap.rTensor_tmul, LinearMap.lTensor_tmul]
+        · ext
+          simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+            LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, comm_tmul,
+            LinearMap.rTensor_tmul, LinearMap.lTensor_tmul]
+      have le1 : (LinearMap.range l12) ≤ (LinearMap.ker l23) := by
+        sorry
       let equiv := QuotientTensorEquiv (LinearMap.ker l23) R M <| LinearMap.range
         (Submodule.inclusion le1)
 
+      let equiv' : (((LinearMap.ker l23) ⊗[R] M) ⧸
+            LinearMap.range ((LinearMap.range (Submodule.inclusion le1)).subtype.rTensor M)) ≃ₗ[R]
+            (LinearMap.ker (l23.rTensor M) ⧸
+              LinearMap.range
+                (Submodule.inclusion (p := LinearMap.range (l12.rTensor M))
+                  (p' := LinearMap.ker (l23.rTensor M)) <| by
+                  rw [LinearMap.exact_iff] at hlt'
+                  rw [hlt'])) :=
+        Submodule.Quotient.equiv _ _ (LinearEquiv.ofLinear (TensorProduct.lift
+
+          { toFun := fun x =>
+            { toFun := fun m => sorry
+              map_add' := sorry
+              map_smul' := sorry }
+            map_add' := sorry
+            map_smul' := sorry }) _ _ _) _
+#exit
+
       have le2 : (LinearMap.ker l23) ≤ LinearMap.range l12 := by
+
+
         haveI h1 : Subsingleton
           ((LinearMap.ker l23) ⊗[R] M ⧸
             LinearMap.range ((LinearMap.range (Submodule.inclusion le1)).subtype.rTensor M)) := by
-          refine @Function.Surjective.subsingleton (f := equiv) ?_ (Equiv.surjective equiv)
-          sorry
+          refine @Function.Surjective.subsingleton (f := equiv'.symm) ?_ equiv'.symm.surjective
+          rw [Submodule.subsingleton_quotient_iff_eq_top, Submodule.range_inclusion,
+            Submodule.comap_subtype_eq_top]
+          rw [LinearMap.exact_iff] at hlt'
+          rw [hlt']
         haveI h2 : Subsingleton
           (LinearMap.ker l23 ⧸ (LinearMap.range (Submodule.inclusion le1))) := by
           refine subsingleton_or_nontrivial _ |>.resolve_right fun H => ?_
