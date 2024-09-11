@@ -1114,6 +1114,7 @@ noncomputable def QuotientTensorEquiv (M R L: Type u) [CommRing R] [AddCommGroup
       lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.id_comp] )
     (by ext; simp [QuotientTensorEquiv_toFun, QuotientTensorEquiv_invFun])
 
+set_option maxHeartbeats 500000 in
 lemma Module.FaithfullyFlat.iff_flat_and_faithful
     (R M : Type u) [CommRing R] [AddCommGroup M] [Module R M] :
     Module.FaithfullyFlat R M ↔
@@ -1231,9 +1232,6 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
                   (p' := LinearMap.ker (l23.rTensor M)) <| by
                   rw [LinearMap.exact_iff] at hlt'
                   rw [hlt'])) :=
-        -- equiv.symm ≪≫ₗ ?_
-
-        -- sorry
         Submodule.Quotient.equiv _ _ (LinearEquiv.ofLinear (TensorProduct.lift
 
           { toFun := fun x =>
@@ -1243,15 +1241,149 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
               map_smul' := sorry }
             map_add' := sorry
             map_smul' := sorry })
-            ((LinearMap.rTensor M <| Submodule.inclusion le1) ∘ₗ ((by
-              rw [LinearMap.rTensor_range]
-              sorry) : LinearMap.range l12 ⊗[R] M  ≃ₗ[R] LinearMap.range (l12.rTensor M)).symm.toLinearMap ∘ₗ
+            ((LinearMap.rTensor M <| Submodule.inclusion le1) ∘ₗ ((LinearEquiv.ofBijective
+              (LinearMap.rangeRestrict <| LinearMap.rTensor M (Submodule.subtype _))
+              ⟨by
+                erw [Set.injective_codRestrict]
+                rw [Module.Flat.iff_rTensor_preserves_injective_linearMap] at hM
+                apply hM
+                exact Subtype.val_injective, LinearMap.surjective_rangeRestrict _⟩) :
+                LinearMap.range l12 ⊗[R] M  ≃ₗ[R] _).symm.toLinearMap ∘ₗ
+              (Submodule.inclusion <| by rw [LinearMap.rTensor_range]) ∘ₗ
               (Submodule.inclusion
                 (by rw [LinearMap.exact_iff] at hlt'; rw [hlt']) :
-                LinearMap.ker _ →ₗ[R] LinearMap.range (l12.rTensor M))) _ _) _
-      sorry
-#exit
+                LinearMap.ker _ →ₗ[R] LinearMap.range (l12.rTensor M))) (by
+                  ext ⟨x, hx⟩
+                  rw [LinearMap.exact_iff] at hlt'
+                  rw [hlt'] at hx
+                  obtain ⟨x, rfl⟩ := hx
+                  simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+                    LinearMap.id_apply]
+                  rw [Submodule.inclusion_apply, Submodule.inclusion_apply]
+                  simp only
+                  generalize_proofs _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ h1 _ _ h2
+                  have H := h2
+                  obtain ⟨y, hy⟩ := H
+                  simp_rw [← hy]
+                  have eq :
+                    (LinearEquiv.ofBijective
+                      (LinearMap.rTensor M (LinearMap.range l12).subtype).rangeRestrict h1).symm
+                      ⟨(LinearMap.rTensor M (LinearMap.range l12).subtype) y, hy.symm ▸ h2⟩ =
+                    y := by
+                    apply_fun (LinearMap.rTensor M (LinearMap.range l12).subtype).rangeRestrict
+                      using h1.injective
 
+                    simp only [LinearEquiv.apply_ofBijective_symm_apply]
+                    ext
+                    rfl
+                  rw [eq]
+                  clear eq hy
+                  induction y using TensorProduct.induction_on with
+                  | zero =>
+                    simp only [map_zero, ZeroMemClass.coe_zero]
+                  | tmul a m =>
+                    simp only [LinearMap.rTensor_tmul, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk,
+                      Submodule.coe_inclusion, Submodule.coeSubtype]
+                  | add x y hx hy =>
+                    simp only [map_add, AddSubmonoid.coe_add, Submodule.coe_toAddSubmonoid, hx, hy]
+                    )
+              (by
+                ext ⟨a, ha⟩ m
+                simp only [AlgebraTensorModule.curry_apply, curry_apply,
+                  LinearMap.coe_restrictScalars, LinearMap.coe_comp, LinearEquiv.coe_coe,
+                  Function.comp_apply, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk,
+                  Submodule.inclusion_apply, LinearMap.id_coe, id_eq]
+                generalize_proofs _ _ _ _ _ _ h1 _ _ h2
+
+                have H := h2
+                obtain ⟨y, hy⟩ := H
+                simp_rw [← hy]
+                rw [show (⟨a, ha⟩ ⊗ₜ[R] m : (LinearMap.ker l23) ⊗[R] M) =
+                  (LinearMap.rTensor M <| Submodule.inclusion le1) y by
+                  apply_fun LinearMap.rTensor M (Submodule.subtype _)
+                  · simp only [LinearMap.rTensor_tmul, Submodule.coeSubtype, ← hy]
+                    rw [← LinearMap.comp_apply, ← LinearMap.rTensor_comp]
+                    congr 1
+                  · apply Module.Flat.rTensor_preserves_injective_linearMap
+                    exact Subtype.val_injective]
+
+                have eq :
+                  (LinearEquiv.ofBijective
+                    (LinearMap.rTensor M (LinearMap.range l12).subtype).rangeRestrict h1).symm
+                    ⟨(LinearMap.rTensor M (LinearMap.range l12).subtype) y, hy.symm ▸ h2⟩ = y := by
+                  apply_fun (LinearMap.rTensor M (LinearMap.range l12).subtype).rangeRestrict
+                      using h1.injective
+
+                  simp only [LinearEquiv.apply_ofBijective_symm_apply]
+
+                  ext
+                  rfl
+
+
+                rw [eq]
+                )) (by
+        erw [Submodule.map_equiv_eq_comap_symm]
+        ext ⟨x, hx⟩; constructor
+        · intro H
+          simp only [LinearMap.mem_ker, LinearEquiv.ofLinear_symm_toLinearMap, Submodule.mem_comap,
+            LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mem_range,
+            Subtype.exists] at H ⊢
+          rw [LinearMap.exact_iff] at hlt'
+          rw [hlt'] at hx
+          obtain ⟨x, rfl⟩ := hx
+          refine ⟨_, ⟨x, rfl⟩, ?_⟩
+          ext
+          simp only [Submodule.coe_inclusion]
+        · rw [LinearMap.exact_iff] at hlt'
+          rw [hlt'] at hx
+          obtain ⟨x, rfl⟩ := hx
+          rintro -
+          revert hx
+          simp_rw [hlt']
+          simp only [LinearMap.mem_range, exists_apply_eq_apply,
+            LinearEquiv.ofLinear_symm_toLinearMap, Submodule.mem_comap, LinearMap.coe_comp,
+            LinearEquiv.coe_coe, Function.comp_apply, forall_true_left]
+          induction x using TensorProduct.induction_on with
+          | zero =>
+            refine ⟨0, by
+              simp only [map_zero, Submodule.inclusion_apply]
+              erw [map_zero]
+              simp only [map_zero]⟩
+          | tmul a m =>
+            refine ⟨⟨⟨l12 a, le1 (by simp only [LinearMap.mem_range, exists_apply_eq_apply])⟩,
+              by simp only [LinearMap.mem_range, Subtype.exists]; refine ⟨l12 a, ⟨_, rfl⟩, rfl⟩⟩
+              ⊗ₜ[R] m, ?_⟩
+            simp only [LinearMap.rTensor_tmul, Submodule.coeSubtype]
+            simp only [Submodule.inclusion_apply]
+            generalize_proofs _ _ _ _ _ _ _ h1 _ _ h2
+            have eq :
+              ((LinearEquiv.ofBijective
+                (LinearMap.rTensor M (LinearMap.range l12).subtype).rangeRestrict h1).symm
+              ⟨l12 a ⊗ₜ[R] m, h2⟩) =
+              ⟨l12 a, by simp only [LinearMap.mem_range, exists_apply_eq_apply]⟩ ⊗ₜ m := by
+                apply_fun (LinearMap.rTensor M (LinearMap.range l12).subtype).rangeRestrict
+                    using h1.injective
+
+                simp only [LinearEquiv.apply_ofBijective_symm_apply]
+                ext
+                rfl
+            rw [eq]
+            simp only [LinearMap.rTensor_tmul]
+            rfl
+          | add x y hx hy =>
+            obtain ⟨X, hX⟩ := hx
+            obtain ⟨Y, hY⟩ := hy
+            refine ⟨X + Y, ?_⟩
+            rw [map_add, hX, hY, ← map_add]
+            congr 1
+            rw [← map_add]
+            congr 1
+            rw [← map_add]
+            congr 1
+            rw [← map_add]
+            congr 1
+            ext
+            simp only [AddSubmonoid.mk_add_mk, map_add])
       have le2 : (LinearMap.ker l23) ≤ LinearMap.range l12 := by
 
 
