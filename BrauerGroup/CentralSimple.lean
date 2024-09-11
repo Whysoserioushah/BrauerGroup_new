@@ -1231,14 +1231,25 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
                   (p' := LinearMap.ker (l23.rTensor M)) <| by
                   rw [LinearMap.exact_iff] at hlt'
                   rw [hlt'])) :=
+        -- equiv.symm ≪≫ₗ ?_
+
+        -- sorry
         Submodule.Quotient.equiv _ _ (LinearEquiv.ofLinear (TensorProduct.lift
 
           { toFun := fun x =>
-            { toFun := fun m => sorry
+            { toFun := fun m => ⟨x ⊗ₜ m, by simp only [LinearMap.mem_ker,
+              LinearMap.rTensor_tmul, LinearMap.map_coe_ker, zero_tmul]⟩
               map_add' := sorry
               map_smul' := sorry }
             map_add' := sorry
-            map_smul' := sorry }) _ _ _) _
+            map_smul' := sorry })
+            ((LinearMap.rTensor M <| Submodule.inclusion le1) ∘ₗ ((by
+              rw [LinearMap.rTensor_range]
+              sorry) : LinearMap.range l12 ⊗[R] M  ≃ₗ[R] LinearMap.range (l12.rTensor M)).symm.toLinearMap ∘ₗ
+              (Submodule.inclusion
+                (by rw [LinearMap.exact_iff] at hlt'; rw [hlt']) :
+                LinearMap.ker _ →ₗ[R] LinearMap.range (l12.rTensor M))) _ _) _
+      sorry
 #exit
 
       have le2 : (LinearMap.ker l23) ≤ LinearMap.range l12 := by
