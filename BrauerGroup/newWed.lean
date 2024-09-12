@@ -31,7 +31,6 @@ lemma decompose_unique  (rep₁ rep₂ : ⨁ i, ℳ i)
     (h₁ : (∑ i ∈ rep₂.support, rep₂ i : M) = (∑ i ∈ rep₁.support, rep₁ i)) :
 
     rep₁ = rep₂ := by
-  classical
   apply_fun (decompose ℳ).symm
   rw [← sum_support_decompose ℳ (r := (decompose ℳ).symm rep₁),
     ← sum_support_decompose ℳ (r := (decompose ℳ).symm rep₂)]
@@ -39,101 +38,101 @@ lemma decompose_unique  (rep₁ rep₂ : ⨁ i, ℳ i)
   exact h₁.symm
 
 
--- def decomp_ring_ortho_idem (I M : Type u) [Fintype I] [DecidableEq I]
---     (V : I → Submodule R R) [Decomposition V] (e : ⨁ (i : I), (V i))
---     [(i : I) → (x : ↥(V i)) → Decidable (x ≠ 0)]
---     (he : (1 : R) = ∑ j ∈ e.support, e j):
---     OrthogonalIdempotents (R := R) (I := DFinsupp.support e) fun i ↦ e i where
---   idem i := by
---     change _ = _
---     let x : (⨁ i, V i) := DFinsupp.single i (e i) -- 0,0,0,...,eᵢ,0,0,0,...
---     let y : (⨁ i, V i) := DFinsupp.mapRange (x := e) (fun j (z : V j) => ⟨e i * (z : R), by
---       rw [← smul_eq_mul] ; obtain ⟨z, hz⟩ := z
---       exact Submodule.smul_mem (V j) (↑(e ↑i)) hz ⟩)
---       fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, AddSubmonoid.mk_eq_zero]
---     have hx1 : x i = e i := by simp [x]
---     have hx2 (j) (h : j ≠ i) : (x j : R) = 0 := by
---       simp [x, Finsupp.single_apply]
---       intro hij ; exfalso
---       exact h.symm $ Subtype.coe_inj.1 hij
---     have hy (j) : (y j : R) = e i * e j := by
---       simp only [DFinsupp.mapRange_apply, y]
---     have hx3 : ∑ i ∈ DFinsupp.support x, (x i : R) = x i := by
---       apply Finset.sum_eq_single
---       · intro j hj hj'
---         specialize hx2 ⟨j, by
---           simp_all [↓reduceDIte, x, y]
---           obtain ⟨val, property⟩ := i
---           obtain ⟨w, h⟩ := hj
---           subst w
---           simp_all only [Subtype.mk.injEq, not_true_eq_false]⟩ $ Subtype.coe_ne_coe.1 hj'
---         exact hx2
---       · simp
---     have hy3 : ∑ i ∈ DFinsupp.support y, (y i : R) = e i * 1 := by
---       rw [he, Finset.mul_sum]
---       simp_rw [hy]
---       apply Finset.sum_subset
---       · intro j hj
---         simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
---           AddSubmonoid.mk_eq_zero, y] at hj ⊢
---         contrapose! hj
---         simp [hj, mul_zero]
---       · intro x hx hy
---         simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
---           AddSubmonoid.mk_eq_zero, not_not, y] at hx hy ⊢
---         exact hy
---     have : x = y := by
---       apply decompose_unique
---       rw [hx3, hy3, mul_one]
---       simp only [DFinsupp.single_apply, ↓reduceDIte, x]
---     have := congr($this i)
---     simp [hx1, hy, y, Subtype.ext_iff] at this
---     exact this.symm
---   ortho := fun i j hij ↦ by
---     simp only
---     let x : (⨁ i, V i) := DFinsupp.single i (e i) -- 0,0,0,...,eᵢ,0,0,0,...
---     let y : (⨁ i, V i) := DFinsupp.mapRange (x := e) (fun j (z : V j) => ⟨e i * (z : R), by
---       rw [← smul_eq_mul] ; obtain ⟨z, hz⟩ := z
---       exact Submodule.smul_mem (V j) (↑(e ↑i)) hz ⟩)
---       fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, AddSubmonoid.mk_eq_zero]
---     have hx1 : x i = e i := by simp [x]
---     have hx2 (j) (h : j ≠ i) : (x j : R) = 0 := by
---       simp [x, Finsupp.single_apply]
---       intro hij ; exfalso
---       exact h.symm $ Subtype.coe_inj.1 hij
---     have hy (j) : (y j : R) = e i * e j := by
---       simp only [DFinsupp.mapRange_apply, y]
---     have hx3 : ∑ i ∈ DFinsupp.support x, (x i : R) = x i := by
---       apply Finset.sum_eq_single
---       · intro j hj hj'
---         specialize hx2 ⟨j, by
---           simp_all [↓reduceDIte, x, y]
---           obtain ⟨val, property⟩ := i
---           obtain ⟨w, h⟩ := hj
---           subst w
---           simp_all only [Subtype.mk.injEq, not_true_eq_false]⟩ $ Subtype.coe_ne_coe.1 hj'
---         exact hx2
---       · simp
---     have hy3 : ∑ i ∈ DFinsupp.support y, (y i : R) = e i * 1 := by
---       rw [he, Finset.mul_sum]
---       simp_rw [hy]
---       apply Finset.sum_subset
---       · intro j hj
---         simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
---           AddSubmonoid.mk_eq_zero, y] at hj ⊢
---         contrapose! hj
---         simp [hj, mul_zero]
---       · intro x hx hy
---         simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
---           AddSubmonoid.mk_eq_zero, not_not, y] at hx hy ⊢
---         exact hy
---     have : x = y := by
---       apply decompose_unique
---       rw [hx3, hy3, mul_one]
---       simp only [DFinsupp.single_apply, ↓reduceDIte, x]
---     have := congr($this j)
---     simp [hx1, hy, y, Subtype.ext_iff, (hx2 j hij.symm)] at this
---     exact this.symm
+def decomp_ring_ortho_idem (I M : Type u) [Fintype I] [DecidableEq I]
+    (V : I → Submodule R R) [Decomposition V] (e : ⨁ (i : I), (V i))
+    [(i : I) → (x : ↥(V i)) → Decidable (x ≠ 0)]
+    (he : (1 : R) = ∑ j ∈ e.support, e j):
+    OrthogonalIdempotents (R := R) (I := DFinsupp.support e) fun i ↦ e i where
+  idem i := by
+    change _ = _
+    let x : (⨁ i, V i) := DFinsupp.single i (e i) -- 0,0,0,...,eᵢ,0,0,0,...
+    let y : (⨁ i, V i) := DFinsupp.mapRange (x := e) (fun j (z : V j) => ⟨e i * (z : R), by
+      rw [← smul_eq_mul] ; obtain ⟨z, hz⟩ := z
+      exact Submodule.smul_mem (V j) (↑(e ↑i)) hz ⟩)
+      fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, AddSubmonoid.mk_eq_zero]
+    have hx1 : x i = e i := by simp [x]
+    have hx2 (j) (h : j ≠ i) : (x j : R) = 0 := by
+      simp [x, Finsupp.single_apply]
+      intro hij ; exfalso
+      exact h.symm $ Subtype.coe_inj.1 hij
+    have hy (j) : (y j : R) = e i * e j := by
+      simp only [DFinsupp.mapRange_apply, y]
+    have hx3 : ∑ i ∈ DFinsupp.support x, (x i : R) = x i := by
+      apply Finset.sum_eq_single
+      · intro j hj hj'
+        specialize hx2 ⟨j, by
+          simp_all [↓reduceDIte, x, y]
+          obtain ⟨val, property⟩ := i
+          obtain ⟨w, h⟩ := hj
+          subst w
+          simp_all only [Subtype.mk.injEq, not_true_eq_false]⟩ $ Subtype.coe_ne_coe.1 hj'
+        exact hx2
+      · simp
+    have hy3 : ∑ i ∈ DFinsupp.support y, (y i : R) = e i * 1 := by
+      rw [he, Finset.mul_sum]
+      simp_rw [hy]
+      apply Finset.sum_subset
+      · intro j hj
+        simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
+          AddSubmonoid.mk_eq_zero, y] at hj ⊢
+        contrapose! hj
+        simp [hj, mul_zero]
+      · intro x hx hy
+        simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
+          AddSubmonoid.mk_eq_zero, not_not, y] at hx hy ⊢
+        exact hy
+    have : x = y := by
+      apply decompose_unique
+      rw [hx3, hy3, mul_one]
+      simp only [DFinsupp.single_apply, ↓reduceDIte, x]
+    have := congr($this i)
+    simp [hx1, hy, y, Subtype.ext_iff] at this
+    exact this.symm
+  ortho := fun i j hij ↦ by
+    simp only
+    let x : (⨁ i, V i) := DFinsupp.single i (e i) -- 0,0,0,...,eᵢ,0,0,0,...
+    let y : (⨁ i, V i) := DFinsupp.mapRange (x := e) (fun j (z : V j) => ⟨e i * (z : R), by
+      rw [← smul_eq_mul] ; obtain ⟨z, hz⟩ := z
+      exact Submodule.smul_mem (V j) (↑(e ↑i)) hz ⟩)
+      fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, AddSubmonoid.mk_eq_zero]
+    have hx1 : x i = e i := by simp [x]
+    have hx2 (j) (h : j ≠ i) : (x j : R) = 0 := by
+      simp [x, Finsupp.single_apply]
+      intro hij ; exfalso
+      exact h.symm $ Subtype.coe_inj.1 hij
+    have hy (j) : (y j : R) = e i * e j := by
+      simp only [DFinsupp.mapRange_apply, y]
+    have hx3 : ∑ i ∈ DFinsupp.support x, (x i : R) = x i := by
+      apply Finset.sum_eq_single
+      · intro j hj hj'
+        specialize hx2 ⟨j, by
+          simp_all [↓reduceDIte, x, y]
+          obtain ⟨val, property⟩ := i
+          obtain ⟨w, h⟩ := hj
+          subst w
+          simp_all only [Subtype.mk.injEq, not_true_eq_false]⟩ $ Subtype.coe_ne_coe.1 hj'
+        exact hx2
+      · simp
+    have hy3 : ∑ i ∈ DFinsupp.support y, (y i : R) = e i * 1 := by
+      rw [he, Finset.mul_sum]
+      simp_rw [hy]
+      apply Finset.sum_subset
+      · intro j hj
+        simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
+          AddSubmonoid.mk_eq_zero, y] at hj ⊢
+        contrapose! hj
+        simp [hj, mul_zero]
+      · intro x hx hy
+        simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
+          AddSubmonoid.mk_eq_zero, not_not, y] at hx hy ⊢
+        exact hy
+    have : x = y := by
+      apply decompose_unique
+      rw [hx3, hy3, mul_one]
+      simp only [DFinsupp.single_apply, ↓reduceDIte, x]
+    have := congr($this j)
+    simp [hx1, hy, y, Subtype.ext_iff, (hx2 j hij.symm)] at this
+    exact this.symm
 -- variable {R M N : Type*} [Ring R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] in
 -- def test (x : M) (n : N) : Submodule.span R {x} → N :=
 -- fun y => (Submodule.mem_span_singleton.1 y.2).choose • n
@@ -206,7 +205,6 @@ def ortho_idem_directsum (I : Type u) [Fintype I] [DecidableEq I] (s : Finset I)
 lemma OrthogonalIdempotents.sum_mul_of_mem (I : Type u) [Fintype I]  [DecidableEq I]
     (e : I → R) {i : I} (he : OrthogonalIdempotents e) {s : Finset I} (h : i ∈ s) :
     (∑ j ∈ s, e j) * e i = e i := by
-  classical
   simp only [Finset.sum_mul, he.mul_eq, Finset.sum_ite_eq', h, ↓reduceIte]
 
 lemma orth_idem_directSum_apply_spec (I : Type u) [Fintype I]  [DecidableEq I] (s : Finset I)
@@ -383,48 +381,57 @@ end
 
 section indecomp
 
+def Module.Decomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
+  ∃(N1 N2 : Submodule R M) (_ : Nontrivial N1) (_ : Nontrivial N2), Nonempty $ M ≃ₗ[R] (N1 × N2)
+
 def Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
   Nontrivial M ∧ ∀(N N' : Submodule R M), ((N × N' ≃ₗ[R] M) → (N = ⊥ ∨ N' = ⊥))
 
+@[simp]
+lemma not_decomp_iff_indecomp (M : Type u) [AddCommGroup M] [Module R M] :
+    ¬Module.Decomposable R M ↔ Module.Indecomposable R M := by
+
+  sorry
+
 variable (e : R) (he : IsIdempotentElem e)
 
-include he in
-lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
-    PrimitiveIdempotents R e := ⟨fun hI ↦ {
-      idem := he
-      ne_sum_ortho := by
-        classical
-        by_contra! he
-        obtain ⟨I, _, _, e', _, hee', ii, jj, hij⟩ := he
-        obtain ⟨Nontriv, hM⟩ := hI
-        have iso1 := ortho_idem_directsum_equiv R I {ii, jj} e' hee'
-        if hijj : ii = jj then sorry
-        else
-        have heq : ∑ i : { x // x ∈ ({ii, jj} : Finset I) }, e' i.1 = e' ii + e' jj := sorry
-        have singleton_eq : {(∑ i : { x // x ∈ ({ii, jj} : Finset I) }, e' i.1)} =
-          ({e' ii + e' jj} : Set R) := Set.singleton_eq_singleton_iff.2
-            (by
-              rw [Finset.sum_coe_sort {ii, jj} e', Finset.sum_eq_add_of_mem];
-              exact Finset.mem_insert_self ii {jj}
-              exact Finset.mem_insert.2 (by right; exact Finset.mem_singleton_self jj)
-              exact hijj
-              sorry
-              )
-        have eq := LinearEquiv.ofEq _ _ $ Submodule.span_eq_span (R := R) (M := R)
-            (s := {(∑ i : { x // x ∈ ({ii, jj} : Finset I)}, e' i.1)}) (t := {e' ii + e' jj})
-            (Set.singleton_subset_iff.2 (Submodule.mem_span_singleton.2
-              ⟨1, by rw [one_smul]; exact heq.symm⟩)) (Set.singleton_subset_iff.2 $
-              Submodule.mem_span_singleton.2 ⟨1, by rw [one_smul]; exact heq⟩)|>.symm
-        rw [hij] at hM
-        sorry
-    }, fun he => by
-      unfold Module.Indecomposable
-      constructor
-      · refine ⟨⟨e, Submodule.mem_span_singleton_self _⟩, ⟨0, by
-          by_contra! he0
-          -- obtain ⟨_, hno⟩ := he
-          -- have := hno ∅
-          sorry ⟩⟩
-      · sorry⟩
+-- include he in
+-- lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
+--     PrimitiveIdempotents R e := ⟨fun hI ↦ {
+--       idem := he
+--       ne_sum_ortho := by
+--         classical
+--         by_contra! he
+--         obtain ⟨I, _, _, e', _, hee', ii, jj, hij⟩ := he
+--         obtain ⟨Nontriv, hM⟩ := hI
+--         have iso1 := ortho_idem_directsum_equiv R I {ii, jj} e' hee'
+--         if hijj : ii = jj then sorry
+--         else
+--         have heq : ∑ i : { x // x ∈ ({ii, jj} : Finset I) }, e' i.1 = e' ii + e' jj := sorry
+--         have singleton_eq : {(∑ i : { x // x ∈ ({ii, jj} : Finset I) }, e' i.1)} =
+--           ({e' ii + e' jj} : Set R) := Set.singleton_eq_singleton_iff.2
+--             (by
+--               rw [Finset.sum_coe_sort {ii, jj} e', Finset.sum_eq_add_of_mem];
+--               exact Finset.mem_insert_self ii {jj}
+--               exact Finset.mem_insert.2 (by right; exact Finset.mem_singleton_self jj)
+--               exact hijj
+--               sorry
+--               )
+--         have eq := LinearEquiv.ofEq _ _ $ Submodule.span_eq_span (R := R) (M := R)
+--             (s := {(∑ i : { x // x ∈ ({ii, jj} : Finset I)}, e' i.1)}) (t := {e' ii + e' jj})
+--             (Set.singleton_subset_iff.2 (Submodule.mem_span_singleton.2
+--               ⟨1, by rw [one_smul]; exact heq.symm⟩)) (Set.singleton_subset_iff.2 $
+--               Submodule.mem_span_singleton.2 ⟨1, by rw [one_smul]; exact heq⟩)|>.symm
+--         rw [hij] at hM
+--         sorry
+--     }, fun he => by
+--       unfold Module.Indecomposable
+--       constructor
+--       · refine ⟨⟨e, Submodule.mem_span_singleton_self _⟩, ⟨0, by
+--           by_contra! he0
+--           -- obtain ⟨_, hno⟩ := he
+--           -- have := hno ∅
+--           sorry ⟩⟩
+--       · sorry⟩
 
 end indecomp
