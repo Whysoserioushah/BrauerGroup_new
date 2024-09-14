@@ -197,7 +197,7 @@ lemma Module.FaithfullyFlat.of_flat_and_faithful_aux2
     simp only [Submodule.zero_eq_bot, Submodule.mem_bot]
     replace heqx := calc _
       xx = ∑ i ∈ I, mm i ⊗ₜ ⟨l23 x, Submodule.mem_span_singleton_self _⟩ := heqx
-      _ = ∑ i ∈ I, (0 : M ⊗[R] E) := Finset.sum_congr rfl fun i hi ↦
+      _ = ∑ _ ∈ I, (0 : M ⊗[R] E) := Finset.sum_congr rfl fun i _ ↦
         (by
           apply_fun (LinearMap.lTensor (M := M) E.subtype) using
             (Module.Flat.lTensor_preserves_injective_linearMap (M := M) E.subtype $
