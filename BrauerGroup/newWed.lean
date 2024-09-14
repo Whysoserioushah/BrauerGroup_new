@@ -38,7 +38,7 @@ lemma decompose_unique  (rep₁ rep₂ : ⨁ i, ℳ i)
   exact h₁.symm
 
 
-def decomp_ring_ortho_idem (I M : Type u) [Fintype I] [DecidableEq I]
+def decomp_ring_ortho_idem (I : Type u) [Fintype I] [DecidableEq I]
     (V : I → Submodule R R) [Decomposition V] (e : ⨁ (i : I), (V i))
     [(i : I) → (x : ↥(V i)) → Decidable (x ≠ 0)]
     (he : (1 : R) = ∑ j ∈ e.support, e j):
@@ -387,10 +387,11 @@ def Module.Decomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
 def Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
   Nontrivial M ∧ ∀(N N' : Submodule R M), ((N × N' ≃ₗ[R] M) → (N = ⊥ ∨ N' = ⊥))
 
+-- this lemma is **wrong**: if `M` is trivial, then `M` is not decomposable and it is not
+-- indecomposable either
 @[simp]
 lemma not_decomp_iff_indecomp (M : Type u) [AddCommGroup M] [Module R M] :
     ¬Module.Decomposable R M ↔ Module.Indecomposable R M := by
-
   sorry
 
 variable (e : R) (he : IsIdempotentElem e)
