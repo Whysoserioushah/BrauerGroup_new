@@ -20,7 +20,7 @@ open scoped IntermediateField
 def intermediateTensor (L : IntermediateField K K_bar) : Submodule K (K_bar ⊗[K] A) :=
   LinearMap.range (LinearMap.rTensor _ (L.val.toLinearMap) : L ⊗[K] A →ₗ[K] K_bar ⊗[K] A)
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 100000 in
 set_option maxHeartbeats 400000 in
 def intermediateTensor' (L : IntermediateField K K_bar) : Submodule L (K_bar ⊗[K] A) :=
   LinearMap.range ({LinearMap.rTensor _ (L.val.toLinearMap) with
@@ -30,9 +30,8 @@ def intermediateTensor' (L : IntermediateField K K_bar) : Submodule L (K_bar ⊗
       | zero => simp
       | tmul x a =>
         simp only [smul_tmul', smul_eq_mul, LinearMap.rTensor_tmul, AlgHom.toLinearMap_apply,
-          _root_.map_mul, IntermediateField.coe_val]
-        rfl
-      | add x y hx hy => aesop } : L ⊗[K] A →ₗ[L] K_bar ⊗[K] A)
+          _root_.map_mul, IntermediateField.coe_val]; rfl
+      | add x y hx hy => simp only [smul_add, map_add, hx, hy] } : L ⊗[K] A →ₗ[L] K_bar ⊗[K] A)
 
 def intermediateTensorEquiv (L : IntermediateField K K_bar) :
     intermediateTensor K K_bar A L ≃ₗ[K] L ⊗[K] A :=
@@ -54,8 +53,8 @@ lemma intermediateTensorEquiv_apply_tmul (L : IntermediateField K K_bar)
   convert LinearEquiv.ofBijective_symm_apply_apply _ _
   rfl
 
-set_option synthInstance.maxHeartbeats 50000 in
-set_option maxHeartbeats 400000 in
+set_option synthInstance.maxHeartbeats 100000 in
+set_option maxHeartbeats 800000 in
 def intermediateTensorEquiv' (L : IntermediateField K K_bar) :
     intermediateTensor' K K_bar A L ≃ₗ[L] L ⊗[K] A where
   toFun := intermediateTensorEquiv K K_bar A L
@@ -78,7 +77,7 @@ def intermediateTensorEquiv' (L : IntermediateField K K_bar) :
         smul_add] at hy hz ⊢
       convert congr($hy + $hz) using 1
       · rw [← (intermediateTensorEquiv K K_bar A L).map_add]; rfl
-      · rw [← smul_add, ← (intermediateTensorEquiv K K_bar A L).map_add]; rfl
+      · erw [← smul_add, ← (intermediateTensorEquiv K K_bar A L).map_add]; rfl
   invFun := (intermediateTensorEquiv K K_bar A L).symm
   left_inv := (intermediateTensorEquiv K K_bar A L).left_inv
   right_inv := (intermediateTensorEquiv K K_bar A L).right_inv
@@ -329,6 +328,7 @@ def e_hat : Basis (Fin n × Fin n) ℒ (intermediateTensor' k k_bar A ℒ) :=
 
 local notation "e^" => e_hat n k k_bar A iso
 
+set_option synthInstance.maxHeartbeats 40000 in
 def isoRestrict' : ℒ ⊗[k] A ≃ₗ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
   (intermediateTensorEquiv' k k_bar A ℒ).symm ≪≫ₗ
   Basis.equiv (e^) (Matrix.stdBasis ℒ (Fin n) (Fin n)) (Equiv.refl _)
@@ -373,6 +373,7 @@ lemma comm_triangle :
     LinearEquiv.coe_symm_mk]
   rfl
 
+set_option synthInstance.maxHeartbeats 40000 in
 /--
 intermidateTensor ----> M_n(ℒ)
   | val                 | inclusion'
@@ -401,6 +402,7 @@ lemma comm_square' :
   simp only [Matrix.stdBasisMatrix]
   aesop
 
+set_option synthInstance.maxHeartbeats 40000 in
 /--
      isoRestrict
   ℒ ⊗_k A -----> M_n(ℒ)
@@ -416,6 +418,16 @@ lemma comm_square :
     (inclusion n k k_bar A iso).toLinearMap := by
   rw [← comm_triangle n k k_bar A iso, ← LinearMap.comp_assoc, comm_square' n k k_bar A iso]
   rfl
+
+instance : OneHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
+    ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
+
+  sorry
+
+instance : MulHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
+    ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
+
+  sorry
 
 set_option synthInstance.maxHeartbeats 40000 in
 lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by

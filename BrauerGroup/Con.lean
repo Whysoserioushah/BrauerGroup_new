@@ -348,7 +348,8 @@ instance [Nontrivial A] : Nontrivial (TwoSidedIdeal A) :=
       apply_fun (fun I => I.ringCon 0 1)
       convert false_ne_true
       -- Change after https://github.com/leanprover-community/mathlib4/pull/12860
-      exact iff_false_iff.mpr zero_ne_one⟩
+      simp only [iff_false]
+      exact zero_ne_one⟩
 
 lemma eq_bot_or_eq_top [so : IsSimpleOrder (TwoSidedIdeal A)] (I : TwoSidedIdeal A) :
     I = ⊥ ∨ I = ⊤ := so.2 I

@@ -4,6 +4,7 @@ import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
+import BrauerGroup.faithfullyflat
 
 suppress_compilation
 

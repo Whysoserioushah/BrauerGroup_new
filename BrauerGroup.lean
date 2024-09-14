@@ -22,3 +22,4 @@ import BrauerGroup.Subfield
 import BrauerGroup.TensorOfTypePQ.Basic
 import BrauerGroup.Wedderburn
 import BrauerGroup.«074E»
+import BrauerGroup.faithfullyflat

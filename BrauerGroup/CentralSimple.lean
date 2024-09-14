@@ -922,6 +922,7 @@ instance TensorProduct.simple
 
 -- We can't have `L` to have different universe level of `D` in this proof, again due that we used
 -- `flatness`
+set_option synthInstance.maxHeartbeats 40000 in
 instance baseChange
     [Small.{v, u} K] (L : Type v) [Field L] [Algebra K L] [h : IsCentralSimple K D] :
     IsCentralSimple L (L ⊗[K] D) where
@@ -941,7 +942,9 @@ instance baseChange
     | add x y hx hy =>
       obtain ⟨kx, (hkx : kx ⊗ₜ 1 = _)⟩ := hx
       obtain ⟨ky, (hky : ky ⊗ₜ 1 = _)⟩ := hy
-      exact ⟨kx + ky, by simp [map_add, Algebra.ofId_apply, hkx, hky]⟩
+      exact ⟨kx + ky, by simp only [AlgHom.toRingHom_eq_coe, map_add, RingHom.coe_coe,
+        Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
+        RingHom.id_apply, hkx, hky]⟩
 
 instance tensorProduct [Small.{v, u} K]
     {A B : Type v} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
@@ -987,8 +990,11 @@ theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
     rw [Matrix.mem_center_iff']
     refine ⟨⟨d, hd⟩, ?_⟩
     ext i j
-    simp only [Matrix.diagonal_apply, Matrix.smul_apply, Matrix.one_apply, smul_ite,
-      Submonoid.mk_smul, smul_eq_mul, mul_one, smul_zero])
+    simp only [Matrix.diagonal_apply, Matrix.smul_apply, Matrix.one_apply, smul_ite, smul_zero]
+    split_ifs
+    · change _ = d • (1 : D)
+      simp only [smul_eq_mul, mul_one]
+    · rfl)
   refine ⟨k, ?_⟩
   apply_fun (· ⟨0, by omega⟩ ⟨0, by omega⟩) at hk
   simpa using hk

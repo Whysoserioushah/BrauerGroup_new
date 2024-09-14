@@ -3,7 +3,7 @@ import Mathlib.RingTheory.Artinian
 import BrauerGroup.Con
 import Mathlib.Algebra.Ring.Equiv
 import Mathlib.LinearAlgebra.Matrix.IsDiag
-
+import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.MoritaEquivalence
 import Mathlib.FieldTheory.IsAlgClosed.Basic
 
@@ -579,32 +579,9 @@ lemma Matrix.mem_center_iff' (K R : Type*) [Field K] [Ring R] [Algebra K R] (n :
 For a matrix ring `Mₙₙ(R)`, the center of the matrix ring `Z(Mₙₙ(R))` is isomorphic to the center
 `Z(R)` of `R`.
 -/
-@[simps]
+@[simps!]
 def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R]:
-    Subring.center (M[Fin n, R]) ≃+* (Subring.center R) where
-  toFun A := ⟨(A.1 ⟨0, by omega⟩ ⟨0, by omega⟩), by
-    obtain ⟨a, ha⟩ := (Matrix.mem_center_iff R n A.1).1 A.2
-    simpa only [ha, smul_apply, one_apply_eq] using Subring.mul_mem _ a.2 $ Subring.one_mem _⟩
-  invFun a := ⟨a • 1, Subring.mem_center_iff.2 fun A => Matrix.ext fun i j => by simp [mul_comm]⟩
-  left_inv := by
-    if hn : n = 0
-    then subst hn; exact fun _ => Subsingleton.elim _ _
-    else rintro ⟨A, hA⟩; obtain ⟨α, rfl⟩ := Matrix.mem_center_iff _ _ _ |>.1 hA; simp
-  right_inv := by
-    intro ; simp only [smul_apply, one_apply_eq]; aesop
-  map_mul' := by
-    rintro ⟨A, hA⟩ ⟨B, hB⟩
-    rw [Matrix.mem_center_iff] at hA hB
-    obtain ⟨a, rfl⟩ := hA
-    obtain ⟨b, rfl⟩ := hB
-    simp only [Subring.center_toSubsemiring, Subsemiring.center_toSubmonoid,
-      Submonoid.mk_mul_mk, mul_smul_one, smul_apply, one_apply_eq]
-  map_add' := by
-    rintro ⟨A, hA⟩ ⟨B, hB⟩
-    rw [Matrix.mem_center_iff] at hA hB
-    obtain ⟨a, rfl⟩ := hA
-    obtain ⟨b, rfl⟩ := hB
-    simp only [AddMemClass.mk_add_mk, add_apply, smul_apply, one_apply_eq]
+    Subring.center (M[Fin n, R]) ≃+* (Subring.center R) := Matrix.centerEquivBase1 n hn R
 
 theorem RingEquiv.mem_center_iff {R1 R2 : Type*} [Ring R1] [Ring R2] (e : R1 ≃+* R2) :
     ∀ x, x ∈ Subring.center R1 ↔ e x ∈ Subring.center R2 := fun x => by
@@ -751,7 +728,12 @@ theorem is_central_of_wdb
   intro x hx
   have hx' : (Matrix.diagonal fun _ => x) ∈ Subalgebra.center K M[Fin n, S] :=
     Matrix.mem_center_iff' _ _ _ _ |>.2 $
-      ⟨⟨x, hx⟩, by ext; simp only [diagonal, of_apply]; split_ifs <;> aesop⟩
+      ⟨⟨x, hx⟩, by
+        ext; simp only [diagonal, of_apply]; split_ifs
+        · simp_all only [le_bot_iff, smul_apply, one_apply_eq]
+          change _ = x • (1 : S)
+          simp only [smul_eq_mul, mul_one]
+        · simp_all only [le_bot_iff, smul_apply, ne_eq, not_false_eq_true, one_apply_ne, smul_zero]⟩
   have hx'' : Wdb.symm (Matrix.diagonal fun _ => x) ∈ Subalgebra.center K B := by
     rw [Subalgebra.mem_center_iff] at hx' ⊢
     exact fun b => Wdb.injective $ by simpa using hx' (Wdb b)

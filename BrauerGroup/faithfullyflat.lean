@@ -219,11 +219,11 @@ def Module.FaithfullyFlat.of_flat_and_faithful.equiv'InnerForward
     { toFun := fun x =>
       { toFun := fun m => ⟨x ⊗ₜ m, by simp only [LinearMap.mem_ker,
         LinearMap.rTensor_tmul, LinearMap.map_coe_ker, zero_tmul]⟩
-        map_add' := fun m1 m2 => by simp only [tmul_add, AddSubmonoid.mk_add_mk]
+        map_add' := fun m1 m2 => by simp only [tmul_add, AddMemClass.mk_add_mk]
         map_smul' := fun r m => by
           simp only [tmul_smul, RingHom.id_apply, SetLike.mk_smul_mk]}
       map_add' := fun x y => by
-        simp only [AddSubmonoid.coe_add, Submodule.coe_toAddSubmonoid, add_tmul]; rfl
+        simp only [Submodule.coe_add, add_tmul]; rfl
       map_smul' := fun r x => by
         simp only [SetLike.val_smul, ← smul_tmul', RingHom.id_apply]; rfl }
 
@@ -285,8 +285,7 @@ lemma Module.FaithfullyFlat.of_flat_and_faithful.equiv'InnerBackwardInner_symm_a
     conv_rhs => rw [map_add]
     rw [← ha, ← hb]
     ext : 1
-    simp only [map_add, Submodule.mem_toAddSubmonoid, LinearMap.mem_range, exists_apply_eq_apply,
-      AddSubmonoid.mk_add_mk]
+    simp only [map_add, AddMemClass.mk_add_mk]
 
 lemma Module.FaithfullyFlat.of_flat_and_faithful.equiv'Inner_comp
     (R M : Type u) [CommRing R] [AddCommGroup M] [Module R M]
@@ -436,7 +435,7 @@ def Module.FaithfullyFlat.of_flat_and_faithful.equiv'
         rw [map_add, hX, hY, ← map_add]
         congr 1
         ext : 2
-        simp only [AddSubmonoid.mk_add_mk, map_add]
+        simp only [AddMemClass.mk_add_mk, map_add]
 
 lemma Module.FaithfullyFlat.iff_flat_and_faithful
     (R M : Type u) [CommRing R] [AddCommGroup M] [Module R M] :

@@ -92,6 +92,9 @@ private lemma emb_tmul (e : split K A K_bar := split_by_alg_closure K K_bar A) :
   simp only [emb, Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq]
   rfl
 
+instance (e): AddMonoidHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
+    ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
+
 set_option synthInstance.maxHeartbeats 160000 in
 set_option maxHeartbeats 400000 in
 lemma basis'_li (e) : LinearIndependent ↥(K' K K_bar A e) fun i : Fin e.n × Fin e.n ↦
@@ -123,6 +126,7 @@ lemma basis'_li (e) : LinearIndependent ↥(K' K K_bar A e) fun i : Fin e.n × F
         rw [this]
         rfl
 
+set_option synthInstance.maxHeartbeats 40000 in
 def basis' (e : split K A K_bar := split_by_alg_closure K K_bar A) :
       Basis (Fin e.n × Fin e.n) (K' K K_bar A e) (K' K K_bar A e ⊗[K] A) :=
     haveI : NeZero e.n := ⟨e.hn⟩
@@ -142,12 +146,14 @@ lemma basis'_apply (e : split K A K_bar := split_by_alg_closure K K_bar A)
       b_as_K' (e := e) i j k ⊗ₜ FiniteDimensional.finBasis K A k := by
   simp only [basis', coe_basisOfLinearIndependentOfCardEqFinrank]
 
+set_option synthInstance.maxHeartbeats 40000 in
 def e'Aux (e : split K A K_bar := split_by_alg_closure K K_bar A) :
     (K' K K_bar A e) ⊗[K] A ≃ₗ[K' K K_bar A e]
     Matrix (Fin e.n) (Fin e.n) (K' K K_bar A e) :=
   Basis.equiv (b := basis' (e := e)) (b' := Matrix.stdBasis (K' K K_bar A e) (Fin e.n) (Fin e.n)) $
     Equiv.refl _
 
+set_option synthInstance.maxHeartbeats 40000 in
 lemma e'Aux_apply_basis (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (i j : Fin e.n) :
     (e'Aux (e := e) (∑ k, b_as_K' (e := e) i j k ⊗ₜ FiniteDimensional.finBasis K A k)) =
@@ -178,6 +184,7 @@ lemma emb'_inj (e : split K A K_bar := split_by_alg_closure K K_bar A):
 set_option synthInstance.maxHeartbeats 60000 in
 instance (e) : NonUnitalNonAssocSemiring (↥(K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
+set_option synthInstance.maxHeartbeats 40000 in
 lemma emb_comm_square (e : split K A K_bar := split_by_alg_closure K K_bar A):
     e.iso.toLinearMap.restrictScalars (K' (e := e)) ∘ₗ (emb (e := e)).toLinearMap =
     (emb' (e := e)).toLinearMap ∘ₗ (e'Aux (e := e)).toLinearMap := by
@@ -201,7 +208,10 @@ instance (e : split K A K_bar := split_by_alg_closure K K_bar A):
   HMul (↥(K' K K_bar A e) ⊗[K] A.carrier) (↥(K' K K_bar A e) ⊗[K] A.carrier)
   (↥(K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
-set_option synthInstance.maxHeartbeats 40000 in
+instance (e) : MulHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
+    ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
+
+set_option synthInstance.maxHeartbeats 60000 in
 lemma e'_map_mul (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (x y : (K' K K_bar A e) ⊗[K] A) :
     (e'Aux K K_bar A e) (x * y) =
@@ -214,6 +224,10 @@ lemma e'_map_mul (e : split K A K_bar := split_by_alg_closure K K_bar A)
     AlgHom.toLinearMap_apply, AlgEquiv.toLinearMap_apply, LinearEquiv.coe_coe] at eq eqx eqy
   rw [← eq, _root_.map_mul (f := emb (e := e)), _root_.map_mul (f := e.iso),
     _root_.map_mul (f := emb' (e := e)), ← eqx, ← eqy]
+
+instance (e) : OneHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier
+  →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
+    ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
 
 set_option synthInstance.maxHeartbeats 60000 in
 lemma e'_map_one (e : split K A K_bar := split_by_alg_closure K K_bar A) :

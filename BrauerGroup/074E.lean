@@ -292,7 +292,6 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           right_inv := by
             intro x
             apply Subsingleton.elim }
-      extract_goal
       refine ⟨iso ≪≫ₗ e ≪≫ₗ iso'.symm⟩
 
     replace HS : Nontrivial S := not_subsingleton_iff_nontrivial.mp HS

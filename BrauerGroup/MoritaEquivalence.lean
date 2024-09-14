@@ -108,9 +108,8 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
     rintro a ⟨_, ⟨x, rfl⟩⟩ ⟨_, ⟨y, rfl⟩⟩
     ext
     change stdBasisMatrix _ _ _ • _ = stdBasisMatrix _ _ _ • _ + stdBasisMatrix _ _ _ • _
-    dsimp only [AddSubmonoid.coe_add, AddSubgroup.coe_toAddSubmonoid, α_coe]
-    rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← smul_add, ← smul_add,
-      ← MulAction.mul_smul]
+    dsimp only [AddSubgroup.coe_add]
+    rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← smul_add, ← smul_add, ← MulAction.mul_smul]
   add_smul := by
     rintro a b ⟨_, ⟨x, rfl⟩⟩
     ext
@@ -192,7 +191,7 @@ def matrix.unitIsoHom :
     simp only [LinearMapClass.map_smul]
     rw [toModuleCatOverMatrix_map_apply]
 
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 600000 in
 @[simps]
 def matrix.unitIsoInv :
     𝟭 (ModuleCat R) ⟶
@@ -744,17 +743,17 @@ def aux2 (M N : ModuleCat S) (f : M ≅ N) : End M ≃+* End N where
 
 noncomputable def toRingMopEquiv : Rᵐᵒᵖ ≃+* Sᵐᵒᵖ :=
   mopEquivEnd R |>.trans $
-    aux1 R S e |>.trans $
+    aux1 e |>.trans $
     aux2 S _ _ (aux20 R S e) |>.trans $
     mopEquivEnd S |>.symm
 
 noncomputable def toRingEquiv : R ≃+* S where
   toFun r := toRingMopEquiv R S e (.op r) |>.unop
   invFun s := toRingMopEquiv R S e |>.symm (.op s) |>.unop
-  left_inv r := by simp
-  right_inv s := by simp
-  map_mul' a b := by simp
-  map_add' a b := by simp
+  left_inv r := by simp only [MulOpposite.op_unop, RingEquiv.symm_apply_apply, MulOpposite.unop_op]
+  right_inv s := by simp only [MulOpposite.op_unop, RingEquiv.apply_symm_apply, MulOpposite.unop_op]
+  map_mul' a b := by simp only [MulOpposite.op_mul, _root_.map_mul, MulOpposite.unop_mul]
+  map_add' a b := by simp only [MulOpposite.op_add, map_add, MulOpposite.unop_add]
 
 end division_ring
 

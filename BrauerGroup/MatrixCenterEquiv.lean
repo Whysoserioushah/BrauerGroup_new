@@ -37,16 +37,22 @@ def Matrix.centerEquivBase1 (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R]:
   left_inv := by
     if hn : n = 0
     then subst hn; exact fun _ => Subsingleton.elim _ _
-    else rintro ⟨A, hA⟩; obtain ⟨α, rfl⟩ := Matrix.mem_center_iff1 _ _ _ |>.1 hA; simp
+    else
+    rintro ⟨A, hA⟩; obtain ⟨⟨α, hα⟩, rfl⟩ := Matrix.mem_center_iff1 _ _ _ |>.1 hA
+    simp only [smul_apply, one_apply_eq, Subtype.mk.injEq]
+    change (α • (1 : R)) • (1 : Matrix (Fin n) (Fin n) R) = α • (1 : _)
+    simp only [smul_eq_mul, mul_one]
   right_inv := by
-    intro ; simp only [smul_apply, one_apply_eq]; aesop
+    intro ⟨r, hr⟩ ; simp only [smul_apply, one_apply_eq, Subtype.mk.injEq]
+
+    change r • (1 : R) = _
+    simp only [smul_eq_mul, mul_one]
   map_mul' := by
     rintro ⟨A, hA⟩ ⟨B, hB⟩
     rw [Matrix.mem_center_iff1] at hA hB
     obtain ⟨a, rfl⟩ := hA
     obtain ⟨b, rfl⟩ := hB
-    simp only [Subring.center_toSubsemiring, Subsemiring.center_toSubmonoid,
-      Submonoid.mk_mul_mk, mul_smul_one, smul_apply, one_apply_eq]
+    simp only [MulMemClass.mk_mul_mk, mul_smul_one, smul_apply, one_apply_eq]
   map_add' := by
     rintro ⟨A, hA⟩ ⟨B, hB⟩
     rw [Matrix.mem_center_iff1] at hA hB

@@ -167,7 +167,7 @@ instance IsMod (K A B M : Type u)
   smul_zero a := by
     change smul1 K A B M f 0 a = 0
     rw [smul1]
-    simp only [map_zero, smul_zero]
+    simp only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk]
     induction a using TensorProduct.induction_on
     · simp only [map_zero]
     · rename_i b l

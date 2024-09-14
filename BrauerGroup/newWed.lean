@@ -49,7 +49,7 @@ def decomp_ring_ortho_idem (I : Type u) [Fintype I] [DecidableEq I]
     let y : (⨁ i, V i) := DFinsupp.mapRange (x := e) (fun j (z : V j) => ⟨e i * (z : R), by
       rw [← smul_eq_mul] ; obtain ⟨z, hz⟩ := z
       exact Submodule.smul_mem (V j) (↑(e ↑i)) hz ⟩)
-      fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, AddSubmonoid.mk_eq_zero]
+      fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, Submodule.mk_eq_zero]
     have hx1 : x i = e i := by simp [x]
     have hx2 (j) (h : j ≠ i) : (x j : R) = 0 := by
       simp [x, Finsupp.single_apply]
@@ -80,7 +80,7 @@ def decomp_ring_ortho_idem (I : Type u) [Fintype I] [DecidableEq I]
       · intro x hx hy
         simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
           AddSubmonoid.mk_eq_zero, not_not, y] at hx hy ⊢
-        exact hy
+        exact (AddSubmonoid.mk_eq_zero (V x).toAddSubmonoid).mp hy
     have : x = y := by
       apply decompose_unique
       rw [hx3, hy3, mul_one]
@@ -94,7 +94,7 @@ def decomp_ring_ortho_idem (I : Type u) [Fintype I] [DecidableEq I]
     let y : (⨁ i, V i) := DFinsupp.mapRange (x := e) (fun j (z : V j) => ⟨e i * (z : R), by
       rw [← smul_eq_mul] ; obtain ⟨z, hz⟩ := z
       exact Submodule.smul_mem (V j) (↑(e ↑i)) hz ⟩)
-      fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, AddSubmonoid.mk_eq_zero]
+      fun i' ↦ by simp only [ZeroMemClass.coe_zero, mul_zero, Submodule.mk_eq_zero]
     have hx1 : x i = e i := by simp [x]
     have hx2 (j) (h : j ≠ i) : (x j : R) = 0 := by
       simp [x, Finsupp.single_apply]
@@ -125,7 +125,7 @@ def decomp_ring_ortho_idem (I : Type u) [Fintype I] [DecidableEq I]
       · intro x hx hy
         simp only [DFinsupp.mem_support_toFun, ne_eq, DFinsupp.mapRange_apply,
           AddSubmonoid.mk_eq_zero, not_not, y] at hx hy ⊢
-        exact hy
+        exact (AddSubmonoid.mk_eq_zero (V x).toAddSubmonoid).mp hy
     have : x = y := by
       apply decompose_unique
       rw [hx3, hy3, mul_one]
@@ -190,7 +190,7 @@ def ortho_idem_component (I : Type u) [Fintype I] [DecidableEq I] (s : Finset I)
   map_add' := by
     rintro ⟨a, ha⟩ ⟨b, hb⟩
     ext
-    simp only [Ideal.submodule_span_eq, AddSubmonoid.mk_add_mk, add_mul]
+    simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, AddMemClass.mk_add_mk, add_mul]
 
   map_smul' := by
     rintro r ⟨x, hx⟩
@@ -239,8 +239,8 @@ def ortho_idem_directsum_inv_component
   toFun x := ⟨x.1 * (∑ i : s, e i), by
     apply Ideal.mul_mem_left; exact Submodule.mem_span_singleton_self _⟩
   map_add' := fun x y ↦ by
-    simp only [Ideal.submodule_span_eq, AddSubmonoid.coe_add, Submodule.coe_toAddSubmonoid, add_mul,
-      AddSubmonoid.mk_add_mk]
+    simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, Submodule.coe_add, add_mul,
+      AddMemClass.mk_add_mk]
   map_smul' := fun r x ↦ by
     simp only [Ideal.submodule_span_eq, SetLike.val_smul, smul_eq_mul, mul_assoc, RingHom.id_apply,
       SetLike.mk_smul_mk]
@@ -298,7 +298,7 @@ lemma aux00 (I : Type u) [Fintype I] [DecidableEq I] (s : Finset I)
     erw [DFinsupp.lsingle_apply, DFinsupp.single_apply]
     split_ifs with H
     · subst H
-      simp only [AddSubmonoid.mk_eq_zero]
+      simp only [Submodule.mk_eq_zero]
       rw [mul_assoc, Finset.sum_coe_sort s e, OrthogonalIdempotents.sum_mul_of_mem (he := he) j.2,
         ← (Submodule.mem_span_singleton.1 x.2).choose_spec, smul_mul_assoc, he.2, smul_zero]
       exact Subtype.coe_ne_coe.mpr h
@@ -334,10 +334,11 @@ def ortho_idem_directsum_equiv
   rw [map_sum]
   rcases x with ⟨x, hx⟩
   ext : 1
-  simp only [Ideal.submodule_span_eq, AddSubmonoid.coe_finset_sum, Submodule.coe_toAddSubmonoid]
+  simp only [Ideal.submodule_span_eq]
+  rw [Finset.sum_coe_sort s] --motive is not type correct
   rw [Submodule.mem_span_singleton] at hx
   obtain ⟨a, rfl⟩ := hx
-  simp only [smul_eq_mul]
+  simp only [Finset.coe_sort_coe, smul_eq_mul]
 
   calc ∑ j : s, (_ : R)
     _ = ∑ j : s, (ortho_idem_directsum_inv R I s e) (DirectSum.of _ j ⟨a • e j,
@@ -381,24 +382,15 @@ end
 
 section indecomp
 
-def Module.Decomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
-  ∃(N1 N2 : Submodule R M) (_ : Nontrivial N1) (_ : Nontrivial N2), Nonempty $ M ≃ₗ[R] (N1 × N2)
-
 def Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
   Nontrivial M ∧ ∀(N N' : Submodule R M), ((N × N' ≃ₗ[R] M) → (N = ⊥ ∨ N' = ⊥))
 
--- this lemma is **wrong**: if `M` is trivial, then `M` is not decomposable and it is not
--- indecomposable either
-@[simp]
-lemma not_decomp_iff_indecomp (M : Type u) [AddCommGroup M] [Module R M] :
-    ¬Module.Decomposable R M ↔ Module.Indecomposable R M := by
-  sorry
-
 variable (e : R) (he : IsIdempotentElem e)
 
--- include he in
--- lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
---     PrimitiveIdempotents R e := ⟨fun hI ↦ {
+include he in
+lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
+    PrimitiveIdempotents R e := sorry
+    -- ⟨fun hI ↦ {
 --       idem := he
 --       ne_sum_ortho := by
 --         classical

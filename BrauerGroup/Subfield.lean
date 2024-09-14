@@ -9,8 +9,9 @@ open BigOperators TensorProduct MulOpposite
 
 section def_and_lemmas
 
-structure SubField (K A : Type u) [Field K] [Semiring A] [Algebra K A] extends Subalgebra K A where
-  is_field : IsField carrier
+structure SubField (K A : Type u) [Field K] [Semiring A] [Algebra K A] extends
+  Subalgebra K A where
+  is_field : @IsField carrier $ Subsemiring.toSemiring _
 
 def IsMaximalSubfield (K A : Type u) [Field K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
   := ∀ (B : SubField K A), L.1 ≤ B.1 → B = L
@@ -322,8 +323,8 @@ def C_iso_toFun (B : Subalgebra K A):
       LinearMap.zero_apply]
   map_add' := fun x y ↦ by
     ext m
-    simp only [C_iso_toFun_toFun, Subsemiring.coe_add, Subalgebra.coe_toSubsemiring,
-      Subalgebra.coe_centralizer, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply, mul_add]
+    simp only [C_iso_toFun_toFun, AddMemClass.coe_add, mul_add, LinearMap.coe_mk, AddHom.coe_mk,
+      LinearMap.add_apply]
   commutes' := fun k ↦ by
     ext m
     simp only [C_iso_toFun_toFun]
