@@ -335,7 +335,9 @@ def ortho_idem_directsum_equiv
   rcases x with ⟨x, hx⟩
   ext : 1
   simp only [Ideal.submodule_span_eq]
-  rw [Finset.sum_coe_sort s] --motive is not type correct
+  change Submodule.subtype _ _ = _
+  rw [map_sum]
+  simp only [Finset.univ_eq_attach, Submodule.coeSubtype]
   rw [Submodule.mem_span_singleton] at hx
   obtain ⟨a, rfl⟩ := hx
   simp only [Finset.coe_sort_coe, smul_eq_mul]
@@ -345,14 +347,18 @@ def ortho_idem_directsum_equiv
       Submodule.smul_mem _ _ $ Submodule.mem_span_singleton_self _⟩) := by
       simp only [Ideal.submodule_span_eq, smul_eq_mul, AddSubmonoid.coe_finset_sum,
         Submodule.coe_toAddSubmonoid]
+      change _ = Submodule.subtype _ _
+      rw [map_sum]
+
       refine Finset.sum_congr rfl ?_
       intro i _
       erw [orth_idem_directSum_apply_spec (he := he)]
       rfl
 
-  simp only [Ideal.submodule_span_eq, ortho_idem_directsum_inv, smul_eq_mul,
-    AddSubmonoid.coe_finset_sum, Submodule.coe_toAddSubmonoid]
+  simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, ortho_idem_directsum_inv, smul_eq_mul]
   rw [← smul_eq_mul, Finset.smul_sum]
+  change Submodule.subtype _ _ = _
+  rw [map_sum]
   refine Finset.sum_congr rfl fun j _ ↦ by
     unfold of --DFinsupp.singleAddHom
     simp only [toModule, DFinsupp.singleAddHom, smul_eq_mul]
@@ -366,7 +372,11 @@ def ortho_idem_decomp_ring (I : Type u) [Fintype I] [DecidableEq I]
     (e : I → R) (he : ∑ i : I, e i  = 1) (he' : OrthogonalIdempotents e)
     [(i : I) → (x : ↥(Submodule.span R {e i})) → Decidable (x ≠ 0)] :
     (⨁ i : I, (Submodule.span R {e i})) ≃ₗ[R] R :=
-  (sorry) ≪≫ₗ (ortho_idem_directsum_equiv (he := he') Finset.univ).symm ≪≫ₗ
+  (LinearEquiv.ofLinear
+    (DirectSum.toModule _ _ _ fun i => sorry)
+    (DirectSum.toModule _ _ _ fun i => sorry)
+    sorry
+    sorry) ≪≫ₗ (ortho_idem_directsum_equiv (he := he') Finset.univ).symm ≪≫ₗ
     LinearEquiv.ofLinear (Submodule.subtype _)
       { toFun := fun r =>
         ⟨r, by
