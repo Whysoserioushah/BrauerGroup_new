@@ -77,6 +77,33 @@ typeclasses. -/
 def of (X : Type u) [Field X] [Algebra K X] : FieldCatOver K :=
   ⟨X⟩
 
+
+instance (A : FieldCatOver K) : Field A := A.isField
+
+instance (A : FieldCatOver K) : Algebra K A := A.isAlgebra
+
+variable {K} in
+def extend (A : FieldCatOver K) (B : FieldCatOver A) : FieldCatOver K :=
+  letI : Algebra K B := RingHom.toAlgebra (algebraMap A B |>.comp <| algebraMap K A)
+  .of K B
+
+instance (A : FieldCatOver K) (B : FieldCatOver A) : Field (extend A B) := B.isField
+
+instance (A : FieldCatOver K) (B : FieldCatOver A) : Algebra A (extend A B) := B.isAlgebra
+
+instance (A : FieldCatOver K) (B : FieldCatOver A) : IsScalarTower K A (extend A B) :=
+  IsScalarTower.of_algebraMap_eq (congrFun rfl)
+
+instance (A : FieldCatOver K) (B : FieldCatOver A) : Algebra K B := (extend A B).isAlgebra
+
+instance (A : FieldCatOver K) (B : FieldCatOver A) : IsScalarTower K A B :=
+  IsScalarTower.of_algebraMap_eq (congrFun rfl)
+
+variable {K} in
+def toExtend (A : FieldCatOver K) (B : FieldCatOver A) : A ⟶ extend A B where
+  __ := Algebra.ofId A B
+  commutes' _ := rfl
+
 /-- Typecheck a `AlgHom` as a morphism in `AlgebraCat R`. -/
 def ofHom {K} [Field K] {X Y : Type u} [Field X] [Algebra K X] [Field Y] [Algebra K Y]
     (f : X →ₐ[K] Y) : of K X ⟶ of K Y :=
