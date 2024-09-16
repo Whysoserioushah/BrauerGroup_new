@@ -986,7 +986,6 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
             (TensorProduct.AlgebraTensorModule.rid K E E) (LinearEquiv.refl F A))
           set g := (TensorProduct.AlgebraTensorModule.assoc F K E E K A.carrier).symm
           change f (g _) = _
-          save
           induction y1 using TensorProduct.induction_on -- with f b e a he ha
           · rw [zero_mul, TensorProduct.tmul_zero, g.map_zero,
               f.map_zero, TensorProduct.tmul_zero,
