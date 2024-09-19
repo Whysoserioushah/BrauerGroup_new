@@ -16,12 +16,6 @@ section smul
 variable (FF : FieldCatOver k ⥤ Grp)
 variable (K : FieldCatOver k) (Ω : FieldCatOver K) [IsGalois K Ω]
 
-example
-    (σ : Ω ≃ₐ[K] Ω) (x : FF.obj (FieldCatOver.extend K Ω)) :
-    FF.obj (FieldCatOver.extend K Ω) :=
-FF.map
-  ({ __ := σ.toAlgHom
-     commutes' := fun r => σ.commutes (algebraMap k K r) }) x
 
 instance : MulDistribMulAction (Ω ≃ₐ[K] Ω) (FF.obj (FieldCatOver.extend K Ω)) where
   smul σ x :=
