@@ -1,6 +1,6 @@
 import Mathlib.RingTheory.Idempotents
 import Mathlib.Algebra.DirectSum.Decomposition
-import Mathlib.Tactic
+import Mathlib.Order.Irreducible
 import Mathlib.Data.Finsupp.Notation
 
 universe u
@@ -431,14 +431,23 @@ end
 
 section indecomp
 
-def Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
-  Nontrivial M ∧ ∀(N N' : Submodule R M), ((N × N' ≃ₗ[R] M) → (N = ⊥ ∨ N' = ⊥))
+abbrev Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
+  SupIrred (⊤ : Submodule R M)
 
-variable (e : R) (he : IsIdempotentElem e)
+def Module.Indecomposable' (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
+  Nontrivial M ∧ ∀(N N' : Type u) [AddCommGroup N] [Module R N] [AddCommGroup N'] [Module R N'],
+  ((N × N' ≃ₗ[R] M) → ((⊤ : Submodule R N) = ⊥ ∨ (⊤ : Submodule R N') = ⊥))
 
-include he in
-lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
-    PrimitiveIdempotents R e := sorry
+-- variable (e : R) (he : IsIdempotentElem e)
+
+-- include he in
+-- lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) →
+--     PrimitiveIdempotents R e := fun h ↦ ⟨he, fun I _ _ e' _ he' i j ↦ by sorry⟩
+
+-- include he in
+-- lemma primitive_iff (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
+--     PrimitiveIdempotents R e := ⟨sorry,
+--       sorry⟩
     -- ⟨fun hI ↦ {
 --       idem := he
 --       ne_sum_ortho := by
@@ -475,5 +484,5 @@ lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodul
 --           -- have := hno ∅
 --           sorry ⟩⟩
 --       · sorry⟩
-#check JordanHolderModule.instJordanHolderLattice
+
 end indecomp
