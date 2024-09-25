@@ -11,9 +11,36 @@ variable (R : Type u) [Ring R] (e : R)
 
 structure PrimitiveIdempotents: Prop where
   idem : IsIdempotentElem e
-  ne_sum_ortho : ∀ (I : Type u) [DecidableEq I] [Fintype I]
-    (e' : I → R) [(i : I) → (x : ↥(Submodule.span R {e' i})) → Decidable (x ≠ 0)]
-    (_ : OrthogonalIdempotents (R := R) e') (i j : I), e ≠ e' i + e' j
+  [ne_zero : e ≠ 0]
+  ne_sum_ortho' :
+    ∀ (I : Type u) [DecidableEq I] [Fintype I]
+      (e' : I → R) (_ : OrthogonalIdempotents (R := R) e')
+      (_ : ∀ i, e' i ≠ 0) (i j : I),
+    i ≠ j → e ≠ e' i + e' j
+
+namespace PrimitiveIdempotents
+
+variable (he : PrimitiveIdempotents R e)
+
+variable {R e} in
+include he in
+lemma ne_sum_ortho (I : Type u) [DecidableEq I] [Fintype I]
+    (e' : I → R) (ho : OrthogonalIdempotents (R := R) e')
+    (_ : ∀ i, e' i ≠ 0) (i j : I) :
+    e ≠ e' i + e' j := by
+  have : e ≠ 0 := he.ne_zero
+  by_cases eq : i = j
+  · subst eq
+    intro rid
+    have eq : e * e = e := he.idem
+    conv_lhs at eq => rw [rid]
+    simp only [mul_add, add_mul] at eq
+    rw [ho.idem i, ← rid] at eq
+    simp only [add_right_eq_self] at eq
+    contradiction
+  · apply he.ne_sum_ortho' <;> assumption
+
+end PrimitiveIdempotents
 
 section
 
@@ -134,6 +161,49 @@ def decomp_ring_ortho_idem (I : Type u) [Fintype I] [DecidableEq I]
     simp [hx1, hy, y, Subtype.ext_iff, (hx2 j hij.symm)] at this
     exact this.symm
 
+def ortho_idem_component_two_left
+    (I : Type u)
+    (e : I → R) (i j : I) :
+    (Submodule.span R {e i + e j}) →ₗ[R] Submodule.span R {e i} where
+  toFun := fun x ↦ ⟨x * e i, by
+    obtain ⟨r, hx⟩ := Submodule.mem_span_singleton.1 x.2
+    rw [← hx, smul_eq_mul, mul_assoc, add_mul, mul_add]
+    refine Submodule.add_mem _ ?_ ?_ <;>
+    apply Ideal.mul_mem_left <;>
+    apply Ideal.mul_mem_left <;>
+    exact Submodule.mem_span_singleton_self (e _)
+    ⟩
+  map_add' := by
+    rintro ⟨a, ha⟩ ⟨b, hb⟩
+    ext
+    simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, AddMemClass.mk_add_mk, add_mul]
+
+  map_smul' := by
+    rintro r ⟨x, hx⟩
+    simp only [Ideal.submodule_span_eq, SetLike.mk_smul_mk, smul_eq_mul, RingHom.id_apply,
+      Subtype.mk.injEq, mul_assoc]
+
+def ortho_idem_component_two_right
+    (I : Type u)
+    (e : I → R) (i j : I) :
+    (Submodule.span R {e i + e j}) →ₗ[R] Submodule.span R {e j} where
+  toFun := fun x ↦ ⟨x * e j, by
+    obtain ⟨r, hx⟩ := Submodule.mem_span_singleton.1 x.2
+    rw [← hx, smul_eq_mul, mul_assoc, add_mul, mul_add]
+    refine Submodule.add_mem _ ?_ ?_ <;>
+    apply Ideal.mul_mem_left <;>
+    apply Ideal.mul_mem_left <;>
+    exact Submodule.mem_span_singleton_self (e _)
+    ⟩
+  map_add' := by
+    rintro ⟨a, ha⟩ ⟨b, hb⟩
+    ext
+    simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, AddMemClass.mk_add_mk, add_mul]
+
+  map_smul' := by
+    rintro r ⟨x, hx⟩
+    simp only [Ideal.submodule_span_eq, SetLike.mk_smul_mk, smul_eq_mul, RingHom.id_apply,
+      Subtype.mk.injEq, mul_assoc]
 
 def ortho_idem_component (I : Type u) [Fintype I] [DecidableEq I] (s : Finset I)
     (e : I → R) (i : s) :
@@ -196,6 +266,34 @@ def ortho_idem_directsum_inv_component
     (j : s) :
     Submodule.span R {e j}  →ₗ[R] Submodule.span R {∑ i : s, e i}  where
   toFun x := ⟨x.1 * (∑ i : s, e i), by
+    apply Ideal.mul_mem_left; exact Submodule.mem_span_singleton_self _⟩
+  map_add' := fun x y ↦ by
+    simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, Submodule.coe_add, add_mul,
+      AddMemClass.mk_add_mk]
+  map_smul' := fun r x ↦ by
+    simp only [Ideal.submodule_span_eq, SetLike.val_smul, smul_eq_mul, mul_assoc, RingHom.id_apply,
+      SetLike.mk_smul_mk]
+
+def ortho_idem_directsum_inv_two_left
+    (I : Type u)
+    (e : I → R)
+    (i j : I) :
+    Submodule.span R {e i}  →ₗ[R] Submodule.span R {e i + e j}  where
+  toFun x := ⟨x.1 * (e i + e j), by
+    apply Ideal.mul_mem_left; exact Submodule.mem_span_singleton_self _⟩
+  map_add' := fun x y ↦ by
+    simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, Submodule.coe_add, add_mul,
+      AddMemClass.mk_add_mk]
+  map_smul' := fun r x ↦ by
+    simp only [Ideal.submodule_span_eq, SetLike.val_smul, smul_eq_mul, mul_assoc, RingHom.id_apply,
+      SetLike.mk_smul_mk]
+
+def ortho_idem_directsum_inv_two_right
+    (I : Type u)
+    (e : I → R)
+    (i j : I) :
+    Submodule.span R {e j}  →ₗ[R] Submodule.span R {e i + e j}  where
+  toFun x := ⟨x.1 * (e i + e j), by
     apply Ideal.mul_mem_left; exact Submodule.mem_span_singleton_self _⟩
   map_add' := fun x y ↦ by
     simp only [Finset.univ_eq_attach, Ideal.submodule_span_eq, Submodule.coe_add, add_mul,
@@ -327,6 +425,47 @@ def ortho_idem_directsum_equiv
     simp only [Ideal.submodule_span_eq, LinearMap.coe_mk, AddHom.coe_mk, mul_assoc,
       Finset.sum_coe_sort s e, OrthogonalIdempotents.mul_sum_of_mem he j.2] )
 
+def ortho_idem_directsum_two
+    (I : Type u) (i j : I) (h : i ≠ j)
+    (e : I → R) (he : OrthogonalIdempotents e) :
+    Submodule.span R {e i + e j}  ≃ₗ[R]
+    (Submodule.span R {e i} × Submodule.span R {e j}) :=
+  LinearEquiv.ofLinear
+    (LinearMap.prod
+      (ortho_idem_component_two_left R I e i j)
+      (ortho_idem_component_two_right R I e i j))
+    (LinearMap.coprod
+      (ortho_idem_directsum_inv_two_left R I e i j)
+      (ortho_idem_directsum_inv_two_right R I e i j))
+    (by
+      ext ⟨x, hx⟩ <;>
+      rw [Submodule.mem_span_singleton] at hx <;>
+      obtain ⟨r, rfl⟩ := hx <;>
+      have H (x : R) : x * e i * e i = x * e i := by rw [mul_assoc, he.1 i]
+      all_goals have H' (x : R) : x * e i * e j = 0 := by rw [mul_assoc, he.2 h, mul_zero]
+
+      all_goals have H'' (x : R) : x * e j * e i = 0 := by rw [mul_assoc, he.2 h.symm, mul_zero]
+
+      all_goals have H''' (x : R) : x * e j * e j = x * e j := by rw [mul_assoc, he.1 j]
+
+      all_goals simp [ortho_idem_component_two_right, ortho_idem_directsum_inv_two_left, mul_add,
+          add_mul, H, H', ortho_idem_component_two_left, ortho_idem_directsum_inv_two_right, H''',
+          H''])
+    (by
+      ext ⟨x, hx⟩
+      rw [Submodule.mem_span_singleton] at hx
+      obtain ⟨r, rfl⟩ := hx
+      have H (x : R) : x * e i * e i = x * e i := by rw [mul_assoc, he.1 i]
+      have H' (x : R) : x * e i * e j = 0 := by rw [mul_assoc, he.2 h, mul_zero]
+
+      have H'' (x : R) : x * e j * e i = 0 := by rw [mul_assoc, he.2 h.symm, mul_zero]
+
+      have H''' (x : R) : x * e j * e j = x * e j := by rw [mul_assoc, he.1 j]
+
+      simp [ortho_idem_component_two_right, ortho_idem_directsum_inv_two_left, mul_add,
+          add_mul, H, H', ortho_idem_component_two_left, ortho_idem_directsum_inv_two_right, H''',
+          H''])
+
 abbrev toDirectsum1 (I : Type u) [Fintype I] [DecidableEq I]
     (e : I → R)
     [(i : I) → (x : (Submodule.span R {e i})) → Decidable (x ≠ 0)] :
@@ -439,25 +578,112 @@ variable (e : R) (he : IsIdempotentElem e)
 
 open DirectSum
 include he in
-lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) →
-    PrimitiveIdempotents R e := fun h ↦ ⟨he, fun I _ _ e' _ he' i j ↦ by
-  classical
-  obtain ⟨Nontriv, hM⟩ := h
-  by_contra! hee
-  have := ortho_idem_directsum_equiv R I {i, j} e' he'
-  change Submodule.span R _ ≃ₗ[R] _ at this
-  rw [show Submodule.span R _ = Submodule.span R {e' i + e' j} by
-    suffices {∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1} = ({e' i + e' j} : Set R) by
-      have aeq : ∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1 = e' i + e' j := by
-        simp only [Set.singleton_eq_singleton_iff, imp_false] at this ⊢ ; exact this
-      exact Submodule.span_eq_span (Eq.subset this|>.trans Submodule.subset_span) $
-        Eq.subset this.symm|>.trans Submodule.subset_span
-    simp only [Set.singleton_eq_singleton_iff, imp_false, Finset.sum_coe_sort]
-    refine Finset.sum_eq_add_of_mem _ _ (Finset.mem_insert_self _ _)
-      (by simp only [Finset.mem_insert, Finset.mem_singleton, or_true])
-      (by sorry) (by sorry) ] at this
+lemma indecomp_of_idem
+    (he' : e ≠ (1 : R)) (he'' : Module.Indecomposable R (Submodule.span R {e})) :
+    PrimitiveIdempotents R e := by
 
-  sorry⟩
+  letI nez : NeZero e := by
+    sorry
+  refine {
+    idem := he
+    ne_zero := nez.out
+    ne_sum_ortho' := fun I _ _ e' he''' nez' i j hij hee ↦ ?_
+  }
+  -- ⟨he, fun I _ _ e' _ he' i j ↦ by
+  classical
+  obtain ⟨Nontriv, hM⟩ := he''
+  subst hee
+  -- by_contra! hee
+  let eqv : Submodule.span R _ ≃ₗ[R] _ := ortho_idem_directsum_two R I i j hij e' he'''
+
+  let left : Submodule.span R {e' i} →ₗ[R] Submodule.span R {e' i} × Submodule.span R {e' j} :=
+    LinearMap.inl _ _ _
+
+  let right : Submodule.span R {e' j} →ₗ[R] Submodule.span R {e' i} × Submodule.span R {e' j} :=
+    LinearMap.inr _ _ _
+  have := eqv.symm.toLinearMap ∘ₗ left
+  apply hM (LinearMap.range <| eqv.symm.toLinearMap ∘ₗ left)
+    (LinearMap.range <| eqv.symm.toLinearMap ∘ₗ right)
+  · rw [bot_lt_iff_ne_bot, Submodule.ne_bot_iff] --
+    refine ⟨eqv.symm.toLinearMap
+      (left ⟨e' i, by simpa using Submodule.subset_span (by simp)⟩), by simp, ?_⟩
+    rintro (rid : (eqv.symm.toLinearMap ∘ₗ left) _ = 0)
+    rw [← LinearMap.mem_ker, LinearMap.ker_eq_bot.2, Submodule.mem_bot, Subtype.ext_iff] at rid
+    · exact nez' i rid
+    refine eqv.symm.injective.comp LinearMap.inl_injective
+  · refine lt_of_le_of_ne le_top ?_
+    intro rid
+    have mem : ⟨e' i + e' j, Submodule.subset_span <| by simp⟩ ∈
+      (⊤ : Submodule R (Submodule.span R {e' i + e' j})) := ⟨⟩
+    rw [← rid, LinearMap.mem_range] at mem
+    obtain ⟨⟨x, hx1⟩, ha⟩ := mem
+    rw [Submodule.mem_span_singleton] at hx1
+    obtain ⟨a, rfl⟩ := hx1
+    simp only [Ideal.submodule_span_eq, ortho_idem_directsum_two, ortho_idem_directsum_inv_two_left,
+      mul_add, LinearEquiv.ofLinear_symm_toLinearMap, LinearMap.coprod_inl, smul_eq_mul,
+      LinearMap.coe_mk, AddHom.coe_mk, Subtype.mk.injEq, eqv, left] at ha
+    rw [mul_assoc, he'''.1, mul_assoc, he'''.2 hij, mul_zero, add_zero] at ha
+    apply_fun (· * e' j) at ha
+    rw [mul_assoc, he'''.2 hij, mul_zero, add_mul, he'''.1, he'''.2 hij, zero_add] at ha
+    exact nez' j ha.symm
+  · rw [bot_lt_iff_ne_bot, Submodule.ne_bot_iff] --
+    refine ⟨eqv.symm.toLinearMap
+      (right ⟨e' j, by simpa using Submodule.subset_span (by simp)⟩), by simp, ?_⟩
+    rintro (rid : (eqv.symm.toLinearMap ∘ₗ right) _ = 0)
+    rw [← LinearMap.mem_ker, LinearMap.ker_eq_bot.2, Submodule.mem_bot, Subtype.ext_iff] at rid
+    · exact nez' j rid
+    refine eqv.symm.injective.comp LinearMap.inr_injective
+  · refine lt_of_le_of_ne le_top ?_
+    intro rid
+    have mem : ⟨e' i + e' j, Submodule.subset_span <| by simp⟩ ∈
+      (⊤ : Submodule R (Submodule.span R {e' i + e' j})) := ⟨⟩
+    rw [← rid, LinearMap.mem_range] at mem
+    obtain ⟨⟨x, hx1⟩, ha⟩ := mem
+    rw [Submodule.mem_span_singleton] at hx1
+    obtain ⟨a, rfl⟩ := hx1
+    simp only [Ideal.submodule_span_eq, ortho_idem_directsum_two, ortho_idem_directsum_inv_two_left,
+      mul_add, ortho_idem_directsum_inv_two_right, LinearEquiv.ofLinear_symm_toLinearMap,
+      LinearMap.coprod_inr, smul_eq_mul, LinearMap.coe_mk, AddHom.coe_mk, Subtype.mk.injEq, eqv,
+      right] at ha
+    rw [mul_assoc, he'''.2 hij.symm, mul_assoc, he'''.1, mul_zero, zero_add] at ha
+    apply_fun (· * e' i) at ha
+    rw [mul_assoc, he'''.2 hij.symm, mul_zero, add_mul, he'''.1, he'''.2 hij.symm, add_zero] at ha
+    exact nez' i ha.symm
+  · constructor
+    · rw [disjoint_iff_inf_le]
+      rintro ⟨x, hx1⟩ ⟨hleft, hright⟩
+      rw [Submodule.mem_span_singleton] at hx1
+      obtain ⟨r, rfl⟩ := hx1
+      simp only [Ideal.submodule_span_eq, smul_eq_mul, SetLike.mem_coe, LinearMap.mem_range,
+        LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+        Subtype.exists] at hleft hright
+      obtain ⟨a, ha, eq1⟩ := hleft
+      obtain ⟨b, hb, eq2⟩ := hright
+      erw [Submodule.mem_span_singleton] at ha hb
+      obtain ⟨a, rfl⟩ := ha
+      obtain ⟨b, rfl⟩ := hb
+      simp only [ortho_idem_directsum_two, Ideal.submodule_span_eq,
+        ortho_idem_directsum_inv_two_left, mul_add, ortho_idem_directsum_inv_two_right, smul_eq_mul,
+        LinearMap.coe_inl, LinearEquiv.ofLinear_symm_apply, LinearMap.coprod_apply,
+        LinearMap.coe_mk, AddHom.coe_mk, ZeroMemClass.coe_zero, zero_mul, add_zero,
+        AddMemClass.mk_add_mk, Subtype.mk.injEq, LinearMap.coe_inr, zero_add, eqv, left,
+        right] at eq1 eq2
+      sorry
+    · sorry
+
+  -- change Submodule.span R _ ≃ₗ[R] _ at this
+  -- rw [show Submodule.span R _ = Submodule.span R {e' i + e' j} by
+  --   suffices {∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1} = ({e' i + e' j} : Set R) by
+  --     have aeq : ∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1 = e' i + e' j := by
+  --       simp only [Set.singleton_eq_singleton_iff, imp_false] at this ⊢ ; exact this
+  --     exact Submodule.span_eq_span (Eq.subset this|>.trans Submodule.subset_span) $
+  --       Eq.subset this.symm|>.trans Submodule.subset_span
+  --   simp only [Set.singleton_eq_singleton_iff, imp_false, Finset.sum_coe_sort]
+
+  --   rw [Finset.sum_insert (by simpa), Finset.sum_singleton]] at this
+
+  -- let eqv : (⨁ (x : ({i, j} : Finset I) ), Submodule.span R {e' x.1}) ≃ₗ[R] _ := sorry
+  sorry
 
 -- include he in
 -- lemma primitive_iff (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
