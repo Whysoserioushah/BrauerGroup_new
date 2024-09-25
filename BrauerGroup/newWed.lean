@@ -583,17 +583,21 @@ lemma indecomp_of_idem
     PrimitiveIdempotents R e := by
 
   letI nez : NeZero e := by
-    sorry
-  refine {
+    constructor
+    rintro rfl
+    simp only [Ideal.submodule_span_eq] at he''
+    erw [Ideal.span_zero] at he''
+    obtain ⟨⟨x, rfl⟩, ⟨y, rfl⟩, hxy⟩ := he''.1
+    exact hxy rfl
+  refine
+  {
     idem := he
     ne_zero := nez.out
     ne_sum_ortho' := fun I _ _ e' he''' nez' i j hij hee ↦ ?_
   }
-  -- ⟨he, fun I _ _ e' _ he' i j ↦ by
   classical
   obtain ⟨Nontriv, hM⟩ := he''
   subst hee
-  -- by_contra! hee
   let eqv : Submodule.span R _ ≃ₗ[R] _ := ortho_idem_directsum_two R I i j hij e' he'''
 
   let left : Submodule.span R {e' i} →ₗ[R] Submodule.span R {e' i} × Submodule.span R {e' j} :=
@@ -668,62 +672,35 @@ lemma indecomp_of_idem
         LinearMap.coe_mk, AddHom.coe_mk, ZeroMemClass.coe_zero, zero_mul, add_zero,
         AddMemClass.mk_add_mk, Subtype.mk.injEq, LinearMap.coe_inr, zero_add, eqv, left,
         right] at eq1 eq2
-      sorry
-    · sorry
-
-  -- change Submodule.span R _ ≃ₗ[R] _ at this
-  -- rw [show Submodule.span R _ = Submodule.span R {e' i + e' j} by
-  --   suffices {∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1} = ({e' i + e' j} : Set R) by
-  --     have aeq : ∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1 = e' i + e' j := by
-  --       simp only [Set.singleton_eq_singleton_iff, imp_false] at this ⊢ ; exact this
-  --     exact Submodule.span_eq_span (Eq.subset this|>.trans Submodule.subset_span) $
-  --       Eq.subset this.symm|>.trans Submodule.subset_span
-  --   simp only [Set.singleton_eq_singleton_iff, imp_false, Finset.sum_coe_sort]
-
-  --   rw [Finset.sum_insert (by simpa), Finset.sum_singleton]] at this
-
-  -- let eqv : (⨁ (x : ({i, j} : Finset I) ), Submodule.span R {e' x.1}) ≃ₗ[R] _ := sorry
-  sorry
-
--- include he in
--- lemma primitive_iff (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
---     PrimitiveIdempotents R e := ⟨sorry,
---       sorry⟩
-    -- ⟨fun hI ↦ {
---       idem := he
---       ne_sum_ortho := by
---         classical
---         by_contra! he
---         obtain ⟨I, _, _, e', _, hee', ii, jj, hij⟩ := he
---         obtain ⟨Nontriv, hM⟩ := hI
---         have iso1 := ortho_idem_directsum_equiv R I {ii, jj} e' hee'
---         if hijj : ii = jj then sorry
---         else
---         have heq : ∑ i : { x // x ∈ ({ii, jj} : Finset I) }, e' i.1 = e' ii + e' jj := sorry
---         have singleton_eq : {(∑ i : { x // x ∈ ({ii, jj} : Finset I) }, e' i.1)} =
---           ({e' ii + e' jj} : Set R) := Set.singleton_eq_singleton_iff.2
---             (by
---               rw [Finset.sum_coe_sort {ii, jj} e', Finset.sum_eq_add_of_mem];
---               exact Finset.mem_insert_self ii {jj}
---               exact Finset.mem_insert.2 (by right; exact Finset.mem_singleton_self jj)
---               exact hijj
---               sorry
---               )
---         have eq := LinearEquiv.ofEq _ _ $ Submodule.span_eq_span (R := R) (M := R)
---             (s := {(∑ i : { x // x ∈ ({ii, jj} : Finset I)}, e' i.1)}) (t := {e' ii + e' jj})
---             (Set.singleton_subset_iff.2 (Submodule.mem_span_singleton.2
---               ⟨1, by rw [one_smul]; exact heq.symm⟩)) (Set.singleton_subset_iff.2 $
---               Submodule.mem_span_singleton.2 ⟨1, by rw [one_smul]; exact heq⟩)|>.symm
---         rw [hij] at hM
---         sorry
---     }, fun he => by
---       unfold Module.Indecomposable
---       constructor
---       · refine ⟨⟨e, Submodule.mem_span_singleton_self _⟩, ⟨0, by
---           by_contra! he0
---           -- obtain ⟨_, hno⟩ := he
---           -- have := hno ∅
---           sorry ⟩⟩
---       · sorry⟩
+      apply_fun (· * e' j) at eq1
+      rw [add_mul, mul_assoc, he'''.2 hij, mul_zero, zero_add, mul_assoc a, he'''.2 hij, mul_zero,
+        zero_mul, add_mul, mul_assoc, he'''.2 hij, mul_assoc, he'''.1, mul_zero, zero_add] at eq1
+      apply_fun (· * e' i) at eq2
+      rw [add_mul, mul_assoc b, he'''.2 hij.symm, mul_zero, zero_mul, zero_add, mul_assoc,
+        he'''.2 hij.symm, mul_zero, add_mul, mul_assoc, he'''.1, mul_assoc, he'''.2 hij.symm,
+        mul_zero, add_zero] at eq2
+      simp_rw [smul_add, smul_eq_mul, ← eq1, ← eq2, add_zero]
+      exact Submodule.zero_mem _
+    · rw [LinearMap.range_comp, LinearMap.range_comp, LinearMap.range_inl,
+        LinearMap.range_inr]
+      rw [codisjoint_iff]
+      rw [← Submodule.map_sup]
+      apply_fun Submodule.comap (eqv.symm.toLinearMap)
+      swap
+      · exact Submodule.comap_injective_of_surjective eqv.symm.surjective
+      rw [Submodule.comap_map_eq, Submodule.comap_top,
+        LinearMap.ker_eq_bot (f := eqv.symm.toLinearMap) |>.2]
+      swap
+      · exact eqv.symm.injective
+      rw [sup_bot_eq, eq_top_iff]
+      rintro ⟨⟨x, hx⟩, ⟨y, hy⟩⟩ -
+      rw [Submodule.mem_span_singleton] at hx hy
+      obtain ⟨a, rfl⟩ := hx
+      obtain ⟨b, rfl⟩ := hy
+      simp only [Ideal.submodule_span_eq, smul_eq_mul, Submodule.mem_sup, LinearMap.mem_ker,
+        LinearMap.snd_apply, LinearMap.fst_apply, Prod.exists, exists_and_left, Subtype.exists,
+        exists_eq_left, Prod.mk_add_mk, add_zero, Prod.mk.injEq, zero_add, Subtype.mk.injEq,
+        exists_prop', nonempty_prop, exists_eq_right]
+      exact hy
 
 end indecomp
