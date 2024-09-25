@@ -431,18 +431,33 @@ end
 
 section indecomp
 
-abbrev Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
-  SupIrred (⊤ : Submodule R M)
+structure Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
+  non_bot : Nontrivial M
+  no_directsum : (∀ (x y : Submodule R M), ⊥ < x → x < ⊤ → ⊥ < y → y < ⊤ → IsCompl x y → False)
 
-def Module.Indecomposable' (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
-  Nontrivial M ∧ ∀(N N' : Type u) [AddCommGroup N] [Module R N] [AddCommGroup N'] [Module R N'],
-  ((N × N' ≃ₗ[R] M) → ((⊤ : Submodule R N) = ⊥ ∨ (⊤ : Submodule R N') = ⊥))
+variable (e : R) (he : IsIdempotentElem e)
 
--- variable (e : R) (he : IsIdempotentElem e)
+open DirectSum
+include he in
+lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) →
+    PrimitiveIdempotents R e := fun h ↦ ⟨he, fun I _ _ e' _ he' i j ↦ by
+  classical
+  obtain ⟨Nontriv, hM⟩ := h
+  by_contra! hee
+  have := ortho_idem_directsum_equiv R I {i, j} e' he'
+  change Submodule.span R _ ≃ₗ[R] _ at this
+  rw [show Submodule.span R _ = Submodule.span R {e' i + e' j} by
+    suffices {∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1} = ({e' i + e' j} : Set R) by
+      have aeq : ∑ i_1 : { x // x ∈ ({i, j} : Finset I) }, e' i_1.1 = e' i + e' j := by
+        simp only [Set.singleton_eq_singleton_iff, imp_false] at this ⊢ ; exact this
+      exact Submodule.span_eq_span (Eq.subset this|>.trans Submodule.subset_span) $
+        Eq.subset this.symm|>.trans Submodule.subset_span
+    simp only [Set.singleton_eq_singleton_iff, imp_false, Finset.sum_coe_sort]
+    refine Finset.sum_eq_add_of_mem _ _ (Finset.mem_insert_self _ _)
+      (by simp only [Finset.mem_insert, Finset.mem_singleton, or_true])
+      (by sorry) (by sorry) ] at this
 
--- include he in
--- lemma indecomp_of_idem (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) →
---     PrimitiveIdempotents R e := fun h ↦ ⟨he, fun I _ _ e' _ he' i j ↦ by sorry⟩
+  sorry⟩
 
 -- include he in
 -- lemma primitive_iff (he' : e ≠ (1 : R)) : Module.Indecomposable R (Submodule.span R {e}) ↔
