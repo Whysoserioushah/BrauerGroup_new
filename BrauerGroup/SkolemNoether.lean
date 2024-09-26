@@ -351,3 +351,25 @@ theorem SkolemNoether (K A B M : Type u)
   simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
     LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
     ZeroHom.coe_mk, LinearMap.id_coe, id_eq]
+
+theorem SkolemNoether' (K A B : Type u)
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
+    [Algebra K B] [hB : IsSimpleOrder (TwoSidedIdeal B)] (f g : B →ₐ[K] A):
+    ∃(x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
+  have := hA.2
+  obtain ⟨n, hn, S, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version K A
+  haveI : NeZero n := ⟨hn⟩
+  letI := Module.compHom (Fin n → S) e.toRingEquiv.toRingHom
+  have : IsSimpleModule A (Fin n → S) := simple_mod_of_wedderburn K A n S e
+  haveI : IsScalarTower K A (Fin n → S) := by
+    constructor
+    intro a b c
+    ext i
+    simp only [Pi.smul_apply]
+    change ∑ _, _ = a • ∑ _, _
+    simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
+      AlgEquiv.toRingEquiv_toRingHom, RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe,
+      MonoidHom.toOneHom_coe, MonoidHom.coe_coe, RingHom.coe_coe, ZeroHom.coe_mk, map_smul,
+      Matrix.smul_apply, smul_eq_mul, Algebra.smul_mul_assoc, Finset.smul_sum]
+
+  exact SkolemNoether K A B (Fin n → S) f g
