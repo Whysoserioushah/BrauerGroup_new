@@ -1,4 +1,5 @@
 import BrauerGroup.SkolemNoether
+import BrauerGroup.Lemmas
 
 universe u v
 
@@ -184,12 +185,163 @@ end lemma1
 
 section lemma2
 
-variable {F B : Type*}
-variable [Field F] [Ring B] [Algebra F B] [IsSimpleOrder (RingCon B)]
+section central_simple_case
+
+variable (F B : Type u)
+variable [Field F] [Ring B] [Algebra F B] [IsCentralSimple F B] [FiniteDimensional F B]
+
+lemma centralizer_mulLeft_le_of_isCentralSimple :
+    (Subalgebra.centralizer F (Set.range <| LinearMap.mulLeft F : Set  <| Module.End F B) : Set _) ≤
+    Set.range (LinearMap.mulRight F (A := B)) := by
+  intro (x : Module.End F B) hx
+  let eqv := tensor_self_op.equivEnd F B
+  have hx' : eqv.symm x ∈ Subalgebra.centralizer F
+    ((Algebra.TensorProduct.includeLeft (R := F) (S := F) (A := B) (B := Bᵐᵒᵖ)).range :
+      Set (B ⊗[F] Bᵐᵒᵖ)) := by
+    rintro _ ⟨y, rfl⟩
+    simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.includeLeft_apply,
+      eqv]
+    apply_fun eqv
+    simp only [map_mul, AlgEquiv.apply_symm_apply]
+    rw [show eqv (y ⊗ₜ[F] 1) = LinearMap.mulLeft F y by
+      ext x
+      simp only [LinearMap.mulLeft_apply]
+      simp only [tensor_self_op.equivEnd, tensor_self_op.toEnd, AlgEquiv.coe_ofBijective,
+        Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
+        OneHom.coe_mk, MulOpposite.unop_one, mul_one, LinearMap.mul_apply, LinearMap.coe_mk,
+        AddHom.coe_mk, eqv] ]
+    ext b
+    simp only [LinearMap.mul_apply, LinearMap.mulLeft_apply]
+    exact congr($(hx (LinearMap.mulLeft F y) (by simp)) b)
+
+  have eq : Subalgebra.centralizer F
+    ((Algebra.TensorProduct.includeLeft (R := F) (S := F) (A := B) (B := Bᵐᵒᵖ)).range :
+      Set (B ⊗[F] Bᵐᵒᵖ)) =
+    (Algebra.TensorProduct.includeRight (R := F) (A := B) (B := Bᵐᵒᵖ)).range := by
+    refine le_antisymm ?_ ?_
+    · set ℬ := FiniteDimensional.finBasis F Bᵐᵒᵖ
+      intro z hz
+      obtain ⟨s, b, rfl⟩ := IsCentralSimple.TensorProduct.eq_repr_basis_right F B Bᵐᵒᵖ ℬ z
+      refine Subalgebra.sum_mem _ fun i hi => ?_
+      have : (b i) ∈ Subalgebra.center F B := by
+        rw [Subalgebra.mem_center_iff]
+        intro b'
+        have eq := hz (b' ⊗ₜ 1) (by simp)
+        simp only [Finset.sum_mul, Algebra.TensorProduct.tmul_mul_tmul, one_mul, Finset.mul_sum,
+          mul_one] at eq
+        rw [← sub_eq_zero, ← Finset.sum_sub_distrib] at eq
+        simp_rw [← TensorProduct.sub_tmul] at eq
+        replace eq := IsCentralSimple.TensorProduct.sum_tmul_basis_right_eq_zero (h := eq)
+        specialize eq i hi
+        rw [sub_eq_zero] at eq
+        exact eq
+      rw [IsCentralSimple.center_eq, Algebra.mem_bot] at this
+      obtain ⟨x, hx⟩ := this
+      rw [← hx, Algebra.algebraMap_eq_smul_one, smul_tmul]
+      simp only [AlgHom.mem_range, Algebra.TensorProduct.includeRight_apply]
+      exact ⟨_, rfl⟩
+    · set ℬ := FiniteDimensional.finBasis F B
+      rintro _ ⟨z, rfl⟩ _ ⟨y, rfl⟩
+      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.includeLeft_apply,
+        Algebra.TensorProduct.includeRight_apply, Algebra.TensorProduct.tmul_mul_tmul, mul_one,
+        one_mul]
+
+  rw [eq] at hx'
+  obtain ⟨y, hy⟩ := hx'
+  simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+    Algebra.TensorProduct.includeRight_apply] at hy
+  apply_fun eqv at hy
+  simp only [AlgEquiv.apply_symm_apply] at hy
+  rw [← hy]
+  refine ⟨y.unop, ?_⟩
+  ext c
+  simp only [LinearMap.mulRight_apply, tensor_self_op.equivEnd, tensor_self_op.toEnd,
+    AlgEquiv.coe_ofBijective, Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk,
+    MonoidHom.coe_mk, OneHom.coe_mk, one_mul, LinearMap.mul_apply, LinearMap.coe_mk, AddHom.coe_mk,
+    eqv]
+
+end central_simple_case
+
+variable {F B : Type u}
+variable [Field F] [Ring B] [Algebra F B] [IsSimpleOrder <| TwoSidedIdeal B] [FiniteDimensional F B]
+
+variable (F B) in
+private def centralizerMulLeftCopy :
+    (Subalgebra.centralizer F (Set.range (LinearMap.mulLeft F) : Set <| Module.End F B)) →ₗ[F]
+    (B →ₗ[Subalgebra.center F B] B) where
+  toFun a :=
+  { toFun := a
+    map_add' := a.1.map_add
+    map_smul' := by
+      intro c x
+      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
+      rw [show c • x = c.1 * x by rfl]
+      have eq : c.1 * a.1 x = a.1 (c.1 * x) :=
+        congr($(a.2 (LinearMap.mulLeft F c.1) (by simp)) x)
+      rw [← eq]; rfl }
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+instance : SMulCommClass (Subalgebra.center F B) B B where
+  smul_comm x y z := by
+    change x.1 * (y * z) = y * (x.1 * z)
+    rw [← mul_assoc, ← Subalgebra.mem_center_iff.1 x.2 y, mul_assoc]
+
+noncomputable instance center_field : Field (Subalgebra.center F B) :=
+  IsField.toField <| IsSimpleRing.isField_center _
+
+instance center_algebra : Algebra (Subalgebra.center F B) B where
+  smul a b := a.1 • b
+  toFun a := a.1
+  map_one' := rfl
+  map_mul' _ _ := rfl
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  commutes' x y := by
+    simpa using Subalgebra.mem_center_iff.1 x.2 y |>.symm
+  smul_def' _ _ := rfl
+
+instance : FiniteDimensional (Subalgebra.center F B) B :=
+  FiniteDimensional.right F (Subalgebra.center F B) B
 
 lemma centralizer_mulLeft :
     (Subalgebra.centralizer F (Set.range <| LinearMap.mulLeft F : Set  <| Module.End F B) : Set _) =
-    Set.range (LinearMap.mulRight F (A := B)) := sorry
+    Set.range (LinearMap.mulRight F (A := B)) := by
+  refine le_antisymm ?_ ?_
+  · suffices eq :
+        (Subalgebra.centralizer (Subalgebra.center F B)
+          (Set.range <| LinearMap.mulLeft (Subalgebra.center F B) :
+            Set  <| Module.End (Subalgebra.center F B) B) : Set _) ≤
+        Set.range (LinearMap.mulRight (Subalgebra.center F B) (A := B)) by
+      intro a ha
+      set a' : B →ₗ[Subalgebra.center F B] B :=
+      { __ := a
+        map_smul' := by
+          intro c x
+          simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
+          rw [show c • x = c.1 * x by rfl]
+          have eq : c.1 * a x = a (c.1 * x) :=
+            congr($(ha (LinearMap.mulLeft F c.1) (by simp)) x)
+          rw [← eq]; rfl }
+      obtain ⟨b, hb⟩ := @eq a' (by
+        rintro _ ⟨y, rfl⟩
+        ext b
+        simp only [LinearMap.mul_apply, LinearMap.coe_mk, LinearMap.coe_toAddHom,
+          LinearMap.mulLeft_apply, a']
+        exact congr($(ha (LinearMap.mulLeft F y) (by simp)) b))
+      refine ⟨b, ?_⟩
+      ext c
+      exact congr($hb c)
+
+    exact @centralizer_mulLeft_le_of_isCentralSimple (Subalgebra.center F B) B _ _ _
+      { is_central := by
+          intro x hx
+          rw [Algebra.mem_bot]
+          exact ⟨⟨x, hx⟩, rfl⟩
+        is_simple := by assumption } _
+  · rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩
+    ext z
+    simp only [LinearMap.mul_apply, LinearMap.mulRight_apply, LinearMap.mulLeft_apply, mul_assoc]
 
 end lemma2
 

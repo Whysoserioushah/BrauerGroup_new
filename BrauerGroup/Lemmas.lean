@@ -88,6 +88,43 @@ theorem IsField.ofRingEquiv (A1 A2 : Type u) [Ring A1] [Ring A2] (e : A1 ≃+* A
     exact ⟨_, by rw [(RingEquiv.apply_symm_apply e a').symm, ← e.map_mul, hb, e.map_one]⟩
   }
 
+namespace IsSimpleRing
+lemma one_mem_of_ne_bot {A : Type*} [NonAssocRing A] [IsSimpleOrder <| TwoSidedIdeal A]
+    (I : TwoSidedIdeal A)
+    (hI : I ≠ ⊥) : (1 : A) ∈ I :=
+  (eq_bot_or_eq_top I).resolve_left hI ▸ ⟨⟩
+
+lemma one_mem_of_ne_zero_mem {A : Type*} [NonAssocRing A] [IsSimpleOrder <| TwoSidedIdeal A] (I : TwoSidedIdeal A)
+    {x : A} (hx : x ≠ 0) (hxI : x ∈ I) : (1 : A) ∈ I :=
+  one_mem_of_ne_bot I (by rintro rfl; exact hx hxI)
+
+lemma isField_center (A : Type*) [Ring A] [IsSimpleOrder <| TwoSidedIdeal A] : IsField (Subring.center A) where
+  exists_pair_ne := ⟨0, 1, zero_ne_one⟩
+  mul_comm := mul_comm
+  mul_inv_cancel := by
+    rintro ⟨x, hx1⟩ hx2
+    rw [Subring.mem_center_iff] at hx1
+    replace hx2 : x ≠ 0 := by simpa [Subtype.ext_iff] using hx2
+    -- Todo: golf the following `let` once `TwoSidedIdeal.span` is defined
+    let I := TwoSidedIdeal.mk' (Set.range (x * ·)) ⟨0, by simp⟩
+      (by rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩; exact ⟨x + y, mul_add _ _ _⟩)
+      (by rintro _ ⟨x, rfl⟩; exact ⟨-x, by simp⟩)
+      (by rintro a _ ⟨c, rfl⟩; exact ⟨a * c, by dsimp; rw [← mul_assoc, ← hx1, mul_assoc]⟩)
+      (by rintro _ b ⟨a, rfl⟩; exact ⟨a * b, by dsimp; rw [← mul_assoc, ← hx1, mul_assoc]⟩)
+    have mem : 1 ∈ I := one_mem_of_ne_zero_mem I hx2 (by simpa [I, TwoSidedIdeal.mem_mk'] using ⟨1, by simp⟩)
+    simp only [TwoSidedIdeal.mem_mk', Set.mem_range, I] at mem
+    obtain ⟨y, hy⟩ := mem
+    refine ⟨⟨y, Subring.mem_center_iff.2 fun a ↦ ?_⟩, by ext; exact hy⟩
+    calc a * y
+      _ = (x * y) * a * y := by rw [hy, one_mul]
+      _ = (y * x) * a * y := by rw [hx1]
+      _ = y * (x * a) * y := by rw [mul_assoc y x a]
+      _ = y * (a * x) * y := by rw [hx1]
+      _ = y * ((a * x) * y) := by rw [mul_assoc]
+      _ = y * (a * (x * y)) := by rw [mul_assoc a x y]
+      _ = y * a := by rw [hy, mul_one]
+end IsSimpleRing
+
 theorem center_is_ext (hA : IsCentralSimple k A) [FiniteDimensional k A] :
     IsField (Subalgebra.center k A) := by
   obtain ⟨n, hn, D, hD1, hD2, ⟨iso⟩⟩ := @Wedderburn_Artin_algebra_version k A _ _ _ _ hA.2
