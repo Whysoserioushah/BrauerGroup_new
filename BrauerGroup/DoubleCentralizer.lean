@@ -571,8 +571,6 @@ lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
 
   obtain ⟨x, hx⟩ := SkolemNoether' F (A ⊗[F] Module.End F B) B g f
 
-  save
-
   letI (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
       Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
 
@@ -597,3 +595,26 @@ lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
   exact IsSimpleRing.left_of_tensor (K := F)
     (B := Subalgebra.centralizer F (B : Set A))
     (C := Module.End F B)
+
+variable (F) in
+lemma dim_centralizer  :
+    FiniteDimensional.finrank F (Subalgebra.centralizer F (B : Set A)) *
+    FiniteDimensional.finrank F B = FiniteDimensional.finrank F A := by
+  sorry
+
+lemma double_centralizer :
+    Subalgebra.centralizer F (Subalgebra.centralizer F (B : Set A) : Set A) = B := by
+  symm
+  apply Subalgebra.eq_of_le_of_finrank_eq
+  · intro x hx y hy
+    exact hy x hx |>.symm
+  · haveI := centralizer_isSimple B (FiniteDimensional.finBasis F _)
+    have eq1 := dim_centralizer F B
+    have eq2 := dim_centralizer F (A := A) (Subalgebra.centralizer F B)
+    have eq3 := eq1.trans eq2.symm
+    rw [mul_comm] at eq3
+    have eq4 := Nat.mul_left_inj (by
+      suffices 0 < FiniteDimensional.finrank F (Subalgebra.centralizer F (B : Set A)) by omega
+      apply FiniteDimensional.finrank_pos) |>.1 eq3
+
+    exact eq4
