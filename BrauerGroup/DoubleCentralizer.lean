@@ -359,9 +359,30 @@ def Module.End.rightMul : Subalgebra F (Module.End F B) where
     simp only [LinearMap.mulRight_apply, algebraMap_end_apply]
     rw [Algebra.smul_def, Algebra.commutes c z]
 
+noncomputable def Module.End.rightMulEquiv : Module.End.rightMul F B ≃ₐ[F] Bᵐᵒᵖ :=
+AlgEquiv.symm <| AlgEquiv.ofBijective
+  { toFun := fun x => ⟨LinearMap.mulRight F x.unop, Set.mem_range_self _⟩
+    map_one' := by ext; simp
+    map_mul' := by intros; ext; simp
+    map_zero' := by ext; simp
+    map_add' := by intros; ext; simp [mul_add]
+    commutes' := by intros; ext; simp only [MulOpposite.algebraMap_apply, MulOpposite.unop_op,
+      LinearMap.mulRight_apply, SubalgebraClass.coe_algebraMap, algebraMap_end_apply,
+      Algebra.smul_def, Algebra.commutes] } <| by
+  constructor
+  · intro x y hxy
+    have := congr($hxy.1 1)
+    simp only [AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
+      LinearMap.mulRight_apply, one_mul, MulOpposite.unop_inj] at this
+    exact this
+  · rintro ⟨_, ⟨x, rfl⟩⟩
+    use (MulOpposite.op x)
+    ext
+    simp
+
 lemma centralizer_mulLeft :
     Subalgebra.centralizer F (Module.End.leftMul F B : Set <| Module.End F B) =
-    (Module.End.rightMul F B : Set (Module.End F B)) := by
+    (Module.End.rightMul F B) := by
   refine le_antisymm ?_ ?_
   · suffices eq :
         (Subalgebra.centralizer (Subalgebra.center F B)
@@ -448,6 +469,31 @@ def Subalgebra.toConj (B : Subalgebra F A) (x : Aˣ) : B →ₐ[F] B.conj x wher
     rw [Algebra.commutes r, ← mul_assoc]
     simp only [Units.mul_inv, one_mul]
 
+@[simps]
+def Subalgebra.fromConj (B : Subalgebra F A) (x : Aˣ) : B.conj x →ₐ[F] B where
+  toFun b := ⟨x⁻¹ * b * x, by
+    rcases b with ⟨_, ⟨b, hb, rfl⟩⟩
+    simpa [mul_assoc]⟩
+  map_one' := by
+    ext
+    simp
+  map_mul' := by
+    intros; ext; simp only [MulMemClass.coe_mul, ← mul_assoc, MulMemClass.mk_mul_mk,
+      Units.mul_inv_cancel_right]
+  map_zero' := by ext; simp
+  map_add' := by intros; ext; simp [mul_add, add_mul]
+  commutes' := by intros; ext; simp [← Algebra.commutes]
+
+def Subalgebra.conjEquiv (B : Subalgebra F A) (x : Aˣ) : B ≃ₐ[F] B.conj x :=
+  AlgEquiv.ofAlgHom (B.toConj x) (B.fromConj x)
+    (by ext; simp [mul_assoc]) (by ext; simp [mul_assoc])
+
+open FiniteDimensional in
+omit [FiniteDimensional F A] [IsCentralSimple F A] in
+lemma Subalgebra.finrank_conj (B : Subalgebra F A) (x : Aˣ) :
+    finrank F (B.conj x) = finrank F B := by
+  rw [LinearEquiv.finrank_eq (Subalgebra.conjEquiv B x).toLinearEquiv]
+
 omit [FiniteDimensional F A] [IsCentralSimple F A] in
 lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
     IsSimpleOrder (TwoSidedIdeal <| B.conj x) ↔
@@ -519,12 +565,113 @@ lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
         exact H ha2 }
   rw [OrderIso.isSimpleOrder_iff e]
 
+omit [FiniteDimensional F A] [IsCentralSimple F A] in
+lemma Subalgebra.conj_centralizer (B : Subalgebra F A) {x : Aˣ} :
+    Subalgebra.centralizer F (B.conj x : Set A) =
+    (Subalgebra.centralizer F B).conj x := by
+  ext a
+  simp only [conj_carrier, mem_centralizer_iff, Set.mem_setOf_eq, forall_exists_index, and_imp,
+    mem_conj, SetLike.mem_coe]
+  constructor
+  · intro h
+    refine ⟨x⁻¹ * a * x, ?_, by simp [mul_assoc]⟩
+    intro b hb
+    have := h (x * b * x⁻¹) b hb rfl
+    apply_fun (x⁻¹.1 * ·) at this
+    apply_fun (· * x.1) at this
+    simp only [← mul_assoc, Units.inv_mul, one_mul, Units.inv_mul_cancel_right] at this ⊢
+    exact this
+  · rintro ⟨b, hb, rfl⟩
+    rintro _ a ha rfl
+    simp only [mul_assoc, Units.inv_mul_cancel_left, Units.mul_right_inj]
+    simp only [← mul_assoc, Units.mul_left_inj]
+    apply hb
+    exact ha
+
+omit [FiniteDimensional F A] [IsCentralSimple F A] in
+lemma Subalgebra.conj_centralizer' (B : Subalgebra F A) {x : Aˣ} :
+    Subalgebra.centralizer F (B.conj x).carrier =
+    (Subalgebra.centralizer F B).conj x :=
+  Subalgebra.conj_centralizer _
+
+namespace centralizer_isSimple.aux
+
+open FiniteDimensional
+
+instance :
+    IsCentralSimple F (Matrix (Fin (finrank F B)) (Fin (finrank F B)) F) := by
+  haveI : NeZero (finrank F B) := by
+    have : 0 < finrank F B := FiniteDimensional.finrank_pos
+    constructor
+    omega
+  apply MatrixRing.isCentralSimple F
+
+instance : IsCentralSimple F (Module.End F B) := by
+  have := algEquivMatrix (FiniteDimensional.finBasis F B)
+  apply algEquivMatrix (FiniteDimensional.finBasis F B) |>.symm.isCentralSimple
+
+instance : IsCentralSimple F (A ⊗[F] Module.End F B) :=
+  IsCentralSimple.tensorProduct F
+
+noncomputable def auxLeft (B : Subalgebra F A) (C : Type u) [Ring C] [Algebra F C] :
+    B ⊗[F] C ≃ₐ[F] (Algebra.TensorProduct.map B.val (AlgHom.id F C)).range :=
+  AlgEquiv.ofLinearEquiv
+    (LinearEquiv.ofInjective _ <| by
+      change Function.Injective <| LinearMap.rTensor _ _
+      apply Module.Flat.rTensor_preserves_injective_linearMap
+      exact Subtype.val_injective)
+    (by
+      ext
+      erw [LinearEquiv.ofInjective_apply])
+    (by
+      intro x y
+      ext
+      erw [LinearEquiv.ofInjective_apply]
+      change Algebra.TensorProduct.map _ _ _ = _
+      rw [map_mul]
+      rfl)
+
+noncomputable def auxRight (B : Subalgebra F A) (C : Type u) [Ring C] [Algebra F C] :
+    C ⊗[F] B ≃ₐ[F] (Algebra.TensorProduct.map (AlgHom.id F C) B.val).range :=
+  AlgEquiv.ofLinearEquiv
+    (LinearEquiv.ofInjective _ <| by
+      change Function.Injective <| LinearMap.lTensor _ _
+      apply Module.Flat.lTensor_preserves_injective_linearMap
+      exact Subtype.val_injective)
+    (by
+      ext
+      erw [LinearEquiv.ofInjective_apply])
+    (by
+      intro x y
+      ext
+      erw [LinearEquiv.ofInjective_apply]
+      change Algebra.TensorProduct.map _ _ _ = _
+      rw [map_mul]
+      rfl)
+
+instance : IsSimpleOrder (TwoSidedIdeal (A ⊗[F] Module.End.rightMul F B)) := by
+  let eqv : (A ⊗[F] Module.End.rightMul F B) ≃ₐ[F] (Bᵐᵒᵖ  ⊗[F] A):=
+    AlgEquiv.trans (Algebra.TensorProduct.congr AlgEquiv.refl Module.End.rightMulEquiv)
+      (Algebra.TensorProduct.comm F A Bᵐᵒᵖ)
+  have := TwoSidedIdeal.orderIsoOfRingEquiv eqv.toRingEquiv
+  rw [OrderIso.isSimpleOrder_iff this]
+  haveI : IsSimpleOrder (TwoSidedIdeal A) := IsCentralSimple.is_simple F
+  haveI : IsSimpleOrder (TwoSidedIdeal Bᵐᵒᵖ) := by
+    rw [← OrderIso.isSimpleOrder_iff (TwoSidedIdeal.toMopOrderIso)]
+    infer_instance
+  exact IsCentralSimple.TensorProduct.simple F _ _
+
 set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 200000 in
-lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
-    IsSimpleOrder <| TwoSidedIdeal (Subalgebra.centralizer F (B : Set A)) := by
+lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
+    ∃ (x : (A ⊗[F] Module.End F B)ˣ),
+    Nonempty <|
+      ((Subalgebra.centralizer F (B : Set A)) ⊗[F] (Module.End F B)) ≃ₐ[F]
+      Subalgebra.conj
+        (Algebra.TensorProduct.map (AlgHom.id F A)
+          (Module.End.rightMul F B).val).range x:= by
   haveI : IsSimpleOrder <| TwoSidedIdeal A := (inferInstanceAs <| IsCentralSimple F A).2
-  haveI : IsCentralSimple F (A ⊗[F] Module.End F B) := sorry
+  haveI : IsCentralSimple F (A ⊗[F] Module.End F B) := inferInstance
 
   let f : B →ₐ[F] A ⊗[F] Module.End F B :=
     { toFun := fun b => b.1 ⊗ₜ LinearMap.id
@@ -570,37 +717,118 @@ lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
         LinearMap.smul_apply, LinearMap.one_apply] }
 
   obtain ⟨x, hx⟩ := SkolemNoether' F (A ⊗[F] Module.End F B) B g f
+  use x
+  have eq1 :
+      ((Algebra.TensorProduct.includeLeft (R := F) (S := F) (A := A) (B := Module.End F B)).comp
+        B.val).range =
+      Subalgebra.conj
+        (Algebra.TensorProduct.includeRight (R := F) (A := A) (B := Module.End F B) |>.comp
+          (Module.End.leftMul F B).val).range x := by
+    ext z
+    constructor
+    · rintro ⟨⟨z, hz⟩, rfl⟩
+      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.coe_comp, Subalgebra.coe_val,
+        Function.comp_apply, Algebra.TensorProduct.includeLeft_apply]
+      specialize hx ⟨z, hz⟩
+      rw [Subalgebra.mem_conj]
+      refine ⟨g ⟨z, hz⟩, ?_⟩
+      simp only [AlgHom.mem_range, AlgHom.coe_comp, Subalgebra.coe_val, Function.comp_apply,
+        Algebra.TensorProduct.includeRight_apply, Subtype.exists, exists_prop', nonempty_prop]
+      rw [← hx]
+      simp only [AlgHom.coe_mk, RingHom.coe_mk, f]
+      refine ⟨⟨LinearMap.mulLeft F ⟨z, hz⟩, Set.mem_range_self _, rfl⟩, rfl⟩
+    · rw [Subalgebra.mem_conj]
+      simp only [AlgHom.mem_range, AlgHom.coe_comp, Subalgebra.coe_val, Function.comp_apply,
+        Algebra.TensorProduct.includeRight_apply, Subtype.exists, exists_prop', nonempty_prop,
+        exists_exists_and_eq_and, Algebra.TensorProduct.includeLeft_apply, forall_exists_index,
+        and_imp]
+      rintro _ ⟨⟨z, hz⟩, _, rfl⟩ rfl
+      refine ⟨z, hz, ?_⟩
+      exact hx ⟨z, hz⟩
+
+  have eq2 := congr(Subalgebra.centralizer F $(eq1).carrier)
+  erw [centralizer_inclusionLeft (𝒜' := ℬ)] at eq2
+  have temp := Subalgebra.conj_centralizer' (F := F) (A := A ⊗[F] Module.End F B)
+    (B := (Algebra.TensorProduct.includeRight (R := F) (A := A) (B := Module.End F B) |>.comp
+          (Module.End.leftMul F B).val).range) (x := x)
+  rw [temp] at eq2; clear temp
+  rw [centralizer_inclusionRight (𝒜 := finBasis F A)] at eq2
+  rw [centralizer_mulLeft] at eq2
+
+  rw [← eq2]
+  refine ⟨?_⟩
+  apply auxLeft
+
+lemma finrank_mop (B : Type*) [Ring B] [Algebra F B] : finrank F Bᵐᵒᵖ = finrank F B := by
+  refine LinearEquiv.finrank_eq
+    { toFun := MulOpposite.unop
+      map_add' := by intros; rfl
+      map_smul' := by intros; rfl
+      invFun := MulOpposite.op
+      left_inv := by intros x; simp
+      right_inv := by intros x; simp }
+
+end centralizer_isSimple.aux
+
+open centralizer_isSimple.aux in
+set_option maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
+lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
+    IsSimpleOrder <| TwoSidedIdeal (Subalgebra.centralizer F (B : Set A)) := by
+  haveI : IsSimpleOrder <| TwoSidedIdeal A := (inferInstanceAs <| IsCentralSimple F A).2
+  haveI : IsCentralSimple F (A ⊗[F] Module.End F B) := inferInstance
 
   letI (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
       Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
 
-  let eqv :
-    (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) ≃ₐ[F]
-    Subalgebra.conj (Algebra.TensorProduct.map (AlgHom.id F A)
-      (Module.End.rightMul F B).val).range x := sorry
-
-
-  let eqv' :
-    (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) ≃+*
-    Subalgebra.conj (Algebra.TensorProduct.map (AlgHom.id F A)
-      (Module.End.rightMul F B).val).range x := eqv.toRingEquiv
-
+  obtain ⟨x, ⟨eqv⟩⟩ := step1 B ℬ
 
   have : IsSimpleOrder <|
       TwoSidedIdeal (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) := by
     have := TwoSidedIdeal.orderIsoOfRingEquiv eqv
     rw [OrderIso.isSimpleOrder_iff this]
     rw [Subalgebra.conj_simple_iff]
-    sorry
+
+    let eqv'' := auxRight (Module.End.rightMul F B) A
+    have := TwoSidedIdeal.orderIsoOfRingEquiv eqv''.toRingEquiv
+    rw [← OrderIso.isSimpleOrder_iff this]
+    infer_instance
   exact IsSimpleRing.left_of_tensor (K := F)
     (B := Subalgebra.centralizer F (B : Set A))
     (C := Module.End F B)
 
+set_option maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 200000 in
+open centralizer_isSimple.aux FiniteDimensional in
 variable (F) in
 lemma dim_centralizer  :
     FiniteDimensional.finrank F (Subalgebra.centralizer F (B : Set A)) *
     FiniteDimensional.finrank F B = FiniteDimensional.finrank F A := by
-  sorry
+
+  letI (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
+      Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
+
+  haveI : Module.Free F (Module.End.rightMul F B) := Module.Free.of_divisionRing F _
+
+  obtain ⟨x, ⟨eqv⟩⟩ := step1 B (FiniteDimensional.finBasis _ _)
+  let leqv := eqv.toLinearEquiv
+  have : finrank F (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) =
+    finrank F _ := LinearEquiv.finrank_eq leqv
+  simp only [finrank_tensorProduct] at this
+  rw [FiniteDimensional.finrank_linearMap, Subalgebra.finrank_conj] at this
+  have eq' := auxRight (Module.End.rightMul F B) A |>.toLinearEquiv.finrank_eq
+  rw [← eq'] at this
+  have eq' := finrank_tensorProduct (R := F) (S := F) (M := A) (M' := Module.End.rightMul F B)
+  rw [eq'] at this
+  have eq' : finrank F (Module.End.rightMul F B) = finrank F Bᵐᵒᵖ :=
+    Module.End.rightMulEquiv (F := F) (B := B) |>.toLinearEquiv.finrank_eq
+  rw [eq'] at this
+  rw [show finrank F Bᵐᵒᵖ = finrank F B by rw [finrank_mop], ← mul_assoc] at this
+  rw [Nat.mul_left_inj] at this
+  · exact this
+
+  rw [← pos_iff_ne_zero]
+  exact finrank_pos
 
 lemma double_centralizer :
     Subalgebra.centralizer F (Subalgebra.centralizer F (B : Set A) : Set A) = B := by
