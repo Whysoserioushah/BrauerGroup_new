@@ -1,6 +1,5 @@
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.Lemmas
-import Mathlib.Order.Basic
 
 universe u
 
@@ -39,25 +38,28 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : Fi
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : IsSimpleOrder <| TwoSidedIdeal L.1 :=
   instIsSimpleOrderTwoSidedIdeal_brauerGroup { x // x ∈ L.toSubalgebra }
 
--- instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : PartialOrder (SubField K A) where
---   le L1 L2:= L1 ≤ L2
---   le_refl L := by change L.1 ≤ L.1 ; exact fun _ a ↦ a
---   le_trans L1 L2 L3 hL12 hL23 := by
---     change L1.1 ≤ L3.1 ; exact fun _ a ↦ hL23 (hL12 a)
---   le_antisymm L1 L2 hL12 hL21 := by
---     -- change L1.1 = L2.1
---     sorry
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : PartialOrder (SubField K A) where
+  le L1 L2:= L1 ≤ L2
+  le_refl L := by change L.1 ≤ L.1 ; exact fun _ a ↦ a
+  le_trans L1 L2 L3 hL12 hL23 := by
+    change L1.1 ≤ L3.1 ; exact fun _ a ↦ hL23 (hL12 a)
+  le_antisymm L1 L2 hL12 hL21 := by
+    suffices L1.1 = L2.1 by sorry
+    change L1.1 ≤ L2.1 at hL12
+    change L2.1 ≤ L1.1 at hL21
+    exact (LE.le.le_iff_eq hL12).1 hL21|>.symm
 
--- instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : SetLike (SubField K A) A where
---   coe L := L.1
---   coe_injective' := fun L1 L2 hL12 ↦ by
---     simp only [SetLike.coe_set_eq] at hL12
---     have le : L1 ≤ L2 := by
---       change L1.1 ≤ L2.1
---       exact le_of_eq_of_le hL12 fun _ a ↦ a
---     have ge : L2 ≤ L1 := sorry
---     have := LE.le.le_iff_eq le
---     sorry
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : SetLike (SubField K A) A where
+  coe L := L.1
+  coe_injective' := fun L1 L2 hL12 ↦ by
+    simp only [SetLike.coe_set_eq] at hL12
+    have le : L1 ≤ L2 := by
+      change L1.1 ≤ L2.1
+      exact le_of_eq_of_le hL12 fun _ a ↦ a
+    have ge : L2 ≤ L1 := by
+      change L2.1 ≤ L1.1
+      exact le_of_eq_of_le hL12.symm fun _ a ↦ a
+    exact (LE.le.le_iff_eq le).1 ge|>.symm
 
 instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : Subalgebra K A) [CommRing L] :
     L ≤ Subalgebra.centralizer K (A := A) L := by
@@ -65,7 +67,17 @@ instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L 
   simp only [Subalgebra.mem_centralizer_iff, SetLike.mem_coe]
   exact fun l' hl' => by
     have := mul_comm (G := L) ⟨l, hl⟩ ⟨l', hl'⟩|>.symm
-    sorry
+    have eqeq : (⟨l', hl'⟩ : L) * ⟨l, hl⟩ = ⟨l' * l, Subalgebra.mul_mem L hl' hl⟩ := by
+      have eq : ((⟨l', hl'⟩ : L) * (⟨l, hl⟩ : L)).1 = l' * l := by
+        calc
+        _ = ((⟨l', hl'⟩ : L) : A) * ((⟨l, hl⟩ : L) : A) := by
+          -- rw [Subalgebra.coe_mul L (⟨l', hl'⟩ : L) (⟨l, hl⟩ : L)]
+          sorry
+        _ = _ := by push_cast ; rfl
+      rw [Subtype.ext_iff, eq]
+    have eqeq' : (⟨l, hl⟩ : L) * ⟨l', hl'⟩ = ⟨l * l', Subalgebra.mul_mem L hl hl'⟩ := sorry
+    rw [eqeq, eqeq'] at this
+    exact Subtype.ext_iff.1 this
 
 end def_and_lemmas
 
@@ -108,9 +120,24 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [
 
 lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [IsCentralSimple K A] (L : SubField K A) :
     FiniteDimensional.finrank K A = FiniteDimensional.finrank K L.1 * FiniteDimensional.finrank K L.1 →
-    ∀ (L' : Subalgebra K A) [CommRing L'], L.1 ≤ L' → L.1 = L' := sorry
+    (∀ (L' : Subalgebra K A) [CommRing L'], L.1 ≤ L' → L.1 = L') := fun hrank L' _ hLL ↦ by
+  have := dim_centralizer K (A := A) L.1 |>.symm
+  rw [this, mul_eq_mul_right_iff] at hrank
+  cases' hrank with h1 h2
+  · have hin := comm_of_centralizer K A L.1
+    have := Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1) h1.symm
+    -- why does it mean its maximal?
+    sorry
+  · have := FiniteDimensional.finrank_pos (R := K) (M := L.1)
+    simp_all only [mul_zero, lt_self_iff_false]
+
+lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [IsCentralSimple K A] (L : SubField K A) :
+    (∀ (L' : Subalgebra K A) [CommRing L'], L.1 ≤ L' → L.1 = L') →
+    Subalgebra.centralizer K L.1 = L.1 := sorry
 
 end cors_of_DC
+
+
 -- variable (K A M: Type u) [Field K] [Ring A] [Algebra K A] [hA : IsCentralSimple K A]
 --   [FiniteDimensional K A] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
 --   [IsSimpleModule A M]
