@@ -9,9 +9,10 @@ open BigOperators TensorProduct MulOpposite
 
 section def_and_lemmas
 
-structure SubField (K A : Type u) [Field K] [Semiring A] [Algebra K A] extends
-  Subalgebra K A : Type u where
-  is_field : @IsField carrier $ Subsemiring.toSemiring _
+@[ext]
+structure SubField (K A : Type u) [Field K] [Semiring A] [Algebra K A] extends Subalgebra K A where
+  mul_comm : ∀(x y : A), x ∈ carrier → y ∈ carrier → x * y = y * x
+  inverse : ∀(x : A), x ∈ carrier → x ≠ 0 → ∃(y : A), (y ∈ carrier ∧ x * y = 1)
 
 instance (K A : Type u) [Field K] [Semiring A] [Algebra K A] : LE (SubField K A) where
   le := fun L1 L2 ↦ L1.1 ≤ L2.1
@@ -20,18 +21,53 @@ def IsMaximalSubfield (K A : Type u) [Field K] [Semiring A] [Algebra K A] (L : S
   := ∀ (B : SubField K A), L ≤ B → B = L
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempty (SubField K A) :=
-  ⟨⟨⊥, by
-    change IsField (⊥ : Subalgebra K A)
-    change IsField (Algebra.ofId K A).range
-    have e : K ≃ₐ[K] (Algebra.ofId K A).range := AlgEquiv.ofBijective
-      (Algebra.ofId K A).rangeRestrict ⟨by
-        suffices Function.Injective (Algebra.ofId K A) from
-          (AlgHom.injective_codRestrict (Algebra.ofId K A) (Algebra.ofId K A).range
-            (AlgHom.mem_range_self (Algebra.ofId K A))).2 this
-        exact NoZeroSMulDivisors.algebraMap_injective K A,
-        AlgHom.rangeRestrict_surjective (Algebra.ofId K A)⟩
-    exact IsField.ofRingEquiv K _ e.toRingEquiv $ Semifield.toIsField K ⟩⟩
+  have e : K ≃ₐ[K] (Algebra.ofId K A).range := AlgEquiv.ofBijective
+    (Algebra.ofId K A).rangeRestrict ⟨by
+      suffices Function.Injective (Algebra.ofId K A) from
+        (AlgHom.injective_codRestrict (Algebra.ofId K A) (Algebra.ofId K A).range
+          (AlgHom.mem_range_self (Algebra.ofId K A))).2 this
+      exact NoZeroSMulDivisors.algebraMap_injective K A,
+      AlgHom.rangeRestrict_surjective (Algebra.ofId K A)⟩
+  ⟨⟨⊥, fun x y hx hy ↦ by
+    change x ∈ (Algebra.ofId K A).range at hx
+    change y ∈ (Algebra.ofId K A).range at hy
+    suffices (⟨x, hx⟩ : (Algebra.ofId K A).range) * ⟨y, hy⟩ = ⟨y, hy⟩ * ⟨x, hx⟩ from
+      Subtype.ext_iff.1 this
+    rw [← e.apply_symm_apply ⟨x, hx⟩, ← e.apply_symm_apply ⟨y, hy⟩, ← _root_.map_mul, mul_comm,
+      _root_.map_mul], fun x hx hx0 ↦ ⟨e ((e.symm ⟨x, hx⟩)⁻¹), by
+        change _ ∈ (Algebra.ofId K A).range; simp only [SetLike.coe_mem], by
+    suffices (⟨x, hx⟩ : (Algebra.ofId K A).range) * ⟨e ((e.symm ⟨x, hx⟩)⁻¹), _⟩ = 1 from
+      Subtype.ext_iff.1 this
+    nth_rw 1 [← e.apply_symm_apply ⟨x, hx⟩, ← _root_.map_mul, mul_inv_cancel₀ _, map_one]
+    simp only [ne_eq, AddEquivClass.map_eq_zero_iff]
+    exact Subtype.coe_ne_coe.1 hx0 ⟩⟩⟩
 
+-- instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : Nontrivial L.1 := sorry
+
+open scoped Classical in
+set_option maxHeartbeats 400000 in
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : Field L.1 := {
+  __ := L.1
+  mul_comm := fun ⟨a, ha⟩ ⟨b, hb⟩ ↦ Subtype.ext_iff.2 $ L.2 a b ha hb
+  inv := fun ⟨x, hx⟩ ↦ if h0 : x = 0 then 0 else ⟨L.3 x hx h0|>.choose,
+    L.3 x hx h0|>.choose_spec.1⟩
+  exists_pair_ne := ⟨0, 1, by
+    sorry⟩
+  mul_inv_cancel := fun ⟨a, ha⟩ ha0 ↦ by
+    unfold Inv.inv
+    simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
+      Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ha0, ↓reduceDIte, MulMemClass.mk_mul_mk]
+    suffices a * (L.3 a ha (Subtype.coe_ne_coe.2 ha0)).choose = (1 : A) from sorry
+    exact L.3 a ha (Subtype.coe_ne_coe.2 ha0)|>.choose_spec.2
+  inv_zero := by
+    simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
+      Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ↓reduceDIte]
+  nnqsmul := _
+  qsmul := _
+
+}
+
+#exit
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : Field L.1 :=
   IsField.toField L.2
 
@@ -44,7 +80,9 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : PartialOrder (SubFiel
   le_trans L1 L2 L3 hL12 hL23 := by
     change L1.1 ≤ L3.1 ; exact fun _ a ↦ hL23 (hL12 a)
   le_antisymm L1 L2 hL12 hL21 := by
-    suffices L1.1 = L2.1 by sorry
+    suffices L1.1 = L2.1 by
+      ext a
+      exact ⟨fun a_1 ↦ hL12 (hL21 (hL12 a_1)), fun a_1 ↦ hL21 (hL12 (hL21 a_1))⟩
     change L1.1 ≤ L2.1 at hL12
     change L2.1 ≤ L1.1 at hL21
     exact (LE.le.le_iff_eq hL12).1 hL21|>.symm
@@ -61,21 +99,20 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : SetLike (SubField K A
       exact le_of_eq_of_le hL12.symm fun _ a ↦ a
     exact (LE.le.le_iff_eq le).1 ge|>.symm
 
-instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : Subalgebra K A) [CommRing L] :
+instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : Subalgebra K A)
+  (hL : ∀(x y : L), x * y = y * x) :
     L ≤ Subalgebra.centralizer K (A := A) L := by
   intro l hl
   simp only [Subalgebra.mem_centralizer_iff, SetLike.mem_coe]
   exact fun l' hl' => by
-    have := mul_comm (G := L) ⟨l, hl⟩ ⟨l', hl'⟩|>.symm
+    have := hL ⟨l, hl⟩ ⟨l', hl'⟩|>.symm
     have eqeq : (⟨l', hl'⟩ : L) * ⟨l, hl⟩ = ⟨l' * l, Subalgebra.mul_mem L hl' hl⟩ := by
       have eq : ((⟨l', hl'⟩ : L) * (⟨l, hl⟩ : L)).1 = l' * l := by
         calc
-        _ = ((⟨l', hl'⟩ : L) : A) * ((⟨l, hl⟩ : L) : A) := by
-          -- rw [Subalgebra.coe_mul L (⟨l', hl'⟩ : L) (⟨l, hl⟩ : L)]
-          sorry
+        _ = ((⟨l', hl'⟩ : L) : A) * ((⟨l, hl⟩ : L) : A) := by rfl
         _ = _ := by push_cast ; rfl
       rw [Subtype.ext_iff, eq]
-    have eqeq' : (⟨l, hl⟩ : L) * ⟨l', hl'⟩ = ⟨l * l', Subalgebra.mul_mem L hl hl'⟩ := sorry
+    have eqeq' : (⟨l, hl⟩ : L) * ⟨l', hl'⟩ = ⟨l * l', Subalgebra.mul_mem L hl hl'⟩ := rfl
     rw [eqeq, eqeq'] at this
     exact Subtype.ext_iff.1 this
 
@@ -89,7 +126,7 @@ variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensio
 theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     FiniteDimensional.finrank K D = FiniteDimensional.finrank K k.1 * FiniteDimensional.finrank K k.1 := by
   have dimdim := dim_centralizer K (A := D) k.1 |>.symm
-  have := comm_of_centralizer K D k.1
+  have := comm_of_centralizer K D k.1 k.2.3
   have eq : k.1 = Subalgebra.centralizer K (A := D) k.1 := by
     by_contra! hneq
     have lt := LE.le.lt_iff_ne this|>.2 hneq
