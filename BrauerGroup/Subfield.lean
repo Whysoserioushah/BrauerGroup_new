@@ -45,34 +45,26 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempt
 -- instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : Nontrivial L.1 := sorry
 
 open scoped Classical in
-set_option maxHeartbeats 400000 in
-instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : Field L.1 := {
+instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) : Field L.1 := {
   __ := L.1
   mul_comm := fun ⟨a, ha⟩ ⟨b, hb⟩ ↦ Subtype.ext_iff.2 $ L.2 a b ha hb
   inv := fun ⟨x, hx⟩ ↦ if h0 : x = 0 then 0 else ⟨L.3 x hx h0|>.choose,
     L.3 x hx h0|>.choose_spec.1⟩
-  exists_pair_ne := ⟨0, 1, by
-    sorry⟩
+  exists_pair_ne := ⟨⟨0, Subalgebra.zero_mem L.1⟩, ⟨1, Subalgebra.one_mem L.1⟩, by
+    refine Subtype.coe_ne_coe.1 $ by simp only [ne_eq, zero_ne_one, not_false_eq_true]⟩
   mul_inv_cancel := fun ⟨a, ha⟩ ha0 ↦ by
     unfold Inv.inv
     simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
       Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ha0, ↓reduceDIte, MulMemClass.mk_mul_mk]
-    suffices a * (L.3 a ha (Subtype.coe_ne_coe.2 ha0)).choose = (1 : A) from sorry
+    suffices a * (L.3 a ha (Subtype.coe_ne_coe.2 ha0)).choose = (1 : A) from
+      Subtype.ext_iff.2 (by simp only [this, OneMemClass.coe_one])
     exact L.3 a ha (Subtype.coe_ne_coe.2 ha0)|>.choose_spec.2
   inv_zero := by
     simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
       Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ↓reduceDIte]
   nnqsmul := _
   qsmul := _
-
 }
-
-#exit
-instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : Field L.1 :=
-  IsField.toField L.2
-
-instance (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) : IsSimpleOrder <| TwoSidedIdeal L.1 :=
-  instIsSimpleOrderTwoSidedIdeal_brauerGroup { x // x ∈ L.toSubalgebra }
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : PartialOrder (SubField K A) where
   le L1 L2:= L1 ≤ L2
@@ -81,10 +73,7 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : PartialOrder (SubFiel
     change L1.1 ≤ L3.1 ; exact fun _ a ↦ hL23 (hL12 a)
   le_antisymm L1 L2 hL12 hL21 := by
     suffices L1.1 = L2.1 by
-      ext a
-      exact ⟨fun a_1 ↦ hL12 (hL21 (hL12 a_1)), fun a_1 ↦ hL21 (hL12 (hL21 a_1))⟩
-    change L1.1 ≤ L2.1 at hL12
-    change L2.1 ≤ L1.1 at hL21
+      ext a; exact ⟨fun a_1 ↦ hL12 (hL21 (hL12 a_1)), fun a_1 ↦ hL21 (hL12 (hL21 a_1))⟩
     exact (LE.le.le_iff_eq hL12).1 hL21|>.symm
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : SetLike (SubField K A) A where
@@ -122,36 +111,50 @@ section cors_of_DC
 
 variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensional K D] [IsCentralSimple K D]
 
--- set_option maxHeartbeats 0000 in
 theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     FiniteDimensional.finrank K D = FiniteDimensional.finrank K k.1 * FiniteDimensional.finrank K k.1 := by
   have dimdim := dim_centralizer K (A := D) k.1 |>.symm
-  have := comm_of_centralizer K D k.1 k.2.3
+  have := comm_of_centralizer K D k.1 $ fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ Subtype.ext_iff.2 $ k.2 x y hx hy
   have eq : k.1 = Subalgebra.centralizer K (A := D) k.1 := by
     by_contra! hneq
     have lt := LE.le.lt_iff_ne this|>.2 hneq
     have exist_ele : ∃ a ∈ Subalgebra.centralizer K (A := D) k.1, a ∉ k.1 :=
       Set.ssubset_iff_of_subset this|>.1 $ Set.lt_iff_ssubset.1 lt
     obtain ⟨a, ⟨ha1, ha2⟩⟩ := exist_ele
-    -- have L : SubField K D := {
-    --   carrier := Algebra.adjoin K (A := D) (k.1 ∪ {a})
-    --   mul_mem' := _
-    --   add_mem' := fun {x} {y} ↦ by intro hx hy ; exact add_mem hx hy
-    --   algebraMap_mem' := fun _ ↦ algebraMap_mem (Algebra.adjoin K (k.1 ∪ {a})) _
-    --   is_field := _
-    -- }
-    sorry
+    have : IsField (k.1 ⊔ Algebra.adjoin K {a} : Subalgebra K D) := {
+      exists_pair_ne := sorry
+      mul_comm := sorry
+      mul_inv_cancel := sorry
+    }
+    have L : SubField K D := {
+      __ := k.1 ⊔ Algebra.adjoin K {a}
+      mul_comm := fun x y hx hy ↦ by
+        have := this.2 ⟨x, hx⟩ ⟨y, hy⟩
+        change (⟨x * y, Subalgebra.mul_mem _ hx hy⟩ : (k.1 ⊔ Algebra.adjoin K {a} : Subalgebra K D)) = ⟨_, _⟩ at this
+        simp only [Subtype.mk.injEq] at this ⊢ ; exact this
+      inverse := fun x hx hx0 ↦ by
+         have := this.3 (Subtype.coe_ne_coe.1 hx0 : (⟨x, hx⟩ : (k.1 ⊔ Algebra.adjoin K {a} : Subalgebra K D)) ≠ 0)
+         use this.choose.1
+         exact ⟨this.choose.2, by sorry⟩
+    }
+    have hL : k < L := sorry
+    have := hk L (le_of_lt hL)
+    have : k ≠ L := ne_of_lt hL
+    tauto
   rw [← eq] at dimdim
   exact dimdim
 
-lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [IsCentralSimple K A] (L : SubField K A) :
+lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] (L : SubField K A) :
     Subalgebra.centralizer K L.1 = L.1 ↔ FiniteDimensional.finrank K A =
-    FiniteDimensional.finrank K L.1 * FiniteDimensional.finrank K L.1 := ⟨fun h ↦ by
+    FiniteDimensional.finrank K L.1 * FiniteDimensional.finrank K L.1 :=
+  haveI := hA.2
+  ⟨fun h ↦ by
   have := dim_centralizer K (A := A) L.1 ; rw [h] at this ; exact this.symm, fun h ↦ by
   have := dim_centralizer K (A := A) L.1 ; rw [h] at this
   simp only [mul_eq_mul_right_iff] at this
   cases' this with h1 h2
-  · exact Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1) h1.symm|>.symm
+  · exact Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1 fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
+      simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq, L.2 x y hx hy]) h1.symm|>.symm
   · have := FiniteDimensional.finrank_pos (R := K) (M := L.1)
     simp_all only [mul_zero, lt_self_iff_false]⟩
 
