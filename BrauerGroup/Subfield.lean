@@ -1,6 +1,8 @@
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.Lemmas
 
+import Mathlib.RingTheory.Adjoin.Basic
+
 universe u
 
 suppress_compilation
@@ -111,6 +113,9 @@ section cors_of_DC
 
 variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensional K D] [IsCentralSimple K D]
 
+example (A : SubField K D) (a : D) (ha : a ∉ A) : ∃ (B : SubField K D), a ∈ B ∧ A < B := sorry
+
+
 theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     FiniteDimensional.finrank K D = FiniteDimensional.finrank K k.1 * FiniteDimensional.finrank K k.1 := by
   have dimdim := dim_centralizer K (A := D) k.1 |>.symm
@@ -121,9 +126,24 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     have exist_ele : ∃ a ∈ Subalgebra.centralizer K (A := D) k.1, a ∉ k.1 :=
       Set.ssubset_iff_of_subset this|>.1 $ Set.lt_iff_ssubset.1 lt
     obtain ⟨a, ⟨ha1, ha2⟩⟩ := exist_ele
+    have ha : a ≠ 0 := sorry
+    -- Algebra.adjoin K (insert a k.1)
+    have : IsField (Algebra.adjoin K (insert a k.1)) := {
+      exists_pair_ne := ⟨0, 1, fun r => by simpa using Subtype.ext_iff.1 r⟩
+      mul_comm := by
+        rintro ⟨x, hx⟩ ⟨y, hy⟩
+        simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
+        refine Algebra.adjoin_inudction
+        sorry
+      mul_inv_cancel := sorry
+    }
     have : IsField (k.1 ⊔ Algebra.adjoin K {a} : Subalgebra K D) := {
-      exists_pair_ne := sorry
-      mul_comm := sorry
+      exists_pair_ne := ⟨0, 1, fun r => by simpa using Subtype.ext_iff.1 r⟩
+      mul_comm := by
+        rintro ⟨x, hx⟩ ⟨y, hy⟩
+        simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
+        -- refine Algebra.mem_sup_left
+        sorry
       mul_inv_cancel := sorry
     }
     have L : SubField K D := {
@@ -158,22 +178,32 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [
   · have := FiniteDimensional.finrank_pos (R := K) (M := L.1)
     simp_all only [mul_zero, lt_self_iff_false]⟩
 
-lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [IsCentralSimple K A] (L : SubField K A) :
+lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] (L : SubField K A) :
     FiniteDimensional.finrank K A = FiniteDimensional.finrank K L.1 * FiniteDimensional.finrank K L.1 →
-    (∀ (L' : Subalgebra K A) [CommRing L'], L.1 ≤ L' → L.1 = L') := fun hrank L' _ hLL ↦ by
+    (∀ (L' : Subalgebra K A) (hL : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') := fun hrank L' hL' hLL ↦ by
+  haveI := hA.2
   have := dim_centralizer K (A := A) L.1 |>.symm
   rw [this, mul_eq_mul_right_iff] at hrank
   cases' hrank with h1 h2
-  · have hin := comm_of_centralizer K A L.1
-    have := Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1) h1.symm
-    -- why does it mean its maximal?
-    sorry
+  · have := Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1 fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
+      simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq, L.2 x y hx hy]) h1.symm
+    exact le_antisymm hLL fun x hx => this.symm ▸ Subalgebra.mem_centralizer_iff _ |>.2
+      fun y hy => hL' _ hx _ (hLL hy) |>.symm
+
   · have := FiniteDimensional.finrank_pos (R := K) (M := L.1)
     simp_all only [mul_zero, lt_self_iff_false]
 
 lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [IsCentralSimple K A] (L : SubField K A) :
-    (∀ (L' : Subalgebra K A) [CommRing L'], L.1 ≤ L' → L.1 = L') →
-    Subalgebra.centralizer K L.1 = L.1 := sorry
+    (∀ (L' : Subalgebra K A)  (hL : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') →
+    Subalgebra.centralizer K L.1 = L.1 := by
+  intro H
+  refine le_antisymm ?_ ?_
+  ·
+    sorry
+  · apply comm_of_centralizer
+    rintro ⟨x, hx⟩ ⟨y, hy⟩
+    simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
+    exact L.mul_comm _ _ hx hy
 
 end cors_of_DC
 
