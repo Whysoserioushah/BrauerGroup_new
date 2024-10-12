@@ -126,38 +126,73 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     have exist_ele : ∃ a ∈ Subalgebra.centralizer K (A := D) k.1, a ∉ k.1 :=
       Set.ssubset_iff_of_subset this|>.1 $ Set.lt_iff_ssubset.1 lt
     obtain ⟨a, ⟨ha1, ha2⟩⟩ := exist_ele
-    have ha : a ≠ 0 := sorry
-    -- Algebra.adjoin K (insert a k.1)
-    have : IsField (Algebra.adjoin K (insert a k.1)) := {
-      exists_pair_ne := ⟨0, 1, fun r => by simpa using Subtype.ext_iff.1 r⟩
-      mul_comm := by
+    have ha : a ≠ 0 := by
+      by_contra! haa
+      have : a ∈ k.1 := by rw [haa]; exact Subalgebra.zero_mem _
+      tauto
+
+    letI : CommRing (Algebra.adjoin K (insert a k.1) : Subalgebra K D) :=
+    { mul_comm := by
         rintro ⟨x, hx⟩ ⟨y, hy⟩
         simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
-        refine Algebra.adjoin_inudction
-        sorry
-      mul_inv_cancel := sorry
-    }
-    have : IsField (k.1 ⊔ Algebra.adjoin K {a} : Subalgebra K D) := {
-      exists_pair_ne := ⟨0, 1, fun r => by simpa using Subtype.ext_iff.1 r⟩
-      mul_comm := by
-        rintro ⟨x, hx⟩ ⟨y, hy⟩
-        simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
-        -- refine Algebra.mem_sup_left
-        sorry
-      mul_inv_cancel := sorry
-    }
-    have L : SubField K D := {
-      __ := k.1 ⊔ Algebra.adjoin K {a}
+        refine Algebra.adjoin_induction₂ (ha := hx) (hb := hy) ?_ ?_ ?_
+          ?_ ?_ ?_ ?_ ?_
+        · intro α hα β hβ
+          simp only [Set.mem_insert_iff, SetLike.mem_coe] at hα hβ
+          rcases hα with rfl|hα <;> rcases hβ with rfl|hβ
+          · rfl
+          · rw [Subalgebra.mem_centralizer_iff] at ha1
+            refine ha1 _ hβ |>.symm
+          · rw [Subalgebra.mem_centralizer_iff] at ha1
+            apply ha1; exact hα
+          · apply k.mul_comm _ _ hα hβ
+        · intros; rw [Algebra.commutes]
+
+        · intros; rw [Algebra.commutes]
+
+        · intros; rw [Algebra.commutes]
+        · intro _ _  _ h1 h2
+          simp only [add_mul, h1, h2, mul_add]
+        · intro _ _  _ h1 h2
+          simp only [add_mul, h1, h2, mul_add]
+        · intro x y z h1 h2
+          rw [mul_assoc, h2, ← mul_assoc, h1, mul_assoc]
+        · intro x y z h1 h2
+          rw [← mul_assoc, h1, mul_assoc, h2, mul_assoc] }
+
+    have : IsField (Algebra.adjoin K (insert a k.1) : Subalgebra K D) := by
+      rw [ ← Algebra.IsIntegral.isField_iff_isField (R := K)]
+      · exact Semifield.toIsField K
+      · exact NoZeroSMulDivisors.algebraMap_injective K _
+
+    let L : SubField K D := {
+      __ := Algebra.adjoin K (insert a k.1)
       mul_comm := fun x y hx hy ↦ by
         have := this.2 ⟨x, hx⟩ ⟨y, hy⟩
-        change (⟨x * y, Subalgebra.mul_mem _ hx hy⟩ : (k.1 ⊔ Algebra.adjoin K {a} : Subalgebra K D)) = ⟨_, _⟩ at this
+        -- simp? at hx hy
+        change (⟨x * y, Subalgebra.mul_mem _ hx hy⟩ :
+          (Algebra.adjoin K (insert a k.1) : Subalgebra K D)) = ⟨_, _⟩ at this
         simp only [Subtype.mk.injEq] at this ⊢ ; exact this
       inverse := fun x hx hx0 ↦ by
-         have := this.3 (Subtype.coe_ne_coe.1 hx0 : (⟨x, hx⟩ : (k.1 ⊔ Algebra.adjoin K {a} : Subalgebra K D)) ≠ 0)
+         have := this.3 (Subtype.coe_ne_coe.1 hx0 : (⟨x, hx⟩ :
+          (Algebra.adjoin K (insert a k.1) : Subalgebra K D)) ≠ 0)
          use this.choose.1
-         exact ⟨this.choose.2, by sorry⟩
+         exact ⟨this.choose.2, by
+          have eq := this.choose_spec
+          change ⟨x * this.choose.1, _⟩ = (1 : Algebra.adjoin K (insert a k.1)) at eq
+          exact Subtype.ext_iff.1 eq⟩
     }
-    have hL : k < L := sorry
+
+    have : a ∈ L := sorry
+
+    have hL : k < L := ne_iff_lt_iff_le.2 (by
+      change k.1 ≤ Algebra.adjoin K (insert a k.1)
+      nth_rw 1 [← Algebra.adjoin_eq k.1]
+      refine Algebra.adjoin_mono ?_
+      exact Set.subset_insert _ _ )|>.1 $ by
+      symm
+      exact ne_of_mem_of_not_mem' this ha2
+
     have := hk L (le_of_lt hL)
     have : k ≠ L := ne_of_lt hL
     tauto
