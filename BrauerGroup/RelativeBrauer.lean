@@ -84,6 +84,17 @@ lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
   exact BrauerGroup.split_iff K F F_bar (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) |>.2
     (by
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
+    change _ = Quotient.mk'' _
+    simp only [Quotient.eq'', one_in']
+    change IsBrauerEquivalent _ _
+    induction A using Quotient.inductionOn
+    rename_i A
+    change BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = 1 at hA
+    change IsBrauerEquivalent (CSA.mk (K ⊗[F] (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) (Quotient.mk'' A)))) _
+    change _ = Quotient.mk'' _ at hA
+    simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'', Quotient.eq'', one_in'] at hA
+
+
     sorry)
 
 end Defs
