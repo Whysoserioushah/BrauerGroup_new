@@ -546,29 +546,29 @@ section central_simple
 
 variable (K : Type u) (B : Type v) [Field K] [Ring B] [Algebra K B] [FiniteDimensional K B]
 
-set_option synthInstance.maxHeartbeats 40000 in
-lemma Matrix.mem_center_iff (R : Type*) [Ring R] (n : ℕ) (M) :
-    M ∈ Subring.center M[Fin n, R] ↔ ∃ α : (Subring.center R), M = α • 1 := by
-  constructor
-  · if h : n = 0 then subst h; exact fun _ => ⟨0, Subsingleton.elim _ _⟩
-    else
-      intro h
-      rw [Subring.mem_center_iff] at h
-      have diag : Matrix.IsDiag M := fun i j hij => by
-        simpa only [StdBasisMatrix.mul_left_apply_same, one_mul,
-          StdBasisMatrix.mul_right_apply_of_ne (hbj := hij.symm)] using
-          Matrix.ext_iff.2 (h (stdBasisMatrix i i 1)) i j
-      have (i j : Fin n) : M i i = M j j := by
-        simpa [Eq.comm] using Matrix.ext_iff.2 (h (stdBasisMatrix i j 1)) i j
-      obtain ⟨b, hb⟩ : ∃ (b : R), M = b • 1 := by
-        refine ⟨M ⟨0, by omega⟩ ⟨0, by omega⟩, Matrix.ext fun i j => ?_⟩
-        if heq : i = j then subst heq; rw [this i ⟨0, by omega⟩]; simp
-        else simp [diag heq, Matrix.one_apply_ne heq]
-      suffices b ∈ Subring.center R by aesop
-      refine Subring.mem_center_iff.mpr fun g => ?_
-      simpa [hb] using Matrix.ext_iff.2 (h (Matrix.diagonal fun _ => g)) ⟨0, by omega⟩ ⟨0, by omega⟩
+-- set_option synthInstance.maxHeartbeats 40000 in
+-- lemma Matrix.mem_center_iff (R : Type*) [Ring R] (n : ℕ) (M) :
+--     M ∈ Subring.center M[Fin n, R] ↔ ∃ α : (Subring.center R), M = α • 1 := by
+--   constructor
+--   · if h : n = 0 then subst h; exact fun _ => ⟨0, Subsingleton.elim _ _⟩
+--     else
+--       intro h
+--       rw [Subring.mem_center_iff] at h
+--       have diag : Matrix.IsDiag M := fun i j hij => by
+--         simpa only [StdBasisMatrix.mul_left_apply_same, one_mul,
+--           StdBasisMatrix.mul_right_apply_of_ne (hbj := hij.symm)] using
+--           Matrix.ext_iff.2 (h (stdBasisMatrix i i 1)) i j
+--       have (i j : Fin n) : M i i = M j j := by
+--         simpa [Eq.comm] using Matrix.ext_iff.2 (h (stdBasisMatrix i j 1)) i j
+--       obtain ⟨b, hb⟩ : ∃ (b : R), M = b • 1 := by
+--         refine ⟨M ⟨0, by omega⟩ ⟨0, by omega⟩, Matrix.ext fun i j => ?_⟩
+--         if heq : i = j then subst heq; rw [this i ⟨0, by omega⟩]; simp
+--         else simp [diag heq, Matrix.one_apply_ne heq]
+--       suffices b ∈ Subring.center R by aesop
+--       refine Subring.mem_center_iff.mpr fun g => ?_
+--       simpa [hb] using Matrix.ext_iff.2 (h (Matrix.diagonal fun _ => g)) ⟨0, by omega⟩ ⟨0, by omega⟩
 
-  · rintro ⟨α, ha⟩; rw [Subring.mem_center_iff]; aesop
+--   · rintro ⟨α, ha⟩; rw [Subring.mem_center_iff]; aesop
 
 lemma Matrix.mem_center_iff' (K R : Type*) [Field K] [Ring R] [Algebra K R] (n : ℕ) (M) :
     M ∈ Subalgebra.center K M[Fin n, R] ↔
@@ -579,9 +579,9 @@ lemma Matrix.mem_center_iff' (K R : Type*) [Field K] [Ring R] [Algebra K R] (n :
 For a matrix ring `Mₙₙ(R)`, the center of the matrix ring `Z(Mₙₙ(R))` is isomorphic to the center
 `Z(R)` of `R`.
 -/
-@[simps!]
-def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R]:
-    Subring.center (M[Fin n, R]) ≃+* (Subring.center R) := Matrix.centerEquivBase1 n hn R
+-- @[simps!]
+-- def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R]:
+--     Subring.center (M[Fin n, R]) ≃+* (Subring.center R) := Matrix.centerEquivBase1 n hn R
 
 theorem RingEquiv.mem_center_iff {R1 R2 : Type*} [Ring R1] [Ring R2] (e : R1 ≃+* R2) :
     ∀ x, x ∈ Subring.center R1 ↔ e x ∈ Subring.center R2 := fun x => by

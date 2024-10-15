@@ -1,5 +1,6 @@
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.«074E»
+import Mathlib.RingTheory.MatrixAlgebra
 
 suppress_compilation
 
@@ -12,23 +13,6 @@ section Defs
 variable (K F F_bar: Type u) [Field K] [Field F] [Algebra F K] [Field F_bar] [Algebra F F_bar] [hk_bar : IsAlgClosure F F_bar]
 
 abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E := K)
-
-include F_bar in
-lemma ele_of_relBrGroup : ∀(A : RelativeBrGroup K F),
-    isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A ↦ by
-  use (deg F F_bar (@Quotient.out _ (BrauerGroup.CSA_Setoid) A))
-  use (deg_pos F F_bar _)
-  obtain ⟨A, hA⟩ := A
-  induction A using Quotient.inductionOn
-  refine ⟨?_⟩
-  -- have : BrauerGroupHom.BaseChange (K := F) (E := K) A = 1 := by
-  --   unfold RelativeBrGroup at A
-  --   rw [← MonoidHom.mem_ker] ; exact SetLike.coe_mem A
-  -- simp only [MonoidHom.coe_mk, OneHom.coe_mk] at this
-  -- change _ = Quotient.mk'' _ at this
-  -- have : IsBrauerEquivalent (K ⊗[K] (@Quotient.out _ (BrauerGroup.CSA_Setoid) A.1)) (CSA.mk K) := sorry
-  -- simp? [BrauerGroup.one_in'] at this
-  sorry
 
 include F_bar in
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
@@ -82,13 +66,24 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
         (finProdFinEquiv)|>.trans $ Matrix.compAlgEquiv _ _  D K|>.trans $
         Matrix.reindexAlgEquiv K _ (finProdFinEquiv)
       have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) p D (Nat.zero_lt_of_ne_zero hp) iso'
+      letI : NeZero (p * p * n) := ⟨Nat.mul_ne_zero (Nat.mul_ne_zero hp hp) hn⟩
       have := @Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (p * p * n)) (Fin (p * p * n)) D) _ _
-        _ (by sorry) (by sorry) (p * p * n) (p * m) ⟨Nat.mul_ne_zero (Nat.mul_ne_zero hp hp) hn⟩
+        _ _ (by
+          suffices FiniteDimensional K (D ⊗[K] Matrix (Fin (p * p * n)) (Fin (p * p * n)) K) from
+            LinearEquiv.finiteDimensional $ matrixEquivTensor K D (Fin (p * p * n))|>.symm.toLinearEquiv
+          exact Module.Finite.tensorProduct _ _ _) (p * p * n) (p * m) _
         ⟨Nat.mul_ne_zero hp hm⟩ D _ _ AlgEquiv.refl K
         _ _ e.symm |>.some.mapMatrix (m := (Fin p))
       exact ⟨p, hp, ⟨iso'.trans this⟩⟩⟩
 
--- example (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] : FiniteDimensional K (Matrix (Fin 10) (Fin 10) A) :=
---   Module.Finite.of_basis (Matrix.stdBasis)
+include F_bar in
+lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
+    isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A hA ↦ by
+  unfold RelativeBrGroup at hA
+  rw [MonoidHom.mem_ker] at hA
+  exact BrauerGroup.split_iff K F F_bar (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) |>.2
+    (by
+    simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
+    sorry)
 
 end Defs
