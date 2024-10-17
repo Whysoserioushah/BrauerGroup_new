@@ -93,7 +93,12 @@ lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
     change IsBrauerEquivalent (CSA.mk (K ⊗[F] (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) (Quotient.mk'' A)))) _
     change _ = Quotient.mk'' _ at hA
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'', Quotient.eq'', one_in'] at hA
+    change IsBrauerEquivalent (CSA.mk (K ⊗[F] A)) _ at hA
+    have : IsBrauerEquivalent A (Quotient.out (s := BrauerGroup.CSA_Setoid) (Quotient.mk'' A)) := by
+      change Setoid.r (α := CSA F) (self := BrauerGroup.CSA_Setoid)  _ _
+      rw [← Quotient.eq'']
 
+      sorry
 
     sorry)
 

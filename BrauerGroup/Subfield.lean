@@ -265,7 +265,16 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A] [
 
 end cors_of_DC
 
+section subfield_of_division
 
+variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensional K D] [IsCentralSimple K D]
+
+
+theorem maxsubfield_is_sep : ∃ a : D, Algebra.IsSeparable K
+    (Algebra.adjoin K (insert a (Subalgebra.center K D))) := sorry
+    -- ∧ IsMaximalSubfield K D D:= by sorry
+
+end subfield_of_division
 -- variable (K A M: Type u) [Field K] [Ring A] [Algebra K A] [hA : IsCentralSimple K A]
 --   [FiniteDimensional K A] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
 --   [IsSimpleModule A M]
