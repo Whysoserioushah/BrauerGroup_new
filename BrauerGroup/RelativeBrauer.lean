@@ -79,8 +79,7 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
 
 lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
     isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A hA ↦ by
-  let F_bar := AlgebraicClosure F
-  rw [BrauerGroup.split_iff K F F_bar]
+  rw [BrauerGroup.split_iff K F _]
   change _ = 1 at hA
   rw [← hA]
   simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
@@ -89,7 +88,6 @@ lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
   erw [Quotient.map'_mk'']
   rfl
 
-#check Module.End.instAlgebra
 open FiniteDimensional MulOpposite
 example (A : CSA F) :
     isSplit F A K ↔
