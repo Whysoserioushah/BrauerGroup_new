@@ -89,7 +89,6 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
 --   erw [Quotient.map'_mk'']
 --   rfl
 
-#check Module.End.instAlgebra
 open FiniteDimensional MulOpposite
 example [FiniteDimensional F K] (A : CSA F) :
     isSplit F A K ↔
