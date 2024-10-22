@@ -93,7 +93,9 @@ lemma mem_relativeBrGroup (A : CSA F) :
 --   erw [Quotient.map'_mk'']
 --   rfl
 lemma split_sound (A B : CSA F) (h0 : BrauerEquivalence A B) (h : isSplit F A K) :
-    isSplit F B K := sorry
+    isSplit F B K := by
+  rw [split_iff] at h ⊢
+  rw [show (Quotient.mk'' B : BrGroup) = Quotient.mk'' A from Eq.symm <| Quotient.sound ⟨h0⟩, h]
 
 lemma split_sound' (A B : CSA F) (h0 : BrauerEquivalence A B) :
     isSplit F A K ↔ isSplit F B K :=
@@ -226,7 +228,8 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
     rw [dim_eq2, ← pow_two] at dim_eq1
     let m := finrank F B
     let M := finrank F K
-    haveI : Nontrivial B := sorry
+    haveI : Nontrivial B := ⟨0, 1, fun r => by
+      simp only [zero_ne_one] at r⟩
     have : 0 < m := finrank_pos
     have : 0 < M := finrank_pos
     have : 0 < M^2 := by positivity
@@ -240,8 +243,11 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       pow_eq_zero_iff] at dim_eq1
     exact dim_eq1 |>.resolve_right hn |>.symm
 
-example : true := ⟨⟩
+example : True := ⟨⟩
 
+/--
+theorem 3.3
+-/
 example [FiniteDimensional F K] (A : CSA F) :
     isSplit F A K ↔
     ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) = (Quotient.mk'' B) ∧
@@ -327,7 +333,10 @@ example [FiniteDimensional F K] (A : CSA F) :
             LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply, μ', μ]
           rw [mul_comm r c, map_mul]
           simp only [_root_.mul_assoc]
-        | add x y hx hy => sorry }
+        | add x y hx hy =>
+          simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply] at hx hy
+          simp only [smul_add, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, map_add, hx, hy,
+            RingHom.id_apply] }
     let μAlg : K ⊗[F] B →ₐ[K] Module.End K B := AlgHom.ofLinearMap μ''
       (by
         ext
@@ -345,8 +354,10 @@ example [FiniteDimensional F K] (A : CSA F) :
             simp only [smul_eq_mul, Algebra.TensorProduct.tmul_mul_tmul, mul_comm c c',
               LinearMap.coe_mk, lift.tmul', AddHom.coe_mk, mul_smul, _root_.mul_assoc,
               LinearMap.mul_apply, map_smul, μ'', μ', μ]
-          | add m n hm hn => sorry
-        | add m n hm hn => sorry)
+          | add m n hm hn =>
+            simp only [mul_add, map_add, LinearMap.add_apply, hm, LinearMap.mul_apply, hn]
+        | add m n hm hn =>
+          simp only [add_mul, map_add, LinearMap.add_apply, hm, LinearMap.mul_apply, hn])
     haveI : FiniteDimensional K B := FiniteDimensional.right F K B
     let e : Module.End K B ≃ₐ[K] Matrix _ _ _ := algEquivMatrix (finBasis _ _)
     rw [split_sound' K F A B (Quotient.eq''.1 eq).some]
