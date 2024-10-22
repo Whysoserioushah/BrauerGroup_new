@@ -260,17 +260,93 @@ theorem centralizer_eq_iff_max (D : Type u) [DivisionRing D] [Algebra K D] [Fini
     exact congrArg _ (congrArg _ (congrArg _ (congrArg _ $ this L'.1 hL hL' |>.symm))),
   fun h ↦ cor_two_1to2 K D L|>.2 $ dim_max_subfield K D L h⟩
 
-instance : Algebra.IsAlgebraic (Subalgebra.center K D) D := by
-  haveI : IsField (Subring.center D) := IsSimpleRing.isField_center D
-  have : FiniteDimensional (Subring.center D) D := sorry
-  exact Algebra.IsAlgebraic.of_finite _ _
+instance (KK : SubField K D) [h : Fact <| (Subalgebra.center K D) ≤ KK.1] :
+    Algebra (Subalgebra.center K D) KK where
+      smul := _
+      toFun x := ⟨x.1, h.out x.2⟩
+      map_one' := rfl
+      map_mul' _ _ := rfl
+      map_zero' := rfl
+      map_add' _ _ := rfl
+      commutes' r x := by sorry
+      smul_def' _  _ := rfl
 
-abbrev A := {KK : SubField K D | Algebra.IsSeparable K KK}
+abbrev A := {KK : SubField K D | ∃ (_ : Fact <| Subalgebra.center K D ≤ KK.1),
+  Algebra.IsSeparable (Subalgebra.center K D) KK}
+abbrev centerSubfield : SubField K D := ⟨Subalgebra.center K D, sorry, sorry⟩
+
+-- lemma meme_centerSubfield (a : D) : a ∈ centerSubfield K D ↔ a ∈ Subalgebra.center K D := by
+--   simp only [centerSubfield]
+
+instance : Fact <| Subalgebra.center K D ≤ (centerSubfield K D).1 := ⟨sorry⟩
+open Polynomial in
+instance : Nonempty (A K D) := ⟨centerSubfield K D, inferInstance,
+{ isSeparable' := by
+    rintro ⟨x, (hx : x ∈ Subalgebra.center K D)⟩
+    delta IsSeparable
+    set P := _; change Polynomial.Separable P
+    have eq : P = Polynomial.X - Polynomial.C ⟨x, hx⟩ := by
+      simp only [P]
+      symm
+      apply minpoly.unique
+      · exact monic_X_sub_C _
+      · simp only [map_sub, aeval_X, aeval_C]
+        erw [sub_self]
+      intro q hq hq'
+      simp only [degree_X_sub_C]
+      suffices h : 0 < q.degree by exact Nat.WithBot.one_le_iff_zero_lt.mpr h
+      rw [← Polynomial.natDegree_pos_iff_degree_pos]
+      by_contra! h
+      simp only [nonpos_iff_eq_zero] at h
+      rw [natDegree_eq_zero] at h
+      obtain ⟨c, rfl ⟩ := h
+      simp only [aeval_C, _root_.map_eq_zero] at hq'
+      subst hq'
+      simp only [map_zero, not_monic_zero] at hq
+    rw [eq]
+    exact separable_X_sub_C }⟩
+
+lemma A_has_maximal : ∃ (M : SubField K D), M ∈ A K D ∧ ∀ N ∈ A K D, M ≤ N → M = N := by
+  classical
+  obtain ⟨_, ⟨⟨M, hM1, rfl⟩, hM2⟩⟩ := set_has_maximal_iff_noetherian (R := K) (M := D) |>.2 inferInstance (Subalgebra.toSubmodule ∘ SubField.toSubalgebra '' A K D)
+    (by simpa only [Function.comp_apply, Set.image_nonempty] using Set.nonempty_of_nonempty_subtype)
+
+  refine ⟨M, hM1, fun N hN  hMN => ?_⟩
+  specialize hM2 (Subalgebra.toSubmodule N.1) ⟨N, hN, rfl⟩
+  rw [le_iff_lt_or_eq] at hMN
+  refine hMN.resolve_left fun r => hM2 r
 
 theorem maxsubfield_is_sep : ∃ a : D, Algebra.IsSeparable K (maxSubfieldOfDiv K D a)
     ∧ IsMaximalSubfield K D (maxSubfieldOfDiv K D a) := by
-  -- obtain ⟨KK, hKK⟩ := existence_of_maxsubfield K D
-  -- have := centralizer_eq_iff_max K D KK |>.2 hKK
+  obtain ⟨M, ⟨LE, hM1⟩, hM2⟩ := A_has_maximal K D
+  let CM := Subalgebra.centralizer K (M : Set D)
+  letI : DivisionRing CM :=
+  { inv := fun x => ⟨x.1⁻¹, sorry⟩
+    mul_inv_cancel := sorry
+    inv_zero := by ext; simp
+    nnqsmul := _
+    qsmul := _ }
+  have eq : CM = M.1 := sorry
+  letI : Module M D := Module.compHom D M.val.toRingHom
+  haveI : IsScalarTower K M D := by
+    constructor
+    intro x y z
+    change (x • y.1) • z = x • y.1 • z
+    rw [smul_assoc]
+    -- rfl
+  have := centralizer_eq_iff_max K D M |>.1 eq
+  haveI : FiniteDimensional K D := inferInstance
+  haveI : FiniteDimensional K M := FiniteDimensional.of_injective M.toSubalgebra.val.toLinearMap (Subtype.val_injective)
+  haveI : FiniteDimensional M D := FiniteDimensional.right K M D
+  haveI : IsScalarTower K (Subalgebra.center K D) M := by
+    constructor
+    intro x y z
+    ext
+    change (x • y.1) • z.1 = x • y.1 • z.1
+    rw [smul_assoc]
+  haveI : FiniteDimensional (Subalgebra.center K D) M :=
+    FiniteDimensional.right K (Subalgebra.center K D) M
+  obtain ⟨a, ha⟩ := Field.exists_primitive_element (Subalgebra.center K D) M
 
 
   sorry
