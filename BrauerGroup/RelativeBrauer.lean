@@ -1,7 +1,24 @@
+/-
+Copyright (c) 2024 Yunzhou Xie. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yunzhou Xie, Jujian Zhang
+-/
+
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.«074E»
 import Mathlib.RingTheory.MatrixAlgebra
 import BrauerGroup.Subfield.Subfield
+
+/-!
+# Relative Brauer Group
+
+# Main results
+
+* `BrauerGroup.split_iff`: Let `A` be a CSA over F, then `⟦A⟧ ∈ Br(K/F)` if and only if K splits A
+* `isSplit_iff_dimension`: Let `A` be a CSA over F, then `⟦A⟧ ∈ Br(K/F)` if and only if there exists
+  another `F`-CSA `B` such that `⟦A⟧ = ⟦B⟧` (i.e. `A` and `B` are Brauer-equivalent) and `K ⊆ B` and
+  `dim_F B = (dim_F K)²`
+-/
 
 suppress_compilation
 
@@ -13,6 +30,9 @@ section Defs
 
 variable (K F : Type u) [Field K] [Field F] [Algebra F K] -- [FiniteDimensional F K]
 
+/--
+The relative Brauer group `Br(K/F)` is the kernel of the map `Br F -> Br K`
+-/
 abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E := K)
 
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
@@ -112,9 +132,6 @@ set_option maxSynthPendingDepth 2 in
 lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : isSplit F A K) :
     ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) * (Quotient.mk'' B) = 1 ∧
       ∃ (ι : K →ₐ[F] B), (finrank F K)^2 = finrank F B := by
-  have mem : Quotient.mk'' A ∈ RelativeBrGroup K F := by
-    rw [BrauerGroup.split_iff] at split
-    exact split
   obtain ⟨n, hn, ⟨iso⟩⟩ := split
   let iso' := iso.trans (algEquivMatrix' (R := K) (n := Fin n)).symm
   have := algEquivMatrix' (R := K) (n := Fin n)
@@ -147,8 +164,8 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
     apply MatrixRing.isCentralSimple
 
   haveI : IsCentralSimple F (Module.End F (Fin n → K)) := by
-    have := algEquivMatrix (R := F) (M := Fin n → K) (finBasis _ _)
-    refine this.symm.isCentralSimple
+    have f := algEquivMatrix (R := F) (M := Fin n → K) (finBasis _ _)
+    refine f.symm.isCentralSimple
   haveI : IsCentralSimple F F :=
   { is_central := Subsingleton.le (Subalgebra.center _ _) ⊥
     is_simple := inferInstance }
@@ -205,7 +222,6 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
         AddHom.coe_mk, LinearMap.coe_single, Function.comp_apply, Pi.smul_apply,
         SubalgebraClass.coe_algebraMap, Module.algebraMap_end_apply] }, ?_⟩
   · change Quotient.mk'' (CSA.mk <| A ⊗[F] B) = Quotient.mk'' (CSA.mk F)
-    have iso1 : _ ≃ₐ[F] _ ⊗[F] B := writeAsTensorProduct emb.range
     have := writeAsTensorProduct (B := emb.range)
     have iso : A ⊗[F] B ≃ₐ[F] Matrix (Fin (finrank F (Fin n → K))) (Fin (finrank F (Fin n → K))) F :=
       AlgEquiv.symm <|
@@ -230,10 +246,6 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
     let M := finrank F K
     haveI : Nontrivial B := ⟨0, 1, fun r => by
       simp only [zero_ne_one] at r⟩
-    have : 0 < m := finrank_pos
-    have : 0 < M := finrank_pos
-    have : 0 < M^2 := by positivity
-    have : 0 < n := by positivity
     change m * n ^ 2 = M^2 * _ at dim_eq1
     change M^2 = m
     clear_value m M
@@ -248,7 +260,7 @@ example : True := ⟨⟩
 /--
 theorem 3.3
 -/
-example [FiniteDimensional F K] (A : CSA F) :
+theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
     isSplit F A K ↔
     ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) = (Quotient.mk'' B) ∧
       ∃ (ι : K →ₐ[F] B), (finrank F K)^2 = finrank F B := by
