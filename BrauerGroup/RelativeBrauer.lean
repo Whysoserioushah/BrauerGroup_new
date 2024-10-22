@@ -79,29 +79,15 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
 
 lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
     isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A hA ↦ by
-  unfold RelativeBrGroup at hA
-  rw [MonoidHom.mem_ker] at hA
   let F_bar := AlgebraicClosure F
-  exact BrauerGroup.split_iff K F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) |>.2
-    (by
-    simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
-    change _ = Quotient.mk'' _
-    simp only [Quotient.eq'', one_in']
-    change IsBrauerEquivalent _ _
-    induction A using Quotient.inductionOn
-    rename_i A
-    change BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = 1 at hA
-    change IsBrauerEquivalent (CSA.mk (K ⊗[F] (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) (Quotient.mk'' A)))) _
-    change _ = Quotient.mk'' _ at hA
-    simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'', Quotient.eq'', one_in'] at hA
-    change IsBrauerEquivalent (CSA.mk (K ⊗[F] A)) _ at hA
-    have : IsBrauerEquivalent A (Quotient.out (s := BrauerGroup.CSA_Setoid) (Quotient.mk'' A)) := by
-      change Setoid.r (α := CSA F) (self := BrauerGroup.CSA_Setoid)  _ _
-      rw [← Quotient.eq'']
-
-      sorry
-
-    sorry)
+  rw [BrauerGroup.split_iff K F F_bar]
+  change _ = 1 at hA
+  rw [← hA]
+  simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
+  have := Quotient.out_eq' A
+  conv_rhs => rw [← this]
+  erw [Quotient.map'_mk'']
+  rfl
 
 #check Module.End.instAlgebra
 open FiniteDimensional MulOpposite
