@@ -1,6 +1,7 @@
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.«074E»
 import Mathlib.RingTheory.MatrixAlgebra
+import BrauerGroup.Subfield.Subfield
 
 suppress_compilation
 
@@ -10,14 +11,14 @@ open TensorProduct BrauerGroup
 
 section Defs
 
-variable (K F F_bar: Type u) [Field K] [Field F] [Algebra F K] [Field F_bar] [Algebra F F_bar] [hk_bar : IsAlgClosure F F_bar]
+variable (K F : Type u) [Field K] [Field F] [Algebra F K] -- [FiniteDimensional F K]
 
 abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E := K)
 
-include F_bar in
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
     BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrGroup (K := K)) :=
   ⟨fun hA ↦ by
+    let F_bar := AlgebraicClosure F
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
     change _ = Quotient.mk'' _
     simp only [Quotient.eq'', one_in']
@@ -76,12 +77,12 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
         _ _ e.symm |>.some.mapMatrix (m := (Fin p))
       exact ⟨p, hp, ⟨iso'.trans this⟩⟩⟩
 
-include F_bar in
 lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
     isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A hA ↦ by
   unfold RelativeBrGroup at hA
   rw [MonoidHom.mem_ker] at hA
-  exact BrauerGroup.split_iff K F F_bar (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) |>.2
+  let F_bar := AlgebraicClosure F
+  exact BrauerGroup.split_iff K F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) |>.2
     (by
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
     change _ = Quotient.mk'' _
@@ -101,5 +102,103 @@ lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
       sorry
 
     sorry)
+
+#check Module.End.instAlgebra
+open FiniteDimensional MulOpposite
+example (A : CSA F) :
+    isSplit F A K ↔
+    ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) = (Quotient.mk'' B) ∧
+      ∃ (ι : K →ₐ[F] A), (finrank F K)^2 = finrank F A := by
+  constructor
+  · sorry
+  · rintro ⟨B, eq, ⟨ι, dim_eq⟩⟩
+    letI : Module Kᵐᵒᵖ A := Module.compHom A (ι.toRingHom.fromOpposite fun x y => by
+      change _ = _
+      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, ← map_mul, mul_comm])
+
+    haveI : SMulCommClass Kᵐᵒᵖ F A :=
+    { smul_comm := by
+        intro a b c
+        change ι a.unop • b • c = b • ι a.unop • c
+        simp only [smul_eq_mul, Algebra.mul_smul_comm] }
+    haveI : IsScalarTower F Kᵐᵒᵖ A :=
+    { smul_assoc := by
+        intro a b c
+        change ι (a • b).unop • c = a • ι b.unop • c
+        simp only [MulOpposite.unop_smul, map_smul, smul_eq_mul, Algebra.smul_mul_assoc] }
+    let μ : K →ₗ[F] A →ₗ[F] Module.End Kᵐᵒᵖ A :=
+    { toFun := fun c =>
+      { toFun := fun a =>
+        { toFun := fun a' => (op c) • a' • a
+          map_add' := by
+            intro x y
+            simp only [smul_eq_mul, add_mul, smul_add]
+          map_smul' := by
+            intro r x
+            simp only [smul_eq_mul, RingHom.id_apply]
+            change ι c * (ι r.unop • x * _) = ι r.unop * (ι c * _)
+            simp only [smul_eq_mul, ← _root_.mul_assoc, ← map_mul, mul_comm] }
+        map_add' := by
+          intros x y
+          ext a'
+          simp only [smul_eq_mul, mul_add, smul_add, LinearMap.coe_mk, AddHom.coe_mk,
+            LinearMap.add_apply]
+        map_smul' := by
+          intros r x
+          ext a'
+          simp only [smul_eq_mul, Algebra.mul_smul_comm, LinearMap.coe_mk, AddHom.coe_mk,
+            RingHom.id_apply, LinearMap.smul_apply]
+          change ι c * _ = r • (ι c * _)
+          simp only [Algebra.mul_smul_comm] }
+      map_add' := by
+        intros a a'
+        ext
+        simp only [op_add, smul_eq_mul, add_smul, LinearMap.coe_mk, AddHom.coe_mk,
+          LinearMap.add_apply]
+      map_smul' := by
+        intros a x
+        ext r a'
+        simp only [op_smul, smul_eq_mul, smul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
+          RingHom.id_apply, LinearMap.smul_apply] }
+
+    let μ' : K ⊗[F] A →ₗ[F] Module.End Kᵐᵒᵖ A := TensorProduct.lift μ
+    let μ'' : K ⊗[F] A →ₗ[Kᵐᵒᵖ] Module.End Kᵐᵒᵖ A :=
+    { __ := μ'
+      map_smul' := by
+        intro r a
+
+        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply, Algebra.smul_def]
+        rw [show r • a = r.unop • a by
+          rw [Algebra.smul_def]
+          simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id, RingHom.id_apply]
+          induction a using TensorProduct.induction_on with
+          | zero => simp only [smul_zero, mul_zero]
+          | tmul c a =>
+            simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.one_mul]
+            rw [smul_tmul']
+            congr 1
+            simp only [smul_eq_mul_unop, mul_comm]
+          | add x y hx hy =>
+            simp only [smul_add, hx, hy, mul_add]
+            ]
+        induction a using TensorProduct.induction_on with
+        | zero => simp
+        | tmul c a =>
+          ext a'
+          simp only [smul_eq_mul, Algebra.smul_def, Algebra.TensorProduct.algebraMap_apply,
+            Algebra.id.map_eq_id, RingHom.id_apply, Algebra.TensorProduct.tmul_mul_tmul,
+            _root_.one_mul, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, op_mul, op_unop,
+            LinearMap.mul_apply, map_smul, Module.algebraMap_end_apply, μ', μ]
+          change ι (op c * r).unop • _ = ι c • (ι r.unop * _)
+          simp only [unop_mul, unop_op, map_mul, smul_eq_mul, ← _root_.mul_assoc, ← map_mul]
+          rw [_root_.mul_comm r.unop c]
+        | add x y hx hy =>
+        simp only [smul_add, map_add, hx, hy, mul_add]
+         }
+    haveI : FiniteDimensional Kᵐᵒᵖ A := sorry
+    let B := finBasis Kᵐᵒᵖ A
+    let e : Module.End Kᵐᵒᵖ A ≃ₐ[Kᵐᵒᵖ] Matrix _ _ _ := algEquivMatrix B
+    use finrank Kᵐᵒᵖ A
+    sorry
 
 end Defs
