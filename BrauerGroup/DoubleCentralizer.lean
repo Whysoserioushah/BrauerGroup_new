@@ -852,3 +852,24 @@ lemma double_centralizer :
       apply FiniteDimensional.finrank_pos) |>.1 eq3
 
     exact eq4
+
+/-
+074U
+-/
+set_option maxHeartbeats 400000 in
+noncomputable def writeAsTensorProduct [IsCentralSimple F B] :
+    A ≃ₐ[F] B ⊗[F] Subalgebra.centralizer F (B : Set A) :=
+  haveI s1 : IsSimpleOrder (TwoSidedIdeal (Subalgebra.centralizer F (B : Set A))) :=
+    centralizer_isSimple B (Module.Free.chooseBasis _ _)
+  haveI s2 := IsCentralSimple.TensorProduct.simple F (Subalgebra.centralizer F (B : Set A)) B
+  haveI s3 : IsSimpleOrder (TwoSidedIdeal (B ⊗[F] Subalgebra.centralizer F (B : Set A))) :=
+    TwoSidedIdeal.orderIsoOfRingEquiv
+      (Algebra.TensorProduct.comm F B (Subalgebra.centralizer F (B : Set A))).toRingEquiv
+      |>.isSimpleOrder
+
+  AlgEquiv.symm <| AlgEquiv.ofBijective (Algebra.TensorProduct.lift B.val (Subalgebra.val _)
+    fun x y => show _ = _ by simpa using y.2 x x.2) <|
+      bijective_of_dim_eq_of_isCentralSimple F (B ⊗[F] Subalgebra.centralizer F (B : Set A)) A
+        _ <| by
+        rw [FiniteDimensional.finrank_tensorProduct]
+        rw [← dim_centralizer (B := B), mul_comm]
