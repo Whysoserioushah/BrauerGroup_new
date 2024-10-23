@@ -134,7 +134,6 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       ∃ (ι : K →ₐ[F] B), (finrank F K)^2 = finrank F B := by
   obtain ⟨n, hn, ⟨iso⟩⟩ := split
   let iso' := iso.trans (algEquivMatrix' (R := K) (n := Fin n)).symm
-  have := algEquivMatrix' (R := K) (n := Fin n)
   let emb : A →ₐ[F] Module.End F (Fin n → K) :=
     AlgHom.comp (AlgHom.comp
       { toFun := fun f => f.restrictScalars F
