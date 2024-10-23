@@ -143,6 +143,10 @@ instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : Sub
 instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) : Field L :=
   inferInstanceAs (Field L.1)
 
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    (L : SubField K A): FiniteDimensional K L :=
+  FiniteDimensional.finiteDimensional_subalgebra L.1
+
 end SubField
 
 end instances

@@ -199,7 +199,8 @@ instance {R : Type*} [Ring R]: Algebra (Subring.center R) R where
 variable [Algebra.IsAlgebraic (Subring.center D) D]
 
 theorem Jacobson_Noether (H : (Subring.center D) ≠ (⊤ : Subring D)) :
-    ∃ x : D, x ∉ (Subring.center D) ∧ IsSeparable (Subring.center D) x := by sorry
+    ∃ x : D, x ∉ (Subring.center D) ∧ IsSeparable (Subring.center D) x := by
+  sorry
 
 end statement_of_jacobson_noether
 
@@ -268,17 +269,23 @@ instance (KK : SubField K D) [h : Fact <| (Subalgebra.center K D) ≤ KK.1] :
       map_mul' _ _ := rfl
       map_zero' := rfl
       map_add' _ _ := rfl
-      commutes' r x := by sorry
+      commutes' _ _ := mul_comm _ _
       smul_def' _  _ := rfl
 
 abbrev A := {KK : SubField K D | ∃ (_ : Fact <| Subalgebra.center K D ≤ KK.1),
   Algebra.IsSeparable (Subalgebra.center K D) KK}
-abbrev centerSubfield : SubField K D := ⟨Subalgebra.center K D, sorry, sorry⟩
+
+abbrev centerSubfield : SubField K D := ⟨Subalgebra.center K D,
+  fun x y hx hy ↦ hx.comm y,
+  fun x hx hx0 ↦ by
+    obtain ⟨⟨y, hy'⟩, hy⟩ := center_of_divring K D|>.3 (a := ⟨x, hx⟩) $ Subtype.coe_ne_coe.1 hx0
+    exact ⟨y, hy', (Submonoid.mk_eq_one (Subalgebra.center K D).toSubmonoid).mp hy⟩⟩
 
 -- lemma meme_centerSubfield (a : D) : a ∈ centerSubfield K D ↔ a ∈ Subalgebra.center K D := by
 --   simp only [centerSubfield]
 
-instance : Fact <| Subalgebra.center K D ≤ (centerSubfield K D).1 := ⟨sorry⟩
+instance : Fact <| Subalgebra.center K D ≤ (centerSubfield K D).1 := ⟨fun _ a ↦ a⟩
+
 open Polynomial in
 instance : Nonempty (A K D) := ⟨centerSubfield K D, inferInstance,
 { isSeparable' := by
@@ -306,9 +313,11 @@ instance : Nonempty (A K D) := ⟨centerSubfield K D, inferInstance,
     rw [eq]
     exact separable_X_sub_C }⟩
 
+omit [IsCentralSimple K D] in
 lemma A_has_maximal : ∃ (M : SubField K D), M ∈ A K D ∧ ∀ N ∈ A K D, M ≤ N → M = N := by
   classical
-  obtain ⟨_, ⟨⟨M, hM1, rfl⟩, hM2⟩⟩ := set_has_maximal_iff_noetherian (R := K) (M := D) |>.2 inferInstance (Subalgebra.toSubmodule ∘ SubField.toSubalgebra '' A K D)
+  obtain ⟨_, ⟨⟨M, hM1, rfl⟩, hM2⟩⟩ := set_has_maximal_iff_noetherian (R := K) (M := D) |>.2
+    inferInstance (Subalgebra.toSubmodule ∘ SubField.toSubalgebra '' A K D)
     (by simpa only [Function.comp_apply, Set.image_nonempty] using Set.nonempty_of_nonempty_subtype)
 
   refine ⟨M, hM1, fun N hN  hMN => ?_⟩
