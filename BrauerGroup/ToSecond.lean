@@ -19,12 +19,14 @@ dim_eq : finrank F carrier = (finrank F K) ^ 2
 
 namespace GoodRep
 
-variable (A : GoodRep F K)
+variable {K F}
+
+variable (A B : GoodRep F K)
+
+section basic
 
 instance : CoeSort (GoodRep F K) Type where
   coe A := A.carrier
-
-variable {K F}
 
 def ιRange : K ≃ₐ[F] A.ι.range :=
 AlgEquiv.ofInjective _ (RingHom.injective _)
@@ -44,6 +46,10 @@ lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := b
   apply cor_two_2to3
   change finrank F A = finrank F A.ι.range * finrank F A.ι.range
   rw [A.dim_eq, pow_two, LinearEquiv.finrank_eq (f := A.ιRange.toLinearEquiv.symm)]
+
+end basic
+
+section single
 
 variable (ρ σ τ : K ≃ₐ[F] K)
 
@@ -239,6 +245,45 @@ def toSnd_cond :
   dsimp only [conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
   rw [conjFactorCompCoeff_comp_comp]
   rfl
+
+end single
+
+section double
+
+open BrauerGroup
+
+lemma exists_iso
+    (eq : (Quotient.mk'' A.carrier : BrGroup) = (Quotient.mk'' B.carrier)) :
+    Nonempty (A ≃ₐ[F] B) := by
+  obtain ⟨D, _, _, m, n, hm, hn, ⟨isoA⟩, ⟨isoB⟩⟩ :=
+    IsBrauerEquivalent.exists_common_division_algebra F A.carrier B.carrier
+      (Quotient.eq''.1 eq)
+  have eq1 := isoA.toLinearEquiv.finrank_eq
+  have eq2 := isoB.toLinearEquiv.finrank_eq
+  simp only [A.dim_eq, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin m)).toLinearEquiv,
+    finrank_tensorProduct, finrank_matrix, Fintype.card_fin] at eq1
+  simp only [B.dim_eq, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin n)).toLinearEquiv,
+    finrank_tensorProduct, finrank_matrix, Fintype.card_fin] at eq2
+  have eq3 := eq1.symm.trans eq2
+  haveI : FiniteDimensional F (Matrix (Fin m) (Fin m) D) :=
+    LinearEquiv.finiteDimensional isoA.toLinearEquiv
+  haveI : FiniteDimensional F D := by
+    refine FiniteDimensional.of_injective
+      ({
+        toFun := fun x => Matrix.diagonal fun _ => x
+        map_add' := by intros; ext i j; by_cases i = j <;> aesop
+        map_smul' := by intros; ext i j; by_cases i = j <;> aesop
+      } : D →ₗ[F] Matrix (Fin m) (Fin m) D) fun _ _ H => Matrix.ext_iff.2 H 0 0
+  have : 0 < finrank F D := finrank_pos
+  rw [Nat.mul_right_inj, ← pow_two, ← pow_two] at eq3; swap; omega
+  simp only [zero_le, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj] at eq3
+  subst eq3
+  exact ⟨isoA.trans isoB.symm⟩
+
+def iso (eq : (Quotient.mk'' A.carrier : BrGroup) = (Quotient.mk'' B.carrier)) :
+  A.carrier ≃ₐ[F] B.carrier := exists_iso A B eq |>.some
+
+end double
 
 end GoodRep
 
