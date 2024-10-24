@@ -458,10 +458,24 @@ theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSp
     isSplit F B K := by
   obtain ⟨⟨n, m, hn, hm, iso⟩⟩ := hAB
   obtain ⟨p, ⟨hp, ⟨e⟩⟩⟩ := hA
-  have ee := Algebra.TensorProduct.congr (A := K) (S := K) AlgEquiv.refl iso|>.symm.trans $
-    matrixTensorEquivTensor K F A (Fin n)|>.trans $ e.mapMatrix (m := (Fin n))
-
-  sorry
+  obtain ⟨q, ⟨hq, D, hD1, _, ⟨e'⟩⟩⟩ := Wedderburn_Artin_algebra_version K (K ⊗[F] B)
+  haveI := is_fin_dim_of_wdb K (K ⊗[F] B) q D (by omega) e'
+  have ee := Matrix.reindexAlgEquiv _ _ finProdFinEquiv|>.symm.trans $
+    Matrix.compAlgEquiv _ _ _ _ |>.symm.trans $ e'.mapMatrix.symm.trans $
+    matrixTensorEquivTensor K F B (Fin m) |>.symm.trans $
+    Algebra.TensorProduct.congr (A := K) (S := K) AlgEquiv.refl iso|>.symm.trans $
+    matrixTensorEquivTensor K F A (Fin n)|>.trans $ e.mapMatrix (m := (Fin n))|>.trans
+    $ Matrix.compAlgEquiv (Fin n) (Fin p) K K |>.trans $ Matrix.reindexAlgEquiv K K
+    finProdFinEquiv
+  haveI : NeZero (m * q) := ⟨Nat.mul_ne_zero hm hq⟩
+  haveI : Nonempty (Fin (m * q)) := ⟨⟨0, Fin.size_pos'⟩⟩
+  have := @Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (m * q)) (Fin (m * q)) D) _ _ _
+    _ (by
+      suffices FiniteDimensional K (D ⊗[K] Matrix (Fin (m * q)) (Fin (m * q)) K) from
+        LinearEquiv.finiteDimensional $ matrixEquivTensor _ _ _|>.symm.toLinearEquiv
+      exact Module.Finite.tensorProduct _ _ _) (m * q) (n * p) _
+      ⟨Nat.mul_ne_zero hn hp⟩ D _ _ AlgEquiv.refl K _ _ ee|>.some
+  exact ⟨q, hq, ⟨e'.trans this.mapMatrix⟩⟩
 
 end CSA2
 
