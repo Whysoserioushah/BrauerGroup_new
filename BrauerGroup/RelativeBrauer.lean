@@ -1,6 +1,24 @@
+/-
+Copyright (c) 2024 Yunzhou Xie. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yunzhou Xie, Jujian Zhang
+-/
+
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.«074E»
 import Mathlib.RingTheory.MatrixAlgebra
+import BrauerGroup.Subfield.Subfield
+
+/-!
+# Relative Brauer Group
+
+# Main results
+
+* `BrauerGroup.split_iff`: Let `A` be a CSA over F, then `⟦A⟧ ∈ Br(K/F)` if and only if K splits A
+* `isSplit_iff_dimension`: Let `A` be a CSA over F, then `⟦A⟧ ∈ Br(K/F)` if and only if there exists
+  another `F`-CSA `B` such that `⟦A⟧ = ⟦B⟧` (i.e. `A` and `B` are Brauer-equivalent) and `K ⊆ B` and
+  `dim_F B = (dim_F K)²`
+-/
 
 suppress_compilation
 
@@ -10,14 +28,17 @@ open TensorProduct BrauerGroup
 
 section Defs
 
-variable (K F F_bar: Type u) [Field K] [Field F] [Algebra F K] [Field F_bar] [Algebra F F_bar] [hk_bar : IsAlgClosure F F_bar]
+variable (K F : Type u) [Field K] [Field F] [Algebra F K] -- [FiniteDimensional F K]
 
+/--
+The relative Brauer group `Br(K/F)` is the kernel of the map `Br F -> Br K`
+-/
 abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E := K)
 
-include F_bar in
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
     BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrGroup (K := K)) :=
   ⟨fun hA ↦ by
+    let F_bar := AlgebraicClosure F
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
     change _ = Quotient.mk'' _
     simp only [Quotient.eq'', one_in']
@@ -76,30 +97,29 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
         _ _ e.symm |>.some.mapMatrix (m := (Fin p))
       exact ⟨p, hp, ⟨iso'.trans this⟩⟩⟩
 
-include F_bar in
-lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
-    isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A hA ↦ by
-  unfold RelativeBrGroup at hA
-  rw [MonoidHom.mem_ker] at hA
-  exact BrauerGroup.split_iff K F F_bar (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) |>.2
-    (by
-    simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
-    change _ = Quotient.mk'' _
-    simp only [Quotient.eq'', one_in']
-    change IsBrauerEquivalent _ _
-    induction A using Quotient.inductionOn
-    rename_i A
-    change BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = 1 at hA
-    change IsBrauerEquivalent (CSA.mk (K ⊗[F] (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) (Quotient.mk'' A)))) _
-    change _ = Quotient.mk'' _ at hA
-    simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'', Quotient.eq'', one_in'] at hA
-    change IsBrauerEquivalent (CSA.mk (K ⊗[F] A)) _ at hA
-    have : IsBrauerEquivalent A (Quotient.out (s := BrauerGroup.CSA_Setoid) (Quotient.mk'' A)) := by
-      change Setoid.r (α := CSA F) (self := BrauerGroup.CSA_Setoid)  _ _
-      rw [← Quotient.eq'']
+lemma mem_relativeBrGroup (A : CSA F) :
+    Quotient.mk'' A ∈ RelativeBrGroup K F ↔
+    isSplit F A K :=
+  BrauerGroup.split_iff K F A |>.symm
+-- lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
+--     isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A hA ↦ by
+--   let F_bar := AlgebraicClosure F
+--   rw [BrauerGroup.split_iff K F F_bar]
+--   change _ = 1 at hA
+--   rw [← hA]
+--   simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
+--   have := Quotient.out_eq' A
+--   conv_rhs => rw [← this]
+--   erw [Quotient.map'_mk'']
+--   rfl
+lemma split_sound (A B : CSA F) (h0 : BrauerEquivalence A B) (h : isSplit F A K) :
+    isSplit F B K := by
+  rw [split_iff] at h ⊢
+  rw [show (Quotient.mk'' B : BrGroup) = Quotient.mk'' A from Eq.symm <| Quotient.sound ⟨h0⟩, h]
 
-      sorry
-
-    sorry)
+lemma split_sound' (A B : CSA F) (h0 : BrauerEquivalence A B) :
+    isSplit F A K ↔ isSplit F B K :=
+  ⟨split_sound K F A B h0, split_sound K F B A
+    ⟨h0.m, h0.n, h0.hm, h0.hn, h0.iso.symm⟩⟩
 
 end Defs
