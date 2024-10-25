@@ -8,24 +8,26 @@ suppress_compilation
 
 #check groupCohomology.H2
 
-open FiniteDimensional
+open FiniteDimensional BrauerGroup
 
-variable (F K : Type) [Field K] [Field F] [Algebra F K] [FiniteDimensional F K]
+variable {F K : Type} [Field K] [Field F] [Algebra F K] [FiniteDimensional F K]
+variable (X : BrGroup (K := F))
 
+variable (K) in
 structure GoodRep where
 carrier : CSA.{0, 0} F
+quot_eq : (Quotient.mk'' carrier) = X
 ι : K →ₐ[F] carrier
 dim_eq : finrank F carrier = (finrank F K) ^ 2
 
 namespace GoodRep
 
-variable {K F}
 
-variable (A B : GoodRep F K)
+variable {X : BrGroup (K := F)} (A B : GoodRep K X)
 
 section basic
 
-instance : CoeSort (GoodRep F K) Type where
+instance : CoeSort (GoodRep K X) Type where
   coe A := A.carrier
 
 def ιRange : K ≃ₐ[F] A.ι.range :=
@@ -68,9 +70,13 @@ omit [FiniteDimensional F K] in
 
 def mul' (x : A.conjFactor σ) (y : A.conjFactor τ) : A.conjFactor (σ * τ) :=
 ⟨x.1 * y.1, fun c => by
-  simp only [AlgEquiv.mul_apply, Units.val_mul, mul_assoc, mul_inv_rev]
-  rw [← mul_assoc (A.ι c), ← mul_assoc (y.1 : A), ← mul_assoc (y.1 : A),
-    conjFactor_prop, ← mul_assoc, conjFactor_prop]⟩
+  simp only [AlgEquiv.mul_apply, Units.val_mul, _root_.mul_assoc, mul_inv_rev]
+  rw [← _root_.mul_assoc (A.ι c), ← mul_assoc (y.1 : A), ← mul_assoc (y.1 : A),
+    conjFactor_prop, ← _root_.mul_assoc, conjFactor_prop]⟩
+
+omit [FiniteDimensional F K] in
+@[simp]
+lemma mul'_coe (x : A.conjFactor σ) (y : A.conjFactor τ) : (mul' x y).1.1 = x.1 * y.1 := rfl
 
 lemma conjFactor_rel_aux (x y : A.conjFactor σ) :
     ∃ (c : K), x.1 = y.1 * A.ι c := by
@@ -79,12 +85,12 @@ lemma conjFactor_rel_aux (x y : A.conjFactor σ) :
     rintro _ ⟨z, rfl⟩
     have := x.2 z |>.symm.trans (y.2 z)
     apply_fun (x.1⁻¹.1 * ·) at this
-    simp only [← mul_assoc, Units.inv_mul, one_mul] at this
+    simp only [← _root_.mul_assoc, Units.inv_mul, _root_.one_mul] at this
     apply_fun (· * x.1.1) at this
     simp only [Units.inv_mul_cancel_right] at this
     simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe]
     conv_rhs => rw [this]
-    simp only [mul_assoc, Units.mul_inv_cancel_left, Units.inv_mul_cancel_left]
+    simp only [_root_.mul_assoc, Units.mul_inv_cancel_left, Units.inv_mul_cancel_left]
 
   rw [A.centralizerιRange, AlgHom.mem_range] at mem1
   obtain ⟨c, hc⟩ := mem1
@@ -119,11 +125,11 @@ def conjFactorTwistCoeffAsUnit (x y : A.conjFactor σ) : Kˣ where
   val_inv := by
     simpa using conjFactorTwistCoeff_unique y y
       (conjFactorTwistCoeff x y * conjFactorTwistCoeff y x)
-      (by simp only [map_mul, ← mul_assoc, ← conjFactorTwistCoeff_spec])
+      (by simp only [map_mul, ← _root_.mul_assoc, ← conjFactorTwistCoeff_spec])
   inv_val := by
     simpa using conjFactorTwistCoeff_unique x x
       (conjFactorTwistCoeff y x * conjFactorTwistCoeff x y)
-      (by simp only [map_mul, ← mul_assoc, ← conjFactorTwistCoeff_spec])
+      (by simp only [map_mul, ← _root_.mul_assoc, ← conjFactorTwistCoeff_spec])
 
 @[simp]
 lemma conjFactorTwistCoeff_swap (x y : A.conjFactor σ) :
@@ -149,7 +155,8 @@ lemma conjFactorTwistCoeff_spec' (x y : A.conjFactor σ) :
     x.1 = A.ι (σ <| conjFactorTwistCoeff x y) * y.1 := by
   calc x.1.1
     _ = (x.1 * A.ι (conjFactorTwistCoeff x y) * x.1⁻¹) * (x.1 * A.ι (conjFactorTwistCoeff y x)) := by
-        simp only [mul_assoc, Units.inv_mul_cancel_left, conjFactorTwistCoeff_swap'', mul_one]
+        simp only [_root_.mul_assoc, Units.inv_mul_cancel_left, conjFactorTwistCoeff_swap'',
+          _root_.mul_one]
     _ = A.ι (σ <| conjFactorTwistCoeff x y) * (x.1 * A.ι (conjFactorTwistCoeff y x)) := by
         simp only [conjFactor_prop]
     _ = A.ι (σ <| conjFactorTwistCoeff x y) * y.1 := by
@@ -168,13 +175,14 @@ def conjFactorCompCoeffAsUnit
   inv_val := by
     simp only [conjFactorCompCoeff, ← map_mul, conjFactorTwistCoeff_swap, map_one]
 
-lemma conjFactorCompCoeff_spec (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+lemma conjFactorCompCoeff_spec
+    (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
     (x.1 * y.1 : A) = A.ι (conjFactorCompCoeff x y z) * z.1 :=
   conjFactorTwistCoeff_spec' (mul' x y) z
 
 lemma conjFactorCompCoeff_spec' (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
     A.ι (σ <| τ <| conjFactorTwistCoeff z (mul' x y)) * (x.1 * y.1 : A) = z.1 := by
-  rw [conjFactorCompCoeff_spec (z := z), ← mul_assoc, ← map_mul]
+  rw [conjFactorCompCoeff_spec (z := z), ← _root_.mul_assoc, ← map_mul]
   have := conjFactorCompCoeffAsUnit x y z |>.inv_val
   erw [this]
   simp
@@ -187,8 +195,16 @@ lemma conjFactorCompCoeff_comp_comp₁
     A.ι (conjFactorCompCoeff xρ xσ xρσ) *
     A.ι (conjFactorCompCoeff xρσ xτ xρστ) *
     xρστ.1 := by
-  rw [conjFactorCompCoeff_spec (z := xρσ), mul_assoc,
-    conjFactorCompCoeff_spec (z := xρστ), ← mul_assoc]
+  rw [conjFactorCompCoeff_spec (z := xρσ), _root_.mul_assoc,
+    conjFactorCompCoeff_spec (z := xρστ), ← _root_.mul_assoc]
+
+lemma conjFactorCompCoeff_eq (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+    A.ι (conjFactorCompCoeff x y z) = (x.1 * y.1) * z.1⁻¹ := by
+  have := conjFactorTwistCoeff_spec' (mul' x y) z
+  simp only [AlgEquiv.mul_apply, mul'_coe] at this
+  rw [this]
+  simp only [AlgEquiv.mul_apply, Units.mul_inv_cancel_right]
+  rfl
 
 lemma conjFactorCompCoeff_comp_comp₂
     (xρ : A.conjFactor ρ) (xσ : A.conjFactor σ) (xτ : A.conjFactor τ)
@@ -202,10 +218,10 @@ lemma conjFactorCompCoeff_comp_comp₂
       xρ.1 * A.ι (conjFactorCompCoeff xσ xτ xστ) =
       A.ι (ρ <| conjFactorCompCoeff xσ xτ xστ) * xρ.1 := by
     have := xρ.2 (conjFactorCompCoeff xσ xτ xστ)
-    conv_rhs => rw [this, mul_assoc]
+    conv_rhs => rw [this, _root_.mul_assoc]
     simp
-  conv_lhs => rw [conjFactorCompCoeff_spec (z := xστ), ← mul_assoc, eq1]
-  conv_rhs => rw [mul_assoc, ← conjFactorCompCoeff_spec, ← mul_assoc]
+  conv_lhs => rw [conjFactorCompCoeff_spec (z := xστ), ← _root_.mul_assoc, eq1]
+  conv_rhs => rw [_root_.mul_assoc, ← conjFactorCompCoeff_spec, ← _root_.mul_assoc]
 
 lemma conjFactorCompCoeff_comp_comp₃
     (xρ : A.conjFactor ρ) (xσ : A.conjFactor σ) (xτ : A.conjFactor τ)
@@ -217,7 +233,7 @@ lemma conjFactorCompCoeff_comp_comp₃
     A.ι (ρ <| conjFactorCompCoeff xσ xτ xστ) *
     A.ι (conjFactorCompCoeff xρ xστ xρστ) *
     xρστ.1 := by
-  rw [← conjFactorCompCoeff_comp_comp₁, ← conjFactorCompCoeff_comp_comp₂, mul_assoc]
+  rw [← conjFactorCompCoeff_comp_comp₁, ← conjFactorCompCoeff_comp_comp₂, _root_.mul_assoc]
 
 lemma conjFactorCompCoeff_comp_comp
     (xρ : A.conjFactor ρ) (xσ : A.conjFactor σ) (xτ : A.conjFactor τ)
@@ -231,33 +247,42 @@ lemma conjFactorCompCoeff_comp_comp
   simpa using conjFactorCompCoeff_comp_comp₃ xρ xσ xτ xρσ xστ xρστ
 
 variable (A) in
-def toSnd : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
+def toTwoCocycles : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
 fun p =>
   conjFactorCompCoeffAsUnit
     (A.aribitaryConjFactor p.1)
     (A.aribitaryConjFactor p.2)
     (A.aribitaryConjFactor <| p.1 * p.2)
 
-def toSnd_cond :
-    ρ (A.toSnd (σ, τ)).1 * A.toSnd (ρ, σ * τ) =
-    A.toSnd (ρ, σ) * A.toSnd (ρ * σ, τ) := by
-  delta toSnd
+variable (ρ σ τ) in
+lemma toTwoCocycles_cond :
+    ρ (A.toTwoCocycles (σ, τ)).1 * A.toTwoCocycles (ρ, σ * τ) =
+    A.toTwoCocycles (ρ, σ) * A.toTwoCocycles (ρ * σ, τ) := by
+  delta toTwoCocycles
   dsimp only [conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
   rw [conjFactorCompCoeff_comp_comp]
   rfl
+
+lemma isTwoCocyles :
+    groupCohomology.IsMulTwoCocycle A.toTwoCocycles := by
+  intro ρ σ τ
+  ext : 1
+  simp only [Units.val_mul]
+  erw [A.toTwoCocycles_cond ρ σ τ]
+  rw [mul_comm]
 
 end single
 
 section double
 
-open BrauerGroup
+variable {σ τ : K ≃ₐ[F] K}
 
-lemma exists_iso
-    (eq : (Quotient.mk'' A.carrier : BrGroup) = (Quotient.mk'' B.carrier)) :
+omit [FiniteDimensional F K] in
+lemma exists_iso :
     Nonempty (A ≃ₐ[F] B) := by
   obtain ⟨D, _, _, m, n, hm, hn, ⟨isoA⟩, ⟨isoB⟩⟩ :=
     IsBrauerEquivalent.exists_common_division_algebra F A.carrier B.carrier
-      (Quotient.eq''.1 eq)
+      (Quotient.eq''.1 (A.quot_eq.trans B.quot_eq.symm))
   have eq1 := isoA.toLinearEquiv.finrank_eq
   have eq2 := isoB.toLinearEquiv.finrank_eq
   simp only [A.dim_eq, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin m)).toLinearEquiv,
@@ -280,33 +305,217 @@ lemma exists_iso
   subst eq3
   exact ⟨isoA.trans isoB.symm⟩
 
-def iso (eq : (Quotient.mk'' A.carrier : BrGroup) = (Quotient.mk'' B.carrier)) :
-  A.carrier ≃ₐ[F] B.carrier := exists_iso A B eq |>.some
+def iso : A.carrier ≃ₐ[F] B.carrier := exists_iso A B |>.some
+
+def isoConjCoeff : Bˣ :=
+  SkolemNoether' F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose
+
+omit [FiniteDimensional F K] in
+lemma isoConjCoeff_spec :
+    ∀ r : K, B.ι r = (A.isoConjCoeff B) * (A.iso B <| A.ι r) * (A.isoConjCoeff B)⁻¹ :=
+  SkolemNoether' F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose_spec
+
+omit [FiniteDimensional F K] in
+lemma isoConjCoeff_spec' :
+    ∀ r : K, (A.isoConjCoeff B)⁻¹ * B.ι r * (A.isoConjCoeff B) = (A.iso B <| A.ι r) := by
+  intro c
+  rw [A.isoConjCoeff_spec B c]
+  simp [_root_.mul_assoc]
+
+omit [FiniteDimensional F K] in
+lemma isoConjCoeff_spec'' (c : K) (x : A.conjFactor σ):
+    B.ι (σ c) =
+    (A.isoConjCoeff B * (A.iso B <| x.1) * (A.isoConjCoeff B)⁻¹) *
+      B.ι c *
+    (A.isoConjCoeff B * (A.iso B <| x.1⁻¹.1) * (A.isoConjCoeff B)⁻¹) := by
+  have eq1 := congr(A.iso B $(x.2 c))
+  have eq2 := A.isoConjCoeff_spec B (σ c)
+  simp only [eq1, map_mul] at eq2
+  simp only [eq2, _root_.mul_assoc, Units.mul_right_inj]
+  congr 1
+  simp only [← _root_.mul_assoc, Units.mul_left_inj]
+  congr 1
+  rw [isoConjCoeff_spec']
+
+def pushConjFactor (x : A.conjFactor σ) : B.conjFactor σ where
+  val :=
+  { val := A.isoConjCoeff B * (A.iso B <| x.1) * (A.isoConjCoeff B)⁻¹
+    inv := A.isoConjCoeff B * (A.iso B <| x.1⁻¹.1) * (A.isoConjCoeff B)⁻¹
+    val_inv := by
+      simp only [← _root_.mul_assoc, Units.inv_mul_cancel_right, Units.mul_inv_eq_one]
+      simp only [_root_.mul_assoc, ← map_mul, Units.mul_inv, map_one, _root_.mul_one]
+    inv_val := by
+      simp only [← _root_.mul_assoc, Units.inv_mul_cancel_right, Units.mul_inv_eq_one]
+      simp only [_root_.mul_assoc, ← map_mul, Units.inv_mul, map_one, _root_.mul_one] }
+  property c := by
+    simp only [Units.inv_mk]
+    rw [isoConjCoeff_spec'']
+
+omit [FiniteDimensional F K] in
+@[simp] lemma pushConjFactor_coe (x : A.conjFactor σ) :
+    (A.pushConjFactor B x).1.1 = A.isoConjCoeff B * (A.iso B <| x.1) * (A.isoConjCoeff B)⁻¹ :=
+    rfl
+
+def pushConjFactorCoeff (x : A.conjFactor σ) (y : B.conjFactor σ) : K :=
+σ (conjFactorTwistCoeff y (A.pushConjFactor B x))
+
+lemma pushConjFactorCoeff_spec (x : A.conjFactor σ) (y : B.conjFactor σ)  :
+    y.1 = B.ι (A.pushConjFactorCoeff B x y) * (A.pushConjFactor B x).1 := by
+  simpa using conjFactorTwistCoeff_spec' y (A.pushConjFactor B x)
+
+lemma pushConjFactorCoeff_spec' (x : A.conjFactor σ) (y : B.conjFactor σ) :
+    B.ι (A.pushConjFactorCoeff B x y) =
+    A.isoConjCoeff B *
+    A.iso B (A.ι <| A.pushConjFactorCoeff B x y) *
+    (A.isoConjCoeff B)⁻¹:= by
+  rw [isoConjCoeff_spec]
+
+@[simps]
+abbrev pushConjFactorCoeffAsUnit (x : A.conjFactor σ) (y : B.conjFactor σ) : Kˣ where
+  val := A.pushConjFactorCoeff B x y
+  inv := σ (conjFactorTwistCoeff (A.pushConjFactor B x) y)
+  val_inv := by simp [pushConjFactorCoeff, ← map_mul]
+  inv_val := by simp [pushConjFactorCoeff, ← map_mul]
+
+lemma compare_conjFactorCompCoeff
+    (xσ : A.conjFactor σ) (yσ : B.conjFactor σ) (xτ : A.conjFactor τ) (yτ : B.conjFactor τ)
+    (xστ : A.conjFactor (σ * τ)) (yστ : B.conjFactor (σ * τ)):
+    B.conjFactorCompCoeff yσ yτ yστ *
+    A.pushConjFactorCoeff B xστ yστ =
+    A.pushConjFactorCoeff B xσ yσ *
+    σ (A.pushConjFactorCoeff B xτ yτ) *
+    A.conjFactorCompCoeff xσ xτ xστ := by
+  have eq1 := B.conjFactorCompCoeff_spec yσ yτ yστ
+  have eq2 : yσ.1.1 * yτ.1.1 =
+      (A.isoConjCoeff B) *
+      A.iso B
+        (A.ι (A.pushConjFactorCoeff B xσ yσ) *
+          xσ.1 *
+          A.ι (A.pushConjFactorCoeff B xτ yτ) *
+          xτ.1) *
+      (A.isoConjCoeff B)⁻¹ := by
+    rw [A.pushConjFactorCoeff_spec B xσ yσ, A.pushConjFactorCoeff_spec B xτ yτ,
+    pushConjFactorCoeff_spec', pushConjFactorCoeff_spec',
+    pushConjFactor_coe, pushConjFactor_coe]
+    simp only [_root_.mul_assoc, Units.inv_mul_cancel_left, map_mul, Units.mul_right_inj]
+  rw [eq2] at eq1; clear eq2
+  have eq2 : yστ.1.1 =
+    A.isoConjCoeff B *
+      (A.iso B <| A.ι (A.pushConjFactorCoeff B xστ yστ) * xστ.1) *
+    (A.isoConjCoeff B)⁻¹ := by
+    rw [A.pushConjFactorCoeff_spec B xστ yστ, pushConjFactorCoeff_spec']
+    simp only [_root_.mul_assoc, AlgEquiv.mul_apply, pushConjFactor_coe, mul'_coe, map_mul,
+      Units.inv_mul_cancel_left]
+  rw [eq2] at eq1; clear eq2
+  rw [A.isoConjCoeff_spec B] at eq1
+  simp only [← _root_.mul_assoc] at eq1
+  conv_rhs at eq1 =>
+    rw [_root_.mul_assoc _ _ (A.isoConjCoeff B).1, Units.inv_mul, _root_.mul_one,
+      _root_.mul_assoc _ _ (A.iso B _), ← map_mul]
+  rw [Units.mul_left_inj, Units.mul_right_inj] at eq1
+  replace eq1 := (A.iso B).injective eq1
+  have eq2 : xσ.1.1 * A.ι (A.pushConjFactorCoeff B xτ yτ) * xτ.1.1 =
+      A.ι (σ <| A.pushConjFactorCoeff B xτ yτ) * xσ.1.1 * xτ.1.1 := by
+    have := xσ.2 (A.pushConjFactorCoeff B xτ yτ)
+    rw [this]
+    simp [_root_.mul_assoc]
+  apply_fun (A.ι (A.pushConjFactorCoeff B xσ yσ) * ·) at eq2
+  simp only [← _root_.mul_assoc] at eq2
+  rw [eq2] at eq1; clear eq2
+  simp only [_root_.mul_assoc] at eq1
+  rw [A.conjFactorCompCoeff_spec xσ xτ xστ] at eq1
+  simp only [← _root_.mul_assoc] at eq1
+  rw [Units.mul_left_inj] at eq1
+  apply_fun A.ι using RingHom.injective _
+  simp only [map_mul, eq1]
+
+def trivialFactorSet (c : (K ≃ₐ[F] K) → Kˣ) : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
+fun p => c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
+
+lemma compare_toTwoCocycles :
+    B.toTwoCocycles (σ, τ) *
+    A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor (σ * τ)) (B.aribitaryConjFactor (σ * τ)) =
+    A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor σ) (B.aribitaryConjFactor σ) *
+    Units.map σ (A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor τ) (B.aribitaryConjFactor τ)) *
+    A.toTwoCocycles (σ, τ) := by
+  delta toTwoCocycles
+  dsimp only
+  have := A.compare_conjFactorCompCoeff B
+    (A.aribitaryConjFactor σ) (B.aribitaryConjFactor σ)
+    (A.aribitaryConjFactor τ) (B.aribitaryConjFactor τ)
+    (A.aribitaryConjFactor _) (B.aribitaryConjFactor _)
+  simp only [← _root_.mul_assoc] at this
+  ext : 1
+  dsimp
+  rw [this]
+
+lemma compare_toTwoCocycles' :
+    groupCohomology.IsMulTwoCoboundary (B.toTwoCocycles / A.toTwoCocycles) := by
+  fconstructor
+  · refine fun σ =>
+      A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor σ) (B.aribitaryConjFactor σ)
+  intro σ τ
+  dsimp
+  symm
+  rw [div_eq_iff_eq_mul, div_eq_mul_inv, mul_comm (Units.map _ _)]
+  simp only [_root_.mul_assoc]
+  symm
+  rw [inv_mul_eq_iff_eq_mul, mul_comm _ (B.toTwoCocycles _)]
+  symm
+  erw [compare_toTwoCocycles]
+  simp only [← _root_.mul_assoc]
+  congr 1
+  rw [mul_comm]
 
 end double
 
 end GoodRep
 
-
-
+variable (F K) in
 noncomputable def galAct : Rep ℤ (K ≃ₐ[F] K) :=
-  Rep.of (V := Additive Kˣ)
-    { toFun := fun σ =>
-      { toFun := fun x => ⟨σ x.1, σ x.2, by simp, by simp⟩
-        map_add' := fun (x : Kˣ) (y : Kˣ) => by
-          refine Units.ext ?_
-          change σ (x.1 * y.1) = σ _ * σ _
-          simp only [map_mul]
-        map_smul' := by
-          rintro m x
-          dsimp
-          apply_fun Additive.toMul
-          rw [toMul_zsmul]
-          simp only [Units.val_inv_eq_inv_val, map_inv₀]
-          refine Units.ext ?_
-          dsimp
-          change σ (_ ^ m : Kˣ).1 = _ -- r • σ x.1
-          simp only [Units.val_zpow_eq_zpow_val, map_zpow₀]
-          rfl }
-      map_one' := rfl
-      map_mul' := by intros; rfl }
+  Rep.ofMulDistribMulAction (K ≃ₐ[F] K) Kˣ
+
+omit [FiniteDimensional F K] in
+@[simp] lemma galAct_ρ_apply (σ : K ≃ₐ[F] K) (x : Kˣ) :
+    (galAct F K).ρ σ (.ofMul x) = .ofMul (Units.map σ x) := rfl
+
+lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrGroup (K := F)) :
+    X ∈ RelativeBrGroup K F ↔
+    Nonempty (GoodRep K X) := by
+  induction X using Quotient.inductionOn' with | h X =>
+  simp only [RelativeBrGroup, MonoidHom.mem_ker, MonoidHom.coe_mk, OneHom.coe_mk,
+    Quotient.map'_mk'']
+  erw [← split_iff]
+  rw [isSplit_iff_dimension]
+  constructor
+  · rintro ⟨A, eq, i, dim⟩
+    exact ⟨⟨A, eq.symm, i, dim.symm⟩⟩
+  · rintro ⟨⟨A, eq, i, dim⟩⟩
+    exact ⟨A, eq.symm, i, dim.symm⟩
+
+def RelativeBrGroup.goodRep (X : RelativeBrGroup K F) : GoodRep K X.1 :=
+mem_relativeBrGroup_iff_exists_goodRep X.1 |>.1 X.2 |>.some
+
+open groupCohomology
+
+namespace GoodRep
+
+variable {X : BrGroup (K := F)} (A : GoodRep K X)
+
+def toH2 : groupCohomology.H2 (galAct F K) :=
+Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles) A.isTwoCocyles
+
+
+end GoodRep
+
+def RelativeBrGroup.toSnd :  RelativeBrGroup K F → groupCohomology.H2 (galAct F K) :=
+  fun X => (goodRep X).toH2
+
+lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F) (A : GoodRep K X.1) :
+    toSnd X = A.toH2 := by
+  erw [Submodule.Quotient.eq]
+  set lhs := _; change lhs ∈ _
+  have : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (lhs.1) := by
+    apply GoodRep.compare_toTwoCocycles'
+
+  exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
