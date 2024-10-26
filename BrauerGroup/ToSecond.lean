@@ -10,7 +10,7 @@ suppress_compilation
 
 open FiniteDimensional BrauerGroup
 
-variable {F K : Type} [Field K] [Field F] [Algebra F K] [FiniteDimensional F K]
+variable {F K : Type} [Field K] [Field F] [Algebra F K]
 variable (X : BrGroup (K := F))
 
 variable (K) in
@@ -38,7 +38,6 @@ instance : Algebra F A := inferInstanceAs <| Algebra F A.carrier
 instance : IsSimpleOrder (TwoSidedIdeal A.ι.range) :=
   TwoSidedIdeal.orderIsoOfRingEquiv A.ιRange.symm |>.isSimpleOrder
 
-omit [FiniteDimensional F K] in
 lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := by
   let L : SubField F A :=
   { __ := A.ι.range
@@ -74,7 +73,6 @@ def aribitaryConjFactor : A.conjFactor σ :=
 
 variable {A ρ σ τ}
 
-omit [FiniteDimensional F K] in
 @[simp] lemma conjFactor_prop (x : A.conjFactor σ) (c : K) :
     x.1 * A.ι c * x.1⁻¹ = A.ι (σ c) := x.2 c |>.symm
 
@@ -84,7 +82,6 @@ def mul' (x : A.conjFactor σ) (y : A.conjFactor τ) : A.conjFactor (σ * τ) :=
   rw [← _root_.mul_assoc (A.ι c), ← mul_assoc (y.1 : A), ← mul_assoc (y.1 : A),
     conjFactor_prop, ← _root_.mul_assoc, conjFactor_prop]⟩
 
-omit [FiniteDimensional F K] in
 @[simp]
 lemma mul'_coe (x : A.conjFactor σ) (y : A.conjFactor τ) : (mul' x y).1.1 = x.1 * y.1 := rfl
 
@@ -287,7 +284,6 @@ section double
 
 variable {σ τ : K ≃ₐ[F] K}
 
-omit [FiniteDimensional F K] in
 lemma exists_iso :
     Nonempty (A ≃ₐ[F] B) := by
   obtain ⟨D, _, _, m, n, hm, hn, ⟨isoA⟩, ⟨isoB⟩⟩ :=
@@ -320,19 +316,16 @@ def iso : A.carrier ≃ₐ[F] B.carrier := exists_iso A B |>.some
 def isoConjCoeff : Bˣ :=
   SkolemNoether' F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose
 
-omit [FiniteDimensional F K] in
 lemma isoConjCoeff_spec :
     ∀ r : K, B.ι r = (A.isoConjCoeff B) * (A.iso B <| A.ι r) * (A.isoConjCoeff B)⁻¹ :=
   SkolemNoether' F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose_spec
 
-omit [FiniteDimensional F K] in
 lemma isoConjCoeff_spec' :
     ∀ r : K, (A.isoConjCoeff B)⁻¹ * B.ι r * (A.isoConjCoeff B) = (A.iso B <| A.ι r) := by
   intro c
   rw [A.isoConjCoeff_spec B c]
   simp [_root_.mul_assoc]
 
-omit [FiniteDimensional F K] in
 lemma isoConjCoeff_spec'' (c : K) (x : A.conjFactor σ):
     B.ι (σ c) =
     (A.isoConjCoeff B * (A.iso B <| x.1) * (A.isoConjCoeff B)⁻¹) *
@@ -361,7 +354,6 @@ def pushConjFactor (x : A.conjFactor σ) : B.conjFactor σ where
     simp only [Units.inv_mk]
     rw [isoConjCoeff_spec'']
 
-omit [FiniteDimensional F K] in
 @[simp] lemma pushConjFactor_coe (x : A.conjFactor σ) :
     (A.pushConjFactor B x).1.1 = A.isoConjCoeff B * (A.iso B <| x.1) * (A.isoConjCoeff B)⁻¹ :=
     rfl
@@ -485,9 +477,10 @@ variable (F K) in
 noncomputable def galAct : Rep ℤ (K ≃ₐ[F] K) :=
   Rep.ofMulDistribMulAction (K ≃ₐ[F] K) Kˣ
 
-omit [FiniteDimensional F K] in
 @[simp] lemma galAct_ρ_apply (σ : K ≃ₐ[F] K) (x : Kˣ) :
     (galAct F K).ρ σ (.ofMul x) = .ofMul (Units.map σ x) := rfl
+
+variable [FiniteDimensional F K]
 
 lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrGroup (K := F)) :
     X ∈ RelativeBrGroup K F ↔
@@ -515,7 +508,6 @@ variable {X : BrGroup (K := F)} (A : GoodRep K X)
 def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
 Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles x_)
   (A.isTwoCocyles x_)
-
 
 end GoodRep
 
