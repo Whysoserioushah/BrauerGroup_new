@@ -38,11 +38,21 @@ instance : Algebra F A := inferInstanceAs <| Algebra F A.carrier
 instance : IsSimpleOrder (TwoSidedIdeal A.ι.range) :=
   TwoSidedIdeal.orderIsoOfRingEquiv A.ιRange.symm |>.isSimpleOrder
 
+omit [FiniteDimensional F K] in
 lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := by
   let L : SubField F A :=
   { __ := A.ι.range
-    mul_comm := sorry
-    inverse := sorry }
+    mul_comm := by
+      rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩
+      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, ← map_mul, mul_comm]
+    inverse := by
+      rintro _ ⟨x, rfl⟩ hx
+      refine ⟨A.ι x⁻¹, ?_, ?_⟩
+      · simp
+      · simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, ← map_mul]
+        rw [mul_inv_cancel₀, map_one]
+        rintro rfl
+        simp at hx }
   change Subalgebra.centralizer F (L.toSubalgebra : Set A) = L.toSubalgebra
   apply cor_two_3to1
   apply cor_two_2to3
