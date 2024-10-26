@@ -1039,6 +1039,44 @@ instance : Algebra F (CrossProduct ha) where
       simp only [hx, hx']
     | zero => simp
 
+@[simp]
+lemma algebraMap_val (r : F) :
+    algebraMap F (CrossProduct ha) r = r • 1 := rfl
+
+def ι : K →ₐ[F] CrossProduct ha where
+  toFun b := ⟨Pi.single 1 (b * (a (1, 1))⁻¹)⟩
+  map_one' := by
+    ext α
+    simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, _root_.one_mul, one_val]
+  map_mul' := by
+    intro b b'
+    ext α
+    simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, mul_val, crossProductMul_single_single,
+      AlgEquiv.one_apply]
+    rw [_root_.mul_one]
+    congr 1
+    simp only [_root_.mul_assoc]
+    congr 1
+    rw [mul_comm b']
+    congr 1
+    simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel,
+      _root_.mul_one]
+  map_zero' := by
+    ext α; simp
+  map_add' := by
+    intro b b'
+    ext α
+    simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, add_mul, Pi.single_apply, add_val,
+      Pi.add_apply]
+    split_ifs with h <;> aesop
+  commutes' := by
+    intro r
+    ext α
+    simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, algebraMap_val, smul_val, one_val,
+      crossProductSMul_single]
+    congr 1
+    rw [Algebra.smul_def]
+
 end CrossProduct
 
 end galois
