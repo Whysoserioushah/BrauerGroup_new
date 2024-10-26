@@ -968,7 +968,7 @@ instance : SMul F (CrossProduct ha) where
 lemma smul_val (r : F) (x : CrossProduct ha) :
     (r • x).val = crossProductSMul r x.val := rfl
 
-instance : Algebra F (CrossProduct ha) where
+instance algebra : Algebra F (CrossProduct ha) where
   toFun r := r • 1
   map_one' := by
     ext α
