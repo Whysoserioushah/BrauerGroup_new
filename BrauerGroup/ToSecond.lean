@@ -709,6 +709,7 @@ def crossProductMul :
       refine Finset.sum_congr rfl fun τ' _ => ?_
       simp only [Function.update_apply, Pi.zero_apply, smul_ite, smul_zero] }
 
+@[simp]
 lemma crossProductMul_single_single (c d : K) :
     crossProductMul a (Pi.single σ c) (Pi.single τ d) =
     Pi.single (σ * τ) (c * σ d * a (σ, τ)) := by
@@ -728,20 +729,317 @@ lemma crossProductMul_single_single (c d : K) :
     Units.ne_zero, or_false, Pi.single_apply]
   split_ifs <;> aesop
 
-structure crossProduct {a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ} (ha : IsMulTwoCocycle a) where
+def crossProductSMul : F →ₗ[F] ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) where
+  toFun r := LinearMap.lsum F _ F fun σ =>
+    { toFun := fun c => Function.update 0 σ (r • c)
+      map_add' := by
+        intros
+        rw [← Function.update_add]
+        simp
+      map_smul' := by
+        intros
+        rw [← Function.update_smul]
+        simp only [RingHom.id_apply, smul_zero]
+        rw [smul_comm] }
+  map_add' := by
+    intros
+    ext
+    simp only [LinearMap.lsum_apply, LinearMap.coe_comp, LinearMap.coeFn_sum, LinearMap.coe_mk,
+      AddHom.coe_mk, LinearMap.coe_proj, LinearMap.coe_single, Function.comp_apply,
+      Finset.sum_apply, Function.eval, ← Finset.sum_add_distrib, LinearMap.add_apply, Pi.add_apply]
+    refine Finset.sum_congr rfl fun σ' _ => ?_
+    simp only [Function.update_apply, Pi.zero_apply, Pi.single_apply]
+    split_ifs <;> simp [smul_add, add_smul]
+  map_smul' := by
+    intros
+    ext
+    simp only [smul_eq_mul, LinearMap.lsum_apply, LinearMap.coe_comp, LinearMap.coeFn_sum,
+      LinearMap.coe_mk, AddHom.coe_mk, LinearMap.coe_proj, LinearMap.coe_single,
+      Function.comp_apply, Finset.sum_apply, Function.eval, RingHom.id_apply, LinearMap.smul_apply,
+      Pi.smul_apply]
+    rw [Finset.smul_sum]
+    refine Finset.sum_congr rfl fun σ' _ => ?_
+    simp only [Function.update_apply, Pi.zero_apply, smul_ite, smul_zero]
+    split_ifs <;> simp [mul_smul]
+
+@[simp]
+lemma crossProductSMul_single (r : F) (c : K) :
+    crossProductSMul r (Pi.single σ c) = Pi.single σ (r • c) := by
+  simp only [crossProductSMul, LinearMap.lsum_apply, LinearMap.coe_mk, AddHom.coe_mk,
+    LinearMap.coeFn_sum, LinearMap.coe_comp, LinearMap.coe_proj, Finset.sum_apply,
+    Function.comp_apply, Function.eval]
+
+  rw [show (Pi.single σ (r • c) : (K ≃ₐ[F] K) → K) =
+    Function.update (0 : (K ≃ₐ[F] K) → K) σ (r • (Pi.single σ c : (K ≃ₐ[F] K) → K) σ) by
+    aesop]
+  apply Finset.sum_eq_single_of_mem (h := by simp)
+  intros
+  aesop
+
+structure CrossProduct {a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ} (ha : IsMulTwoCocycle a) where
   (val : (K ≃ₐ[F] K) → K)
 
-instance : _root_.Mul (crossProduct ha) where
+namespace CrossProduct
+
+instance : Add (CrossProduct ha) where
+  add x y := ⟨x.val + y.val⟩
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[simp] lemma add_val (x y : CrossProduct ha) :
+    (x + y).val = x.val + y.val := rfl
+
+instance : Zero (CrossProduct ha) where
+  zero := ⟨0⟩
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[simp] lemma zero_val : (0 : CrossProduct ha).val = 0 := rfl
+
+instance : SMul ℕ (CrossProduct ha) where
+  smul n x := ⟨n • x.val⟩
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[simp] lemma nsmul_val (n : ℕ) (x : CrossProduct ha) :
+    (n • x).val = n • x.val := rfl
+
+instance : Neg (CrossProduct ha) where
+  neg x := ⟨-x.val⟩
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[simp] lemma neg_val (x : CrossProduct ha) :
+    (-x).val = -x.val := rfl
+
+instance : Sub (CrossProduct ha) where
+  sub x y := ⟨x.val - y.val⟩
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[simp] lemma sub_val (x y : CrossProduct ha) :
+    (x - y).val = x.val - y.val := rfl
+
+instance : SMul ℤ (CrossProduct ha) where
+  smul n x := ⟨n • x.val⟩
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[simp] lemma zsmul_val (n : ℤ) (x : CrossProduct ha) :
+    (n • x).val = n • x.val := rfl
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+lemma val_injective : Function.Injective (CrossProduct.val (ha := ha)) := by
+  rintro ⟨x⟩ ⟨y⟩ rfl
+  rfl
+
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[ext]
+lemma ext (x y : CrossProduct ha) : x.val = y.val → x = y := by
+  cases x; cases y
+  simp
+
+instance addCommGroup : AddCommGroup (CrossProduct ha) :=
+  Function.Injective.addCommGroup
+    (CrossProduct.val (ha := ha))
+    (val_injective ha) rfl (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+    (fun _ _ => rfl)
+
+@[simps]
+def valAddMonoidHom : (CrossProduct ha) →+ ((K ≃ₐ[F] K) → K) :=
+  { toFun := fun x => x.val,
+    map_zero' := rfl,
+    map_add' := fun _ _ => rfl }
+
+@[elab_as_elim]
+lemma single_induction (x : CrossProduct ha) {motive : CrossProduct ha → Prop}
+    (single : ∀ (σ : K ≃ₐ[F] K) (c : K), motive ⟨Pi.single σ c⟩)
+    (add : ∀ x y, motive x → motive y → motive ⟨x.val + y.val⟩)
+    (zero : motive ⟨0⟩) : motive x := by
+  have : x = ∑ σ : K ≃ₐ[F] K, ⟨Pi.single σ (x.val σ)⟩ := by
+    ext σ
+    change valAddMonoidHom ha _ _ = valAddMonoidHom ha _ _
+    rw [map_sum]
+    simp only [valAddMonoidHom_apply, Finset.sum_apply, Finset.sum_pi_single, Finset.mem_univ,
+      ↓reduceIte]
+  rw [this]
+  apply Finset.sum_induction
+  · apply add
+  · apply zero
+  · intros σ _
+    apply single
+
+instance : _root_.Mul (CrossProduct ha) where
   mul x y := ⟨crossProductMul a x.val y.val⟩
 
-instance : One (crossProduct ha) where
-  one := ⟨(fun _ => 1 : (K ≃ₐ[F] K) → K)⟩
+lemma mul_def (x y : CrossProduct ha) :
+    x * y = ⟨crossProductMul a x.val y.val⟩ := rfl
 
--- instance : Monoid (crossProduct ha) where
---   mul_assoc := _
---   one := _
---   one_mul := _
---   mul_one := _
+@[simp]
+lemma mul_val (x y : CrossProduct ha) :
+    (x * y).val = crossProductMul a x.val y.val := rfl
+
+instance : One (CrossProduct ha) where
+  one := ⟨Pi.single 1 (a (1, 1))⁻¹⟩
+
+omit  [FiniteDimensional F K] in
+@[simp] lemma one_val : (1 : CrossProduct ha).val =
+    Pi.single (1 : K ≃ₐ[F] K) (a (1, 1))⁻¹ := rfl
+
+attribute [local simp] mul_def in
+instance monoid : Monoid (CrossProduct ha) where
+  mul_assoc x y z := by
+    ext α
+    induction x using single_induction ha with
+    | single x cx =>
+      induction y using single_induction ha with
+      | single y cy =>
+        induction z using single_induction ha with
+        | single z cz =>
+          simp only [mul_def, crossProductMul_single_single, AlgEquiv.mul_apply, ← _root_.mul_assoc,
+            map_mul]
+          congr 1
+          simp only [_root_.mul_assoc]
+          congr 2
+          rw [← _root_.mul_assoc, mul_comm _ (x _), _root_.mul_assoc]
+          congr 1
+          have := congr($(ha x y z).1)
+          simp only [Units.val_mul, AlgEquiv.smul_units_def, Units.coe_map,
+            MonoidHom.coe_coe] at this
+          rw [mul_comm] at this
+          exact this
+        | add z z' hz hz' =>
+          simp only [mul_def, crossProductMul_single_single, map_add, Pi.add_apply] at hz hz' ⊢
+          simp only [hz, hz']
+        | zero => simp
+      | add y y' hy hy' =>
+        simp only [mul_def, map_add, LinearMap.add_apply, Pi.add_apply] at hy hy' ⊢
+        simp only [hy, hy']
+      | zero => simp
+    | add x x' hx hx' =>
+      simp only [mul_def, map_add, LinearMap.add_apply, Pi.add_apply] at hx hx' ⊢
+      simp only [hx, hx']
+    | zero => simp
+  one_mul x := by
+    ext α
+    induction x using single_induction ha with
+    | single x cx =>
+      simp only [mul_def, one_val, Prod.mk_one_one, crossProductMul_single_single, _root_.one_mul,
+        AlgEquiv.one_apply]
+      congr 1
+      have eq1 := ha 1 1 x
+      simp only [_root_.mul_one, Prod.mk_one_one, one_smul, _root_.one_mul, mul_right_inj] at eq1
+      replace eq1 := congr($eq1.1)
+      rw [eq1, mul_comm _ cx]
+      simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+        IsUnit.inv_mul_cancel_right]
+    | add x x' hx hx' =>
+      simp only [mul_def, map_add, LinearMap.add_apply, Pi.add_apply] at hx hx' ⊢
+      simp only [hx, hx']
+    | zero => simp
+  mul_one x := by
+    ext α
+    induction x using single_induction ha with
+    | single x cx =>
+      simp only [mul_def, one_val, Prod.mk_one_one, crossProductMul_single_single, _root_.mul_one,
+        map_inv₀]
+      congr 1
+      have eq1 := ha x 1 1
+      simp only [_root_.mul_one, Prod.mk_one_one, AlgEquiv.smul_units_def, mul_left_inj] at eq1
+      replace eq1 := congr($eq1.1)
+      simp only [Units.coe_map, MonoidHom.coe_coe] at eq1
+      rw [← eq1,_root_.mul_assoc]
+      simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel,
+        _root_.mul_one]
+    | add x x' hx hx' =>
+      simp only [mul_def, map_add, LinearMap.add_apply, Pi.add_apply] at hx hx' ⊢
+      simp only [hx, hx']
+    | zero => simp
+
+instance : Ring (CrossProduct ha) where
+  __ := addCommGroup ha
+  __ := monoid ha
+  left_distrib := by intros; ext; simp
+  right_distrib := by intros; ext; simp
+  zero_mul := by intros; ext; simp
+  mul_zero := by intros; ext; simp
+  sub_eq_add_neg := by intros; ext; simp only [sub_val, Pi.sub_apply, add_val, neg_val,
+    Pi.add_apply, Pi.neg_apply]; group
+  neg_add_cancel := by intros; ext; simp
+
+instance : SMul F (CrossProduct ha) where
+  smul r x := ⟨crossProductSMul r x.1⟩
+
+@[simp]
+lemma smul_val (r : F) (x : CrossProduct ha) :
+    (r • x).val = crossProductSMul r x.val := rfl
+
+instance : Algebra F (CrossProduct ha) where
+  toFun r := r • 1
+  map_one' := by
+    ext α
+    simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, one_smul]
+  map_mul' := by
+    intro r r'
+    ext α
+    simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, mul_smul, mul_val,
+      crossProductMul_single_single, map_smul, map_inv₀, AlgEquiv.one_apply, Algebra.mul_smul_comm,
+      Algebra.smul_mul_assoc, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+      IsUnit.inv_mul_cancel_right]
+    congr 1
+    rw [smul_comm]
+  map_zero' := by
+    ext; simp
+  map_add' := by
+    intro r r'
+    ext α
+    simp only [smul_val, map_add, one_val, Prod.mk_one_one, LinearMap.add_apply,
+      crossProductSMul_single, Pi.add_apply, add_val]
+  commutes' := by
+    intro r x
+    ext α
+    simp only [one_val, Prod.mk_one_one, crossProductSMul_single, RingHom.coe_mk, MonoidHom.coe_mk,
+      OneHom.coe_mk, mul_val]
+    induction x using single_induction ha with
+    | single x cx =>
+      simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single,
+        crossProductMul_single_single, AlgEquiv.one_apply, Algebra.smul_mul_assoc, map_smul,
+        map_inv₀, Algebra.mul_smul_comm]
+      rw [_root_.one_mul, _root_.mul_one]
+      congr 2
+      have eq1 := ha x 1 1
+      simp only [_root_.mul_one, Prod.mk_one_one, AlgEquiv.smul_units_def, mul_left_inj] at eq1
+      replace eq1 := congr($eq1.1)
+      simp only [Units.coe_map, MonoidHom.coe_coe] at eq1
+      rw [← eq1]
+      simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+        IsUnit.inv_mul_cancel_right]
+      have eq2 := ha 1 1 x
+      simp only [_root_.mul_one, Prod.mk_one_one, one_smul, _root_.one_mul, mul_right_inj] at eq2
+      rw [congr($eq2.1), mul_comm _ cx]
+      simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+        IsUnit.inv_mul_cancel_right]
+    | add x x' hx hx' =>
+      simp only [map_add, Pi.add_apply, LinearMap.add_apply] at hx hx' ⊢
+      simp only [hx, hx']
+    | zero => simp
+  smul_def' := by
+    intro r x
+    ext α
+    simp only [one_val, Prod.mk_one_one, crossProductSMul_single, RingHom.coe_mk, MonoidHom.coe_mk,
+      OneHom.coe_mk, mul_val]
+    induction x using single_induction ha with
+    | single x cx =>
+      simp only [smul_val, crossProductSMul_single, one_val, Prod.mk_one_one,
+        crossProductMul_single_single, AlgEquiv.one_apply, Algebra.smul_mul_assoc]
+      rw [_root_.one_mul]
+      congr 2
+      have eq2 := ha 1 1 x
+      simp only [_root_.mul_one, Prod.mk_one_one, one_smul, _root_.one_mul, mul_right_inj] at eq2
+      rw [congr($eq2.1), mul_comm _ cx]
+      simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+        IsUnit.inv_mul_cancel_right]
+    | add x x' hx hx' =>
+      simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, map_add,
+        Pi.add_apply] at hx hx' ⊢
+      simp only [hx, hx']
+    | zero => simp
+
+end CrossProduct
 
 end galois
 
