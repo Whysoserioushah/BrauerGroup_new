@@ -1,4 +1,5 @@
 import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
+import Mathlib.Algebra.DirectSum.Ring
 
 import BrauerGroup.Subfield.splitting
 
@@ -553,10 +554,9 @@ namespace GoodRep
 
 section galois
 
-variable [IsGalois F K]
-
 variable {X : BrGroup (K := F)} (A : GoodRep K X)
 
+omit [FiniteDimensional F K] in
 lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     LinearIndependent K (v := fun (i : K ≃ₐ[F] K) => (x_ i).1.1) := by
   classical
@@ -573,7 +573,6 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
 
   obtain ⟨c, c_ne_zero, hc⟩ := maximal σ hσ
   let B := Basis.span LI
-    -- Basis.mk LI _
   replace hc := Submodule.smul_mem _ c⁻¹ hc
   rw [← mul_smul, inv_mul_cancel₀ c_ne_zero, one_smul] at hc
   clear c c_ne_zero
@@ -590,24 +589,6 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     simp only [B, Basis.span_apply]
 
   simp only [Submodule.coeSubtype, map_sum, map_smul, smul_def] at eq0
-
-  -- #exit
-  -- obtain ⟨s, s_supp, s_eq⟩ := hc
-  -- simp only [Finsupp.sum, smul_def] at s_eq
-  -- have s_supp' := s_supp
-  -- choose τ τ_mem hτ using s_supp
-  -- replace hc : (x_ σ).1.1 = ∑ i in s.support.attach, A.ι (s i) * (x_ (τ i.2)).1.1 := by
-  --   rw [← Finset.sum_attach] at s_eq
-  --   refine s_eq ▸ Finset.sum_congr rfl fun i _ => ?_
-  --   simp [hτ i.2]
-
-  -- haveI : Fintype (K ≃ₐ[F] K) := inferInstance
-  -- haveI : Finite J := Subtype.finite
-  -- haveI : Fintype J := Set.Finite.fintype this
-
-  -- have eq0 : (x_ σ).1.1 = ∑ i ∈ J, _ := sorry
-
-  -- replace hc : (x_ σ).1.1 = ∑ τ ∈ J, A.ι _ := sorry
   have eq1 (c : K) := calc A.ι (σ c) * (x_ σ).1.1
       _ = (x_ σ).1.1 * A.ι c := by
         rw [(x_ σ).2 c]; simp [_root_.mul_assoc]
@@ -617,7 +598,7 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
 
       _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
             A.ι (B.repr ⟨_, mem1⟩ τ) * A.ι (τ.1 c) * (x_ τ).1.1 :=
-        Finset.sum_congr rfl fun i hi => by
+        Finset.sum_congr rfl fun i _ => by
         simp only [_root_.mul_assoc]
         congr 1
         rw [(x_ i).2 c]
@@ -673,11 +654,94 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
   exact hσ τ.2
 
 
+variable [IsGalois F K] in
+
 def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis (K ≃ₐ[F] K) K A :=
   basisOfLinearIndependentOfCardEqFinrank
     (b := fun (i : K ≃ₐ[F] K) => (x_ i).1.1)
     (A.conjFactor_linearIndependent x_)
     (by rw [A.dim_eq', IsGalois.card_aut_eq_finrank])
+
+open DirectSum
+
+variable [DecidableEq (K ≃ₐ[F] K)]
+
+variable {a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ} (ha : IsMulTwoCocycle a)
+
+variable (σ τ : K ≃ₐ[F] K)
+
+variable (a) in
+def crossProductMul :
+    ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) :=
+  LinearMap.lsum F _ F fun σ =>
+  { toFun := fun c => LinearMap.lsum F _ F fun τ =>
+      { toFun := fun d => Function.update 0 (σ * τ) (c * σ d * a (σ, τ))
+        map_add' := by
+          intros d d'
+          conv_rhs => rw [← Function.update_add]
+          ext στ
+          simp only [map_add, mul_add, add_mul, add_zero]
+        map_smul' := by
+          intros r d
+          rw [← Function.update_smul]
+          simp only [map_smul, Algebra.mul_smul_comm, Algebra.smul_mul_assoc, RingHom.id_apply,
+            smul_zero] }
+    map_add' := by
+      intros
+      ext
+      simp only [LinearMap.lsum_apply, LinearMap.coe_comp, LinearMap.coeFn_sum, LinearMap.coe_mk,
+        AddHom.coe_mk, LinearMap.coe_proj, LinearMap.coe_single, Function.comp_apply,
+        Finset.sum_apply, Function.eval, LinearMap.add_apply, Pi.add_apply]
+      rw [← Finset.sum_add_distrib]
+      refine Finset.sum_congr rfl fun τ' _ => ?_
+      simp only [Function.update_apply, Pi.zero_apply]
+      split_ifs
+      · simp [mul_add, add_mul]
+      · simp
+    map_smul' := by
+      intro r c
+      ext
+      simp only [Algebra.smul_mul_assoc, LinearMap.lsum_apply, LinearMap.coe_comp,
+        LinearMap.coeFn_sum, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.coe_proj,
+        LinearMap.coe_single, Function.comp_apply, Finset.sum_apply, Function.eval,
+        RingHom.id_apply, LinearMap.smul_apply, Pi.smul_apply]
+      rw [Finset.smul_sum]
+      refine Finset.sum_congr rfl fun τ' _ => ?_
+      simp only [Function.update_apply, Pi.zero_apply, smul_ite, smul_zero] }
+
+lemma crossProductMul_single_single (c d : K) :
+    crossProductMul a (Pi.single σ c) (Pi.single τ d) =
+    Pi.single (σ * τ) (c * σ d * a (σ, τ)) := by
+  simp only [crossProductMul, LinearMap.lsum_apply, LinearMap.coeFn_sum, LinearMap.coe_comp,
+    LinearMap.coe_mk, AddHom.coe_mk, LinearMap.coe_proj, Finset.sum_apply, Function.comp_apply,
+    Function.eval]
+  rw [← Finset.sum_product']
+  rw [show (Pi.single (σ * τ) (c * σ d * a (σ, τ)) : (K ≃ₐ[F] K) → K) =
+    Function.update (0 : (K ≃ₐ[F] K) → K) ((σ, τ).1 * (σ, τ).2)
+      ((Pi.single σ c : (K ≃ₐ[F] K) → K) (σ, τ).1 *
+      (σ, τ).1 ((Pi.single τ d : (K ≃ₐ[F] K) → K) τ) * a ((σ, τ).1, (σ, τ).2)) by
+    simp only [Pi.single_eq_same]; rfl]
+  apply Finset.sum_eq_single_of_mem (h := by simp)
+  rintro ⟨σ', τ'⟩ - neq
+  simp only [ne_eq, Prod.mk.injEq, not_and] at neq
+  simp only [Function.update_eq_self_iff, Pi.zero_apply, mul_eq_zero, AddEquivClass.map_eq_zero_iff,
+    Units.ne_zero, or_false, Pi.single_apply]
+  split_ifs <;> aesop
+
+structure crossProduct {a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ} (ha : IsMulTwoCocycle a) where
+  (val : (K ≃ₐ[F] K) → K)
+
+instance : _root_.Mul (crossProduct ha) where
+  mul x y := ⟨crossProductMul a x.val y.val⟩
+
+instance : One (crossProduct ha) where
+  one := ⟨(fun _ => 1 : (K ≃ₐ[F] K) → K)⟩
+
+-- instance : Monoid (crossProduct ha) where
+--   mul_assoc := _
+--   one := _
+--   one_mul := _
+--   mul_one := _
 
 end galois
 
