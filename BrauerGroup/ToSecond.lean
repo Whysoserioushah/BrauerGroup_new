@@ -247,24 +247,24 @@ lemma conjFactorCompCoeff_comp_comp
   simpa using conjFactorCompCoeff_comp_comp₃ xρ xσ xτ xρσ xστ xρστ
 
 variable (A) in
-def toTwoCocycles : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
+def toTwoCocycles (x_ : Π σ, A.conjFactor σ) : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
 fun p =>
   conjFactorCompCoeffAsUnit
-    (A.aribitaryConjFactor p.1)
-    (A.aribitaryConjFactor p.2)
-    (A.aribitaryConjFactor <| p.1 * p.2)
+    (x_ p.1)
+    (x_ p.2)
+    (x_ <| p.1 * p.2)
 
 variable (ρ σ τ) in
-lemma toTwoCocycles_cond :
-    ρ (A.toTwoCocycles (σ, τ)).1 * A.toTwoCocycles (ρ, σ * τ) =
-    A.toTwoCocycles (ρ, σ) * A.toTwoCocycles (ρ * σ, τ) := by
+lemma toTwoCocycles_cond (x_ : Π σ, A.conjFactor σ) :
+    ρ (A.toTwoCocycles x_ (σ, τ)).1 * A.toTwoCocycles x_ (ρ, σ * τ) =
+    A.toTwoCocycles x_ (ρ, σ) * A.toTwoCocycles x_ (ρ * σ, τ) := by
   delta toTwoCocycles
   dsimp only [conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
   rw [conjFactorCompCoeff_comp_comp]
   rfl
 
-lemma isTwoCocyles :
-    groupCohomology.IsMulTwoCocycle A.toTwoCocycles := by
+lemma isTwoCocyles (x_ : Π σ, A.conjFactor σ) :
+    groupCohomology.IsMulTwoCocycle (A.toTwoCocycles x_) := by
   intro ρ σ τ
   ext : 1
   simp only [Units.val_mul]
@@ -432,35 +432,35 @@ lemma compare_conjFactorCompCoeff
 def trivialFactorSet (c : (K ≃ₐ[F] K) → Kˣ) : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
 fun p => c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
 
-lemma compare_toTwoCocycles :
-    B.toTwoCocycles (σ, τ) *
-    A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor (σ * τ)) (B.aribitaryConjFactor (σ * τ)) =
-    A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor σ) (B.aribitaryConjFactor σ) *
-    Units.map σ (A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor τ) (B.aribitaryConjFactor τ)) *
-    A.toTwoCocycles (σ, τ) := by
+lemma compare_toTwoCocycles (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFactor σ) :
+    B.toTwoCocycles y_ (σ, τ) *
+    A.pushConjFactorCoeffAsUnit B (x_ (σ * τ)) (y_ (σ * τ)) =
+    A.pushConjFactorCoeffAsUnit B (x_ σ) (y_ σ) *
+    Units.map σ (A.pushConjFactorCoeffAsUnit B (x_ τ) (y_ τ)) *
+    A.toTwoCocycles x_ (σ, τ) := by
   delta toTwoCocycles
   dsimp only
   have := A.compare_conjFactorCompCoeff B
-    (A.aribitaryConjFactor σ) (B.aribitaryConjFactor σ)
-    (A.aribitaryConjFactor τ) (B.aribitaryConjFactor τ)
-    (A.aribitaryConjFactor _) (B.aribitaryConjFactor _)
+    (x_ σ) (y_ σ)
+    (x_ τ) (y_ τ)
+    (x_ _) (y_ _)
   simp only [← _root_.mul_assoc] at this
   ext : 1
   dsimp
   rw [this]
 
-lemma compare_toTwoCocycles' :
-    groupCohomology.IsMulTwoCoboundary (B.toTwoCocycles / A.toTwoCocycles) := by
+lemma compare_toTwoCocycles' (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFactor σ) :
+    groupCohomology.IsMulTwoCoboundary (B.toTwoCocycles y_ / A.toTwoCocycles x_) := by
   fconstructor
   · refine fun σ =>
-      A.pushConjFactorCoeffAsUnit B (A.aribitaryConjFactor σ) (B.aribitaryConjFactor σ)
+      A.pushConjFactorCoeffAsUnit B (x_ σ) (y_ σ)
   intro σ τ
   dsimp
   symm
   rw [div_eq_iff_eq_mul, div_eq_mul_inv, mul_comm (Units.map _ _)]
   simp only [_root_.mul_assoc]
   symm
-  rw [inv_mul_eq_iff_eq_mul, mul_comm _ (B.toTwoCocycles _)]
+  rw [inv_mul_eq_iff_eq_mul, mul_comm _ (B.toTwoCocycles y_ _)]
   symm
   erw [compare_toTwoCocycles]
   simp only [← _root_.mul_assoc]
@@ -502,17 +502,19 @@ namespace GoodRep
 
 variable {X : BrGroup (K := F)} (A : GoodRep K X)
 
-def toH2 : groupCohomology.H2 (galAct F K) :=
-Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles) A.isTwoCocyles
+def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
+Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles x_)
+  (A.isTwoCocyles x_)
 
 
 end GoodRep
 
 def RelativeBrGroup.toSnd :  RelativeBrGroup K F → groupCohomology.H2 (galAct F K) :=
-  fun X => (goodRep X).toH2
+  fun X => (goodRep X).toH2 (goodRep X).aribitaryConjFactor
 
-lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F) (A : GoodRep K X.1) :
-    toSnd X = A.toH2 := by
+lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
+    (A : GoodRep K X.1) (x_ : Π σ, A.conjFactor σ) :
+    toSnd X = A.toH2 x_ := by
   erw [Submodule.Quotient.eq]
   set lhs := _; change lhs ∈ _
   have : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (lhs.1) := by
