@@ -6,8 +6,6 @@ import BrauerGroup.Subfield.Subfield
 
 suppress_compilation
 
-#check groupCohomology.H2
-
 open FiniteDimensional BrauerGroup
 
 variable {F K : Type} [Field K] [Field F] [Algebra F K]
@@ -18,10 +16,9 @@ structure GoodRep where
 carrier : CSA.{0, 0} F
 quot_eq : (Quotient.mk'' carrier) = X
 ι : K →ₐ[F] carrier
-dim_eq : finrank F carrier = (finrank F K) ^ 2
+dim_eq_square : finrank F carrier = (finrank F K) ^ 2
 
 namespace GoodRep
-
 
 variable {X : BrGroup (K := F)} (A B : GoodRep K X)
 
@@ -56,7 +53,35 @@ lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := b
   apply cor_two_3to1
   apply cor_two_2to3
   change finrank F A = finrank F A.ι.range * finrank F A.ι.range
-  rw [A.dim_eq, pow_two, LinearEquiv.finrank_eq (f := A.ιRange.toLinearEquiv.symm)]
+  rw [A.dim_eq_square, pow_two, LinearEquiv.finrank_eq (f := A.ιRange.toLinearEquiv.symm)]
+
+instance : Module K A where
+  smul c a := A.ι c * a
+  one_smul a := show A.ι 1 * a = a by simp
+  mul_smul c c' x := show A.ι (c * c') * x = _ * (_ * _) by simp [_root_.mul_assoc]
+  smul_zero c := show A.ι c * 0 = 0 by simp
+  smul_add c x y := show A.ι c * (x + y) = _ * _ + _ * _ by simp [_root_.mul_add]
+  add_smul c c' x := show A.ι (c + c') * x = _ * _ + _ * _ by simp [_root_.add_mul]
+  zero_smul x := show A.ι 0 * x = 0 by simp
+
+@[simp]
+lemma smul_def (c : K) (a : A) : c • a = A.ι c * a := rfl
+
+instance : FiniteDimensional F A := A.carrier.fin_dim
+
+instance : IsScalarTower F K A where
+  smul_assoc a b c := by simp
+
+instance : FiniteDimensional K A := FiniteDimensional.right F K A
+
+lemma dim_eq' [FiniteDimensional F K] : finrank K A = finrank F K := by
+  have : finrank F A = finrank F K * finrank K A :=
+    Eq.symm (finrank_mul_finrank F K A.carrier.carrier)
+  rw [A.dim_eq_square, pow_two] at this
+  simp only [mul_eq_mul_left_iff] at this
+  refine this.recOn Eq.symm fun rid => ?_
+  have : 0 < finrank F K := finrank_pos
+  omega
 
 end basic
 
@@ -291,9 +316,9 @@ lemma exists_iso :
       (Quotient.eq''.1 (A.quot_eq.trans B.quot_eq.symm))
   have eq1 := isoA.toLinearEquiv.finrank_eq
   have eq2 := isoB.toLinearEquiv.finrank_eq
-  simp only [A.dim_eq, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin m)).toLinearEquiv,
+  simp only [A.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin m)).toLinearEquiv,
     finrank_tensorProduct, finrank_matrix, Fintype.card_fin] at eq1
-  simp only [B.dim_eq, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin n)).toLinearEquiv,
+  simp only [B.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin n)).toLinearEquiv,
     finrank_tensorProduct, finrank_matrix, Fintype.card_fin] at eq2
   have eq3 := eq1.symm.trans eq2
   haveI : FiniteDimensional F (Matrix (Fin m) (Fin m) D) :=
@@ -523,3 +548,137 @@ lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
     apply GoodRep.compare_toTwoCocycles'
 
   exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
+
+namespace GoodRep
+
+section galois
+
+variable [IsGalois F K]
+
+variable {X : BrGroup (K := F)} (A : GoodRep K X)
+
+lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
+    LinearIndependent K (v := fun (i : K ≃ₐ[F] K) => (x_ i).1.1) := by
+  classical
+  by_contra! rid
+  obtain ⟨J, LI, maximal⟩ := exists_maximal_independent K (fun (i : K ≃ₐ[F] K) => (x_ i).1.1)
+  have ne : J ≠ Set.univ := by
+    rintro rfl
+    refine rid ?_
+    let e : (Set.univ : Set (K ≃ₐ[F] K)) ≃ (K ≃ₐ[F] K) := Equiv.Set.univ (K ≃ₐ[F] K)
+    have := linearIndependent_equiv e.symm |>.2 LI
+    exact this
+  rw [Set.ne_univ_iff_exists_not_mem] at ne
+  obtain ⟨σ, hσ⟩ := ne
+
+  obtain ⟨c, c_ne_zero, hc⟩ := maximal σ hσ
+  let B := Basis.span LI
+    -- Basis.mk LI _
+  replace hc := Submodule.smul_mem _ c⁻¹ hc
+  rw [← mul_smul, inv_mul_cancel₀ c_ne_zero, one_smul] at hc
+  clear c c_ne_zero
+  have mem1 : (x_ σ).1.1 ∈ Submodule.span K (Set.range fun (σ : J) ↦ (x_ σ.1).1.1) := by
+    convert hc; aesop
+  have eq0 : (⟨(x_ σ).1.1, mem1⟩ : Submodule.span K (Set.range fun (σ : J) ↦ (x_ σ.1).1.1)) =
+      ∑ τ ∈ (B.repr ⟨_, mem1⟩).support, B.repr ⟨_, mem1⟩ τ • (x_ τ).1.1 := by
+    conv_lhs => rw [← B.linearCombination_repr ⟨(x_ σ).1.1, mem1⟩, Finsupp.linearCombination_apply,
+      Finsupp.sum]
+    rw [AddSubmonoidClass.coe_finset_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    simp only [SetLike.val_smul, smul_def]
+    congr 1
+    simp only [B, Basis.span_apply]
+
+  simp only [Submodule.coeSubtype, map_sum, map_smul, smul_def] at eq0
+
+  -- #exit
+  -- obtain ⟨s, s_supp, s_eq⟩ := hc
+  -- simp only [Finsupp.sum, smul_def] at s_eq
+  -- have s_supp' := s_supp
+  -- choose τ τ_mem hτ using s_supp
+  -- replace hc : (x_ σ).1.1 = ∑ i in s.support.attach, A.ι (s i) * (x_ (τ i.2)).1.1 := by
+  --   rw [← Finset.sum_attach] at s_eq
+  --   refine s_eq ▸ Finset.sum_congr rfl fun i _ => ?_
+  --   simp [hτ i.2]
+
+  -- haveI : Fintype (K ≃ₐ[F] K) := inferInstance
+  -- haveI : Finite J := Subtype.finite
+  -- haveI : Fintype J := Set.Finite.fintype this
+
+  -- have eq0 : (x_ σ).1.1 = ∑ i ∈ J, _ := sorry
+
+  -- replace hc : (x_ σ).1.1 = ∑ τ ∈ J, A.ι _ := sorry
+  have eq1 (c : K) := calc A.ι (σ c) * (x_ σ).1.1
+      _ = (x_ σ).1.1 * A.ι c := by
+        rw [(x_ σ).2 c]; simp [_root_.mul_assoc]
+      _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+            A.ι (B.repr ⟨_, mem1⟩ τ) * (x_ τ).1.1 * A.ι c := by
+        conv_lhs => rw [eq0, Finset.sum_mul]
+
+      _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+            A.ι (B.repr ⟨_, mem1⟩ τ) * A.ι (τ.1 c) * (x_ τ).1.1 :=
+        Finset.sum_congr rfl fun i hi => by
+        simp only [_root_.mul_assoc]
+        congr 1
+        rw [(x_ i).2 c]
+        simp [_root_.mul_assoc, Units.inv_mul, _root_.mul_one]
+      _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+            A.ι (B.repr ⟨_, mem1⟩ τ * τ.1 c) * (x_ τ).1.1 :=
+        Finset.sum_congr rfl fun i _ => by rw [map_mul]
+  have eq2 (c : K) := calc A.ι (σ c) * (x_ σ).1.1
+      _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+          A.ι (σ c * (B.repr ⟨_, mem1⟩) τ) * (x_ τ).1.1 := by
+        conv_lhs => rw [eq0, Finset.mul_sum]
+        simp_rw [map_mul, _root_.mul_assoc]
+  have eq3 (c : K) :
+      ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+            A.ι (B.repr ⟨_, mem1⟩ τ * τ.1 c) * (x_ τ).1.1 =
+      ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+          A.ι (σ c * (B.repr ⟨_, mem1⟩) τ) * (x_ τ).1.1 :=
+    eq1 c |>.symm.trans <| eq2 c
+  have eq4 (c : K) :
+      ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+          A.ι (B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ) * (x_ τ).1.1 = 0 := by
+    simp only [map_sub, map_mul, sub_mul, Finset.sum_sub_distrib]
+    simp only [← map_mul, eq3, sub_self]
+
+  have eq5 (c : K) :
+      ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+          (B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ) • (x_ τ).1.1 = 0 := by
+    rw [← eq4]
+    rfl
+
+
+  have eq6 (c : K) := linearIndependent_iff'' |>.1 LI (B.repr ⟨_, mem1⟩).support
+    (fun τ => B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ)
+    (by
+      intro i hi
+      simp only [Finsupp.mem_support_iff, ne_eq, Decidable.not_not] at hi
+      simp only [hi, zero_mul, mul_zero, sub_self]) (eq5 c)
+  simp only [sub_eq_zero, Subtype.forall] at eq6
+  have : (B.repr ⟨_, mem1⟩).support ≠ ∅ := by
+    intro rid
+    simp only [rid, Finset.sum_empty, Units.ne_zero] at eq0
+  obtain ⟨τ, τ_mem⟩ := Finset.nonempty_of_ne_empty this
+  have eq7 : σ = τ := by
+    ext c
+    specialize eq6 c τ τ.2
+    rw [mul_comm] at eq6
+    simp only [Subtype.coe_eta, mul_eq_mul_right_iff] at eq6
+    refine eq6.recOn Eq.symm fun rid => ?_
+    simp only [Finsupp.mem_support_iff, ne_eq] at τ_mem
+    contradiction
+
+  subst eq7
+  exact hσ τ.2
+
+
+def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis (K ≃ₐ[F] K) K A :=
+  basisOfLinearIndependentOfCardEqFinrank
+    (b := fun (i : K ≃ₐ[F] K) => (x_ i).1.1)
+    (A.conjFactor_linearIndependent x_)
+    (by rw [A.dim_eq', IsGalois.card_aut_eq_finrank])
+
+end galois
+
+end GoodRep
