@@ -1077,6 +1077,200 @@ def ι : K →ₐ[F] CrossProduct ha where
     congr 1
     rw [Algebra.smul_def]
 
+@[simp]
+lemma ι_apply_val (b : K) :
+    (ι ha b).val = Pi.single 1 (b * (a (1, 1))⁻¹) := rfl
+
+include ha in
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+@[simp] lemma a_one_left : a (1, σ) = a 1 := by
+  have := ha 1 1 σ
+  simp only [_root_.mul_one, Prod.mk_one_one, one_smul, _root_.one_mul, mul_right_inj] at this
+  exact this.symm
+
+include ha in
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+lemma a_one_right : a (σ, 1) = Units.map σ (a 1) := by
+  have := ha σ 1 1
+  simp only [_root_.mul_one, Prod.mk_one_one, AlgEquiv.smul_units_def, mul_left_inj] at this
+  exact this
+
+include ha in
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+lemma a_one_right' : (a (σ, 1)).1 = σ (a 1) := congr($(a_one_right ha σ).1)
+
+lemma identity_double_dagger (b : K) :
+    ι ha b * ⟨Pi.single σ 1⟩ = ⟨Pi.single σ b⟩ := by
+  ext α
+  simp only [mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
+    crossProductMul_single_single, AlgEquiv.one_apply, _root_.mul_one]
+  rw [_root_.one_mul]
+  congr 1
+  rw [a_one_left ha]
+  simp
+
+
+@[simps]
+def Units.ofLeftRightInverse (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) (h' : c * a = 1) : Gˣ where
+  val := a
+  inv := b
+  val_inv := h
+  inv_val := by
+    suffices b = c by
+      subst this
+      exact h'
+    calc b
+      _ = 1 * b := by rw [_root_.one_mul]
+      _ = (c * a) * b := by rw [← h']
+      _ = c * (a * b) := by rw [_root_.mul_assoc]
+      _ = c * 1 := by rw [h]
+      _ = c := by rw [_root_.mul_one]
+
+lemma Units.ofLeftRightInverse_inv_eq1 (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) (h' : c * a = 1) :
+    (Units.ofLeftRightInverse G a b c h h').inv = b := rfl
+
+lemma Units.ofLeftRightInverse_inv_eq2 (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) (h' : c * a = 1) :
+    (Units.ofLeftRightInverse G a b c h h').inv = c := by
+  suffices b = c by
+    subst this
+    rw [ofLeftRightInverse_inv_eq1]
+  calc b
+      _ = 1 * b := by rw [_root_.one_mul]
+      _ = (c * a) * b := by rw [← h']
+      _ = c * (a * b) := by rw [_root_.mul_assoc]
+      _ = c * 1 := by rw [h]
+      _ = c := by rw [_root_.mul_one]
+
+def x_ (σ : K ≃ₐ[F] K) : (CrossProduct ha)ˣ :=
+  Units.ofLeftRightInverse (CrossProduct ha) ⟨Pi.single σ 1⟩
+    ⟨Pi.single σ⁻¹ ((σ⁻¹ ((a (σ, σ⁻¹))⁻¹ * (a 1)⁻¹)))⟩
+    ⟨Pi.single σ⁻¹ ((a (σ⁻¹, σ))⁻¹ * (a 1)⁻¹)⟩
+    (by
+      let x_σ : (CrossProduct ha) := ⟨Pi.single σ 1⟩
+      have eq1 (b : K) := calc x_σ * ⟨Pi.single σ⁻¹ b⟩
+          _ = ⟨Pi.single σ 1⟩ * ⟨Pi.single σ⁻¹ b⟩ := rfl
+          _ = ⟨Pi.single 1 (σ b * a (σ, σ⁻¹))⟩ := by
+              ext α
+              simp only [mul_val, crossProductMul_single_single, _root_.one_mul]
+              rw [mul_inv_cancel]
+      specialize eq1 (σ⁻¹ ((a (σ, σ⁻¹))⁻¹ * (a 1)⁻¹))
+      conv_rhs at eq1 => erw [Equiv.apply_symm_apply]
+      conv_rhs at eq1 => rw [mul_comm _ (a 1)⁻¹.1, _root_.mul_assoc]
+
+      convert eq1 using 1
+      ext α
+      simp only [mul_val, crossProductMul_single_single, map_one, _root_.mul_one, _root_.one_mul,
+        map_mul, map_inv₀]
+      simp)
+    (by
+      let x_σ : (CrossProduct ha) := ⟨Pi.single σ 1⟩
+      have eq2 (b : K) := calc  ⟨Pi.single σ⁻¹ b⟩ * x_σ
+          _ = ⟨Pi.single 1 (b * a (σ⁻¹, σ))⟩ := by
+              ext α
+              simp only [mul_val, crossProductMul_single_single, _root_.one_mul, map_one,
+                _root_.mul_one]
+              rw [inv_mul_cancel]
+      specialize eq2  ((a 1)⁻¹ * (a (σ⁻¹, σ))⁻¹)
+      simp only [Units.val_inv_eq_inv_val, isUnit_iff_ne_zero, ne_eq, Units.ne_zero,
+        not_false_eq_true, IsUnit.inv_mul_cancel_right] at eq2
+      change _ = 1 at eq2
+      rw [← eq2]
+      congr! 3
+      rw [mul_comm]
+      simp only [Units.val_inv_eq_inv_val])
+
+@[simp]
+lemma x__val (σ : K ≃ₐ[F] K) :
+    (x_ ha σ).val.val = Pi.single σ 1 := rfl
+
+lemma x__inv (σ : K ≃ₐ[F] K) :
+    (x_ ha σ).inv.val = Pi.single σ⁻¹ ((σ⁻¹ ((a (σ, σ⁻¹))⁻¹ * (a 1)⁻¹)) : K) := rfl
+
+lemma x__inv' (σ : K ≃ₐ[F] K) :
+    (x_ ha σ).inv.1 = Pi.single σ⁻¹ ((a (σ⁻¹, σ))⁻¹ * (a 1)⁻¹) := by
+  delta x_
+  rw [Units.ofLeftRightInverse_inv_eq2]
+  simp
+
+lemma x__mul : x_ ha σ * x_ ha τ = ι ha (a (σ, τ)) * x_ ha (σ * τ) := by
+  ext α
+  simp only [mul_val, x__val, crossProductMul_single_single, ι_apply_val, Prod.mk_one_one,
+    Units.val_inv_eq_inv_val, AlgEquiv.one_apply]
+  rw [_root_.one_mul]
+  congr 1
+  simp only [map_one, _root_.one_mul, _root_.mul_one]
+  rw [a_one_left ha]
+  simp
+
+lemma x__conj (c : K) : x_ ha σ * ι ha c * (x_ ha σ)⁻¹ = ι ha (σ c) := by
+  have eq1 :=
+    calc (x_ ha σ) * (ι ha) c
+    _ = ⟨Pi.single σ (σ (c * (a (1, 1))⁻¹) * (a (σ, 1)))⟩ := val_injective ha <| by
+        simp
+    _ = ⟨Pi.single σ (σ c)⟩ := val_injective ha <| by
+        simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, map_mul, map_inv₀, Pi.single_inj]
+        rw [a_one_right' ha σ]
+        simp
+  rw [eq1]
+  rw [← identity_double_dagger ha σ (σ c)]
+  rw [_root_.mul_assoc]
+  change _ * ((x_ ha σ).1 * _) = _
+  simp
+
+instance : Module K (CrossProduct ha) where
+  smul c x := ι ha c * x
+  one_smul := by intros; show _ * _ = _; simp
+  mul_smul := by intros; show _ * _ = _ * (_ * _); simp [_root_.mul_assoc]
+  smul_zero := by intros; show _ * _ = _; simp
+  smul_add := by intros; show _ * _ = _ * _ + _ * _; simp [mul_add]
+  add_smul := by intros; show _ * _ = _ * _ + _ * _; simp [add_mul]
+  zero_smul := by intros; show _ * _ = _; simp
+
+lemma smul_def (c : K) (x : CrossProduct ha) :
+    c • x = ι ha c * x := rfl
+
+def x_AsBasis : Basis (K ≃ₐ[F] K) K (CrossProduct ha) :=
+.mk (v := fun σ => (x_ ha σ).1)
+  (by
+    rw [linearIndependent_iff']
+    intro J f hf σ hσ
+    replace hf : ∑ i ∈ J, ι ha (f i) * (x_ ha i).val = (0 : CrossProduct ha) := hf
+    replace hf : ∑ i ∈ J, ⟨Pi.single i (f i)⟩ = (0 : CrossProduct ha) := by
+      rw [← hf]
+      exact Finset.sum_congr rfl fun i hi => identity_double_dagger ha i (f i) |>.symm
+    apply_fun valAddMonoidHom ha at hf
+    replace hf := congr_fun hf σ
+    simp only [map_sum, Finset.sum_apply, map_zero, Pi.zero_apply] at hf
+    simp only [valAddMonoidHom_apply, Finset.sum_pi_single, ite_eq_else] at hf
+    exact hf hσ)
+  (by
+    rintro x -
+    induction x using single_induction ha with
+    | single x cx =>
+      have eq : (⟨Pi.single x cx⟩ : CrossProduct ha) = cx • ⟨Pi.single x 1⟩ := by
+        change _ = ι ha _ * _
+        rw [identity_double_dagger]
+      rw [eq]
+      refine Submodule.smul_mem _ _ <| Submodule.subset_span ⟨x, rfl⟩
+    | add x x' hx hx' =>
+      exact Submodule.add_mem _ hx hx'
+    | zero =>
+      exact Submodule.zero_mem _)
+
+instance : IsScalarTower F K (CrossProduct ha) where
+  smul_assoc := by
+    intros x y z
+    change ι ha (x • y) * z = x • (_ * _)
+    ext α
+    simp only [map_smul, Algebra.smul_mul_assoc, smul_val, mul_val, ι_apply_val, Prod.mk_one_one,
+      Units.val_inv_eq_inv_val]
+
+lemma dim_eq_square [IsGalois F K] : finrank F (CrossProduct ha) = (finrank F K)^2 := by
+  have eq1 : finrank F (CrossProduct ha) = finrank F K * finrank K (CrossProduct ha) := by
+    rw [finrank_mul_finrank]
+  rw [finrank_eq_card_basis (x_AsBasis ha), IsGalois.card_aut_eq_finrank] at eq1
+  rw [eq1, pow_two]
+
 end CrossProduct
 
 end galois
