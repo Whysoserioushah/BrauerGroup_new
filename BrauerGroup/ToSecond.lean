@@ -1217,7 +1217,7 @@ lemma x__conj (c : K) : x_ ha σ * ι ha c * (x_ ha σ)⁻¹ = ι ha (σ c) := b
   change _ * ((x_ ha σ).1 * _) = _
   simp
 
-instance : Module K (CrossProduct ha) where
+instance module : Module K (CrossProduct ha) where
   smul c x := ι ha c * x
   one_smul := by intros; show _ * _ = _; simp
   mul_smul := by intros; show _ * _ = _ * (_ * _); simp [_root_.mul_assoc]
