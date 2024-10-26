@@ -1271,6 +1271,7 @@ lemma dim_eq_square [IsGalois F K] : finrank F (CrossProduct ha) = (finrank F K)
   rw [finrank_eq_card_basis (x_AsBasis ha), IsGalois.card_aut_eq_finrank] at eq1
   rw [eq1, pow_two]
 
+
 end CrossProduct
 
 end galois
