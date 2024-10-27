@@ -1289,7 +1289,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
   rintro z hz
   rw [Subalgebra.mem_center_iff] at hz
   set s : (K ≃ₐ[F] K) → K :=
-    fun σ => if σ ∈ ((x_AsBasis ha).repr z).support then (x_AsBasis ha).repr z σ else 0 with hs
+    fun σ => if σ ∈ ((x_AsBasis ha).repr z).support then (x_AsBasis ha).repr z σ else 0
 
   have eq1 : z = ∑ σ : K ≃ₐ[F] K, s σ • ⟨Pi.single σ 1⟩ := by
     conv_lhs => rw [← (x_AsBasis ha).linearCombination_repr z, Finsupp.linearCombination_apply,
@@ -1299,7 +1299,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
       simp only [Finset.mem_sdiff, Finset.mem_univ, Finsupp.mem_support_iff, ne_eq, not_not,
         true_and, Finsupp.sum_ite_self_eq_aux, smul_eq_zero, s] at hx ⊢
       exact Or.inl hx
-    intro x hx
+    intro x _
     simp only [x_AsBasis_apply, Finsupp.mem_support_iff, ne_eq, Finsupp.sum_ite_self_eq_aux, s]
   have eq1' (τ : K ≃ₐ[F] K) : z = ∑ σ, s (τ⁻¹ * σ * τ) • ⟨Pi.single (τ⁻¹ * σ * τ) 1⟩ := by
     rw [eq1]
@@ -1319,7 +1319,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
   have eq3 (d : K) (τ : K ≃ₐ[F] K) : z * ⟨Pi.single τ d⟩ =
       ∑ σ, (s σ * (σ d) * a (σ, τ)) • ⟨Pi.single (σ * τ) 1⟩ := by
     rw [eq1, Finset.sum_mul]
-    refine Finset.sum_congr rfl fun σ hσ => ?_
+    refine Finset.sum_congr rfl fun σ _ => ?_
     simp only [x_AsBasis_apply, smul_def, _root_.mul_assoc]
     apply val_injective ha
     simp only [mul_val, crossProductMul_single_single, _root_.one_mul, ι_apply_val, Prod.mk_one_one,
@@ -1331,7 +1331,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
   have eq4 (d : K) (τ : K ≃ₐ[F] K) : ⟨Pi.single τ d⟩ * z =
       ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • ⟨Pi.single (σ * τ) 1⟩ := by
     rw [eq1' τ, Finset.mul_sum]
-    refine Finset.sum_congr rfl fun σ hσ => ?_
+    refine Finset.sum_congr rfl fun σ _ => ?_
     rw [smul_def, smul_def]
     apply val_injective
     simp only [← _root_.mul_assoc, mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
