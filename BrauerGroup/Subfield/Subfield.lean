@@ -276,7 +276,7 @@ abbrev A := {KK : SubField K D | ∃ (_ : Fact <| Subalgebra.center K D ≤ KK.1
   Algebra.IsSeparable (Subalgebra.center K D) KK}
 
 abbrev centerSubfield : SubField K D := ⟨Subalgebra.center K D,
-  fun x y hx hy ↦ hx.comm y,
+  fun x y hx _ ↦ hx.comm y,
   fun x hx hx0 ↦ by
     obtain ⟨⟨y, hy'⟩, hy⟩ := center_of_divring K D|>.3 (a := ⟨x, hx⟩) $ Subtype.coe_ne_coe.1 hx0
     exact ⟨y, hy', (Submonoid.mk_eq_one (Subalgebra.center K D).toSubmonoid).mp hy⟩⟩
@@ -315,11 +315,10 @@ instance : Nonempty (A K D) := ⟨centerSubfield K D, inferInstance,
 
 omit [IsCentralSimple K D] in
 lemma A_has_maximal : ∃ (M : SubField K D), M ∈ A K D ∧ ∀ N ∈ A K D, M ≤ N → M = N := by
-  classical
   obtain ⟨_, ⟨⟨M, hM1, rfl⟩, hM2⟩⟩ := set_has_maximal_iff_noetherian (R := K) (M := D) |>.2
     inferInstance (Subalgebra.toSubmodule ∘ SubField.toSubalgebra '' A K D)
-    (by simpa only [Function.comp_apply, Set.image_nonempty] using Set.nonempty_of_nonempty_subtype)
-
+    (by simpa only [Function.comp_apply, Set.image_nonempty] using
+      Set.nonempty_of_nonempty_subtype)
   refine ⟨M, hM1, fun N hN  hMN => ?_⟩
   specialize hM2 (Subalgebra.toSubmodule N.1) ⟨N, hN, rfl⟩
   rw [le_iff_lt_or_eq] at hMN
@@ -330,12 +329,27 @@ theorem maxsubfield_is_sep : ∃ a : D, Algebra.IsSeparable K (maxSubfieldOfDiv 
   obtain ⟨M, ⟨LE, hM1⟩, hM2⟩ := A_has_maximal K D
   let CM := Subalgebra.centralizer K (M : Set D)
   letI : DivisionRing CM :=
-  { inv := fun x => ⟨x.1⁻¹, sorry⟩
-    mul_inv_cancel := sorry
+  { inv := fun ⟨x, hx⟩ => ⟨x⁻¹, by
+      rw [Subalgebra.mem_centralizer_iff] at *
+      intro m hm
+      if hxx : x = 0 then subst hxx; simp only [inv_zero, mul_zero, zero_mul] else
+      apply_fun (x * · * x) using fun y1 y2 h12 ↦ by
+        simp only [mul_eq_mul_right_iff, mul_eq_mul_left_iff, hxx, or_false] at h12
+        exact h12
+      simp only
+      rw [mul_assoc, mul_assoc, inv_mul_cancel₀ hxx, mul_one, ← mul_assoc,
+        mul_inv_cancel₀ hxx, one_mul, hx]; exact hm⟩
+    mul_inv_cancel := fun ⟨m, hm⟩ hm' ↦ by
+      have := Subtype.coe_ne_coe.2 hm'
+      simp only [ZeroMemClass.coe_zero, ne_eq] at this
+      simp only [MulMemClass.mk_mul_mk, mul_inv_cancel₀ this]; rfl
     inv_zero := by ext; simp
     nnqsmul := _
     qsmul := _ }
-  have eq : CM = M.1 := sorry
+  have eq : CM = M.1 := by
+    by_contra!
+
+    sorry
   letI : Module M D := Module.compHom D M.val.toRingHom
   haveI : IsScalarTower K M D := by
     constructor
@@ -355,8 +369,8 @@ theorem maxsubfield_is_sep : ∃ a : D, Algebra.IsSeparable K (maxSubfieldOfDiv 
     rw [smul_assoc]
   haveI : FiniteDimensional (Subalgebra.center K D) M :=
     FiniteDimensional.right K (Subalgebra.center K D) M
-  obtain ⟨a, ha⟩ := Field.exists_primitive_element (Subalgebra.center K D) M
-
+  obtain ⟨⟨a, ha1⟩, hD⟩ := Field.exists_primitive_element (Subalgebra.center K D) M
+  use a
 
   sorry
 
