@@ -22,23 +22,23 @@ namespace PrimitiveIdempotents
 
 variable (he : PrimitiveIdempotents R e)
 
-variable {R e} in
-include he in
-lemma ne_sum_ortho (I : Type u) [DecidableEq I] [Fintype I]
-    (e' : I → R) (ho : OrthogonalIdempotents (R := R) e')
-    (_ : ∀ i, e' i ≠ 0) (i j : I) :
-    e ≠ e' i + e' j := by
-  have : e ≠ 0 := he.ne_zero
-  by_cases eq : i = j
-  · subst eq
-    intro rid
-    have eq : e * e = e := he.idem
-    conv_lhs at eq => rw [rid]
-    simp only [mul_add, add_mul] at eq
-    rw [ho.idem i, ← rid] at eq
-    simp only [add_right_eq_self] at eq
-    contradiction
-  · apply he.ne_sum_ortho' <;> assumption
+-- variable {R e} in
+-- include he in
+-- lemma ne_sum_ortho (I : Type u) [DecidableEq I] [Fintype I]
+--     (e' : I → R) (ho : OrthogonalIdempotents (R := R) e')
+--     (_ : ∀ i, e' i ≠ 0) (i j : I) :
+--     e ≠ e' i + e' j := by
+--   have : e ≠ 0 := he.ne_zero
+--   by_cases eq : i = j
+--   · subst eq
+--     intro rid
+--     have eq : e * e = e := he.idem
+--     conv_lhs at eq => rw [rid]
+--     simp only [mul_add, add_mul] at eq
+--     rw [ho.idem i, ← rid] at eq
+--     simp only [add_right_eq_self] at eq
+--     contradiction
+--   · apply he.ne_sum_ortho' <;> assumption
 
 end PrimitiveIdempotents
 

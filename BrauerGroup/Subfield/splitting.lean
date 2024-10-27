@@ -280,6 +280,8 @@ end CSA
 
 section CSA2
 
+section matrix
+variable (K F : Type u) [CommSemiring K] [CommSemiring F] [Algebra F K]
 @[simps!]
 noncomputable abbrev toTensorMatrix_toFun_Flinear (A : Type u) (n : Type*) [Ring A] [Algebra F A]
     [DecidableEq n] [Fintype n] : K ⊗[F] Matrix n n A →ₗ[F] Matrix n n (K ⊗[F] A) :=
@@ -454,6 +456,9 @@ noncomputable def matrixTensorEquivTensor (A : Type u) (n : Type*) [Ring A] [Alg
     [DecidableEq n] [Fintype n] : K ⊗[F] Matrix n n A ≃ₐ[K] Matrix n n (K ⊗[F] A) :=
   {toTensorMatrix K F A n, equivTensor' K F A n with}
 
+end matrix
+
+
 theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSplit F A K) :
     isSplit F B K := by
   obtain ⟨⟨n, m, hn, hm, iso⟩⟩ := hAB
@@ -484,17 +489,8 @@ section DivisionRing
 variable (D : Type u) [DivisionRing D] [Algebra F D] [FiniteDimensional F D]
     [IsCentralSimple F D]
 
-theorem maxOfDivision (L : SubField F D): IsMaximalSubfield F D L ↔ isSplit F D L :=
-  ⟨fun hL ↦ by
-    rw [isSplit_iff_dimension L F ⟨D⟩]
-    refine ⟨⟨D⟩, ⟨rfl, ⟨L.val, by rw [pow_two]; exact dim_max_subfield F D L hL|>.symm ⟩⟩⟩,
-  fun hL ↦ by
-    obtain ⟨B, ⟨hB1, ⟨(ι : L →ₐ[F] B), eq⟩⟩⟩ := isSplit_iff_dimension L F ⟨D⟩|>.1 hL
-    simp only [Quotient.eq''] at hB1
-    obtain ⟨⟨n, m, _, _, iso⟩⟩ := hB1
-    simp only at iso
-
-    sorry
-  ⟩
+theorem maxOfDivision (L : SubField F D) (hL : IsMaximalSubfield F D L): isSplit F D L := by
+  rw [isSplit_iff_dimension L F ⟨D⟩]
+  exact ⟨⟨D⟩, ⟨rfl, ⟨L.val, by rw [pow_two]; exact dim_max_subfield F D L hL|>.symm ⟩⟩⟩
 
 end  DivisionRing
