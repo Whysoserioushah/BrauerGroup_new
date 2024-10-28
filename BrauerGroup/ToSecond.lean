@@ -490,7 +490,7 @@ lemma compare_conjFactorCompCoeff
   simp only [map_mul, eq1]
 
 def trivialFactorSet (c : (K ≃ₐ[F] K) → Kˣ) : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
-fun p => c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
+  fun p => c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
 
 lemma compare_toTwoCocycles (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFactor σ) :
     B.toTwoCocycles y_ (σ, τ) *
@@ -555,7 +555,7 @@ lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrGroup (K := F)) :
     exact ⟨A, eq.symm, i, dim.symm⟩
 
 def RelativeBrGroup.goodRep (X : RelativeBrGroup K F) : GoodRep K X.1 :=
-mem_relativeBrGroup_iff_exists_goodRep X.1 |>.1 X.2 |>.some
+  mem_relativeBrGroup_iff_exists_goodRep X.1 |>.1 X.2 |>.some
 
 open groupCohomology
 
@@ -564,8 +564,8 @@ namespace GoodRep
 variable {X : BrGroup (K := F)} (A : GoodRep K X)
 
 def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
-Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles x_)
-  (A.isTwoCocyles x_)
+  Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles x_)
+    (A.isTwoCocyles x_)
 
 end GoodRep
 
