@@ -169,6 +169,11 @@ lemma conjFactorTwistCoeff_swap (x y : A.conjFactor σ) :
     conjFactorTwistCoeff x y * conjFactorTwistCoeff y x = 1 :=
     conjFactorTwistCoeffAsUnit x y |>.val_inv
 
+lemma conjFactorTwistCoeff_inv (x y : A.conjFactor σ) :
+    conjFactorTwistCoeff x y = (conjFactorTwistCoeff y x)⁻¹ := by
+  apply eq_inv_of_mul_eq_one_left
+  simp
+
 @[simp]
 lemma conjFactorTwistCoeff_swap' (x y : A.conjFactor σ) :
     conjFactorTwistCoeff y x * conjFactorTwistCoeff x y = 1 :=
@@ -219,6 +224,33 @@ lemma conjFactorCompCoeff_spec' (x : A.conjFactor σ) (y : A.conjFactor τ) (z :
   have := conjFactorCompCoeffAsUnit x y z |>.inv_val
   erw [this]
   simp
+
+lemma conjFactorCompCoeff_spec'' (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+    A.ι (conjFactorCompCoeff x y z) = x.1 * y.1 * z.1⁻¹ := by
+  field_simp
+  rw [← A.conjFactorCompCoeff_spec' x y z]
+  simp only [conjFactorCompCoeff, ← _root_.mul_assoc, ← map_mul, conjFactorTwistCoeff_swap, map_one,
+    _root_.one_mul]
+
+lemma conjFactorCompCoeff_inv (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+    A.ι ((conjFactorCompCoeff x y z)⁻¹) = z.1 * (y.1⁻¹ * x.1⁻¹) := by
+  suffices eq : Units.map A.ι (conjFactorCompCoeffAsUnit x y z)⁻¹ = z.1 * (y.1⁻¹ * x.1⁻¹) by
+    rw [Units.ext_iff] at eq
+    simp only [conjFactorCompCoeffAsUnit, Units.inv_mk, Units.coe_map, MonoidHom.coe_coe,
+      AlgEquiv.mul_apply, Units.val_mul] at eq
+    rw [← eq]
+    congr 1
+    symm
+    apply eq_inv_of_mul_eq_one_left
+    simp only [conjFactorCompCoeff, ← map_mul, conjFactorTwistCoeff_swap, map_one]
+  rw [map_inv]
+  rw [inv_eq_iff_mul_eq_one]
+  ext
+  simp only [conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply, Units.val_mul, Units.coe_map,
+    MonoidHom.coe_coe, Units.val_one]
+  rw [conjFactorCompCoeff_spec'']
+  field_simp
+
 
 lemma conjFactorCompCoeff_comp_comp₁
     (xρ : A.conjFactor ρ) (xσ : A.conjFactor σ) (xτ : A.conjFactor τ)
@@ -1282,6 +1314,36 @@ instance : IsScalarTower F K (CrossProduct ha) where
 lemma x_AsBasis_apply (σ : K ≃ₐ[F] K) :
     x_AsBasis ha σ = ⟨Pi.single σ 1⟩ := by simp [x_AsBasis, x_]
 
+lemma one_in_x_AsBasis :
+    (1 : CrossProduct ha) = (a (1, 1))⁻¹ • x_AsBasis ha 1 := by
+  apply val_injective ha
+  erw [smul_def]
+  simp only [one_val, Prod.mk_one_one, Units.val_inv_eq_inv_val, x_AsBasis_apply, mul_val,
+    ι_apply_val, crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
+    isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right]
+
+lemma single_in_xAsBasis (c : K) (σ : K ≃ₐ[F] K) :
+    ⟨Pi.single σ c⟩ = c • x_AsBasis ha σ := by
+  apply val_injective ha
+  simp only [x_AsBasis_apply, smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+    Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply,
+    _root_.mul_one, a_one_left ha, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+    IsUnit.inv_mul_cancel_right]
+
+lemma mul_single_in_xAsBasis (c d : K) (σ τ : K ≃ₐ[F] K) :
+    ⟨Pi.single σ c⟩ * ⟨Pi.single τ d⟩ = (c * σ d * a (σ, τ)) • x_AsBasis ha (σ * τ) := by
+  apply val_injective ha
+  simp only [mul_val, crossProductMul_single_single, x_AsBasis_apply, smul_def, map_mul,
+    ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val, _root_.mul_one, AlgEquiv.one_apply,
+    map_inv₀, _root_.one_mul, a_one_left ha, Pi.single_inj]
+
+  simp only [_root_.mul_assoc]
+  congr 1
+  simp only [← _root_.mul_assoc]
+  simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+    IsUnit.inv_mul_cancel_right]
+  field_simp
+
 lemma dim_eq_square [IsGalois F K] : finrank F (CrossProduct ha) = (finrank F K)^2 := by
   have eq1 : finrank F (CrossProduct ha) = finrank F K * finrank K (CrossProduct ha) := by
     rw [finrank_mul_finrank]
@@ -2047,6 +2109,162 @@ lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
     ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_twoCocycles a)),
       mem_relativeBrGroup_iff_exists_goodRep _ |>.2 ⟨_, rfl, ι _, dim_eq_square _⟩⟩ := by
   rfl
+
+open GoodRep in
+lemma toSnd_fromSnd :
+    toSnd ∘ fromSnd F K = id := by
+  ext a
+  induction a using Quotient.inductionOn' with | h a =>
+  rcases a with ⟨(a : _ → Kˣ), ha'⟩
+  have ha : IsMulTwoCocycle a := isMulTwoCocycle_of_twoCocycles ⟨a, ha'⟩
+  simp only [Function.comp_apply, fromSnd_wd, id_eq]
+  let A : GoodRep K (Quotient.mk'' <| asCSA ha) :=
+    ⟨asCSA ha, rfl, ι ha, dim_eq_square ha⟩
+
+  let y_ : Π σ, A.conjFactor σ := fun σ => ⟨x_ ha σ, fun c => by erw [x__conj ha σ]; rfl⟩
+  rw [toSnd_wd (A := A) (x_ := y_)]
+  let b : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ := A.toTwoCocycles y_
+
+  rw [show A.toH2 y_ = Quotient.mk'' ⟨b, _⟩ by rfl]
+  rw [Quotient.eq'']
+  change (twoCoboundaries (galAct F K)).quotientRel.r _ _
+  rw [Submodule.quotientRel_r_def]
+  suffices H : IsMulTwoCoboundary _ from
+    (twoCoboundariesOfIsMulTwoCoboundary H).2
+  refine ⟨fun _ => 1, ?_⟩
+  intro σ τ
+  simp only [smul_one, div_self', _root_.mul_one, twoCocyclesOfIsMulTwoCocycle, Pi.sub_apply,
+    Function.comp_apply]
+  change _ = _ / _
+  erw [Equiv.symm_apply_apply]
+  simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
+  change _ = _ / a (σ, τ)
+  ext : 1
+  simp only [AlgEquiv.smul_units_def, div_mul_cancel, Units.coe_map, MonoidHom.coe_coe,
+    Units.val_div_eq_div_val]
+  field_simp
+  simp only [AlgEquiv.mul_apply, y_]
+  change _ = A.conjFactorCompCoeff (y_ σ) (y_ τ) (y_ (σ * τ))
+  have := x__mul ha σ τ
+  simp only at this
+  apply_fun CrossProduct.val at this
+  simp only [mul_val, x__val, crossProductMul_single_single, map_one, _root_.mul_one,
+    _root_.one_mul, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgEquiv.one_apply,
+    Pi.single_inj] at this
+  apply_fun A.ι using RingHom.injective _
+  rw [conjFactorCompCoeff_spec'']
+  simp only [x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀, Units.val_ofLeftRightInverse,
+    mul_inv_rev, AlgEquiv.mul_apply, Units.val_inv_ofLeftRightInverse]
+  apply val_injective
+  erw [mul_val, mul_val, ι_apply_val]
+  simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, crossProductMul_single_single, map_one,
+    _root_.mul_one, _root_.one_mul, _root_.mul_assoc, mul_inv_cancel_left, mul_inv_cancel,
+    AlgEquiv.mul_apply, map_mul, map_inv₀, Pi.single_inj, mul_eq_mul_left_iff, Units.ne_zero,
+    or_false]
+  erw [AlgEquiv.apply_symm_apply, AlgEquiv.apply_symm_apply,
+    AlgEquiv.apply_symm_apply, AlgEquiv.apply_symm_apply]
+  field_simp
+
+set_option maxHeartbeats 500000 in
+lemma fromSnd_toSnd :
+    fromSnd F K ∘ toSnd = id := by
+  ext X
+  obtain ⟨A⟩ := mem_relativeBrGroup_iff_exists_goodRep X.1 |>.1 X.2
+  simp only [Function.comp_apply, id_eq, SetLike.coe_eq_coe]
+  rw [toSnd_wd (A := A) (x_ := A.aribitaryConjFactor)]
+  ext : 1
+  conv_rhs => rw [← A.quot_eq]
+  simp only [GoodRep.toH2, fromSnd_wd]
+  rw [Quotient.eq'']
+  apply IsBrauerEquivalent.iso_to_eqv
+  set lhs := _
+  change lhs ≃ₐ[F] A
+  letI : Module K lhs := inferInstanceAs <| Module K (GoodRep.CrossProduct _)
+  let φ0 : lhs ≃ₗ[K] A :=
+    Basis.equiv (x_AsBasis _) (A.conjFactorBasis (A.aribitaryConjFactor)) (Equiv.refl _)
+  haveI : LinearMap.CompatibleSMul lhs A.carrier.carrier F K := by
+    constructor
+    have eq (c : F) (a : A) : c • a = algebraMap F K c • a := by
+      simp only [algebraMap_smul]
+    have eq' (c : F) (a : lhs) : c • a = algebraMap F K c • a := by
+      induction a using GoodRep.CrossProduct.single_induction with
+      | single σ a =>
+        simp only [Algebra.smul_def]
+        rw [GoodRep.CrossProduct.smul_def]
+        congr 1
+        delta ι
+        simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]
+        rw [Algebra.algebraMap_eq_smul_one]
+      | add x y hx hy =>
+        change c • (x + y) = _ • (x + y)
+        rw [smul_add, smul_add, hx, hy]
+      | zero =>
+        change c • 0 = _ • 0
+        simp
+
+    intro l c a
+    rw [eq, eq', map_smul]
+  let φ1 : lhs ≃ₗ[F] A := φ0.restrictScalars F
+  refine AlgEquiv.ofLinearEquiv φ1 ?_ ?_
+  · change φ0 1 = 1
+    rw [one_in_x_AsBasis]
+    change φ0 ((_ : K) • _) = _
+    rw [map_smul]
+    simp only [LinearEquiv.restrictScalars_apply, φ1, φ0]
+    erw [Basis.equiv_apply]
+    simp only [Prod.mk_one_one, Function.comp_apply, Units.val_inv_eq_inv_val,
+      GoodRep.conjFactorBasis, Equiv.refl_apply, coe_basisOfLinearIndependentOfCardEqFinrank,
+      AlgEquiv.one_apply, GoodRep.smul_def]
+    change A.ι (A.toTwoCocycles _ (1, 1))⁻¹ * _ = 1
+    simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, Prod.mk_one_one,
+      Prod.fst_one, Prod.snd_one, AlgEquiv.one_apply]
+    have := A.conjFactorCompCoeff_spec' (A.aribitaryConjFactor 1)
+      (A.aribitaryConjFactor 1)
+      (A.aribitaryConjFactor (1 * 1))
+    simp only [AlgEquiv.one_apply, AlgEquiv.mul_apply] at this
+    rw [GoodRep.conjFactorCompCoeff_inv]
+    erw [_root_.one_mul]
+    simp only [AlgEquiv.one_apply, ← _root_.mul_assoc, Units.mul_inv, _root_.one_mul, Units.inv_mul]
+  · intro x y
+    change φ0 _ = φ0 _ * φ0 _
+    induction x using GoodRep.CrossProduct.single_induction with
+    | single x c =>
+      induction y using GoodRep.CrossProduct.single_induction with
+      | single y d =>
+        rw [mul_single_in_xAsBasis]
+        rw [single_in_xAsBasis, single_in_xAsBasis]
+        rw [map_smul, map_smul, map_smul]
+        simp only [Function.comp_apply, GoodRep.smul_def, map_mul, φ0]
+        erw [Basis.equiv_apply, Basis.equiv_apply, Basis.equiv_apply]
+        simp only [GoodRep.conjFactorBasis, Equiv.refl_apply,
+          coe_basisOfLinearIndependentOfCardEqFinrank, AlgEquiv.mul_apply]
+        change A.ι c * A.ι (x d) * A.ι (A.toTwoCocycles _ _) * _ = _
+        simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit]
+        simp only [_root_.mul_assoc]
+        erw [A.conjFactorCompCoeff_spec'']
+        simp only [_root_.mul_assoc]
+        simp only [AlgEquiv.mul_apply, Units.inv_mul, _root_.mul_one]
+        simp only [← _root_.mul_assoc]
+        congr 1
+        simp only [_root_.mul_assoc]
+        congr 1
+        rw [(A.aribitaryConjFactor x).2 d]
+        field_simp
+      | add y y' hy hy' =>
+        erw [mul_add, map_add, hy, hy', map_add, mul_add]
+      | zero =>
+        erw [mul_zero, map_zero, mul_zero]
+    | add x x' hx hx' =>
+      erw [add_mul, map_add, hx, hx', map_add, add_mul]
+    | zero =>
+      erw [zero_mul, map_zero, zero_mul]
+
+@[simp]
+def equivSnd : RelativeBrGroup K F ≃ H2 (galAct F K) where
+  toFun := toSnd
+  invFun := fromSnd F K
+  left_inv := congr_fun fromSnd_toSnd
+  right_inv := congr_fun toSnd_fromSnd
 
 end from_two
 
