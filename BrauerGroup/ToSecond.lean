@@ -1844,8 +1844,210 @@ instance is_simple : IsSimpleOrder (TwoSidedIdeal <| CrossProduct ha) where
     change _ ↔ I.ringCon _ _
     rw [I.rel_iff, sub_zero]
 
+instance [IsGalois F K] : IsCentralSimple F (CrossProduct ha) where
+  is_central := is_central ha
+
+instance [IsGalois F K] : FiniteDimensional F (CrossProduct ha) :=
+  .of_finrank_eq_succ (n := (finrank F K)^2 - 1) (by
+    rw [dim_eq_square]
+    rw [← Nat.pred_eq_sub_one, Nat.succ_pred_eq_of_pos]
+    apply pow_two_pos_of_ne_zero
+    have : 0 < finrank F K := finrank_pos
+    omega)
+
+def asCSA [IsGalois F K] : CSA F :=
+⟨CrossProduct ha⟩
+
 end CrossProduct
 
 end galois
 
 end GoodRep
+
+namespace RelativeBrGroup
+
+section from_two
+
+open GoodRep.CrossProduct
+
+variable [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+
+def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
+⟨Quotient.mk'' ⟨asCSA (isMulTwoCocycle_of_twoCocycles a)⟩, by
+  rw [mem_relativeBrGroup_iff_exists_goodRep]
+  exact ⟨⟨⟨asCSA (isMulTwoCocycle_of_twoCocycles a)⟩, rfl,
+    ι (isMulTwoCocycle_of_twoCocycles a),
+    dim_eq_square (isMulTwoCocycle_of_twoCocycles a)⟩⟩⟩
+
+variable (F K) in
+set_option maxHeartbeats 500000 in
+def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
+  Quotient.lift fromTwoCocycles <| by
+    rintro ⟨(a : _ → Kˣ), ha⟩ ⟨(b : _ → Kˣ), hb⟩ hab
+    have ha : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) a := isMulTwoCocycle_of_twoCocycles ⟨a, ha⟩
+    have hb : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) b := isMulTwoCocycle_of_twoCocycles ⟨b, hb⟩
+    have hc : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (a / b) := by
+      exact isMulTwoCoboundary_of_twoCoboundaries (G := K ≃ₐ[F] K) (M := Kˣ)
+        ⟨_, by
+          change (twoCoboundaries (galAct F K)).quotientRel.r ⟨a, _⟩ ⟨b, _⟩ at hab
+          rw [Submodule.quotientRel_r_def] at hab
+          exact hab⟩
+
+    obtain ⟨c, hc⟩ := hc
+    simp only [fromTwoCocycles, Subtype.mk.injEq, Quotient.eq'']
+    let A := asCSA ha
+    let B := asCSA hb
+    change IsBrauerEquivalent A B
+    letI : Module K A := inferInstanceAs <| Module K (GoodRep.CrossProduct ha)
+    letI : Module K B := inferInstanceAs <| Module K (GoodRep.CrossProduct hb)
+
+    let basis : Basis (K ≃ₐ[F] K) K B :=
+      Basis.unitsSMul (x_AsBasis hb) c
+    let φ0 : A ≃ₗ[K] B :=
+      Basis.equiv (x_AsBasis ha) basis (Equiv.refl _)
+    haveI : LinearMap.CompatibleSMul A B F K := by
+      constructor
+      have eq (c : F) (a : A) : c • a = algebraMap F K c • a := by
+        induction a using GoodRep.CrossProduct.single_induction with
+        | single σ a =>
+          simp only [Algebra.smul_def]
+          rw [GoodRep.CrossProduct.smul_def]
+          congr 1
+          delta ι
+          simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]
+          rw [Algebra.algebraMap_eq_smul_one]
+        | add x y hx hy =>
+          change c • (x + y) = _ • (x + y)
+          rw [smul_add, smul_add, hx, hy]
+        | zero =>
+          change c • 0 = _ • 0
+          simp
+      have eq' (c : F) (a : B) : c • a = algebraMap F K c • a := by
+        induction a using GoodRep.CrossProduct.single_induction with
+        | single σ a =>
+          simp only [Algebra.smul_def]
+          rw [GoodRep.CrossProduct.smul_def]
+          congr 1
+          delta ι
+          simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]
+          rw [Algebra.algebraMap_eq_smul_one]
+        | add x y hx hy =>
+          change c • (x + y) = _ • (x + y)
+          rw [smul_add, smul_add, hx, hy]
+        | zero =>
+          change c • 0 = _ • 0
+          simp
+
+      intro l c a
+      rw [eq, eq', map_smul]
+    let φ1 : A ≃ₗ[F] B := φ0.restrictScalars F
+    let φ2 : A ≃ₐ[F] B := AlgEquiv.ofLinearEquiv φ1
+      (by
+        change φ0 1 = 1
+        rw [show (1 : A) = (a 1)⁻¹.1 • (x_AsBasis ha 1 : A) by
+          apply val_injective ha
+          erw [GoodRep.CrossProduct.smul_def]
+          simp only [one_val, Prod.mk_one_one, Units.val_inv_eq_inv_val, x_AsBasis_apply, mul_val,
+            ι_apply_val, GoodRep.crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
+            isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+            IsUnit.inv_mul_cancel_right], map_smul]
+        erw [Basis.equiv_apply]
+        simp only [Units.val_inv_eq_inv_val, Equiv.refl_apply, Basis.unitsSMul_apply, basis]
+        apply val_injective hb
+        erw [GoodRep.CrossProduct.smul_def, GoodRep.CrossProduct.smul_def]
+        erw [mul_val, mul_val]
+        erw [x_AsBasis_apply]
+        simp only [ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
+          GoodRep.crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
+          isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right,
+          map_inv₀, one_val, Pi.single_inj]
+        specialize hc 1 1
+        simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Prod.mk_one_one,
+          Pi.div_apply] at hc
+        simp only [hc, Units.val_div_eq_div_val]
+        field_simp)
+      (by
+        intro α β
+        change φ0 _ = φ0 _ * φ0 _
+        induction α using GoodRep.CrossProduct.single_induction with
+        | single σ α =>
+          induction β using GoodRep.CrossProduct.single_induction with
+          | single τ β =>
+            rw [show (⟨Pi.single σ α⟩ : GoodRep.CrossProduct ha) * ⟨Pi.single τ β⟩ =
+              ⟨Pi.single (σ * τ) (α * σ β * a (σ, τ))⟩ by
+              apply val_injective
+              simp only [mul_val, GoodRep.crossProductMul_single_single],
+              show (⟨Pi.single (σ * τ) (α * σ β * a (σ, τ))⟩ : GoodRep.CrossProduct ha) =
+                (α * σ β * a (σ, τ)) • ((x_AsBasis ha (σ * τ)) : GoodRep.CrossProduct ha) by
+              apply val_injective
+              simp only [x_AsBasis_apply, smul_def, map_mul, mul_val, ι_apply_val, Prod.mk_one_one,
+                Units.val_inv_eq_inv_val, GoodRep.crossProductMul_single_single, _root_.mul_one,
+                AlgEquiv.one_apply, map_inv₀, _root_.one_mul, Pi.single_inj]
+              rw [a_one_left ha]
+              simp only [_root_.mul_assoc]
+              congr 1
+              simp only [← _root_.mul_assoc]
+              simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+                IsUnit.inv_mul_cancel_right]
+              field_simp, map_smul,
+              show (⟨Pi.single σ α⟩ : GoodRep.CrossProduct ha) = α • (x_AsBasis ha σ) by
+              apply val_injective
+              simp only [x_AsBasis_apply, smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+                Units.val_inv_eq_inv_val, GoodRep.crossProductMul_single_single, _root_.one_mul,
+                AlgEquiv.one_apply, _root_.mul_one, a_one_left ha, isUnit_iff_ne_zero, ne_eq,
+                Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right], map_smul,
+              show (⟨Pi.single τ β⟩ : GoodRep.CrossProduct ha) = β • (x_AsBasis ha τ) by
+              apply val_injective
+              simp only [x_AsBasis_apply, smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+                Units.val_inv_eq_inv_val, GoodRep.crossProductMul_single_single, _root_.one_mul,
+                AlgEquiv.one_apply, _root_.mul_one, a_one_left ha, isUnit_iff_ne_zero, ne_eq,
+                Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right], map_smul]
+            erw [Basis.equiv_apply, Basis.equiv_apply, Basis.equiv_apply]
+            simp only [Equiv.refl_apply, Basis.unitsSMul_apply, basis]
+            erw [x_AsBasis_apply, x_AsBasis_apply, x_AsBasis_apply]
+            erw [GoodRep.CrossProduct.smul_def, GoodRep.CrossProduct.smul_def,
+              GoodRep.CrossProduct.smul_def, GoodRep.CrossProduct.smul_def,
+              GoodRep.CrossProduct.smul_def, GoodRep.CrossProduct.smul_def]
+            apply val_injective
+            simp only [map_mul, mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
+              GoodRep.crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
+              _root_.one_mul]
+            repeat erw [mul_val]
+            simp only [ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
+              GoodRep.crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply,
+              _root_.mul_one, map_mul, map_inv₀, Pi.single_inj]
+            simp only [a_one_left hb, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+              IsUnit.inv_mul_cancel_right, AddEquivClass.map_eq_zero_iff]
+            specialize hc σ τ
+            rw [Units.ext_iff] at hc
+            field_simp at hc
+            simp only [_root_.mul_assoc]
+            congr 2
+            simp only [← _root_.mul_assoc]
+            rw [_root_.mul_assoc (σ β)]
+            simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+              IsUnit.inv_mul_cancel, _root_.mul_one, IsUnit.inv_mul_cancel_right]
+            rw [_root_.mul_assoc (σ β), ← hc]
+            field_simp
+            ring
+          | add x y hx hy =>
+            change φ0 ((⟨Pi.single σ α⟩ : A) * (x + y)) = φ0 ⟨Pi.single σ α⟩ * (φ0 (x + y))
+            simp only [mul_add, map_add, hx, hy]
+          | zero =>
+            erw [mul_zero, map_zero, mul_zero]
+        | add α α' hα hα' =>
+          erw [add_mul, map_add, hα, hα', map_add, add_mul]
+        | zero =>
+          erw [zero_mul, map_zero, zero_mul])
+
+    apply IsBrauerEquivalent.iso_to_eqv (h := φ2)
+
+lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
+    (fromSnd F K <| Quotient.mk'' a) =
+    ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_twoCocycles a)),
+      mem_relativeBrGroup_iff_exists_goodRep _ |>.2 ⟨_, rfl, ι _, dim_eq_square _⟩⟩ := by
+  rfl
+
+end from_two
+
+end RelativeBrGroup
