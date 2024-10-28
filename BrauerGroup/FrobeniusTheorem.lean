@@ -4,12 +4,13 @@ import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import BrauerGroup.Subfield.Subfield
+import Mathlib.Algebra.Star.Basic
 
 suppress_compilation
 
 open Quaternion TensorProduct BigOperators Classical FiniteDimensional
 
-variable {D : Type} [DivisionRing D] [Algebra ℝ D]
+variable {D : Type} [DivisionRing D]
 
 section prerequisites
 
@@ -42,57 +43,82 @@ lemma DequivC [Algebra ℂ D] [FiniteDimensional ℂ D]:
   haveI : NeZero n := ⟨hn⟩
   exact Wedderburn_Artin_uniqueness₀ ℂ D 1 n D (BrauerGroup.dim_one_iso D).symm ℂ iso
 
-variable (D) in
-def DD := D
+-- variable (D) in
+-- def DD := D
 
-instance : DivisionRing (DD D) := inferInstanceAs (DivisionRing D)
+-- instance : DivisionRing (DD D) := inferInstanceAs (DivisionRing D)
 
-instance : Algebra ℝ (DD D) := inferInstanceAs (Algebra ℝ D)
+-- instance : Algebra ℝ (DD D) := inferInstanceAs (Algebra ℝ D)
 
-instance CAlg (e : Subring.center (DD D) ≃ₐ[ℝ] ℂ) : Algebra ℂ (DD D) where
-  smul z d := e.symm z • d
-  toFun z := e.symm z|>.1
-  map_one' := by simp only [map_one, OneMemClass.coe_one]
-  map_mul' := by simp only [map_mul, Subring.coe_mul, implies_true]
-  map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
-  map_add' := fun x y => by sorry
-  commutes' z d := by
-    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
-    -- obtain ⟨x, hx⟩ := e.symm z
-    exact Subring.mem_center_iff.1 (e.symm z).2 d |>.symm
-  smul_def' := by
-    intro z d
-    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
-    rfl
+-- instance CAlg (e : Subring.center (DD D) ≃ₐ[ℝ] ℂ) : Algebra ℂ (DD D) where
+--   smul z d := e.symm z • d
+--   toFun z := e.symm z|>.1
+--   map_one' := by simp only [map_one, OneMemClass.coe_one]
+--   map_mul' := by simp only [map_mul, Subring.coe_mul, implies_true]
+--   map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
+--   map_add' := fun x y => by sorry
+--   commutes' z d := by
+--     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+--     -- obtain ⟨x, hx⟩ := e.symm z
+--     exact Subring.mem_center_iff.1 (e.symm z).2 d |>.symm
+--   smul_def' := by
+--     intro z d
+--     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+--     rfl
 
--- instance (e : Subring.center D ≃+* ℂ) : Module (Subring.center D) ℂ where
---   smul d z := e d * z
---   one_smul :=
---   mul_smul := _
---   smul_zero := _
---   smul_add := _
---   add_smul := _
---   zero_smul := _
+-- -- instance (e : Subring.center D ≃+* ℂ) : Module (Subring.center D) ℂ where
+-- --   smul d z := e d * z
+-- --   one_smul :=
+-- --   mul_smul := _
+-- --   smul_zero := _
+-- --   smul_add := _
+-- --   add_smul := _
+-- --   zero_smul := _
 
--- set_option synthInstance.maxHeartbeats 80000 in
-lemma complex_centre_equiv_complex (e : Subring.center (DD D) ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ (DD D)]:
-    Nonempty ((DD D) ≃ₐ[ℝ] ℂ) := by
-  haveI := FiniteDimensional.right ℝ ℂ (DD D)
-  exact DequivC
+-- -- set_option synthInstance.maxHeartbeats 80000 in
+-- lemma complex_centre_equiv_complex (e : Subring.center (DD D) ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ (DD D)]:
+--     Nonempty ((DD D) ≃ₐ[ℝ] ℂ) := by
+--   haveI := FiniteDimensional.right ℝ ℂ (DD D)
+--   exact DequivC
 
 end prerequisites
 
-variable [Algebra ℝ D]
+variable [Algebra ℝ D] [hD : IsCentralSimple ℝ D] (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
+  (hk' : FiniteDimensional.finrank ℝ k = 2) (e : k ≃ₐ[ℝ] ℂ)
+open ComplexConjugate
+
+set_option synthInstance.maxHeartbeats 80000 in
+abbrev f : k →ₐ[ℝ] D where
+  toFun := fun kk ↦ e.symm $ conj (e kk)
+  map_one' := by simp only [map_one, OneMemClass.coe_one]
+  map_mul' := by simp only [map_mul, MulMemClass.coe_mul, implies_true]
+  map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
+  map_add' := fun x y ↦ by
+    simp only [map_add, AddMemClass.coe_add]
+  commutes' := fun r ↦ by
+    simp only [AlgEquiv.commutes, Complex.coe_algebraMap, Complex.conj_ofReal]
+    rw [← mul_one (algebraMap _ _ r), ← Algebra.smul_def]
+    nth_rw 1 [← mul_one r]
+    unfold Complex.ofReal'
+    rw [← smul_eq_mul, show (⟨r • 1, 0⟩ : ℂ) = r • ⟨1, 0⟩ by
+      apply Complex.ext
+      · simp only [smul_eq_mul, mul_one, Complex.real_smul, Complex.mul_re, Complex.ofReal_re,
+        Complex.ofReal_im, mul_zero, sub_zero]
+      · simp only [Complex.real_smul, Complex.mul_im, Complex.ofReal_re, mul_zero,
+        Complex.ofReal_im, mul_one, add_zero]]
+    rw [_root_.map_smul, show ⟨1, 0⟩ = (1 : ℂ) by rfl, _root_.map_one]
+    rfl
+
+abbrev g : k →ₐ[ℝ] D := k.val
 
 open scoped algebraMap in
 abbrev V : Set D := {x | ∃ r : ℝ, r ≤ 0 ∧ x^2 = (r : D)}
 
+set_option linter.unusedSectionVars false in
 lemma V_def (x : D) : x ∈ V ↔ ∃ r : ℝ, r ≤ 0 ∧ x^2 = (algebraMap ℝ D) r := by
     exact Set.mem_def
 
-
-
--- lemma complex_centre_equiv_complex (D)
+-- set_option linter.unusedSectionVars false in
 lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (algebraMap ℝ D).range ∨ x ∈ V := by
   rintro ⟨r, hr⟩
   if h'' : x ∈ V then
