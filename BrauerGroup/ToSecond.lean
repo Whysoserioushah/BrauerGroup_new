@@ -1217,6 +1217,10 @@ lemma x__conj (c : K) : x_ ha σ * ι ha c * (x_ ha σ)⁻¹ = ι ha (σ c) := b
   change _ * ((x_ ha σ).1 * _) = _
   simp
 
+lemma x__conj' (c : K) : x_ ha σ * ι ha c = ι ha (σ c) * (x_ ha σ) := by
+  rw [← x__conj]
+  simp only [Units.inv_mul_cancel_right]
+
 instance module : Module K (CrossProduct ha) where
   smul c x := ι ha c * x
   one_smul := by intros; show _ * _ = _; simp
@@ -1431,6 +1435,414 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
     rw [conclusion1]
     rw [zero_smul]
     exact Subalgebra.zero_mem _
+
+instance : Nontrivial (CrossProduct ha) where
+  exists_pair_ne := ⟨0, 1, fun h => by
+    have := congr($(h).val 1)
+    simp only [zero_val, Pi.zero_apply, one_val, Prod.mk_one_one, Pi.single_eq_same,
+      zero_eq_inv] at this
+    exact Units.ne_zero _ this.symm⟩
+
+namespace is_simple_proofs
+
+variable (I : TwoSidedIdeal (CrossProduct ha))
+variable {ha}
+
+def π : (CrossProduct ha) →+* RingCon.Quotient I.ringCon := I.ringCon.mk'
+
+def πRes : (ι ha).range →+* I.ringCon.Quotient :=
+  RingHom.domRestrict (π I) (ι ha).range
+
+variable {I} in
+def x : (πRes I).range → K := fun x => x.2.choose.2.choose
+
+lemma hx (a : πRes I |>.range) : πRes I ⟨ι ha (x a), by simp⟩ = a := by
+  rw [← a.2.choose_spec]
+  congr 1
+  ext : 1
+  exact a.2.choose.2.choose_spec
+
+lemma hx' (a : K) : πRes I ⟨ι ha a, by simp⟩ = I.ringCon.mk' (ι ha a) := by
+  simp only [RingHom.restrict_apply, πRes, π]
+
+
+lemma hx_mul (a b : πRes I |>.range) : πRes I ⟨ι ha (x (a * b)), by simp⟩ =
+    πRes I ⟨ι ha (x a), by simp⟩ * πRes I ⟨ι ha (x b), by simp⟩ := by
+  rw [hx, hx, hx]
+  rfl
+
+lemma hx_add (a b : πRes I |>.range) : πRes I ⟨ι ha (x (a + b)), by simp⟩ =
+    πRes I ⟨ι ha (x a), by simp⟩ + πRes I ⟨ι ha (x b), by simp⟩ := by
+  rw [hx, hx, hx]
+  rfl
+
+
+lemma x_wd (c c' : K) (eq : πRes I ⟨ι ha c, by simp⟩ = πRes I ⟨ι ha c', by simp⟩)
+    (y : CrossProduct ha) :
+    (c - c') • y ∈ I := by
+  simp only [RingHom.restrict_apply, πRes, π] at eq
+  erw [Quotient.eq''] at eq
+  change I.ringCon _ _ at eq
+  rw [TwoSidedIdeal.rel_iff, ← map_sub] at eq
+  exact I.mul_mem_right _ _ eq
+
+lemma x_wd' (c c' : K) (eq : πRes I ⟨ι ha c, by simp⟩ = πRes I ⟨ι ha c', by simp⟩) :
+    ι ha (c - c') ∈ I := by
+  rw [← show (c - c') • 1 = ι ha (c - c') by rw [smul_def, _root_.mul_one]]
+  apply x_wd I _ _ eq _
+
+instance (priority := high) : SMul (RingHom.range <| πRes I) I.ringCon.Quotient where
+  smul := fun a => Quotient.map'
+    (fun y => x a • y) (by
+      rintro y y' (hy : I.ringCon _ _)
+      show I.ringCon _ _
+      simp only
+      rw [TwoSidedIdeal.rel_iff] at hy ⊢
+      rw [← smul_sub]
+      apply I.mul_mem_left _ _ hy)
+
+lemma smul_def_quot (a : RingHom.range <| πRes I) (y : CrossProduct ha) :
+    (a • (I.ringCon.mk' y : I.ringCon.Quotient) : I.ringCon.Quotient) =
+    (Quotient.mk'' (x a • y)) := rfl
+
+set_option maxHeartbeats 500000 in
+set_option synthInstance.maxHeartbeats 50000 in
+instance : Module (RingHom.range <| πRes I) I.ringCon.Quotient where
+  one_smul := by
+    intro y
+    induction y using Quotient.inductionOn' with | h y =>
+    change Quotient.map' _ _ _ = _
+    simp only [Quotient.map'_mk'', Quotient.eq'', Con.rel_eq_coe, RingCon.toCon_coe_eq_coe]
+    rw [TwoSidedIdeal.rel_iff, show x 1 • y - y = x 1 • y - (1 : K) • y by rw [one_smul],
+      ← sub_smul]
+    apply x_wd
+    rw [hx]
+    simp only [OneMemClass.coe_one, map_one, RingHom.restrict_apply, πRes, π]
+  mul_smul := by
+    intro c c' y
+    induction y using Quotient.inductionOn' with | h y =>
+    change Quotient.map' _ _ _ = Quotient.map' _ _ (Quotient.map' _ _ _)
+    simp only [Quotient.map'_mk'', Quotient.eq'', Con.rel_eq_coe, RingCon.toCon_coe_eq_coe]
+    rw [TwoSidedIdeal.rel_iff, ← mul_smul, ← sub_smul]
+    apply x_wd
+    rw [hx_mul, ← map_mul]
+    change πRes I ⟨_, _⟩ = _
+    dsimp
+    simp_rw [← map_mul]
+  smul_zero := by
+    intro a
+    change Quotient.map' _ _ (Quotient.mk'' 0) = _
+    simp only [Quotient.map'_mk'', smul_zero]
+    rfl
+  smul_add := by
+    intro a x y
+    induction x using Quotient.inductionOn' with | h x =>
+    induction y using Quotient.inductionOn' with | h y =>
+    change Quotient.map' _ _ (Quotient.mk'' _) = _
+    simp only [Quotient.map'_mk'', smul_add]
+    erw [smul_def_quot, smul_def_quot]
+    change _ = Quotient.mk'' _
+    erw [Quotient.eq'']
+    change I.ringCon _ _
+    rw [I.rel_iff]
+    simp only [sub_self]
+    exact I.zero_mem
+  add_smul := by
+    intro a a' x
+    induction x using Quotient.inductionOn' with | h y =>
+    change (a + a') • I.ringCon.mk' y = a • I.ringCon.mk' y + a' • I.ringCon.mk' y
+    rw [smul_def_quot, smul_def_quot, smul_def_quot]
+    change _ = Quotient.mk'' _
+    rw [Quotient.eq'']
+    change I.ringCon _ _
+    rw [I.rel_iff]
+    simp only [← add_smul, ← sub_smul]
+    apply x_wd
+    rw [hx_add, hx, hx]
+    simp_rw [map_add]
+    rw [← hx, ← hx, ← (πRes I).map_add]
+    rfl
+  zero_smul := by
+    intro y
+    induction y using Quotient.inductionOn' with | h y =>
+    erw [smul_def_quot]
+
+    change _ = Quotient.mk'' 0
+    erw [Quotient.eq'']
+    change I.ringCon _ _
+    rw [I.rel_iff]
+    simp only [sub_zero]
+    rw [show x 0 • y = (x 0 - 0 : K) • y by rw [sub_zero]]
+    apply x_wd
+    rw [hx]
+    simp_rw [map_zero]
+    erw [map_zero]
+    rfl
+
+example : True := ⟨⟩
+
+instance : Module K (I.ringCon.Quotient) :=
+  Module.compHom _ (f := show K →+* (πRes I).range from
+  { toFun := fun a => ⟨ι ha a, by simpa using ⟨ι ha a, ⟨a, rfl⟩, rfl⟩⟩
+    map_one' := by
+      simp only [map_one, RingCon.coe_one]
+      rfl
+    map_mul' := by
+      intros
+      simp only [map_mul, RingCon.coe_mul, MulMemClass.mk_mul_mk]
+    map_zero' := by
+      simp only [map_zero, RingCon.coe_zero]
+      rfl
+    map_add' := by
+      intros
+      simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] })
+
+lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) : c • x =
+  (⟨ι ha c, by simpa using ⟨ι ha c, ⟨c, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := rfl
+
+def basis (ne_top : I ≠ ⊤) : Basis (K ≃ₐ[F] K) K I.ringCon.Quotient :=
+  .mk (v := fun σ => I.ringCon.mk' (x_ ha σ))
+    (by
+      classical
+      by_contra rid
+      obtain ⟨J, LI, maximal⟩ := exists_maximal_independent K (fun (i : K ≃ₐ[F] K) =>
+        I.ringCon.mk' (x_ ha i))
+      have ne : J ≠ Set.univ := by
+        rintro rfl
+        refine rid ?_
+        let e : (Set.univ : Set (K ≃ₐ[F] K)) ≃ (K ≃ₐ[F] K) := Equiv.Set.univ (K ≃ₐ[F] K)
+        have := linearIndependent_equiv e.symm |>.2 LI
+        exact this
+      rw [Set.ne_univ_iff_exists_not_mem] at ne
+      obtain ⟨σ, hσ⟩ := ne
+      obtain ⟨c, c_ne_zero, hc⟩ := maximal σ hσ
+      let B := Basis.span LI
+      replace hc := Submodule.smul_mem _ c⁻¹ hc
+      rw [← mul_smul, inv_mul_cancel₀ c_ne_zero, one_smul] at hc
+      clear c c_ne_zero
+      have mem1 : I.ringCon.mk' (x_ ha σ) ∈ Submodule.span K
+          (Set.range fun (σ : J) ↦ I.ringCon.mk' (x_ ha σ)) := by
+        convert hc; aesop
+      have eq0 : (⟨I.ringCon.mk' (x_ ha σ), mem1⟩ : Submodule.span K
+          (Set.range fun (σ : J) ↦ I.ringCon.mk' (x_ ha σ))) =
+          ∑ τ ∈ (B.repr ⟨_, mem1⟩).support, B.repr ⟨_, mem1⟩ τ • I.ringCon.mk' (x_ ha τ) := by
+        conv_lhs => rw [← B.linearCombination_repr ⟨I.ringCon.mk' (x_ ha σ), mem1⟩,
+          Finsupp.linearCombination_apply, Finsupp.sum]
+        rw [AddSubmonoidClass.coe_finset_sum]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        simp only [SetLike.val_smul, smul_def]
+        congr 1
+        simp only [B, Basis.span_apply]
+      simp only at eq0
+
+
+      have eq1 (c : K) := calc I.ringCon.mk' (ι ha (σ c)) * I.ringCon.mk' (x_ ha σ)
+          _ = I.ringCon.mk' (x_ ha σ) * I.ringCon.mk' (ι ha c) := by
+            rw [← map_mul, ← x__conj' ha, map_mul]
+          _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+                I.ringCon.mk' (ι ha (B.repr ⟨_, mem1⟩ τ)) * I.ringCon.mk' (x_ ha τ) *
+                  I.ringCon.mk' (ι ha c) := by
+            conv_lhs => rw [eq0, Finset.sum_mul]
+            refine Finset.sum_congr rfl fun τ _ => ?_
+            rw [K_smul_quot, smul_def_quot]
+            change I.ringCon.mk' _ = I.ringCon.mk' _
+            dsimp only
+            erw [Quotient.eq'']
+            change I.ringCon _ _
+            rw [I.rel_iff]
+            rw [← sub_mul]
+            refine I.mul_mem_right _ _ ?_
+            rw [smul_def, ← sub_mul]
+            refine I.mul_mem_right _ _ ?_
+            rw [← map_sub]
+            refine x_wd' I _ _ ?_
+            rw [hx]
+            rfl
+          _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+                I.ringCon.mk' (ι ha (B.repr ⟨_, mem1⟩ τ)) *
+                I.ringCon.mk' (ι ha (τ.1 c)) * I.ringCon.mk' (x_ ha τ) :=
+            Finset.sum_congr rfl fun i _ => by
+            simp only [_root_.mul_assoc]
+            congr 1
+            rw [← map_mul, x__conj', ← map_mul]
+          _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+                I.ringCon.mk' (ι ha (B.repr ⟨_, mem1⟩ τ * τ.1 c)) *
+                I.ringCon.mk' (x_ ha τ) :=
+            Finset.sum_congr rfl fun i _ => by rw [map_mul, map_mul]
+
+      have eq2 (c : K) := calc I.ringCon.mk' (ι ha (σ c)) * I.ringCon.mk' (x_ ha σ)
+          _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+              I.ringCon.mk' (ι ha (σ c * (B.repr ⟨_, mem1⟩) τ)) *
+              I.ringCon.mk' (x_ ha τ) := by
+            conv_lhs => rw [eq0, Finset.mul_sum]
+            refine Finset.sum_congr rfl fun τ _ => ?_
+            rw [K_smul_quot, smul_def_quot]
+            change I.ringCon.mk' _ = I.ringCon.mk' _
+            dsimp only
+            erw [Quotient.eq'']
+            change I.ringCon _ _
+            rw [I.rel_iff]
+            rw [smul_def, ← _root_.mul_assoc, ← sub_mul]
+            refine I.mul_mem_right _ _ ?_
+            rw [← map_mul, ← map_sub, ← mul_sub, map_mul]
+            refine I.mul_mem_left _ _ ?_
+            apply x_wd' I _ _ ?_
+            rw [hx]
+            rfl
+
+      have eq3 (c : K) :
+          ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+                I.ringCon.mk' (ι ha (B.repr ⟨_, mem1⟩ τ * τ.1 c)) *
+                I.ringCon.mk' (x_ ha τ) =
+          ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+              I.ringCon.mk' (ι ha (σ c * (B.repr ⟨_, mem1⟩) τ)) *
+              I.ringCon.mk' (x_ ha τ) :=
+        eq1 c |>.symm.trans <| eq2 c
+
+      have eq4 (c : K) :
+          ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+              I.ringCon.mk' (ι ha (B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ)) *
+              I.ringCon.mk' (x_ ha τ) = 0 := by
+        simp only [map_sub, map_mul, sub_mul, Finset.sum_sub_distrib]
+        rw [sub_eq_zero]
+        convert eq3 c
+        · simp only [← map_mul]
+        · simp only [← map_mul]
+
+      have eq5 (c : K) :
+          ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
+              (B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ) •
+              I.ringCon.mk' (x_ ha τ) = 0 := by
+        rw [← eq4 c]
+        refine Finset.sum_congr rfl fun τ _ => ?_
+        rw [K_smul_quot, smul_def_quot]
+        erw [Quotient.eq'']
+        change I.ringCon _ _
+        rw [I.rel_iff]
+        rw [smul_def]
+        dsimp only
+        rw [← sub_mul]
+        refine I.mul_mem_right _ _ ?_
+        rw [← map_sub]
+        apply x_wd' I _ _ ?_
+        rw [hx]
+        rfl
+      have eq6 (c : K) := linearIndependent_iff'' |>.1 LI (B.repr ⟨_, mem1⟩).support
+        (fun τ => B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ)
+        (by
+          intro i hi
+          simp only [Finsupp.mem_support_iff, ne_eq, Decidable.not_not] at hi
+          simp only [hi, zero_mul, mul_zero, sub_self]) (eq5 c)
+      simp only [sub_eq_zero, Subtype.forall] at eq6
+      have : (B.repr ⟨_, mem1⟩).support ≠ ∅ := by
+        intro rid
+        simp only [rid, Finset.sum_empty] at eq0
+        change _ = I.ringCon.mk' 0 at eq0
+        erw [Quotient.eq''] at eq0
+        change I.ringCon _ _ at eq0
+        rw [I.rel_iff, sub_zero] at eq0
+        have mem' := I.mul_mem_left (x_ ha σ)⁻¹.1 _ eq0
+        simp only [Units.inv_mul] at mem'
+        refine ne_top <| eq_top_iff.2 fun x _ => ?_
+        simpa using I.mul_mem_left x _ mem'
+
+      obtain ⟨τ, τ_mem⟩ := Finset.nonempty_of_ne_empty this
+      have eq7 : σ = τ := by
+        ext c
+        specialize eq6 c τ τ.2
+        rw [mul_comm] at eq6
+        simp only [Subtype.coe_eta, mul_eq_mul_right_iff] at eq6
+        refine eq6.recOn Eq.symm fun rid => ?_
+        simp only [Finsupp.mem_support_iff, ne_eq] at τ_mem
+        contradiction
+      subst eq7
+      exact hσ τ.2)
+    (by
+      rintro z -
+      induction z using Quotient.inductionOn' with | h z =>
+      have eq1 := x_AsBasis ha |>.linearCombination_repr z
+      rw [← eq1]
+      change I.ringCon.mk' _ ∈ _
+      rw [Finsupp.linearCombination_apply, Finsupp.sum, map_sum]
+      refine Submodule.sum_mem _ fun σ _ => ?_
+      rw [show I.ringCon.mk' (((x_AsBasis ha).repr z) σ • (x_AsBasis ha) σ) =
+        (⟨ι ha ((x_AsBasis ha).repr z σ), by
+          simp only [πRes, π, RingHom.mem_range,
+            RingHom.restrict_apply, Subtype.exists, AlgHom.mem_range, exists_prop', nonempty_prop,
+            exists_exists_eq_and]
+          refine ⟨((x_AsBasis ha).repr z σ), rfl⟩⟩ : (πRes I).range) •
+          I.ringCon.mk' (x_AsBasis ha σ) by
+          rw [smul_def_quot]
+          rw [x_AsBasis_apply]
+          erw [Quotient.eq'']
+          change I.ringCon _ _
+          rw [I.rel_iff]
+          rw [← sub_smul]
+          refine I.mul_mem_right _ _ ?_
+          apply x_wd'
+          rw [hx]
+          dsimp
+
+          erw [hx']
+          rfl]
+      refine Submodule.smul_mem _ _ <| Submodule.subset_span ⟨σ, ?_⟩
+      simp only [x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀, Units.val_ofLeftRightInverse,
+        x_AsBasis_apply])
+
+def π₁ (ne_top : I ≠ ⊤) : CrossProduct ha ≃ₗ[K] (I.ringCon.Quotient) :=
+  Basis.equiv (x_AsBasis ha) (basis I ne_top) (Equiv.refl _)
+
+def π₂ : CrossProduct ha →ₗ[K] (I.ringCon.Quotient) where
+  __ := π I
+  map_smul' := fun c x => by
+    simp only [RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe,
+      MonoidHom.coe_coe, RingHom.id_apply]
+    rw [K_smul_quot, smul_def]
+    simp only [π, map_mul]
+    rw [smul_def_quot I]
+    rw [← map_mul]
+    erw [Quotient.eq'']
+    change I.ringCon _ _
+    rw [I.rel_iff]
+    rw [smul_def]
+    rw [← sub_mul]
+    refine I.mul_mem_right _ _ ?_
+    rw [← map_sub]
+    apply x_wd'
+    rw [hx]
+    rfl
+
+lemma equal (ne_top : I ≠ ⊤) : π₁ I ne_top = π₂ I := by
+  apply Basis.ext (b := x_AsBasis ha)
+  intro σ
+  delta π₁
+  erw [Basis.equiv_apply]
+  simp only [basis, x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀, Units.val_ofLeftRightInverse,
+    Equiv.refl_apply, Basis.coe_mk, π₂, π, RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe,
+    MonoidHom.toOneHom_coe, MonoidHom.coe_coe, x_AsBasis_apply, LinearMap.coe_mk, AddHom.coe_mk]
+
+lemma π_inj (ne_top : I ≠ ⊤): Function.Injective (π I) := by
+  change Function.Injective (π₂ I)
+  rw [← equal (ne_top := ne_top)]
+  exact LinearEquiv.injective _
+
+end is_simple_proofs
+
+open is_simple_proofs in
+instance is_simple : IsSimpleOrder (TwoSidedIdeal <| CrossProduct ha) where
+  eq_bot_or_eq_top := by
+    intro I
+    by_contra! h
+
+    have inj : Function.Injective (π I) := π_inj I h.2
+    rw [TwoSidedIdeal.injective_iff_ker_eq_bot] at inj
+    refine h.1 <| inj ▸ ?_
+    ext x
+    simp only [π, TwoSidedIdeal.mem_ker]
+    change _ ↔ _ = I.ringCon.mk' 0
+    erw [Quotient.eq'']
+    change _ ↔ I.ringCon _ _
+    rw [I.rel_iff, sub_zero]
 
 end CrossProduct
 
