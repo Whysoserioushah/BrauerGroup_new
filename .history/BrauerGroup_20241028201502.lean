@@ -23,7 +23,7 @@ import BrauerGroup.RelativeBrauer
 import BrauerGroup.SkolemNoether
 import BrauerGroup.SplitDirect
 import BrauerGroup.SplittingOfCSA
--- import BrauerGroup.Subfield
+import BrauerGroup.Subfield
 import BrauerGroup.TensorOfTypePQ.Basic
 import BrauerGroup.Wedderburn
 import BrauerGroup.exp
