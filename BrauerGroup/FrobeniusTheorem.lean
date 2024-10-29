@@ -5,6 +5,7 @@ import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import BrauerGroup.Subfield.Subfield
 import Mathlib.Algebra.Star.Basic
+import BrauerGroup.SkolemNoether
 
 suppress_compilation
 
@@ -23,7 +24,7 @@ theorem rank_1_D_iso_R [Algebra ℝ D] : FiniteDimensional.finrank ℝ D = 1 →
     (h'.1 this)|>.trans $ Algebra.botEquiv ℝ D⟩
 
 lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K]: Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
-  --
+  --Zulip
   sorry
 
 lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : finrank ℝ K = 2) : Nonempty (K ≃ₐ[ℝ] ℂ) := by
@@ -38,34 +39,41 @@ lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : finrank ℝ K
         LinearMap.linearEquivOfInjective (ι₀.comp ι₁).toLinearMap (RingHom.injective _)
             (h.trans Complex.finrank_real_complex.symm) |>.bijective
 
-lemma DequivC [Algebra ℂ D] [FiniteDimensional ℂ D]:
+lemma D_equiv_C [Algebra ℂ D] [FiniteDimensional ℂ D]:
     Nonempty (D ≃ₐ[ℂ] ℂ) := by
   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed ℂ D
   haveI : NeZero n := ⟨hn⟩
   exact Wedderburn_Artin_uniqueness₀ ℂ D 1 n D (BrauerGroup.dim_one_iso D).symm ℂ iso
 
--- variable (D) in
--- def DD := D
+end prerequisites
 
--- instance : DivisionRing (DD D) := inferInstanceAs (DivisionRing D)
+section isoC
 
--- instance : Algebra ℝ (DD D) := inferInstanceAs (Algebra ℝ D)
+variable [Algebra ℝ D] (e : Subring.center D ≃ₐ[ℝ] ℂ)
 
--- instance CAlg (e : Subring.center (DD D) ≃ₐ[ℝ] ℂ) : Algebra ℂ (DD D) where
---   smul z d := e.symm z • d
---   toFun z := e.symm z|>.1
---   map_one' := by simp only [map_one, OneMemClass.coe_one]
---   map_mul' := by simp only [map_mul, Subring.coe_mul, implies_true]
---   map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
---   map_add' := fun x y => by sorry
---   commutes' z d := by
---     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
---     -- obtain ⟨x, hx⟩ := e.symm z
---     exact Subring.mem_center_iff.1 (e.symm z).2 d |>.symm
---   smul_def' := by
---     intro z d
---     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
---     rfl
+variable (D) in
+set_option linter.unusedVariables false in
+def DD (e : Subring.center D ≃ₐ[ℝ] ℂ):= D
+
+instance : DivisionRing (DD D e) := inferInstanceAs (DivisionRing D)
+
+instance : Algebra ℝ (DD D e) := inferInstanceAs (Algebra ℝ D)
+
+set_option synthInstance.maxHeartbeats 30000 in
+instance CAlg : Algebra ℂ (DD D e) where
+  smul z (d : D) := (e.symm z).1 * d
+  toFun z := e.symm z|>.1
+  map_one' := by simp only [map_one, OneMemClass.coe_one]
+  map_mul' := by simp only [map_mul, Subring.coe_mul, implies_true]
+  map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
+  map_add' := fun x y => by simp only [map_add, Subring.coe_add]
+  commutes' z d := by
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+    exact Subring.mem_center_iff.1 (e.symm z).2 d |>.symm
+  smul_def' := by
+    intro z d
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+    rfl
 
 -- -- instance (e : Subring.center D ≃+* ℂ) : Module (Subring.center D) ℂ where
 -- --   smul d z := e d * z
@@ -82,19 +90,13 @@ lemma DequivC [Algebra ℂ D] [FiniteDimensional ℂ D]:
 --   haveI := FiniteDimensional.right ℝ ℂ (DD D)
 --   exact DequivC
 
-end prerequisites
+end isoC
+variable [Algebra ℝ D] [hD : IsCentralSimple ℝ D] (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k) (e : k ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ D]
 
-variable [Algebra ℝ D] [hD : IsCentralSimple ℝ D] (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
-  (hk' : FiniteDimensional.finrank ℝ k = 2)
 open ComplexConjugate
 
-set_option synthInstance.maxHeartbeats 100000
-def e : k ≃ₐ[ℝ] ℂ := by
-  haveI := RealExtension_is_RorC
-  haveI := FiniteDimensional ℝ k
-  sorry
-
-abbrev f : k →ₐ[ℝ] D where
+set_option synthInstance.maxHeartbeats 50000 in
+abbrev f : k →ₐ[ℝ] k where
   toFun := fun kk ↦ e.symm $ conj (e kk)
   map_one' := by simp only [map_one, OneMemClass.coe_one]
   map_mul' := by simp only [map_mul, MulMemClass.coe_mul, implies_true]
@@ -113,9 +115,62 @@ abbrev f : k →ₐ[ℝ] D where
       · simp only [Complex.real_smul, Complex.mul_im, Complex.ofReal_re, mul_zero,
         Complex.ofReal_im, mul_one, add_zero]]
     rw [_root_.map_smul, show ⟨1, 0⟩ = (1 : ℂ) by rfl, _root_.map_one]
-    rfl
 
-abbrev g : k →ₐ[ℝ] D := k.val
+omit hD [FiniteDimensional ℝ D] in
+@[simp]
+lemma f_apply (x : k) : f k e x = e.symm (conj (e x)) := rfl
+
+omit hD [FiniteDimensional ℝ D] in
+lemma f_apply_apply (z : ℂ): f k e (e.symm z) = e.symm (conj z) := by
+  rw [f_apply]
+  congr
+  exact AlgEquiv.apply_symm_apply e z
+
+open Finsupp in
+lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.val z ∧
+    x^2 ∈ (algebraMap ℝ D).range := by
+  obtain ⟨x, hx⟩ := SkolemNoether' ℝ D k k.val (k.val.comp (f k e))
+  use x
+  intro z
+  have hx2 := hx
+  specialize hx z
+  constructor
+  · apply_fun fun y => ↑x⁻¹ * y * ↑x at hx
+    nth_rw 2 [mul_assoc, mul_assoc] at hx
+    simp only [Units.val_inv_eq_inv_val, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
+      OneHom.coe_mk, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+      IsUnit.inv_mul_cancel, mul_one, IsUnit.inv_mul_cancel_left] at hx
+    exact hx
+  · have x2_is_central : x.1^2 ∈ Subalgebra.center ℝ D := by
+      by_contra!
+      -- rw [Subalgebra.mem_center_iff]
+      -- intro d
+      -- -- specialize hx2 d
+      -- simp only [AlgHom.coe_comp, Subalgebra.coe_val, Function.comp_apply,
+      --   Units.val_inv_eq_inv_val] at hx
+
+      -- -- erw [Subtype.ext_iff.1 (f_apply k e z)] at hx
+      -- apply_fun (x.1 * · * x.1⁻¹) at hx
+      -- -- nth_rw 2 [mul_assoc, mul_assoc, mul_assoc] at hx
+      -- have : k.val z = (x.1 * x.1) * k.val z * (x.1⁻¹ * x.1⁻¹) := sorry
+      have : LinearIndependent ℝ ![(1 : D), x.1^2] := by
+        rw [linearIndependent_iff]
+        simp only [Nat.succ_eq_add_one, Nat.reduceAdd]
+        rw [IsCentralSimple.center_eq ℝ D] at this
+        change _ ∉ (algebraMap ℝ D).range at this
+        intros f h
+        simp only [linearCombination_apply] at h
+        by_contra! hff
+        change ∑ _ ∈ _, _ = 0 at h
+        simp only at h
+
+        sorry
+      sorry
+
+    sorry
+
+#check linearIndependent_iff'
+
 
 open scoped algebraMap in
 abbrev V : Set D := {x | ∃ r : ℝ, r ≤ 0 ∧ x^2 = (r : D)}
