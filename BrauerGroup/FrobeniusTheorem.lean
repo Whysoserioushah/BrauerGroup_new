@@ -23,6 +23,7 @@ theorem rank_1_D_iso_R [Algebra ℝ D] : FiniteDimensional.finrank ℝ D = 1 →
     (h'.1 this)|>.trans $ Algebra.botEquiv ℝ D⟩
 
 lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K]: Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
+  --
   sorry
 
 lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : finrank ℝ K = 2) : Nonempty (K ≃ₐ[ℝ] ℂ) := by
@@ -84,10 +85,15 @@ lemma DequivC [Algebra ℂ D] [FiniteDimensional ℂ D]:
 end prerequisites
 
 variable [Algebra ℝ D] [hD : IsCentralSimple ℝ D] (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
-  (hk' : FiniteDimensional.finrank ℝ k = 2) (e : k ≃ₐ[ℝ] ℂ)
+  (hk' : FiniteDimensional.finrank ℝ k = 2)
 open ComplexConjugate
 
-set_option synthInstance.maxHeartbeats 80000 in
+set_option synthInstance.maxHeartbeats 100000
+def e : k ≃ₐ[ℝ] ℂ := by
+  haveI := RealExtension_is_RorC
+  haveI := FiniteDimensional ℝ k
+  sorry
+
 abbrev f : k →ₐ[ℝ] D where
   toFun := fun kk ↦ e.symm $ conj (e kk)
   map_one' := by simp only [map_one, OneMemClass.coe_one]
@@ -118,7 +124,6 @@ set_option linter.unusedSectionVars false in
 lemma V_def (x : D) : x ∈ V ↔ ∃ r : ℝ, r ≤ 0 ∧ x^2 = (algebraMap ℝ D) r := by
     exact Set.mem_def
 
--- set_option linter.unusedSectionVars false in
 lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (algebraMap ℝ D).range ∨ x ∈ V := by
   rintro ⟨r, hr⟩
   if h'' : x ∈ V then
