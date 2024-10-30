@@ -68,41 +68,85 @@ def Basis_ofmop : Basis (K ≃ₐ[F] K) K (CrossProduct ha)ᵐᵒᵖ := .mk
     | add x x' hx hx' => exact Submodule.add_mem _ hx hx'
     | zero => exact Submodule.zero_mem _)
 
+omit [IsGalois F K] in
+@[simp]
+lemma Basis_ofmop_apply (σ : K ≃ₐ[F] K):
+    Basis_ofmop K F a ha σ = MulOpposite.op ⟨Pi.single σ 1⟩ := by
+  simp only [Basis_ofmop, CrossProduct.x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀,
+    CrossProduct.Units.val_ofLeftRightInverse, Basis.coe_mk]
+
+
 @[simps! symm_apply apply]
 abbrev KlinearEquiv : invCross K F a ha ≃ₗ[K] (CrossProduct ha)ᵐᵒᵖ :=
   Basis.equiv (CrossProduct.x_AsBasis (inv_in K F a ha)) (Basis_ofmop _ _ _ _) $ Equiv.refl _
 
-open CrossProduct in
+omit [IsGalois F K] in
+lemma KlinearEquiv_apply' (σ : K ≃ₐ[F] K): KlinearEquiv K F a ha
+    ((CrossProduct.x_AsBasis (inv_in K F a ha)) σ) = MulOpposite.op ⟨Pi.single σ 1⟩ := by
+  rw [Basis.equiv_apply]
+  simp only [Equiv.refl_apply, Basis_ofmop_apply]
+
+-- variable [DecidableEq (K ≃ₐ[F] K)] in
+open CrossProduct MulOpposite in
 def iso_op : invCross K F a ha ≃ₐ[F] (CrossProduct ha)ᵐᵒᵖ where
   __ := KlinearEquiv K F a ha
   map_mul' := fun (x y: CrossProduct (inv_in _ _ _ ha)) ↦ by
     simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe]
-    -- have := Basis.linearCombination_repr (CrossProduct.x_AsBasis (inv_in _ _ _ ha))
+    have := Basis.linearCombination_repr (CrossProduct.x_AsBasis (inv_in _ _ _ ha))
     -- have eq2 := Basis.linearCombination_repr (Basis_ofmop K F a ha)
-    -- rw [← this x, ← this y]
-    -- simp only [Finsupp.linearCombination_apply, KlinearEquiv_apply]
+    rw [← this x, ← this y]
+    simp only [Finsupp.linearCombination_apply, x_AsBasis_apply, KlinearEquiv_apply,
+      Basis_ofmop_apply]
+    change ∑ _ ∈ _, _ = (∑ _ ∈ _, _) * (∑ _ ∈ _, _)
+    apply_fun MulOpposite.unop using (fun a b hab ↦ MulOpposite.unop_inj.1 hab)
+    simp only [map_sum, LinearMap.coe_mk, AddHom.coe_mk, MulOpposite.unop_smul, MulOpposite.unop_op,
+      MulOpposite.unop_mul, Finset.unop_sum]
+    -- calc _
+    --   _ = ∑ σ ∈ Finset.univ, if σ ∈ ((x_AsBasis _).repr
+    --       ((((x_AsBasis (inv_in K F a ha)).repr x).sum fun τ k ↦ k • ⟨Pi.single τ 1⟩) *
+    --         ((x_AsBasis _).repr y).sum fun τ k ↦ k • ⟨Pi.single τ 1⟩)).support then
+    --         ((x_AsBasis _).repr ((((x_AsBasis _).repr x).sum fun i a_1 ↦ a_1 • { val := Pi.single i 1 }) *
+    --         ((x_AsBasis _).repr y).sum fun i a_1 ↦ a_1 • { val := Pi.single i 1 }))
+    --         σ • { val := Pi.single x_1 1 } else 0 := by sorry
+      -- _ = _ := sorry
+    sorry
     -- rw [← Finsupp.linearCombination_apply, ← Finsupp.linearCombination_apply,
     --   ← Finsupp.linearCombination_apply, ← Finsupp.linearCombination_apply,
     --   ← Finsupp.linearCombination_apply, this x, this y]
 
-    induction x using single_induction (inv_in K F a ha) with
-    | single x k1 =>
-      induction y using single_induction (inv_in K F a ha) with
-      | single y k2 =>
-        simp only [mul_def, crossProductMul_single_single, Pi.inv_apply, Units.val_inv_eq_inv_val]
-        rw [KlinearEquiv_apply, KlinearEquiv_apply, KlinearEquiv_apply]
-        simp only [Finsupp.linearCombination_apply]
-        change ∑ _ ∈ _, _ = (∑ _ ∈ _, _) * (∑ _ ∈ _, _)
-        simp only [Finset.mul_sum, Finset.sum_mul, ← Finset.sum_product']
-        -- refine Finset.sum_congr ?_ ?_
-        sorry
-      | add y y' hy hy' => sorry
-      | zero => sorry
-    | add x x' hx hx' => sorry
-    | zero => sorry
+    -- induction x using single_induction (inv_in K F a ha) with
+    -- | single x k1 =>
+    --   induction y using single_induction (inv_in K F a ha) with
+    --   | single y k2 =>
+    --     simp only [mul_def, crossProductMul_single_single, Pi.inv_apply, Units.val_inv_eq_inv_val]
+    --     rw [KlinearEquiv_apply, KlinearEquiv_apply, KlinearEquiv_apply]
+    --     simp only [Finsupp.linearCombination_apply]
+    --     change ∑ _ ∈ _, _ = (∑ _ ∈ _, _) * (∑ _ ∈ _, _)
+    --     simp only [Finset.mul_sum, Finset.sum_mul, ← Finset.sum_product']
+    --     -- refine Finset.sum_congr ?_ ?_
+    --     sorry
+    --   | add y y' hy hy' => sorry
+    --   | zero => sorry
+    -- | add x x' hx hx' => sorry
+    -- | zero => sorry
 
-
-  commutes' := sorry
+  commutes' := fun α ↦ by
+    simp only [algebraMap_val, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
+      LinearMap.map_smul_of_tower, LinearEquiv.coe_coe, MulOpposite.algebraMap_apply,
+      MulOpposite.op_smul, op_one]
+    change _ • (KlinearEquiv _ _ _ _) ⟨_⟩ = _
+    simp only [Prod.mk_one_one, Pi.inv_apply, Units.val_inv_eq_inv_val, inv_inv]
+    rw [single_in_xAsBasis (inv_in K F a ha) (a 1).1 1, map_smul, KlinearEquiv_apply']
+    apply_fun unop using fun _ _ h ↦ unop_inj.1 h
+    simp only [unop_smul, unop_op, unop_one]
+    congr
+    apply val_injective ha
+    simp only [CrossProduct.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+      Units.val_inv_eq_inv_val, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+      IsUnit.mul_inv_cancel, crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
+      _root_.one_mul, one_val, Pi.single_inj]
+    have : a 1 = 1 := by sorry
+    simp only [this, Units.val_one, inv_one]
 
 end mul_inv
 
