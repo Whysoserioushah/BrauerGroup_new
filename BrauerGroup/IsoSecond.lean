@@ -8,6 +8,8 @@ variable (K F : Type) [Field K] [Field F] [Algebra F K]
 
 open groupCohomology FiniteDimensional BrauerGroup DirectSum GoodRep
 
+open scoped TensorProduct
+
 section mul_inv
 
 variable (a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) (ha : IsMulTwoCocycle a)
@@ -70,19 +72,93 @@ def Basis_ofmop : Basis (K ≃ₐ[F] K) K (CrossProduct ha)ᵐᵒᵖ := .mk
 abbrev KlinearEquiv : invCross K F a ha ≃ₗ[K] (CrossProduct ha)ᵐᵒᵖ :=
   Basis.equiv (CrossProduct.x_AsBasis (inv_in K F a ha)) (Basis_ofmop _ _ _ _) $ Equiv.refl _
 
+open CrossProduct in
 def iso_op : invCross K F a ha ≃ₐ[F] (CrossProduct ha)ᵐᵒᵖ where
   __ := KlinearEquiv K F a ha
   map_mul' := fun (x y: CrossProduct (inv_in _ _ _ ha)) ↦ by
     simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe]
-    -- have := Basis.repr (CrossProduct.x_AsBasis (inv_in _ _ _ ha)) x
-    sorry
+    -- have := Basis.linearCombination_repr (CrossProduct.x_AsBasis (inv_in _ _ _ ha))
+    -- have eq2 := Basis.linearCombination_repr (Basis_ofmop K F a ha)
+    -- rw [← this x, ← this y]
+    -- simp only [Finsupp.linearCombination_apply, KlinearEquiv_apply]
+    -- rw [← Finsupp.linearCombination_apply, ← Finsupp.linearCombination_apply,
+    --   ← Finsupp.linearCombination_apply, ← Finsupp.linearCombination_apply,
+    --   ← Finsupp.linearCombination_apply, this x, this y]
+
+    induction x using single_induction (inv_in K F a ha) with
+    | single x k1 =>
+      induction y using single_induction (inv_in K F a ha) with
+      | single y k2 =>
+        simp only [mul_def, crossProductMul_single_single, Pi.inv_apply, Units.val_inv_eq_inv_val]
+        rw [KlinearEquiv_apply, KlinearEquiv_apply, KlinearEquiv_apply]
+        simp only [Finsupp.linearCombination_apply]
+        change ∑ _ ∈ _, _ = (∑ _ ∈ _, _) * (∑ _ ∈ _, _)
+        simp only [Finset.mul_sum, Finset.sum_mul, ← Finset.sum_product']
+        -- refine Finset.sum_congr ?_ ?_
+        sorry
+      | add y y' hy hy' => sorry
+      | zero => sorry
+    | add x x' hx hx' => sorry
+    | zero => sorry
+
+
   commutes' := sorry
 
 end mul_inv
 
--- instance : Mul (H2 (galAct F K)) := sorry
+section map_mul
 
--- def IsoSecond : H2 (galAct F K) ≃* RelativeBrGroup K F := {
---   __ := RelativeBrGroup.equivSnd (F := F)|>.symm
---   map_mul' := sorry
--- }
+variable (a b: (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) (ha : IsMulTwoCocycle a) (hb : IsMulTwoCocycle b)
+  [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+
+open CrossProduct
+
+
+abbrev S : Set (CrossProduct ha ⊗[F] CrossProduct hb) :=
+  {x : (CrossProduct ha ⊗[F] CrossProduct hb)|
+    ∃(a : CrossProduct ha)(b : CrossProduct hb)(k : K), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b)}
+
+omit [IsGalois F K] in
+@[simp]
+lemma mem_S (x : CrossProduct ha ⊗[F] CrossProduct hb) : x ∈ S K F a b ha hb ↔
+  ∃(a : CrossProduct ha)(b : CrossProduct hb)(k : K), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b) := Iff.rfl
+
+abbrev M := (CrossProduct ha ⊗[F] CrossProduct hb) ⧸ Submodule.span
+  (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)
+
+instance : Module F (M K F a b ha hb) := inferInstance
+
+def TensorSmul (aa : CrossProduct ha) (bb : CrossProduct hb) :
+  (CrossProduct ha) ⊗[F] (CrossProduct hb) →ₗ[F] M K F a b ha hb :=
+  let m := Submodule.Quotient.mk (R := CrossProduct ha ⊗[F] CrossProduct hb)
+    (p := Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) (aa ⊗ₜ bb)
+  TensorProduct.lift {
+    toFun := fun a' ↦ {
+      toFun := fun b' ↦ Submodule.Quotient.mk ((a' * aa) ⊗ₜ (b' * bb))
+      map_add' := fun b1 b2 ↦ by simp only [Ideal.submodule_span_eq, add_mul,
+        TensorProduct.tmul_add, Submodule.Quotient.mk_add]
+      map_smul' := fun α bbb ↦ by simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc,
+        TensorProduct.tmul_smul, Submodule.Quotient.mk_smul, RingHom.id_apply]
+    }
+    map_add' := fun a1 a2 ↦ by
+      ext bbb
+      simp only [Ideal.submodule_span_eq, add_mul, TensorProduct.add_tmul,
+        Submodule.Quotient.mk_add, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+    map_smul' := fun α aaa ↦ by
+      ext bbb
+      simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
+        RingHom.id_apply, LinearMap.smul_apply]
+      rfl
+  }
+
+
+instance : Module (CrossProduct ha ⊗[F] CrossProduct hb) (M K F a b ha hb) where
+  smul := sorry
+  one_smul := sorry
+  mul_smul := sorry
+  smul_zero := sorry
+  smul_add := sorry
+  add_smul := sorry
+  zero_smul := sorry
+
+end map_mul
