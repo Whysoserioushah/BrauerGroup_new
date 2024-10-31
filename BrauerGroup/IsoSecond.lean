@@ -10,6 +10,113 @@ open groupCohomology FiniteDimensional BrauerGroup DirectSum GoodRep
 
 open scoped TensorProduct
 
+section map_one
+
+variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+
+def φ0 :
+    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[K]
+    Module.End F K :=
+  (CrossProduct.x_AsBasis (F := F) (K := K) (a := 1) (isMulTwoCocycle_of_twoCocycles 0)).constr F
+    fun σ => σ.toLinearMap
+
+def φ1 :
+    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[F]
+    Module.End F K :=
+  φ0 K F |>.restrictScalars F
+
+def φ2 :
+    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₐ[F]
+    Module.End F K :=
+  AlgHom.ofLinearMap (φ1 K F)
+    (by
+      generalize_proofs h
+      rw [show (1 : CrossProduct h) = .x_AsBasis h 1 by
+        ext1
+        simp]
+      delta φ1 φ0
+      rw [LinearMap.restrictScalars_apply, Basis.constr_basis]
+      rfl)
+    (by
+      rintro x y
+      change φ0 K F _ = φ0 K F _ * φ0 K F _
+      generalize_proofs h
+      induction x using CrossProduct.single_induction h with
+      | single x c =>
+        rw [show (⟨Pi.single x c⟩ : CrossProduct h) =
+          c • .x_AsBasis h x by
+          ext : 1
+          simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
+            CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+            crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
+        rw [map_smul]
+        induction y using CrossProduct.single_induction h with
+        | single y d =>
+          rw [show (⟨Pi.single y d⟩ : CrossProduct h) =
+            d • .x_AsBasis h y by
+            ext : 1
+            simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
+              CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+              crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
+          rw [show (c • CrossProduct.x_AsBasis h x) * (d • .x_AsBasis h y) =
+            (c * x d) • .x_AsBasis h (x * y) by
+            ext : 1
+            simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
+              CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+              crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply, map_mul]]
+          rw [map_smul, map_smul]
+          delta φ0
+          rw [Basis.constr_basis, Basis.constr_basis, Basis.constr_basis]
+          ext α
+          simp only [LinearMap.smul_apply, AlgEquiv.toLinearMap_apply, AlgEquiv.mul_apply,
+            smul_eq_mul, _root_.mul_assoc, LinearMap.mul_apply, map_mul]
+        | add y y' hy hy' =>
+          erw [mul_add]
+          rw [map_add, hy, hy']
+          erw [map_add]
+          rw [mul_add]
+        | zero =>
+          erw [mul_zero]
+          rw [map_zero]
+          erw [map_zero]
+          rw [mul_zero]
+      | add x x' hx hx' =>
+        erw [add_mul]
+        rw [map_add, hx, hx']
+        erw [map_add]
+        rw [add_mul]
+      | zero =>
+        erw [zero_mul]
+        rw [map_zero]
+        erw [map_zero]
+        rw [zero_mul])
+
+def φ3 :
+    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+    Module.End F K :=
+  AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
+    rw [CrossProduct.dim_eq_square]
+    rw [finrank_linearMap, pow_two])
+
+def φ4 :
+    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+    Matrix (Fin <| finrank F K) (Fin <| finrank F K) F :=
+  φ3 K F |>.trans <| LinearMap.toMatrixAlgEquiv <| finBasis F K
+
+lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 := by
+  ext1
+  change Quotient.mk'' _ = Quotient.mk'' _
+  erw [Quotient.eq'']
+  have : 0 < finrank F K := finrank_pos
+  change IsBrauerEquivalent _ _
+  refine ⟨1, finrank F K, by positivity, by positivity, AlgEquiv.trans ?_ <| φ4 K F⟩
+  exact dim_one_iso (CSA.mk (CrossProduct.asCSA ⋯).carrier).carrier
+
+lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
+
+end map_one
+
+#exit
 section mul_inv
 
 variable (a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) (ha : IsMulTwoCocycle a)
