@@ -127,8 +127,8 @@ lemma f_apply_apply (z : ℂ): f k e (e.symm z) = e.symm (conj z) := by
   exact AlgEquiv.apply_symm_apply e z
 
 open Finsupp in
-lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.val z ∧
-    x^2 ∈ (algebraMap ℝ D).range := by
+lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.val z
+    ∧ x^2 ∈ (algebraMap ℝ D).range := by
   obtain ⟨x, hx⟩ := SkolemNoether' ℝ D k k.val (k.val.comp (f k e))
   use x
   intro z
@@ -142,35 +142,75 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
       IsUnit.inv_mul_cancel, mul_one, IsUnit.inv_mul_cancel_left] at hx
     exact hx
   · have x2_is_central : x.1^2 ∈ Subalgebra.center ℝ D := by
-      by_contra!
-      -- rw [Subalgebra.mem_center_iff]
-      -- intro d
-      -- -- specialize hx2 d
-      -- simp only [AlgHom.coe_comp, Subalgebra.coe_val, Function.comp_apply,
-      --   Units.val_inv_eq_inv_val] at hx
-
-      -- -- erw [Subtype.ext_iff.1 (f_apply k e z)] at hx
-      -- apply_fun (x.1 * · * x.1⁻¹) at hx
-      -- -- nth_rw 2 [mul_assoc, mul_assoc, mul_assoc] at hx
-      -- have : k.val z = (x.1 * x.1) * k.val z * (x.1⁻¹ * x.1⁻¹) := sorry
+      have x2_commutes_K : ∀ (y : k), x.1^2 * k.val y = k.val y * x.1^2 := by
+        intro y
+        specialize hx2 y
+        simp only [AlgHom.coe_comp, Subalgebra.coe_val, Function.comp_apply,
+          Units.val_inv_eq_inv_val] at hx2
+        erw [Subtype.ext_iff.1 (f_apply k e y)] at hx2
+        apply_fun (x.1 * · * x.1⁻¹) at hx2
+        erw [← mul_assoc, ← mul_assoc, mul_assoc (x.1 * x.1 * k.val y) x.1⁻¹ x.1⁻¹] at hx2
+        have : k.val y = (x.1 * x.1) * k.val y * (x.1⁻¹ * x.1⁻¹) := by
+          sorry
+        rw [← pow_two] at this
+        apply_fun (· * x.1 * x.1) at this
+        erw [← mul_assoc, mul_assoc (x.1^2 * k.val y * x.1⁻¹),
+          inv_mul_cancel₀ (by simp_all only [AlgHom.coe_comp,
+            Subalgebra.coe_val, Function.comp_apply,
+            Units.val_inv_eq_inv_val, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+            IsUnit.inv_mul_cancel, mul_one, IsUnit.inv_mul_cancel_right]), mul_one, mul_assoc,
+          mul_assoc (x.1^2 * _) _ _, inv_mul_cancel₀ (by simp_all only [AlgHom.coe_comp, Subalgebra.coe_val,
+            Function.comp_apply, Units.val_inv_eq_inv_val, isUnit_iff_ne_zero, ne_eq, Units.ne_zero,
+            not_false_eq_true, IsUnit.inv_mul_cancel, mul_one]),
+          ← pow_two, mul_one] at this
+        exact this.symm
+      by_contra! hxx
       have : LinearIndependent ℝ ![(1 : D), x.1^2] := by
-        rw [linearIndependent_iff]
-        simp only [Nat.succ_eq_add_one, Nat.reduceAdd]
-        rw [IsCentralSimple.center_eq ℝ D] at this
-        change _ ∉ (algebraMap ℝ D).range at this
-        intros f h
-        simp only [linearCombination_apply] at h
-        by_contra! hff
-        change ∑ _ ∈ _, _ = 0 at h
-        simp only at h
+        rw [LinearIndependent.pair_iff]
+        by_contra! hh
+        obtain ⟨s, t, ⟨hst1, hst2⟩⟩ := hh
+        if hs : s = 0 then
+          rw [hs, zero_smul, zero_add] at hst1
+          simp only [smul_eq_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff,
+            Units.ne_zero, or_false] at hst1
+          apply hst2 at hs
+          exact hs hst1
+        else
+          if ht : t = 0 then
+            rw [ht, zero_smul, add_zero, smul_eq_zero] at hst1
+            simp only [one_ne_zero, or_false] at hst1
+            exact hst2 hst1 ht
+          else
+            rw [add_eq_zero_iff_eq_neg, ← neg_smul] at hst1
+            apply_fun ((-t)⁻¹ • ·) at hst1
+            rw [← smul_assoc, ← smul_assoc, smul_eq_mul,
+              smul_eq_mul, inv_mul_cancel₀ (by simp_all only [AlgHom.coe_comp, Subalgebra.coe_val, Function.comp_apply,
+                Units.val_inv_eq_inv_val, Subtype.forall, Subtype.coe_eta, ne_eq, not_true_eq_false, false_implies,
+                mul_neg, neg_smul, neg_eq_zero, not_false_eq_true]),
+              one_smul] at hst1
+            have : x.1^2 ∈ Subalgebra.center ℝ D := by
+              rw [Subalgebra.mem_center_iff]
+              intro d
+              rw [← hst1]
+              simp only [Algebra.mul_smul_comm, mul_one, Algebra.smul_mul_assoc, one_mul]
+            exact hxx this
+      have xink : x.1^2 ∈ k := sorry
+      have indep' : LinearIndependent ℝ (M := k) ![1, ⟨x.1^2, xink⟩] := sorry
+      have IsBasis : Basis (Fin (Nat.succ 0).succ) ℝ k :=
+        .mk (M := k) (v := ![1, ⟨x.1^2, xink⟩]) indep' $ by
+        simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.range_cons,
+          Matrix.range_empty, Set.union_empty, Set.union_singleton, top_le_iff]
+        have : FiniteDimensional.finrank ℝ (Submodule.span ℝ
+          {⟨x.1^2, xink⟩, (1 : k)})= 2 := sorry
+        have eq := Submodule.topEquiv.finrank_eq.trans $
+          e.toLinearEquiv.finrank_eq.trans Complex.finrank_real_complex
+        have le : Submodule.span _ {⟨x.1 ^ 2, xink⟩, (1 : k)} ≤
+          (⊤ : Submodule ℝ k) := sorry
+        exact FiniteDimensional.eq_of_le_of_finrank_eq le $ this.trans eq.symm
+      have xink' : x.1 ∈ k := sorry
 
-        sorry
       sorry
-
     sorry
-
-#check linearIndependent_iff'
-
 
 open scoped algebraMap in
 abbrev V : Set D := {x | ∃ r : ℝ, r ≤ 0 ∧ x^2 = (r : D)}
