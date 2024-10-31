@@ -148,6 +148,19 @@ def iso_op : invCross K F a ha ≃ₐ[F] (CrossProduct ha)ᵐᵒᵖ where
     have : a 1 = 1 := by sorry
     simp only [this, Units.val_one, inv_one]
 
+-- def TensorK : GoodRep (F := F) K 1 where
+--   carrier := {
+--     carrier := K ⊗[F] K
+--     is_central_simple := {
+--       is_central := _
+--       is_simple :=
+--     }
+--     fin_dim := _
+--   }
+--   quot_eq := _
+--   ι := _
+--   dim_eq_square := _
+
 end mul_inv
 
 section map_mul
@@ -172,10 +185,30 @@ abbrev M := (CrossProduct ha ⊗[F] CrossProduct hb) ⧸ Submodule.span
 
 instance : Module F (M K F a b ha hb) := inferInstance
 
+include ha hb in
+omit [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)] in
+lemma mulab : IsMulTwoCocycle (a * b) := by
+  unfold IsMulTwoCocycle
+  intro σ1 σ2 σ3
+  simp only [Pi.mul_apply]
+  replace ha := (ha σ1 σ2 σ3)
+  replace hb := (hb σ1 σ2 σ3)
+  rw [_root_.mul_assoc, ← _root_.mul_assoc (b (σ1 * σ2, _)), mul_comm (b _),
+    ← _root_.mul_assoc, ← _root_.mul_assoc, ha, _root_.mul_assoc, hb]
+  simp only [AlgEquiv.smul_units_def, smul_mul']
+  apply_fun (((Units.map ↑σ1) (a (σ2, σ3)))⁻¹ * · ) using
+    fun k1 k2 h12 ↦ mul_right_inj ((Units.map ↑σ1) (a (σ2, σ3)))⁻¹ |>.1 h12
+  simp only
+  rw [← _root_.mul_assoc, ← _root_.mul_assoc, ← _root_.mul_assoc,
+    inv_mul_cancel, _root_.one_mul, ← _root_.mul_assoc, ← _root_.mul_assoc,
+    ← _root_.mul_assoc, inv_mul_cancel, _root_.one_mul]
+  congr 1
+  exact mul_comm _ _
+
 def TensorSmul (aa : CrossProduct ha) (bb : CrossProduct hb) :
   (CrossProduct ha) ⊗[F] (CrossProduct hb) →ₗ[F] M K F a b ha hb :=
-  let m := Submodule.Quotient.mk (R := CrossProduct ha ⊗[F] CrossProduct hb)
-    (p := Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) (aa ⊗ₜ bb)
+  -- let m := Submodule.Quotient.mk (R := CrossProduct ha ⊗[F] CrossProduct hb)
+  --   (p := Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) (aa ⊗ₜ bb)
   TensorProduct.lift {
     toFun := fun a' ↦ {
       toFun := fun b' ↦ Submodule.Quotient.mk ((a' * aa) ⊗ₜ (b' * bb))
@@ -194,6 +227,9 @@ def TensorSmul (aa : CrossProduct ha) (bb : CrossProduct hb) :
         RingHom.id_apply, LinearMap.smul_apply]
       rfl
   }
+-- #check Submodule.Quotient.mk
+-- def MtoTensorfun (m : M K F a b ha hb) : (M K F a b ha hb) →
+--     (CrossProduct ha) ⊗[F] (CrossProduct hb) := fun ⟨_, _⟩ ↦ by sorry
 
 
 instance : Module (CrossProduct ha ⊗[F] CrossProduct hb) (M K F a b ha hb) where
