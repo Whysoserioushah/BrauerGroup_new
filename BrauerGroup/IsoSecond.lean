@@ -110,7 +110,7 @@ lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 
   have : 0 < finrank F K := finrank_pos
   change IsBrauerEquivalent _ _
   refine ⟨1, finrank F K, by positivity, by positivity, AlgEquiv.trans ?_ <| φ4 K F⟩
-  exact dim_one_iso (CSA.mk (CrossProduct.asCSA ⋯).carrier).carrier
+  exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
 
 lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
 
@@ -395,15 +395,93 @@ abbrev smulLinear : (CrossProduct ha) ⊗[F] (CrossProduct hb) →ₗ[F]
         simp only [Basis.constr_apply_fintype, Basis.equivFun_apply,
           x_AsBasis_apply, mul_add, tmul_add, smul_add,
           Finset.sum_add_distrib, LinearMap.add_apply]
-      map_smul' := sorry
-    }
-    map_add' := sorry
-    map_smul' := sorry
+      map_smul' := fun α bb ↦ by
+        ext aabb
+        simp only [Basis.constr_apply_fintype, Basis.equivFun_apply, x_AsBasis_apply,
+          Algebra.mul_smul_comm, tmul_smul, RingHom.id_apply,
+          LinearMap.smul_apply, Finset.smul_sum]
+        refine Finset.sum_congr rfl fun x _ ↦ smul_comm _ _ _ }
+    map_add' := fun a1 a2 ↦ by
+      ext bb x
+      simp only [LinearMap.coe_mk, AddHom.coe_mk, Basis.constr_apply_fintype, Basis.equivFun_apply,
+        LinearMap.add_apply, ← Finset.sum_add_distrib]
+      refine Finset.sum_congr rfl fun x _ ↦ by
+        simp only [x_AsBasis_apply, mul_add, add_tmul, smul_add]
+    map_smul' := fun α aa ↦ by
+      ext bb x
+      simp only [LinearMap.coe_mk, AddHom.coe_mk, Basis.constr_apply_fintype, Basis.equivFun_apply,
+        Algebra.mul_smul_comm, RingHom.id_apply, LinearMap.smul_apply, Finset.smul_sum]
+      refine Finset.sum_congr rfl fun i _ ↦ by
+        rw [smul_tmul', smul_tmul', smul_tmul', smul_comm]
   }
 
-instance : Module (CrossProduct (mulab K F a b ha hb))
-    (CrossProduct ha ⊗[F] CrossProduct hb) := sorry
+instance : IsScalarTower K (CrossProduct ha) (CrossProduct ha) where
+  smul_assoc k a1 a2 := by
+    change (ι ha k * a1) • _ = ι ha k * _
+    rw [smul_eq_mul, smul_eq_mul, _root_.mul_assoc]
 
+instance : CompatibleSMul F K (CrossProduct ha) (CrossProduct hb) where
+  smul_tmul k aa bb := by
+    -- change (CrossProduct.ι ha k * aa) ⊗ₜ _ = _ ⊗ₜ (CrossProduct.ι hb k * bb)
+    induction aa using single_induction ha with
+    | zero => simp only [show ⟨0⟩ = (0 : CrossProduct ha) from rfl, smul_zero, zero_tmul]
+    | single σ k1 =>
+      simp only [smul_single]
+      induction bb using single_induction hb with
+      | zero => simp only [show ⟨0⟩ = (0 : CrossProduct hb) from rfl, tmul_zero, smul_zero]
+      | single σ' k2 =>
+        simp only [smul_single]
+
+        sorry
+      | add _ _ h11 h22 =>
+        sorry
+    | add _ _ h1 h2 => sorry
+
+instance : Module (CrossProduct (mulab K F a b ha hb))
+    (CrossProduct ha ⊗[F] CrossProduct hb) where
+  smul x ab := smulLinear K F a b ha hb ab x
+  one_smul ab := by
+    change smulLinear _ _ _ _ _ _ _ ⟨_⟩ = _
+    rw [single_in_xAsBasis, map_smul]
+    induction ab using TensorProduct.induction_on with
+    | zero => simp only [Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, map_zero,
+        x_AsBasis_apply, LinearMap.zero_apply, smul_zero]
+    | tmul aa bb =>
+        simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, smulsmul,
+          Basis.constr_basis]
+        change ((((a (1, 1)) * (b (1, 1))) : Kˣ).1)⁻¹ • _ = _
+        rw [Units.val_mul, _root_.mul_inv, ← one_smul K (u 1),
+          ← single_in_xAsBasis ha 1 1, ← one_smul K (v 1),
+          ← single_in_xAsBasis hb 1 1, mul_comm, mul_smul, smul_tmul', ← smul_mul_assoc,
+          smul_single, _root_.mul_one, show ⟨Pi.single _ _⟩ = (1 : CrossProduct ha) from rfl,
+          _root_.one_mul, ← tmul_smul, ← smul_mul_assoc, smul_single, _root_.mul_one,
+          show ⟨Pi.single _ _⟩ = (1 : CrossProduct hb) from rfl, _root_.one_mul]
+    | add _ _ h1 h2 => rw [map_add, LinearMap.add_apply, smul_add, h1, h2]
+  mul_smul aabb1 aabb2 ab := by
+    change smulLinear _ _ _ _ _ _ _ _ = smulLinear _ _ _ _ _ _ (smulLinear _ _ _ _ _ _ _ _) _
+    induction aabb1 using single_induction with
+    | zero => sorry
+    | single σ k =>
+    induction aabb2 using single_induction with
+      | zero => sorry
+      | single σ' k' =>
+        simp only [mul_single_in_xAsBasis, Pi.mul_apply, Units.val_mul, x_AsBasis_apply, map_smul]
+        induction ab using TensorProduct.induction_on with
+        | zero => sorry
+        | tmul aa bb =>
+          simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, smulsmul, single_in_xAsBasis,
+            one_smul, Basis.constr_basis, map_smul, smul_tmul']
+          sorry
+        | add _ _ h11 h12 => sorry
+      | add _ _ h1' h2' => sorry
+    | add _ _ h1 h2 => sorry
+
+  smul_zero := sorry
+  smul_add := sorry
+  add_smul := sorry
+  zero_smul := sorry
+
+example (a b : K) : (a * b)⁻¹ = a⁻¹ * b⁻¹ := by exact _root_.mul_inv a b
 instance : Module (CrossProduct (mulab K F a b ha hb)) (M K F a b ha hb) := sorry
 
 end map_mul
