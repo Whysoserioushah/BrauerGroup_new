@@ -205,40 +205,45 @@ lemma mulab : IsMulTwoCocycle (a * b) := by
   congr 1
   exact mul_comm _ _
 
-def TensorSmul (aa : CrossProduct ha) (bb : CrossProduct hb) :
-  (CrossProduct ha) ⊗[F] (CrossProduct hb) →ₗ[F] M K F a b ha hb :=
-  -- let m := Submodule.Quotient.mk (R := CrossProduct ha ⊗[F] CrossProduct hb)
-  --   (p := Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) (aa ⊗ₜ bb)
-  TensorProduct.lift {
-    toFun := fun a' ↦ {
-      toFun := fun b' ↦ Submodule.Quotient.mk ((a' * aa) ⊗ₜ (b' * bb))
-      map_add' := fun b1 b2 ↦ by simp only [Ideal.submodule_span_eq, add_mul,
-        TensorProduct.tmul_add, Submodule.Quotient.mk_add]
-      map_smul' := fun α bbb ↦ by simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc,
-        TensorProduct.tmul_smul, Submodule.Quotient.mk_smul, RingHom.id_apply]
-    }
-    map_add' := fun a1 a2 ↦ by
-      ext bbb
-      simp only [Ideal.submodule_span_eq, add_mul, TensorProduct.add_tmul,
-        Submodule.Quotient.mk_add, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
-    map_smul' := fun α aaa ↦ by
-      ext bbb
-      simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
-        RingHom.id_apply, LinearMap.smul_apply]
-      rfl
-  }
--- #check Submodule.Quotient.mk
--- def MtoTensorfun (m : M K F a b ha hb) : (M K F a b ha hb) →
---     (CrossProduct ha) ⊗[F] (CrossProduct hb) := fun ⟨_, _⟩ ↦ by sorry
+-- def TensorSmul (aa : CrossProduct ha) (bb : CrossProduct hb) :
+--   (CrossProduct ha) ⊗[F] (CrossProduct hb) →ₗ[F] M K F a b ha hb :=
+--   -- let m := Submodule.Quotient.mk (R := CrossProduct ha ⊗[F] CrossProduct hb)
+--   --   (p := Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) (aa ⊗ₜ bb)
+--   TensorProduct.lift {
+--     toFun := fun a' ↦ {
+--       toFun := fun b' ↦ Submodule.Quotient.mk ((a' * aa) ⊗ₜ (b' * bb))
+--       map_add' := fun b1 b2 ↦ by simp only [Ideal.submodule_span_eq, add_mul,
+--         TensorProduct.tmul_add, Submodule.Quotient.mk_add]
+--       map_smul' := fun α bbb ↦ by simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc,
+--         TensorProduct.tmul_smul, Submodule.Quotient.mk_smul, RingHom.id_apply]
+--     }
+--     map_add' := fun a1 a2 ↦ by
+--       ext bbb
+--       simp only [Ideal.submodule_span_eq, add_mul, TensorProduct.add_tmul,
+--         Submodule.Quotient.mk_add, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+--     map_smul' := fun α aaa ↦ by
+--       ext bbb
+--       simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
+--         RingHom.id_apply, LinearMap.smul_apply]
+--       rfl
+--   }
 
+instance : Module (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ
+  (CrossProduct ha ⊗[F] CrossProduct hb) := inferInstance
 
-instance : Module (CrossProduct ha ⊗[F] CrossProduct hb) (M K F a b ha hb) where
-  smul := sorry
-  one_smul := sorry
-  mul_smul := sorry
-  smul_zero := sorry
-  smul_add := sorry
-  add_smul := sorry
-  zero_smul := sorry
+set_option synthInstance.maxHeartbeats 40000 in
+instance : Module (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ
+    (Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) :=
+  -- inferInstance
+  sorry
+
+instance : IsScalarTower (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ (CrossProduct ha ⊗[F] CrossProduct hb)
+    (CrossProduct ha ⊗[F] CrossProduct hb) where
+  smul_assoc xop x y := by
+    simp only [MulOpposite.smul_eq_mul_unop, smul_eq_mul]
+    sorry
+
+instance : Module (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ (M K F a b ha hb) :=
+  Submodule.Quotient.module' _
 
 end map_mul
