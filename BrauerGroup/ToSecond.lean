@@ -1350,6 +1350,20 @@ lemma dim_eq_square [IsGalois F K] : finrank F (CrossProduct ha) = (finrank F K)
   rw [finrank_eq_card_basis (x_AsBasis ha), IsGalois.card_aut_eq_finrank] at eq1
   rw [eq1, pow_two]
 
+lemma one_def : (1 : CrossProduct ha) = (a 1).1⁻¹ • x_AsBasis ha 1 := by
+  ext1
+  simp only [one_val, Prod.mk_one_one, x_AsBasis_apply, smul_def, mul_val, ι_apply_val,
+    Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
+    isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right]
+
+lemma x__conj'' (c : K) : x_AsBasis ha σ * ι ha c = (σ c) • (x_AsBasis ha σ) := by
+  simpa using x__conj' ha σ c
+
+lemma x_AsBasis_mul : x_AsBasis ha σ * x_AsBasis ha τ = (a (σ, τ)).1 • x_AsBasis ha (σ * τ) := by
+  have := x__mul ha σ τ
+  simp only [x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀, Units.val_ofLeftRightInverse,
+    mul_inv_rev, AlgEquiv.mul_apply, x_AsBasis_apply] at this ⊢
+  rw [this, smul_def]
 
 lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ := by
   rintro z hz

@@ -10,6 +10,7 @@ open groupCohomology FiniteDimensional BrauerGroup DirectSum GoodRep
 
 open scoped TensorProduct
 
+namespace map_one_proof
 section map_one
 
 variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
@@ -116,223 +117,600 @@ lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one'
 
 end map_one
 
--- section mul_inv
+end map_one_proof
 
--- variable (a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) (ha : IsMulTwoCocycle a)
-
--- include ha in
--- lemma inv_in : IsMulTwoCocycle (a⁻¹) := fun σ1 σ2 σ3 ↦ by
---   have := ha σ1 σ2 σ3
---   simp only [Pi.inv_apply, smul_inv']
---   apply_fun ((a (σ1 * σ2, σ3)) * · * (a (σ1, σ2 * σ3)))
---   simp only [← _root_.mul_assoc, mul_inv_cancel, _root_.one_mul]
---   rw [_root_.mul_assoc, inv_mul_cancel, _root_.mul_one]
---   apply_fun ((a (σ1, σ2)) * · * (σ1 • a (σ2, σ3)))
---   simp only [← _root_.mul_assoc, mul_inv_cancel, _root_.one_mul]
---   rw [_root_.mul_assoc, inv_mul_cancel, _root_.mul_one, mul_comm]
---   nth_rw 2 [mul_comm]
---   exact this.symm
---   · intro k1 k2
---     simp only [AlgEquiv.smul_units_def, mul_left_inj, mul_right_inj, imp_self]
---   · intro k1 k2
---     simp only [mul_left_inj, mul_right_inj, imp_self]
-
--- variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
-
--- abbrev invCross : Type := CrossProduct (inv_in K F a ha)
-
--- instance : FiniteDimensional K (invCross K F a ha) := FiniteDimensional.right F K _
-
--- instance : FiniteDimensional K (CrossProduct ha)ᵐᵒᵖ := FiniteDimensional.right F K _
-
--- open MulOpposite CrossProduct in
--- def Basis_ofmop : Basis (K ≃ₐ[F] K) K (CrossProduct ha)ᵐᵒᵖ := .mk
---   (v := fun σ => op (x_ ha σ).1) (by
---     rw [linearIndependent_iff']
---     intro J f hf σ hσ
---     replace hf : ∑ i ∈ J, ι ha (f i) • (op (x_ ha i).1) = (0 : (CrossProduct ha)ᵐᵒᵖ) := hf
---     replace hf : ∑ i ∈ J, op ⟨Pi.single i (f i)⟩ = (0 : (CrossProduct ha)ᵐᵒᵖ) := by
---       rw [← hf]
---       exact Finset.sum_congr rfl fun i _ => congrArg op $ identity_double_cross ha i (f i) |>.symm
---     apply_fun AddMonoidHom.mulOp (valAddMonoidHom ha) at hf
---     simp only [map_sum, AddMonoidHom.mulOp_apply_apply, Function.comp_apply, unop_op, unop_zero,
---       map_zero, op_zero] at hf
---     apply_fun unop at hf
---     simp only [Finset.unop_sum, unop_op, unop_zero] at hf
---     replace hf := congr_fun hf σ
---     simp only [Finset.sum_apply, valAddMonoidHom_apply, Finset.sum_pi_single, Pi.zero_apply,
---       ite_eq_else] at hf
---     exact hf hσ) (by
---     rintro ⟨x⟩ -
---     induction x using single_induction ha with
---     | single x cx =>
---       have eq : (⟨Pi.single x cx⟩ : CrossProduct ha) = cx • ⟨Pi.single x 1⟩ := by
---         change _ = ι ha _ * _
---         rw [identity_double_cross]
---       rw [eq]
---       exact Submodule.smul_mem _ _ <| Submodule.subset_span ⟨x, rfl⟩
---     | add x x' hx hx' => exact Submodule.add_mem _ hx hx'
---     | zero => exact Submodule.zero_mem _)
-
--- omit [IsGalois F K] in
--- @[simp]
--- lemma Basis_ofmop_apply (σ : K ≃ₐ[F] K):
---     Basis_ofmop K F a ha σ = MulOpposite.op ⟨Pi.single σ 1⟩ := by
---   simp only [Basis_ofmop, CrossProduct.x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀,
---     CrossProduct.Units.val_ofLeftRightInverse, Basis.coe_mk]
-
-
--- @[simps! symm_apply apply]
--- abbrev KlinearEquiv : invCross K F a ha ≃ₗ[K] (CrossProduct ha)ᵐᵒᵖ :=
---   Basis.equiv (CrossProduct.x_AsBasis (inv_in K F a ha)) (Basis_ofmop _ _ _ _) $ Equiv.refl _
-
--- omit [IsGalois F K] in
--- lemma KlinearEquiv_apply' (σ : K ≃ₐ[F] K): KlinearEquiv K F a ha
---     ((CrossProduct.x_AsBasis (inv_in K F a ha)) σ) = MulOpposite.op ⟨Pi.single σ 1⟩ := by
---   rw [Basis.equiv_apply]
---   simp only [Equiv.refl_apply, Basis_ofmop_apply]
-
--- -- variable [DecidableEq (K ≃ₐ[F] K)] in
--- open CrossProduct MulOpposite in
--- def iso_op : invCross K F a ha ≃ₐ[F] (CrossProduct ha)ᵐᵒᵖ where
---   __ := KlinearEquiv K F a ha
---   map_mul' := fun (x y: CrossProduct (inv_in _ _ _ ha)) ↦ by
---     simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe]
---     have := Basis.linearCombination_repr (CrossProduct.x_AsBasis (inv_in _ _ _ ha))
---     -- have eq2 := Basis.linearCombination_repr (Basis_ofmop K F a ha)
---     rw [← this x, ← this y]
---     simp only [Finsupp.linearCombination_apply, x_AsBasis_apply, KlinearEquiv_apply,
---       Basis_ofmop_apply]
---     change ∑ _ ∈ _, _ = (∑ _ ∈ _, _) * (∑ _ ∈ _, _)
---     apply_fun MulOpposite.unop using (fun a b hab ↦ MulOpposite.unop_inj.1 hab)
---     simp only [map_sum, LinearMap.coe_mk, AddHom.coe_mk, MulOpposite.unop_smul, MulOpposite.unop_op,
---       MulOpposite.unop_mul, Finset.unop_sum]
---     -- calc _
---     --   _ = ∑ σ ∈ Finset.univ, if σ ∈ ((x_AsBasis _).repr
---     --       ((((x_AsBasis (inv_in K F a ha)).repr x).sum fun τ k ↦ k • ⟨Pi.single τ 1⟩) *
---     --         ((x_AsBasis _).repr y).sum fun τ k ↦ k • ⟨Pi.single τ 1⟩)).support then
---     --         ((x_AsBasis _).repr ((((x_AsBasis _).repr x).sum fun i a_1 ↦ a_1 • { val := Pi.single i 1 }) *
---     --         ((x_AsBasis _).repr y).sum fun i a_1 ↦ a_1 • { val := Pi.single i 1 }))
---     --         σ • { val := Pi.single x_1 1 } else 0 := by sorry
---       -- _ = _ := sorry
---     sorry
---     -- rw [← Finsupp.linearCombination_apply, ← Finsupp.linearCombination_apply,
---     --   ← Finsupp.linearCombination_apply, ← Finsupp.linearCombination_apply,
---     --   ← Finsupp.linearCombination_apply, this x, this y]
-
---     -- induction x using single_induction (inv_in K F a ha) with
---     -- | single x k1 =>
---     --   induction y using single_induction (inv_in K F a ha) with
---     --   | single y k2 =>
---     --     simp only [mul_def, crossProductMul_single_single, Pi.inv_apply, Units.val_inv_eq_inv_val]
---     --     rw [KlinearEquiv_apply, KlinearEquiv_apply, KlinearEquiv_apply]
---     --     simp only [Finsupp.linearCombination_apply]
---     --     change ∑ _ ∈ _, _ = (∑ _ ∈ _, _) * (∑ _ ∈ _, _)
---     --     simp only [Finset.mul_sum, Finset.sum_mul, ← Finset.sum_product']
---     --     -- refine Finset.sum_congr ?_ ?_
---     --     sorry
---     --   | add y y' hy hy' => sorry
---     --   | zero => sorry
---     -- | add x x' hx hx' => sorry
---     -- | zero => sorry
-
---   commutes' := fun α ↦ by
---     simp only [algebraMap_val, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
---       LinearMap.map_smul_of_tower, LinearEquiv.coe_coe, MulOpposite.algebraMap_apply,
---       MulOpposite.op_smul, op_one]
---     change _ • (KlinearEquiv _ _ _ _) ⟨_⟩ = _
---     simp only [Prod.mk_one_one, Pi.inv_apply, Units.val_inv_eq_inv_val, inv_inv]
---     rw [single_in_xAsBasis (inv_in K F a ha) (a 1).1 1, map_smul, KlinearEquiv_apply']
---     apply_fun unop using fun _ _ h ↦ unop_inj.1 h
---     simp only [unop_smul, unop_op, unop_one]
---     congr
---     apply val_injective ha
---     simp only [CrossProduct.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
---       Units.val_inv_eq_inv_val, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
---       IsUnit.mul_inv_cancel, crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
---       _root_.one_mul, one_val, Pi.single_inj]
---     have : a 1 = 1 := by sorry
---     simp only [this, Units.val_one, inv_one]
-
--- -- def TensorK : GoodRep (F := F) K 1 where
--- --   carrier := {
--- --     carrier := K ⊗[F] K
--- --     is_central_simple := {
--- --       is_central := _
--- --       is_simple :=
--- --     }
--- --     fin_dim := _
--- --   }
--- --   quot_eq := _
--- --   ι := _
--- --   dim_eq_square := _
-
--- end mul_inv
-
+namespace map_mul_proof
 section map_mul
 
-variable (a b: (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) (ha : IsMulTwoCocycle a) (hb : IsMulTwoCocycle b)
-  [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+variable (α β : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ)
+variable (hα : IsMulTwoCocycle α) (hβ : IsMulTwoCocycle β)
+
+variable {K F α β}
+
+include hα hβ in
+lemma hαβ : IsMulTwoCocycle (α * β) := isMulTwoCocycle_of_twoCocycles <|
+  (twoCocyclesOfIsMulTwoCocycle hα) + (twoCocyclesOfIsMulTwoCocycle hβ)
+
+local notation "A" => CrossProduct hα
+local notation "B" => CrossProduct hβ
+local notation "C" => CrossProduct (hαβ hα hβ)
 
 open CrossProduct TensorProduct
 
+variable [FiniteDimensional F K]  [DecidableEq (K ≃ₐ[F] K)]
 
-abbrev S : Set (CrossProduct ha ⊗[F] CrossProduct hb) :=
-  {x : (CrossProduct ha ⊗[F] CrossProduct hb)|
-    ∃(a : CrossProduct ha)(b : CrossProduct hb)(k : K), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b)}
 
-omit [IsGalois F K] in
+abbrev S : Set (A ⊗[F] B) :=
+  Set.range (fun (cba : K × A × B) =>
+    (cba.1 • cba.2.1) ⊗ₜ[F] cba.2.2 - cba.2.1 ⊗ₜ[F] (cba.1 • cba.2.2))
+
 @[simp]
-lemma mem_S (x : CrossProduct ha ⊗[F] CrossProduct hb) : x ∈ S K F a b ha hb ↔
-  ∃(a : CrossProduct ha)(b : CrossProduct hb)(k : K), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b) := Iff.rfl
+lemma mem_S (x : A ⊗[F] B) : x ∈ S hα hβ ↔
+    ∃ (k : K) (a : A) (b : B), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b) := by
+  simp only [S, Set.mem_range, Prod.exists]
+  aesop
 
-abbrev M := (CrossProduct ha ⊗[F] CrossProduct hb) ⧸ Submodule.span
-  (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)
+abbrev M := (A ⊗[F] B) ⧸ Submodule.span F (S hα hβ)
 
-instance : Module F (M K F a b ha hb) := inferInstance
+open MulOpposite
 
-include ha hb in
-omit [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)] in
-lemma mulab : IsMulTwoCocycle (a * b) := by
-  unfold IsMulTwoCocycle
-  intro σ1 σ2 σ3
-  simp only [Pi.mul_apply]
-  replace ha := (ha σ1 σ2 σ3)
-  replace hb := (hb σ1 σ2 σ3)
-  rw [_root_.mul_assoc, ← _root_.mul_assoc (b (σ1 * σ2, _)), mul_comm (b _),
-    ← _root_.mul_assoc, ← _root_.mul_assoc, ha, _root_.mul_assoc, hb]
-  simp only [AlgEquiv.smul_units_def, smul_mul']
-  apply_fun (((Units.map ↑σ1) (a (σ2, σ3)))⁻¹ * · ) using
-    fun k1 k2 h12 ↦ mul_right_inj ((Units.map ↑σ1) (a (σ2, σ3)))⁻¹ |>.1 h12
-  simp only
-  rw [← _root_.mul_assoc, ← _root_.mul_assoc, ← _root_.mul_assoc,
-    inv_mul_cancel, _root_.one_mul, ← _root_.mul_assoc, ← _root_.mul_assoc,
-    ← _root_.mul_assoc, inv_mul_cancel, _root_.one_mul]
+-- def SAsIdeal : Ideal (A ⊗[F] B)ᵐᵒᵖ where
+--   carrier := op '' Submodule.span F (S hα hβ)
+--   add_mem' := by
+--     rintro _ _ ⟨x, hx, rfl⟩ ⟨y, hy, rfl⟩
+--     refine ⟨x + y, Submodule.add_mem _ hx hy, rfl⟩
+--   zero_mem' := by
+--     refine ⟨0, Submodule.zero_mem _, rfl⟩
+--   smul_mem' := by
+--     rintro ⟨x⟩ _ ⟨y, hy, rfl⟩
+--     refine ⟨y • x, Submodule.span_induction hy ?_ ?_ ?_ ?_, unop_injective rfl⟩
+--     · rintro _ ⟨⟨k, a, b⟩, rfl⟩
+--       simp only [smul_eq_mul, SetLike.mem_coe]
+--       induction x using TensorProduct.induction_on
+--       sorry
+
+instance : IsScalarTower K A A where
+  smul_assoc k a a' := by
+    induction a using single_induction with
+    | single σ a =>
+      induction a' using single_induction with
+      | single τ a' =>
+        ext : 1
+        simp only [CrossProduct.smul_def, smul_eq_mul, mul_val, ι_apply_val, Prod.mk_one_one,
+          Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.one_mul,
+          AlgEquiv.one_apply, Pi.single_inj]
+        field_simp
+        ring
+      | add x y hx hy =>
+        erw [smul_add, smul_add, hx, hy, smul_add]
+      | zero =>
+        erw [smul_zero, smul_zero, smul_zero]
+    | add x y hx hy =>
+      erw [smul_add, add_smul, hx, hy, add_smul, smul_add]
+    | zero =>
+      erw [smul_zero, zero_smul, smul_zero]
+
+section Aox_FB_mod
+
+def Aox_FB_smul_M_aux (a' : A) (b' : B) : M hα hβ →ₗ[F] M hα hβ :=
+  Submodule.mapQ (Submodule.span F (S hα hβ)) (Submodule.span F (S hα hβ))
+    (TensorProduct.lift
+      { toFun := fun a =>
+        { toFun := fun b => (a * a') ⊗ₜ (b * b')
+          map_add' := by
+            intro b1 b2
+            simp [add_mul, tmul_add]
+          map_smul' := by
+            intro f b; simp }
+        map_add' := by
+          intro a1 a2
+          ext b : 1
+          simp [add_mul, add_tmul]
+        map_smul' := by
+          intro f a
+          ext b : 1
+          simp [smul_tmul] })
+    (by
+      rw [Submodule.span_le]
+      rintro _ ⟨⟨k, a, b⟩, rfl⟩
+      simp only [Submodule.comap_coe, Set.mem_preimage, map_sub, lift.tmul, LinearMap.coe_mk,
+        AddHom.coe_mk, SetLike.mem_coe]
+      refine Submodule.subset_span ⟨⟨k, a * a', b * b'⟩, by simp [smul_mul_assoc]⟩)
+
+def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M hα hβ →ₗ[F] M hα hβ :=
+  TensorProduct.lift
+  { toFun := fun a' =>
+    { toFun := fun b' => Aox_FB_smul_M_aux _ _ a' b'
+      map_add' := by
+        intro b1' b2'
+        ext a b
+        simp only [Aox_FB_smul_M_aux, AlgebraTensorModule.curry_apply, curry_apply,
+          LinearMap.coe_restrictScalars, LinearMap.coe_comp, Function.comp_apply,
+          Submodule.mkQ_apply, Submodule.mapQ_apply, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk,
+          LinearMap.add_apply]
+        rw [mul_add, tmul_add]
+        rfl
+      map_smul' := by
+        intro f b'
+        ext a b
+        simp only [Aox_FB_smul_M_aux, Algebra.mul_smul_comm, tmul_smul,
+          AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+          LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, Submodule.mapQ_apply,
+          lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, Submodule.Quotient.mk_smul, RingHom.id_apply,
+          LinearMap.smul_apply] }
+    map_add' := by
+      intro a1' a2'
+      ext b' a b
+      simp only [Aox_FB_smul_M_aux, mul_add, add_tmul, LinearMap.coe_mk, AddHom.coe_mk,
+        AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+        LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, Submodule.mapQ_apply,
+        lift.tmul, Submodule.Quotient.mk_add, LinearMap.add_apply]
+    map_smul' := by
+      intro f a'
+      ext b' a b
+      simp only [Aox_FB_smul_M_aux, Algebra.mul_smul_comm, LinearMap.coe_mk, AddHom.coe_mk,
+        AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+        LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, Submodule.mapQ_apply,
+        lift.tmul, RingHom.id_apply, LinearMap.smul_apply]
+      rw [← smul_tmul']
+      simp only [Submodule.Quotient.mk_smul] }
+
+@[simp]
+lemma Aox_FB_smul_M_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
+    Aox_FB_smul_M hα hβ (a' ⊗ₜ[F] b') (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    Submodule.Quotient.mk ((a * a') ⊗ₜ[F] (b * b')) := rfl
+
+
+instance : SMul (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
+  smul x y := Aox_FB_smul_M _ _ x.unop y
+
+@[simp]
+lemma Aox_FB_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
+    op (a' ⊗ₜ[F] b') • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    Submodule.Quotient.mk ((a * a') ⊗ₜ[F] (b * b')) := rfl
+
+instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
+  one_smul := by
+    intro x
+    rw [show (1 : (A ⊗[F] B)ᵐᵒᵖ) = op 1 from rfl,
+      Algebra.TensorProduct.one_def]
+    change Aox_FB_smul_M hα hβ (1 ⊗ₜ[F] 1) x = LinearMap.id (R := F) x
+    refine LinearMap.ext_iff |>.1 ?_ x
+    ext a b
+    simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+      LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply,
+      Aox_FB_smul_M_op_tmul_smul_mk_tmul, _root_.mul_one, LinearMap.id_comp]
+  mul_smul := by
+    rintro ⟨x⟩ ⟨y⟩ b
+    change Aox_FB_smul_M hα hβ (y * x) _ = Aox_FB_smul_M hα hβ x (Aox_FB_smul_M hα hβ y b)
+    rw [← LinearMap.comp_apply]
+    refine LinearMap.ext_iff |>.1 ?_ b
+    ext a b
+    simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+      LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply]
+    induction x using TensorProduct.induction_on with
+    | tmul xl rl =>
+      induction y using TensorProduct.induction_on with
+      | tmul yl yr =>
+        simp only [Algebra.TensorProduct.tmul_mul_tmul, Aox_FB_smul_M_op_tmul_smul_mk_tmul,
+          _root_.mul_assoc]
+      | add y y' hy hy' =>
+        simp only [add_mul, map_add, LinearMap.add_apply, hy, hy']
+      | zero =>
+        simp only [zero_mul, map_zero, LinearMap.zero_apply]
+    | add x x' hx hx' =>
+      simp only [mul_add, map_add, LinearMap.add_apply, hx, hx']
+    | zero =>
+      simp only [mul_zero, map_zero, LinearMap.zero_apply]
+
+instance : DistribMulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
+  smul_zero := by
+    intro x
+    change Aox_FB_smul_M hα hβ _ _ = _
+    simp
+  smul_add := by
+    intro x a b
+    change Aox_FB_smul_M hα hβ _ _ = Aox_FB_smul_M hα hβ _ _ + Aox_FB_smul_M hα hβ _ _
+    simp
+
+instance : Module (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
+  add_smul := by
+    intro x y a
+    change Aox_FB_smul_M hα hβ _ _ = Aox_FB_smul_M hα hβ _ _ + Aox_FB_smul_M hα hβ _ _
+    simp
+  zero_smul := by
+    intro x
+    change Aox_FB_smul_M hα hβ _ _ = _
+    simp
+
+end Aox_FB_mod
+
+section C_mod
+
+def F_smul_mul_compatible (f : F) (a a' : A) :
+    (f • a) * a' = a * (f • a') := by
+  simp only [Algebra.smul_mul_assoc, Algebra.mul_smul_comm]
+
+def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
+  Submodule.mapQ (Submodule.span F (S hα hβ)) (Submodule.span F (S hα hβ))
+    (TensorProduct.lift
+      { toFun := fun a =>
+        { toFun := fun b =>
+            ∑ σ : K ≃ₐ[F] K, ((c.1 σ • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)
+          map_add' := by
+            intro b b'
+            dsimp only
+            rw [← Finset.sum_add_distrib]
+            refine Finset.sum_congr rfl fun σ _ => ?_
+            rw [mul_add, tmul_add]
+          map_smul' := by
+            intro f b
+            dsimp only [RingHom.id_apply]
+            rw [Finset.smul_sum]
+            refine Finset.sum_congr rfl fun σ _ => ?_
+            rw [smul_tmul', smul_tmul, ← F_smul_mul_compatible]
+            simp only [Algebra.smul_mul_assoc, tmul_smul] }
+        map_add' := by
+          intro a a'
+          ext b : 1
+          simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+          rw [← Finset.sum_add_distrib]
+          refine Finset.sum_congr rfl fun σ _ => ?_
+          simp [mul_add, add_tmul]
+        map_smul' := by
+          intro f a
+          ext b : 1
+          simp only [Algebra.mul_smul_comm, LinearMap.coe_mk, AddHom.coe_mk,
+            RingHom.id_apply, LinearMap.smul_apply]
+          rw [Finset.smul_sum]
+          refine Finset.sum_congr rfl fun σ _ => ?_
+          rw [smul_tmul'] })
+  (by
+    rw [Submodule.span_le]
+    rintro _ ⟨⟨k, a, b⟩, rfl⟩
+    simp only [Submodule.comap_coe, Set.mem_preimage, map_sub, lift.tmul,
+      LinearMap.coe_mk, AddHom.coe_mk, SetLike.mem_coe]
+    rw [← Finset.sum_sub_distrib]
+    refine Submodule.sum_mem _ fun σ _ => ?_
+    rw [show c.val σ • (x_AsBasis hα) σ * k • a = (c.val σ • (x_AsBasis hα) σ * ι hα k) * a by
+      conv_lhs => rw [CrossProduct.smul_def hα k a]
+      simp only [_root_.mul_assoc],
+      show (c.val σ • (x_AsBasis hα) σ * ι hα k) * a = ((c.val σ * σ k) • x_AsBasis hα σ * a) by
+      rw [smul_mul_assoc, x__conj'' hα, mul_smul],
+      mul_comm (c.val σ), smul_mul_assoc, mul_smul,
+      show (x_AsBasis hβ) σ * k • b = σ k • ((x_AsBasis hβ) σ * b) by
+      rw [← smul_mul_assoc (σ k) (x_AsBasis hβ σ) b, ← x__conj'' hβ, _root_.mul_assoc]
+      rfl]
+    refine Submodule.subset_span ⟨⟨σ k, c.1 σ • (x_AsBasis hα σ * a), x_AsBasis hβ σ * b⟩, ?_⟩
+    simp only [smul_mul_assoc])
+
+
+lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
+    C_smul_aux _ _ (k • x_AsBasis (hαβ hα hβ) σ) (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) := by
+  delta C_smul_aux
+  rw [Submodule.mapQ_apply, lift.tmul]
   congr 1
-  exact mul_comm _ _
+  dsimp only [LinearMap.coe_mk, AddHom.coe_mk]
+  rw [Finset.sum_eq_single_of_mem σ (Finset.mem_univ _)]
+  swap
+  · rintro τ - h
+    erw [show (k • (x_AsBasis (hαβ hα hβ)) σ).val τ = 0 by
+      simp only [x_AsBasis_apply, CrossProduct.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+        Pi.mul_apply, mul_inv_rev, Units.val_mul, Units.val_inv_eq_inv_val,
+        crossProductMul_single_single, AlgEquiv.one_apply, _root_.mul_one]
+      rw [_root_.one_mul, Pi.single_apply, if_neg h], zero_smul, zero_mul, zero_tmul]
+  congr 2
+  simp only [x_AsBasis_apply, CrossProduct.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+    Pi.mul_apply, mul_inv_rev, Units.val_mul, Units.val_inv_eq_inv_val,
+    crossProductMul_single_single, AlgEquiv.one_apply, _root_.mul_one]
+  rw [_root_.one_mul, Pi.single_eq_same, a_one_left hα, a_one_left hβ]
+  congr 2
+  field_simp
+  left
+  rw [mul_comm]
 
--- def TensorSmul (aa : CrossProduct ha) (bb : CrossProduct hb) :
---   (CrossProduct ha) ⊗[F] (CrossProduct hb) →ₗ[F] M K F a b ha hb :=
---   -- let m := Submodule.Quotient.mk (R := CrossProduct ha ⊗[F] CrossProduct hb)
---   --   (p := Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) (aa ⊗ₜ bb)
---   TensorProduct.lift {
---     toFun := fun a' ↦ {
---       toFun := fun b' ↦ Submodule.Quotient.mk ((a' * aa) ⊗ₜ (b' * bb))
---       map_add' := fun b1 b2 ↦ by simp only [Ideal.submodule_span_eq, add_mul,
---         TensorProduct.tmul_add, Submodule.Quotient.mk_add]
---       map_smul' := fun α bbb ↦ by simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc,
---         TensorProduct.tmul_smul, Submodule.Quotient.mk_smul, RingHom.id_apply]
---     }
---     map_add' := fun a1 a2 ↦ by
---       ext bbb
---       simp only [Ideal.submodule_span_eq, add_mul, TensorProduct.add_tmul,
---         Submodule.Quotient.mk_add, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
---     map_smul' := fun α aaa ↦ by
---       ext bbb
---       simp only [Ideal.submodule_span_eq, Algebra.smul_mul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
---         RingHom.id_apply, LinearMap.smul_apply]
---       rfl
---   }
+
+set_option maxHeartbeats 400000 in
+def C_smul : C →ₗ[F] M hα hβ →ₗ[F] M hα hβ where
+  toFun c := C_smul_aux hα hβ c
+  map_add' := by
+    intro c c'
+    dsimp only
+    ext a b
+    simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+      LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, LinearMap.add_apply]
+    delta C_smul_aux
+    rw [Submodule.mapQ_apply, lift.tmul, Submodule.mapQ_apply, lift.tmul,
+        Submodule.mapQ_apply, lift.tmul]
+    change Submodule.Quotient.mk (∑ _, _) = Submodule.Quotient.mk ((∑ _, _) + (∑ _, _))
+    change Submodule.mkQ _ _ = Submodule.mkQ _ _
+    rw [map_sum, map_add, map_sum, map_sum, ← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun σ _ => ?_
+    rw [← map_add, ← add_tmul]
+    congr 2
+    simp only [add_val, Pi.add_apply, x_AsBasis_apply, add_smul, add_mul]
+  map_smul' := by
+    intro f c
+    dsimp only
+    ext a b
+    simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+      LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, RingHom.id_apply,
+      LinearMap.smul_apply]
+    delta C_smul_aux
+    rw [Submodule.mapQ_apply, lift.tmul, Submodule.mapQ_apply, lift.tmul]
+    change Submodule.mkQ _ (∑ _, _) = f • Submodule.mkQ _ (∑ _, _)
+    rw [← map_smul, Finset.smul_sum]
+    simp_rw [smul_tmul']
+    congr 1
+    refine Finset.sum_congr rfl fun σ _ => ?_
+    congr 1
+    simp only [smul_val, crossProductSMul, LinearMap.lsum_apply, LinearMap.coe_mk, AddHom.coe_mk,
+      LinearMap.coeFn_sum, LinearMap.coe_comp, LinearMap.coe_proj, Finset.sum_apply,
+      Function.comp_apply, Function.eval, Function.update_apply, Pi.zero_apply, Finset.sum_ite_eq,
+      Finset.mem_univ, ↓reduceIte, x_AsBasis_apply, smul_assoc, Algebra.smul_mul_assoc,
+      smul_mul_assoc]
+
+
+instance : SMul C (M hα hβ) where
+  smul c x := C_smul hα hβ c x
+
+lemma C_smul_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
+    (k • x_AsBasis (hαβ hα hβ) σ) • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) :=
+  C_smul_aux_calc hα hβ k σ a b
+
+instance : MulAction C (M hα hβ) where
+  one_smul := by
+    intro x
+    induction x using Quotient.inductionOn' with | h x =>
+    change (1 : C) • Submodule.Quotient.mk x = Submodule.Quotient.mk x
+    induction x using TensorProduct.induction_on with
+    | tmul a b =>
+      rw [show (1 : C) = ((β 1).1⁻¹ * (α 1).1⁻¹) • x_AsBasis (hαβ hα hβ) 1 by
+        simp only [CrossProduct.one_def, Pi.mul_apply, Units.val_mul, mul_inv_rev, x_AsBasis_apply,
+          mul_smul], C_smul_calc, mul_smul, ← CrossProduct.one_def, smul_mul_assoc, _root_.one_mul]
+      trans (Submodule.Quotient.mk (a ⊗ₜ[F] ((β 1).1⁻¹ • x_AsBasis hβ 1 * b)) : M hα hβ)
+      · rw [Submodule.Quotient.eq]
+        refine Submodule.subset_span ⟨⟨(β 1).1⁻¹, a, x_AsBasis hβ 1 * b⟩, ?_⟩
+        simp only [sub_right_inj, smul_mul_assoc]
+      rw [← CrossProduct.one_def, _root_.one_mul]
+    | add x y hx hy =>
+      simp only [Submodule.Quotient.mk_add]
+      conv_rhs => rw [← hx, ← hy]
+      change C_smul_aux hα hβ _ _ =  C_smul_aux hα hβ _ _ +  C_smul_aux hα hβ _ _
+      simp only [map_add]
+    | zero =>
+      simp only [Submodule.Quotient.mk_zero]
+      change C_smul_aux hα hβ _ _ = _
+      simp only [map_zero]
+  mul_smul := by
+    intro x y ab
+    induction x using single_induction with
+    | single σ x =>
+      induction y using single_induction with
+      | single τ y =>
+        induction ab using Quotient.inductionOn' with | h ab =>
+        induction ab using TensorProduct.induction_on with
+        | tmul a b =>
+          change _ • Submodule.Quotient.mk _ = _ • _ • Submodule.Quotient.mk _
+          rw [single_in_xAsBasis, single_in_xAsBasis, smul_mul_assoc,
+            CrossProduct.smul_def _ y, ← _root_.mul_assoc, x__conj'',
+            smul_mul_assoc, x_AsBasis_mul, Pi.mul_apply, mul_comm _ (β _),
+            Units.val_mul, ← mul_smul, ← mul_smul, C_smul_calc, ← CrossProduct.smul_def,
+            C_smul_calc, C_smul_calc, smul_mul_assoc, smul_mul_assoc, smul_mul_assoc,
+            CrossProduct.smul_def _ y, ← _root_.mul_assoc _ (ι hα y), x__conj'',
+            smul_mul_assoc, ← _root_.mul_assoc _ _ a, x_AsBasis_mul, ← _root_.mul_assoc _ _ b,
+            x_AsBasis_mul, Submodule.Quotient.eq, ← mul_smul]
+          refine Submodule.subset_span ⟨⟨β (σ, τ), (x * σ y * α (σ, τ)) •
+            ((x_AsBasis hα) (σ * τ) * a), (x_AsBasis hβ) (σ * τ) * b⟩, ?_⟩
+          dsimp only
+          rw [← smul_assoc, smul_mul_assoc, ← smul_assoc, smul_mul_assoc]
+          congr 3
+          simp only [smul_eq_mul]
+          ring
+        | add z z' hz hz' =>
+          change C_smul_aux hα hβ _ _ = C_smul_aux hα hβ _ _ at hz hz' ⊢
+          simp only [QuotientAddGroup.mk_add, map_add] at hz hz' ⊢
+          rw [hz, hz']
+          change _ = C_smul_aux hα hβ _ (C_smul_aux hα hβ _ _)
+          simp only [map_add]
+          rfl
+        | zero =>
+          change C_smul_aux hα hβ _ _ = C_smul_aux hα hβ _ (C_smul_aux hα hβ _ _)
+          simp only [QuotientAddGroup.mk_zero, map_zero]
+      | add y y' hy hy' =>
+        change C_smul hα hβ _ _ = C_smul hα hβ _ _ at hy hy' ⊢
+        change _ = C_smul hα hβ _ (C_smul hα hβ _ _)
+        erw [mul_add, map_add, map_add, map_add]
+        simp only [LinearMap.add_apply, hy, hy']
+        rfl
+      | zero =>
+        erw [mul_zero]
+        change C_smul hα hβ _ _ = C_smul hα hβ _ (C_smul hα hβ _ _)
+        simp only [map_zero, LinearMap.zero_apply]
+        erw [map_zero, map_zero]
+    | add x x' hx hx' =>
+      erw [add_mul]
+      change C_smul hα hβ _ _ = C_smul hα hβ _ _ at hx hx' ⊢
+      simp only [map_add, LinearMap.add_apply]
+      rw [hx, hx']
+      erw [map_add]
+      rfl
+    | zero =>
+      erw [zero_mul]
+      change C_smul hα hβ _ _ = C_smul hα hβ 0 (C_smul hα hβ _ _)
+      simp only [map_zero, LinearMap.zero_apply]
+
+example : True := ⟨⟩
+
+instance : DistribMulAction C (M hα hβ) where
+  smul_zero := by
+    intro c
+    change C_smul hα hβ _ _ = 0
+    simp
+  smul_add := by
+    intro c x y
+    change C_smul hα hβ _ _ = C_smul hα hβ _ _ + C_smul hα hβ _ _
+    simp
+
+instance : Module C (M hα hβ) where
+  add_smul := by
+    intro c c' x
+    change C_smul hα hβ _ _ = C_smul hα hβ _ _ + C_smul hα hβ _ _
+    simp only [map_add, LinearMap.add_apply]
+  zero_smul := by
+    intro x
+    change C_smul hα hβ _ _ = _
+    simp
+
+end C_mod
+
+section bimodule
+
+instance : SMulCommClass (A ⊗[F] B)ᵐᵒᵖ C (M hα hβ) where
+  smul_comm := by
+    rintro ⟨x⟩ c m
+    induction m using Quotient.inductionOn' with | h m =>
+    change (op x) • c • Submodule.Quotient.mk _ = c • op x • Submodule.Quotient.mk _
+    induction x using TensorProduct.induction_on with
+    | tmul a' b' =>
+      induction m using TensorProduct.induction_on with
+      | tmul a b =>
+        induction c using single_induction with
+        | single σ c =>
+          rw [single_in_xAsBasis, C_smul_calc, Aox_FB_op_tmul_smul_mk_tmul,
+            Aox_FB_op_tmul_smul_mk_tmul, C_smul_calc, _root_.mul_assoc, _root_.mul_assoc]
+        | add c c' hc hc' =>
+          simp only [show (⟨c.1 + c'.1⟩ : C) = (⟨c.1⟩ + ⟨c'.1⟩ : C) by rfl, add_smul, smul_add, hc,
+            Aox_FB_op_tmul_smul_mk_tmul, hc']
+        | zero =>
+          erw [zero_smul, zero_smul]
+          rw [smul_zero]
+      | add x y hx hy =>
+        simp only [Submodule.Quotient.mk_add, smul_add] at hx hy ⊢
+        simp only [hx, hy]
+      | zero => erw [smul_zero]
+    | add x y hx hy =>
+      simp only [op_add, add_smul, hx, hy, smul_add]
+    | zero =>
+      erw [zero_smul]
+
+end bimodule
+
+section iso
+
+set_option maxHeartbeats 400000 in
+instance : IsScalarTower F C (M hα hβ) where
+  smul_assoc f c m := by
+    -- rw [Algebra.smul_def]
+    induction m using Quotient.inductionOn' with | h m =>
+    change _ • Submodule.Quotient.mk _ = _ • _ • Submodule.Quotient.mk _
+    induction m using TensorProduct.induction_on with
+    | tmul a b =>
+      induction c using single_induction with
+      | single σ c =>
+        rw [single_in_xAsBasis, C_smul_calc]
+        rw [show f • c • (x_AsBasis (hαβ hα hβ)) σ = algebraMap F K f • c • (x_AsBasis (hαβ hα hβ)) σ by
+          simp only [Algebra.smul_def]
+          rw [GoodRep.CrossProduct.smul_def]
+          congr 1
+          delta CrossProduct.ι
+          simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]]
+        rw [← smul_assoc, C_smul_calc, ← Submodule.Quotient.mk_smul]
+        congr 2
+        simp only [smul_eq_mul, x_AsBasis_apply]
+        ext τ
+        simp only [CrossProduct.smul_def, map_mul, AlgHom.commutes, algebraMap_val,
+          Algebra.smul_mul_assoc, _root_.one_mul, smul_val, crossProductSMul, LinearMap.lsum_apply,
+          LinearMap.coe_mk, AddHom.coe_mk, mul_val, ι_apply_val, Prod.mk_one_one,
+          Units.val_inv_eq_inv_val, crossProductMul_single_single, AlgEquiv.one_apply,
+          _root_.mul_one, LinearMap.coeFn_sum, LinearMap.coe_comp, LinearMap.coe_proj,
+          Finset.sum_apply, Function.comp_apply, Function.eval, Function.update_apply,
+          Pi.zero_apply, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte]
+      | add c c' hc hc' =>
+        erw [add_smul, smul_add, add_smul, hc, hc', smul_add]
+      | zero =>
+        erw [smul_zero, zero_smul, smul_zero]
+    | add x y hx hy =>
+      simp only [Submodule.Quotient.mk_add, smul_add, hx, hy]
+    | zero =>
+      erw [smul_zero]
+
+example : True := ⟨⟩
+
+-- instance : Algebra F (Module.End C (M hα hβ)) := Module.End.instAlgebra _ _ _
+
+-- set_option maxHeartbeats 400000 in
+noncomputable def φ0 :
+    (A ⊗[F] B)ᵐᵒᵖ →ₐ[F] Module.End C (M hα hβ) where
+  toFun x :=
+  { toFun := fun m => x • m
+    map_add' := by intros; dsimp only; rw [smul_add]
+    map_smul' := by
+      intro c y
+      simp only [RingHom.id_apply]
+      rw [smul_comm] }
+  map_one' := by
+    refine LinearMap.ext fun _ => ?_
+    simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply, implies_true]
+  map_mul' := by
+    intro x y
+    refine LinearMap.ext fun _ => ?_
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply]
+    rw [mul_smul]
+  map_zero' := by
+    refine LinearMap.ext fun _ => ?_
+    simp only [zero_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply]
+  map_add' := by
+    intro x y
+    refine LinearMap.ext fun _ => ?_
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+    rw [add_smul]
+  commutes' := by
+    intro f
+    refine LinearMap.ext fun m => ?_
+    simp only [MulOpposite.algebraMap_apply, Algebra.TensorProduct.algebraMap_apply, algebraMap_val,
+      LinearMap.coe_mk, AddHom.coe_mk, Module.algebraMap_end_apply]
+    induction m using Quotient.inductionOn' with | h m =>
+    induction m using TensorProduct.induction_on with
+    | tmul a b =>
+      erw [Aox_FB_op_tmul_smul_mk_tmul]
+      rw [Algebra.smul_def, _root_.mul_one, _root_.mul_one, ← Algebra.commutes f,
+        ← Algebra.smul_def, ← smul_tmul']
+      rfl
+    | add x y hx hy =>
+      simp only [QuotientAddGroup.mk_add, smul_add] at hx hy ⊢
+      erw [hx, hy]
+    | zero =>
+      erw [smul_zero]
+
+example : True := ⟨⟩
+
+set_option synthInstance.maxHeartbeats 40000 in
+def MtoAox_KB : M hα hβ →ₗ[F] A ⊗[K] B :=
+  Submodule.liftQ _
+    (TensorProduct.lift
+      { toFun := fun a =>
+        { toFun := fun b => a ⊗ₜ b
+          map_add' := by simp [tmul_add]
+          map_smul' := by simp }
+        map_add' := by intros; ext; simp [add_tmul]
+        map_smul' := by intros; ext; simp only [LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply,
+          LinearMap.smul_apply, smul_tmul'] })
+    (by
+      rw [Submodule.span_le]
+      rintro _ ⟨⟨k, a, b⟩, rfl⟩
+      simp only [SetLike.mem_coe, LinearMap.mem_ker, map_sub, lift.tmul, LinearMap.coe_mk,
+        AddHom.coe_mk, tmul_smul, smul_tmul', sub_self])
+
+end iso
+
+end map_mul
+
+end map_mul_proof
+
+#exit
 
 instance : Module (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ
   (CrossProduct ha ⊗[F] CrossProduct hb) := inferInstance
