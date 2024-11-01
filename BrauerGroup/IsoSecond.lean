@@ -471,17 +471,35 @@ instance : Module (CrossProduct (mulab K F a b ha hb))
         | tmul aa bb =>
           simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, smulsmul, single_in_xAsBasis,
             one_smul, Basis.constr_basis, map_smul, smul_tmul']
+          -- simp? [mul_smul]
           sorry
         | add _ _ h11 h12 => sorry
       | add _ _ h1' h2' => sorry
     | add _ _ h1 h2 => sorry
 
-  smul_zero := sorry
-  smul_add := sorry
-  add_smul := sorry
-  zero_smul := sorry
+  smul_zero x := by
+    change smulLinear _ _ _ _ _ _ _ _ = _
+    simp only [map_zero, LinearMap.zero_apply]
+  smul_add x ab1 ab2 := by
+    change smulLinear _ _ _ _ _ _ _ _ = _
+    simp only [map_add, LinearMap.add_apply]
+    rfl
+  add_smul x y ab := by
+    change smulLinear _ _ _ _ _ _ _ _ = _
+    simp only [map_add]; rfl
+  zero_smul ab := by
+    change smulLinear _ _ _ _ _ _ _ _ = _
+    simp only [map_zero]
 
-example (a b : K) : (a * b)⁻¹ = a⁻¹ * b⁻¹ := by exact _root_.mul_inv a b
-instance : Module (CrossProduct (mulab K F a b ha hb)) (M K F a b ha hb) := sorry
+instance : Module (CrossProduct (mulab K F a b ha hb))
+    (Submodule.span ((CrossProduct ha) ⊗[F] (CrossProduct hb))
+    (S K F a b ha hb)) := sorry
+
+instance : IsScalarTower (CrossProduct (mulab K F a b ha hb))
+    (CrossProduct ha ⊗[F] CrossProduct hb) (CrossProduct ha ⊗[F] CrossProduct hb) where
+  smul_assoc := sorry
+
+instance : Module (CrossProduct (mulab K F a b ha hb)) (M K F a b ha hb) :=
+  Submodule.Quotient.module' _
 
 end map_mul
