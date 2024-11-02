@@ -1,5 +1,7 @@
 import BrauerGroup.ToSecond
 
+import Mathlib.LinearAlgebra.Dimension.Constructions
+
 suppress_compilation
 
 universe u
@@ -704,162 +706,575 @@ def MtoAox_KB : M hα hβ →ₗ[F] A ⊗[K] B :=
       simp only [SetLike.mem_coe, LinearMap.mem_ker, map_sub, lift.tmul, LinearMap.coe_mk,
         AddHom.coe_mk, tmul_smul, smul_tmul', sub_self])
 
+def Aox_KBToM_aux : A ⊗[K] B →+ M hα hβ :=
+TensorProduct.liftAddHom
+  { toFun := fun a =>
+    { toFun := fun b => Submodule.Quotient.mk <| a ⊗ₜ b
+      map_zero' := by simp
+      map_add' := by simp [tmul_add] }
+    map_zero' := by ext; simp
+    map_add' := by intros; ext; simp [add_tmul] } <| fun k a b => by
+  simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk]
+  rw [Submodule.Quotient.eq]
+  exact Submodule.subset_span <| ⟨⟨k, a, b⟩, rfl⟩
+
+set_option synthInstance.maxHeartbeats 80000 in
+def Aox_KBToM : A ⊗[K] B →ₗ[F] M hα hβ where
+  __ := Aox_KBToM_aux hα hβ
+  map_smul' := by
+    intro f x
+    induction x using TensorProduct.induction_on with
+    | tmul a b =>
+      simp only [Aox_KBToM_aux, smul_tmul', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+        liftAddHom_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk, RingHom.id_apply]
+      rw [← Submodule.Quotient.mk_smul, smul_tmul']
+    | add x y hx hy =>
+      simp only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, RingHom.id_apply, smul_add,
+        map_add] at hx hy ⊢
+      simp only [hx, hy]
+    | zero =>
+      simp only [smul_zero, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_zero,
+        RingHom.id_apply]
+
+set_option synthInstance.maxHeartbeats 80000 in
+def Aox_KBEquivM : M hα hβ ≃ₗ[F] A ⊗[K] B :=
+LinearEquiv.ofLinear
+  (MtoAox_KB _ _)
+  (Aox_KBToM _ _)
+  (by
+    ext x
+    induction x using TensorProduct.induction_on with
+    | tmul a b =>
+      simp only [MtoAox_KB, Aox_KBToM, Aox_KBToM_aux, ZeroHom.toFun_eq_coe,
+        AddMonoidHom.toZeroHom_coe, LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk,
+        Function.comp_apply, liftAddHom_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+        Submodule.liftQ_apply, lift.tmul, LinearMap.id_coe, id_eq]
+    | add x y hx hy =>
+      simp only [LinearMap.coe_comp, Function.comp_apply, LinearMap.id_coe, id_eq] at hx hy
+      simp only [LinearMap.coe_comp, Function.comp_apply, map_add, hx, hy, LinearMap.id_coe, id_eq]
+    | zero => simp)
+  (by
+    ext a b
+    simp only [Aox_KBToM, Aox_KBToM_aux, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+      MtoAox_KB, AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
+      LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, Submodule.mkQ_apply,
+      Submodule.liftQ_apply, lift.tmul, liftAddHom_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+      LinearMap.id_comp])
+
+lemma M_F_dim [IsGalois F K] : finrank F (M hα hβ) = (finrank F K)^3 := by
+  rw [LinearEquiv.finrank_eq (Aox_KBEquivM hα hβ),
+    show finrank F (A ⊗[K] B) = finrank F K * finrank K (A ⊗[K] B) from
+      Eq.symm (finrank_mul_finrank F K (A ⊗[K] B)),
+    finrank_tensorProduct, finrank_eq_card_basis (x_AsBasis hα),
+    finrank_eq_card_basis (x_AsBasis hβ), IsGalois.card_aut_eq_finrank,
+    pow_three]
+
+instance [IsGalois F K] : FiniteDimensional F C :=
+  .of_finrank_eq_succ (n := (finrank F K)^2 - 1) <| by
+    rw [CrossProduct.dim_eq_square (hαβ hα hβ)]
+    refine Nat.succ_pred_eq_of_pos (pow_two_pos_of_ne_zero ?_) |>.symm
+    have : 0 < finrank F K := finrank_pos
+    omega
+
+instance [IsGalois F K] : Module.Finite C (M hα hβ) :=
+  Module.Finite.right F C (M hα hβ)
+
+lemma exists_simple_module_directSum [IsGalois F K] :
+  ∃ (S : Type) (_ : AddCommGroup S) (_ : Module C S) (_ : IsSimpleModule C S)
+    (ι : Type) (_ : Fintype ι),
+    Nonempty (C ≃ₗ[C] ι →₀ S) := by
+  obtain ⟨S, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring F C C
+  refine ⟨S, inferInstance, inferInstance, inferInstance, ι, ?_, ⟨iso⟩⟩
+  haveI infinite : Module.Finite C (ι →₀ S) := Module.Finite.equiv iso
+  letI : Module F S := Module.compHom S (algebraMap F C)
+
+  haveI : LinearMap.CompatibleSMul C (ι →₀ S) F C := by
+    constructor
+    intro l f x
+    change _ = algebraMap F C f • l x
+    rw [← map_smul]
+    simp only [algebraMap_val, smul_assoc, one_smul]
+  let iso' : C ≃ₗ[F] (ι →₀ S) := iso.restrictScalars F
+  haveI : IsScalarTower F C (ι →₀ S) := by
+    constructor
+    intro f c x
+    change _ = algebraMap F C f • _ • x
+    rw [Algebra.smul_def, mul_smul]
+  haveI : Module.Finite F (ι →₀ S) := Module.Finite.trans C (ι →₀ S)
+  have eq := LinearEquiv.finrank_eq iso'
+  -- rw [M_F_dim, pow_three] at eq
+  refine (@Cardinal.lt_aleph0_iff_fintype ι).1 ?_ |>.some
+  apply_fun ((↑) : ℕ → Cardinal) at eq
+  rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp F S ι] at eq
+  have ineq : Module.rank F C < Cardinal.aleph0 := by
+    rw [Module.rank_lt_alpeh0_iff]; infer_instance
+  rw [eq] at ineq
+  simp only [Cardinal.lift_id] at ineq
+  haveI : Nontrivial S := IsSimpleModule.nontrivial C S
+
+  have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ι) (Module.rank F S)
+    (by
+      suffices 0 < Module.rank F S by exact Ne.symm (ne_of_lt this)
+      apply rank_pos)
+  rw [mul_comm] at ineq2
+  exact lt_of_le_of_lt ineq2 ineq
+
+variable [IsGalois F K]
+
+def simpleMod : Type := exists_simple_module_directSum hα hβ |>.choose
+
+local notation "SM" => simpleMod hα hβ
+
+instance : AddCommGroup SM := exists_simple_module_directSum hα hβ |>.choose_spec.choose
+
+instance : Module C SM := exists_simple_module_directSum hα hβ |>.choose_spec.choose_spec.choose
+
+instance : Module F SM := Module.compHom SM (algebraMap F C)
+
+instance : IsSimpleModule C SM := exists_simple_module_directSum hα hβ
+  |>.choose_spec.choose_spec.choose_spec.choose
+
+def indexingSet : Type := exists_simple_module_directSum hα hβ
+  |>.choose_spec.choose_spec.choose_spec.choose_spec.choose
+
+local notation "ι" => indexingSet hα hβ
+
+instance : Fintype ι := exists_simple_module_directSum hα hβ
+  |>.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.choose
+
+def isoιSM : C ≃ₗ[C] ι →₀ SM := exists_simple_module_directSum hα hβ
+  |>.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.some
+
+instance : Nonempty ι := by
+  by_contra!
+  simp only [not_nonempty_iff] at this
+  haveI : Subsingleton (ι →₀ SM) := inferInstance
+  haveI : Subsingleton C := isoιSM hα hβ |>.toEquiv.subsingleton
+  haveI : Nontrivial C := TwoSidedIdeal.instNontrivialOfIsSimpleOrder_brauerGroup C
+  rw [← not_subsingleton_iff_nontrivial] at this
+  contradiction
+
+instance : NeZero (Fintype.card ι) := by
+  constructor
+  simp
+
+def isoιSMPow : C ≃ₗ[C] ι → SM :=
+  isoιSM hα hβ ≪≫ₗ Finsupp.linearEquivFunOnFinite C SM ι
+
+def isoιSMPow' : C ≃ₗ[C] Fin (Fintype.card ι) → SM :=
+  isoιSMPow hα hβ ≪≫ₗ
+  { __ := Equiv.arrowCongr (Fintype.equivFinOfCardEq (α := ι) rfl : ι ≃ Fin (Fintype.card ι))
+      (Equiv.refl _)
+    map_add' := by
+      intros v w
+      rfl
+    map_smul' := by
+      intros; rfl }
+
+
+instance : LinearMap.CompatibleSMul (M hα hβ) (ι →₀ SM) F C := by
+    constructor
+    intro l f x
+    change _ = algebraMap F C f • l x
+    rw [← map_smul]
+    simp only [algebraMap_val, smul_assoc, one_smul]
+
+instance : IsScalarTower F C SM := by
+    constructor
+    intro f c x
+    change _ = algebraMap F C f • _ • x
+    rw [Algebra.smul_def, mul_smul]
+
+instance : Module.Finite C (ι →₀ SM) := Module.Finite.equiv (isoιSM hα hβ)
+
+instance : Module.Finite F (ι →₀ SM) := Module.Finite.trans C (ι →₀ SM)
+
+instance : SMulCommClass C F SM where
+  smul_comm c f a := by
+    show c • algebraMap F C f • a = algebraMap F C f • _
+    rw [← mul_smul, ← Algebra.commutes, mul_smul]
+
+section C_iso
+
+instance [DecidableEq (Module.End C SM)] : DivisionRing (Module.End C SM) :=
+  Module.End.divisionRing
+
+variable [DecidableEq (Module.End C SM)]
+
+instance : Algebra F (Module.End C SM) := Module.End.instAlgebra F C SM
+
+def isoDagger (m : ℕ) [NeZero m] :
+    (Module.End C (Fin m → SM)) ≃ₐ[F]
+    Matrix (Fin m) (Fin m) (Module.End C SM) where
+  __ := endPowEquivMatrix C SM m
+  commutes' := by
+    intro f
+    ext i j x
+    simp only [endPowEquivMatrix, RingEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe,
+      RingEquiv.coe_mk, Equiv.coe_fn_mk, LinearMap.coe_mk, Module.algebraMap_end_apply,
+      Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_ite, smul_zero, AddHom.coe_mk,
+      Matrix.algebraMap_matrix_apply]
+    split_ifs with h
+    · rfl
+    · rfl
+
+def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C :=
+AlgEquiv.ofRingEquiv (f := mopEquivEnd C) <| by
+  intro f
+  ext x
+  simp only [mopEquivEnd, mopToEnd, MulOpposite.algebraMap_apply, algebraMap_val, op_smul, op_one,
+    RingEquiv.coe_ofBijective, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, unop_smul, unop_one,
+    Algebra.mul_smul_comm, _root_.mul_one, LinearMap.coe_mk, AddHom.coe_mk, smul_val, one_val,
+    Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, crossProductSMul_single,
+    Module.algebraMap_end_apply]
+
+
+set_option synthInstance.maxHeartbeats 40000 in
+set_option maxHeartbeats 600000 in
+def C_iso_aux : Cᵐᵒᵖ ≃ₐ[F] Module.End C (Fin (Fintype.card ι) → SM) := by
+-- let e : C ≃ₗ[F] Fin (Fintype.card ι) → SM := (isoιSM hα hβ).restrictScalars F ≪≫ₗ isoιSMPow' hα hβ
+let iso1 : Module.End C (Fin (Fintype.card ι) → SM) ≃ₐ[F] Module.End C C :=
+{ toFun := fun x => (isoιSMPow' hα hβ).symm ∘ₗ x ∘ₗ (isoιSMPow' hα hβ)
+  invFun := fun x => (isoιSMPow' hα hβ) ∘ₗ x ∘ₗ (isoιSMPow' hα hβ).symm
+  left_inv := by
+    intro x; ext; simp
+  right_inv := by
+    intro x; ext; simp
+  map_mul' := by
+    intro x y; ext; simp
+  map_add' := by
+    intro x y; ext; simp
+  commutes' := by
+    intro f
+    ext σ
+    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+      Module.algebraMap_end_apply, smul_val, one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul,
+      mul_inv_rev, crossProductSMul_single]
+    rw [show f • (isoιSMPow' hα hβ) 1 = algebraMap F C f • (isoιSMPow' hα hβ) 1 by rfl]
+    rw [map_smul]
+    simp only [algebraMap_val, LinearEquiv.symm_apply_apply, smul_eq_mul, _root_.mul_one, smul_val,
+      one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, crossProductSMul_single] }
+refine mopEquivEnd' hα hβ |>.trans iso1.symm
+
+example : True := ⟨⟩
+
+def C_iso_aux' : Cᵐᵒᵖ ≃ₐ[F] Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM) :=
+  C_iso_aux hα hβ |>.trans <| isoDagger hα hβ _
+
+omit [DecidableEq (Module.End C SM)] in
+lemma dim_endCSM : (finrank F K)^2 =
+  (Fintype.card ι) ^ 2 * finrank F (Module.End C SM) := by
+  have eq1 := (C_iso_aux' hα hβ).toLinearEquiv.finrank_eq
+  rw [show finrank F Cᵐᵒᵖ = finrank F C by
+    refine LinearEquiv.finrank_eq
+      { toFun := unop
+        map_add' := fun _ _ => rfl
+        map_smul' := fun _ _ => rfl
+        invFun := op
+        left_inv := unop_op
+        right_inv := fun _ => rfl }, CrossProduct.dim_eq_square] at eq1
+  rw [eq1, matrixEquivTensor F (Module.End C SM) (Fin (Fintype.card ι)) |>.toLinearEquiv.finrank_eq,
+    finrank_tensorProduct, finrank_matrix]
+  simp only [Fintype.card_fin, pow_two]
+  group
+
+def C_iso_aux'' : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM))ᵐᵒᵖ where
+  toFun c := op <| C_iso_aux' _ _ (op c)
+  invFun m := (C_iso_aux' _ _ |>.symm m.unop).unop
+  left_inv := by
+    intro c
+    simp only [unop_op, AlgEquiv.symm_apply_apply]
+  right_inv := by
+    intro m
+    simp only [op_unop, AlgEquiv.apply_symm_apply]
+  map_mul' := by
+    intro c c'
+    simp only [op_mul, map_mul]
+  map_add' := by
+    intro c c'
+    simp only [op_add, map_add]
+  commutes' := by
+    intro f
+    simp only [algebraMap_val, op_smul, op_one, map_smul, map_one, MulOpposite.algebraMap_apply]
+    rw [Algebra.smul_def]
+    simp only [MulOpposite.algebraMap_apply, _root_.mul_one]
+
+def C_iso : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM)ᵐᵒᵖ) :=
+  C_iso_aux'' hα hβ |>.trans ((matrixEquivMatrixMop_algebra F _ _).symm)
+
+end C_iso
+
+lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃ₗ[C] ιM →₀ SM) := by
+  obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (M hα hβ) SM
+  refine ⟨ιM, ?_, ⟨iso⟩⟩
+
+  haveI : LinearMap.CompatibleSMul C (ιM →₀ SM) F C := by
+    constructor
+    intro l f x
+    change _ = algebraMap F C f • l x
+    rw [← map_smul]
+    simp only [algebraMap_val, smul_assoc, one_smul]
+  let iso' : M hα hβ ≃ₗ[F] (ιM →₀ SM) := iso.restrictScalars F
+  haveI : IsScalarTower F C (ιM →₀ SM) := by
+    constructor
+    intro f c x
+    change _ = algebraMap F C f • _ • x
+    rw [Algebra.smul_def, mul_smul]
+  haveI : Module.Finite C (M hα hβ) := Module.Finite.right F C (M hα hβ)
+  haveI : Module.Finite C (ιM →₀ SM) := Module.Finite.equiv iso
+  haveI : Module.Finite F (ιM →₀ SM) := Module.Finite.trans C (ιM →₀ SM)
+  have eq := LinearEquiv.finrank_eq iso'
+  rw [M_F_dim, pow_three] at eq
+  refine (@Cardinal.lt_aleph0_iff_fintype ιM).1 ?_ |>.some
+  apply_fun ((↑) : ℕ → Cardinal) at eq
+  simp only [Nat.cast_mul] at eq
+  rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp F SM ιM] at eq
+  have ineq : Module.rank F K < Cardinal.aleph0 := by
+    rw [Module.rank_lt_alpeh0_iff]; infer_instance
+  replace ineq : Module.rank F K * (Module.rank F K * Module.rank F K) < Cardinal.aleph0 := by
+    apply Cardinal.mul_lt_aleph0
+    · assumption
+    apply Cardinal.mul_lt_aleph0 <;>
+    assumption
+
+  rw [eq] at ineq
+  simp only [Cardinal.lift_id] at ineq
+  haveI : Nontrivial SM := IsSimpleModule.nontrivial C SM
+
+  have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ιM) (Module.rank F SM)
+    (by
+      suffices 0 < Module.rank F SM by exact Ne.symm (ne_of_lt this)
+      apply rank_pos)
+  rw [mul_comm] at ineq2
+  exact lt_of_le_of_lt ineq2 ineq
+
+def indexingSetM : Type := (M_directSum hα hβ).choose
+
+local notation "ιM" => indexingSetM hα hβ
+
+instance : Fintype ιM := (M_directSum hα hβ).choose_spec.choose
+
+def M_iso_directSum : M hα hβ ≃ₗ[C] ιM →₀ SM :=
+  (M_directSum hα hβ).choose_spec.choose_spec.some
+
+instance : Module.Finite C SM := by
+  rw [Module.finite_def, Submodule.fg_def]
+  obtain ⟨a, ha⟩ := IsSimpleModule.instIsPrincipal C (M := SM) ⊤
+  exact ⟨{a}, Set.finite_singleton a, ha.symm⟩
+
+instance : Module.Finite F SM := Module.Finite.trans C SM
+
+lemma SM_F_dim : Fintype.card ι * finrank F SM = finrank F K ^ 2 := by
+  have eq1 := LinearEquiv.finrank_eq (isoιSMPow' hα hβ |>.restrictScalars F)
+  rw [CrossProduct.dim_eq_square] at eq1
+  have eq2 := rank_fun (η := (Fin (Fintype.card ι))) (M := SM) (R := F)
+  rw [Fintype.card_fin, ← finrank_eq_rank F SM,
+    show (Fintype.card ι : Cardinal) * (finrank F SM : Cardinal) =
+      ((Fintype.card ι * finrank F SM : ℕ) : Cardinal) by simp] at eq2
+
+  have := finrank_eq_of_rank_eq (n := Fintype.card ι * finrank F SM) eq2
+  rw [this] at eq1
+  exact eq1.symm
+
+instance : Module.Finite C ((Fin (Fintype.card ι * finrank F K) →₀ SM)) := by
+  infer_instance
+
+instance : Module.Finite C (Fin (Fintype.card ι * finrank F K) → SM) := by
+  have := Finsupp.linearEquivFunOnFinite C SM (Fin (Fintype.card ι * finrank F K))
+  refine Module.Finite.equiv this
+
+lemma M_iso_powAux : Nonempty (M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM) := by
+  rw [linearEquiv_iff_finrank_eq_over_simple_ring F C]
+  have eq2 := rank_fun (η := (Fin (finrank F K * Fintype.card ι))) (M := SM) (R := F)
+  rw [Fintype.card_fin, ← finrank_eq_rank F SM,
+    show ((finrank F K * Fintype.card ι : ℕ) : Cardinal) * (finrank F SM : Cardinal) =
+      ((finrank F K * Fintype.card ι * finrank F SM : ℕ) : Cardinal) by simp] at eq2
+
+  have := finrank_eq_of_rank_eq eq2
+  rw [this, M_F_dim, _root_.mul_assoc, SM_F_dim, pow_three, pow_two]
+
+def M_iso_pow : M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM :=
+  M_iso_powAux _ _ |>.some
+
+def M_iso_pow' : M hα hβ ≃ₗ[F] Fin (finrank F K * Fintype.card ι) → SM :=
+M_iso_pow _ _ |>.restrictScalars F
+
+-- set_option maxHeartbeats 600000 in
+def endCMIso :
+    Module.End C (M hα hβ) ≃ₐ[F] Module.End C (Fin (finrank F K * Fintype.card ι) → SM) where
+  toFun x := (M_iso_pow hα hβ) ∘ₗ x ∘ₗ (M_iso_pow hα hβ).symm
+  invFun x := (M_iso_pow hα hβ).symm ∘ₗ x ∘ₗ (M_iso_pow hα hβ)
+  left_inv := by
+    intro x
+    simp only [← LinearMap.comp_assoc, LinearEquiv.comp_coe, LinearEquiv.self_trans_symm,
+      LinearEquiv.refl_toLinearMap, LinearMap.id_comp]
+    simp only [LinearMap.comp_assoc, LinearEquiv.comp_coe, LinearEquiv.self_trans_symm,
+      LinearEquiv.refl_toLinearMap, LinearMap.comp_id]
+  right_inv := by
+    intro x
+    simp only [← LinearMap.comp_assoc, LinearEquiv.comp_coe, LinearEquiv.symm_trans_self,
+      LinearEquiv.refl_toLinearMap, LinearMap.id_comp]
+    simp only [LinearMap.comp_assoc, LinearEquiv.comp_coe, LinearEquiv.symm_trans_self,
+      LinearEquiv.refl_toLinearMap, LinearMap.comp_id]
+  map_mul' := by
+    intro x y
+    refine DFunLike.ext _ _ fun z => ?_
+    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mul_apply,
+      LinearEquiv.symm_apply_apply]
+  map_add' := by
+    intro x y
+    refine DFunLike.ext _ _ fun z => ?_
+    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.add_apply,
+      map_add]
+  commutes' := by
+    intro f
+    refine DFunLike.ext _ _ fun z => ?_
+    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+      Module.algebraMap_end_apply]
+    change  (M_iso_pow' hα hβ) (f • (M_iso_pow' hα hβ).symm z) = f • z
+    rw [map_smul]
+    simp only [algebraMap_val, LinearEquiv.apply_symm_apply, smul_assoc, one_smul]
+
+example : True := ⟨⟩
+
+instance : NeZero (finrank F K * Fintype.card ι) := by
+  constructor
+  simp only [ne_eq, mul_eq_zero, Fintype.card_ne_zero, or_false]
+  have : 0 < finrank F K := finrank_pos
+  omega
+
+def endCMIso' :
+    Module.End C (M hα hβ) ≃ₐ[F]
+    Matrix (Fin (finrank F K * Fintype.card ι))
+      (Fin (finrank F K * Fintype.card ι)) (Module.End C SM) :=
+  endCMIso hα hβ  |>.trans <| isoDagger _ _ _
+
+lemma dim_endCM :
+    finrank F (Module.End C (M hα hβ)) = (finrank F K)^4 := by
+  have := LinearEquiv.finrank_eq (endCMIso' hα hβ).toLinearEquiv
+  rw [this]
+  have := matrixEquivTensor F (Module.End C SM) (Fin (finrank F K * Fintype.card ι))
+    |>.toLinearEquiv.finrank_eq
+  rw [this, finrank_tensorProduct, finrank_matrix]
+  simp only [Fintype.card_fin]
+  rw [show finrank F K * Fintype.card ι * (finrank F K * Fintype.card ι) =
+    (Fintype.card ι)^2 * (finrank F K)^2 by group]
+  rw [← _root_.mul_assoc, mul_comm _ ((Fintype.card ι)^2),
+    ← dim_endCSM, pow_two, pow_succ, pow_three]
+  group
+
+def φ1 :
+    (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M hα hβ) :=
+  AlgEquiv.ofBijective (φ0 hα hβ) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
+    rw [dim_endCM, show finrank F (A ⊗[F] B)ᵐᵒᵖ = finrank F (A ⊗[F] B) by
+      refine LinearEquiv.finrank_eq
+        { toFun := unop
+          map_add' := fun _ _ => rfl
+          map_smul' := fun _ _ => rfl
+          invFun := op
+          left_inv := unop_op
+          right_inv := fun _ => rfl }, finrank_tensorProduct, CrossProduct.dim_eq_square,
+      CrossProduct.dim_eq_square, pow_two, pow_succ]
+    group)
+
+def φ2 :
+    (A ⊗[F] B) ≃ₐ[F] (Module.End C (M hα hβ))ᵐᵒᵖ where
+  toFun a := op <| φ1 _ _ (op a)
+  invFun g := (φ1 _ _ |>.symm g.unop).unop
+  left_inv := by intro x; simp
+  right_inv := by intro x; simp
+  map_mul' := by intros; simp
+  map_add' := by intros; simp
+  commutes' := by
+    intro f
+    simp only [Algebra.TensorProduct.algebraMap_apply, algebraMap_val, MulOpposite.algebraMap_apply,
+      op_inj]
+    rw [← smul_tmul', op_smul]
+    have := (φ0 hα hβ).commutes f
+    rw [← this]
+    rw [Algebra.algebraMap_eq_smul_one]
+    rfl
+
+def φ3 :
+    (A ⊗[F] B) ≃ₐ[F]
+    (Matrix (Fin (finrank F K * Fintype.card ι)) (Fin (finrank F K * Fintype.card ι))
+      (Module.End C SM))ᵐᵒᵖ :=
+  φ2 _ _ |>.trans (AlgEquiv.op <| endCMIso' _ _)
+
+def φ4 :
+    (A ⊗[F] B) ≃ₐ[F]
+    (Matrix (Fin (finrank F K * Fintype.card ι)) (Fin (finrank F K * Fintype.card ι))
+      (Module.End C SM)ᵐᵒᵖ) :=
+  φ3 _ _ |>.trans ((matrixEquivMatrixMop_algebra F _ _).symm)
+
+instance [DecidableEq (Module.End C SM)] : DivisionRing ((Module.End C SM)ᵐᵒᵖ) := by
+  letI : DivisionRing (Module.End C SM) := Module.End.divisionRing
+  infer_instance
+
+lemma isBrauerEquivalent : IsBrauerEquivalent (⟨A ⊗[F] B⟩ : CSA F) ⟨C⟩ := by
+  let iso1 := C_iso hα hβ |>.mapMatrix (m := Fin (finrank F K))
+  let iso11 := iso1.trans (Matrix.compAlgEquiv _ _ _ _) |>.trans
+    (Matrix.reindexAlgEquiv _ _ finProdFinEquiv)
+  let iso2 := φ4 hα hβ
+  let iso3 := iso11.trans iso2.symm
+  refine ⟨1, finrank F K, Nat.one_ne_zero,
+    by have : 0 < finrank F K := finrank_pos; omega, ?_⟩
+  have e : Matrix (Fin 1) (Fin 1) (⟨A⊗[F] B⟩ : CSA F) ≃ₐ[F] (⟨A ⊗[F] B⟩ : CSA F) := by
+    exact dim_one_iso (CSA.mk (A ⊗[F] B)).carrier
+  exact e.trans iso3.symm
 end iso
 
 end map_mul
 
 end map_mul_proof
 
-#exit
+namespace RelativeBrGroup
 
-instance : Module (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ
-  (CrossProduct ha ⊗[F] CrossProduct hb) := inferInstance
+variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
 
-set_option synthInstance.maxHeartbeats 40000 in
-instance : Module (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ
-    (Submodule.span (CrossProduct ha ⊗[F] CrossProduct hb) (S K F a b ha hb)) :=
-  -- inferInstance
-  sorry
+@[simps]
+def fromSndAddMonoidHom :
+    H2 (galAct F K) →+ Additive (RelativeBrGroup K F) where
+  toFun := Additive.ofMul ∘ RelativeBrGroup.fromSnd _ _
+  map_zero' := by
+    simpa only [Function.comp_apply, ofMul_eq_zero] using map_one_proof.fromSnd_zero K F
+  map_add' := by
+    intro x y
+    induction x using Quotient.inductionOn' with | h x =>
+    induction y using Quotient.inductionOn' with | h y =>
+    simp only [Function.comp_apply]
+    rcases x with ⟨x, hx'⟩
+    have hx := isMulTwoCocycle_of_twoCocycles ⟨x, hx'⟩
+    rcases y with ⟨y, hy'⟩
+    have hy := isMulTwoCocycle_of_twoCocycles ⟨y, hy'⟩
+    rw [fromSnd_wd, fromSnd_wd]
+    erw [fromSnd_wd]
+    apply_fun Additive.toMul
+    simp only [AddMemClass.mk_add_mk, toMul_ofMul, toMul_add, MulMemClass.mk_mul_mk,
+      Subtype.mk.injEq]
+    change _ = Quotient.mk'' _
+    rw [Quotient.eq'']
+    exact map_mul_proof.isBrauerEquivalent hx hy |>.symm
 
-instance : IsScalarTower (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ (CrossProduct ha ⊗[F] CrossProduct hb)
-    (CrossProduct ha ⊗[F] CrossProduct hb) where
-  smul_assoc xop x y := by
-    simp only [MulOpposite.smul_eq_mul_unop, smul_eq_mul]
-    sorry
+def toSndAddMonoidHom : Additive (RelativeBrGroup K F) →+ H2 (galAct F K) where
+  toFun := RelativeBrGroup.toSnd ∘ Additive.toMul
+  map_zero' := by
+    simp only [Function.comp_apply, toMul_zero]
+    apply_fun fromSnd F K using equivSnd.symm.injective
+    rw [map_one_proof.fromSnd_zero]
+    exact congr_fun fromSnd_toSnd 1
+  map_add' := by
+    intro x y
+    dsimp only
+    apply_fun fromSndAddMonoidHom K F using equivSnd.symm.injective
+    rw [map_add]
+    simp only [Function.comp_apply, toMul_add, fromSndAddMonoidHom_apply,
+      show ∀ x, fromSnd F K (toSnd x) = x by intro x; exact congr_fun fromSnd_toSnd x, ofMul_mul,
+      ofMul_toMul]
 
-instance : Module (CrossProduct ha ⊗[F] CrossProduct hb)ᵐᵒᵖ (M K F a b ha hb) :=
-  Submodule.Quotient.module' _
+def isoSnd :
+    Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) where
+  __ := toSndAddMonoidHom K F
+  __ := fromSndAddMonoidHom K F
 
-local notation "u" => x_AsBasis ha
-
-local notation "v" => x_AsBasis hb
-
-local notation "w" => x_AsBasis (mulab K F a b ha hb)
-
--- abbrev smulTensor (σ : (K ≃ₐ[F] K)) (k : K) : (CrossProduct ha) ⊗[F] (CrossProduct hb)
---     →ₗ[F] (CrossProduct ha) ⊗[F] (CrossProduct hb) := TensorProduct.lift {
---   toFun := fun a ↦ {
---     toFun := fun b ↦ (k • u σ * a) ⊗ₜ (v σ * b)
---     map_add' := fun x y ↦ by simp only [x_AsBasis_apply, mul_add, tmul_add]
---     map_smul' := fun α x ↦ by
---       simp only [RingHom.id_apply, smul_tmul', smul_tmul]
---       congr 1
---       exact mul_smul_comm α (v σ) x }
---   map_add' := fun a1 a2 ↦ by
---     ext b
---     simp only [x_AsBasis_apply, mul_add, add_tmul, LinearMap.coe_mk, AddHom.coe_mk,
---       LinearMap.add_apply]
---   map_smul' := fun α a ↦ by
---     ext b
---     simp only [x_AsBasis_apply, Algebra.mul_smul_comm, LinearMap.coe_mk,
---       AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
---     congr 1  }
--- #check Basis.constr
-
-abbrev smulsmul (aa : CrossProduct ha) (bb : CrossProduct hb) :
-    CrossProduct (mulab K F a b ha hb) →ₗ[K]
-    (CrossProduct ha) ⊗[F] (CrossProduct hb) :=
-  Basis.constr (ι := (K ≃ₐ[F] K)) (S := F) (R := K) w $ fun σ =>
-    (u σ * aa) ⊗ₜ (v σ * bb)
-
-abbrev smulLinear : (CrossProduct ha) ⊗[F] (CrossProduct hb) →ₗ[F]
-    CrossProduct (mulab K F a b ha hb) →ₗ[K]
-    (CrossProduct ha) ⊗[F] (CrossProduct hb) := TensorProduct.lift {
-    toFun := fun aa ↦ {
-      toFun := fun bb ↦ smulsmul K F a b ha hb aa bb
-      map_add' := fun b1 b2 ↦ by
-        simp only
-        ext aabb
-        simp only [Basis.constr_apply_fintype, Basis.equivFun_apply,
-          x_AsBasis_apply, mul_add, tmul_add, smul_add,
-          Finset.sum_add_distrib, LinearMap.add_apply]
-      map_smul' := fun α bb ↦ by
-        ext aabb
-        simp only [Basis.constr_apply_fintype, Basis.equivFun_apply, x_AsBasis_apply,
-          Algebra.mul_smul_comm, tmul_smul, RingHom.id_apply,
-          LinearMap.smul_apply, Finset.smul_sum]
-        refine Finset.sum_congr rfl fun x _ ↦ smul_comm _ _ _ }
-    map_add' := fun a1 a2 ↦ by
-      ext bb x
-      simp only [LinearMap.coe_mk, AddHom.coe_mk, Basis.constr_apply_fintype, Basis.equivFun_apply,
-        LinearMap.add_apply, ← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl fun x _ ↦ by
-        simp only [x_AsBasis_apply, mul_add, add_tmul, smul_add]
-    map_smul' := fun α aa ↦ by
-      ext bb x
-      simp only [LinearMap.coe_mk, AddHom.coe_mk, Basis.constr_apply_fintype, Basis.equivFun_apply,
-        Algebra.mul_smul_comm, RingHom.id_apply, LinearMap.smul_apply, Finset.smul_sum]
-      refine Finset.sum_congr rfl fun i _ ↦ by
-        rw [smul_tmul', smul_tmul', smul_tmul', smul_comm]
-  }
-
-instance : IsScalarTower K (CrossProduct ha) (CrossProduct ha) where
-  smul_assoc k a1 a2 := by
-    change (ι ha k * a1) • _ = ι ha k * _
-    rw [smul_eq_mul, smul_eq_mul, _root_.mul_assoc]
-
-instance : CompatibleSMul F K (CrossProduct ha) (CrossProduct hb) where
-  smul_tmul k aa bb := by
-    -- change (CrossProduct.ι ha k * aa) ⊗ₜ _ = _ ⊗ₜ (CrossProduct.ι hb k * bb)
-    induction aa using single_induction ha with
-    | zero => simp only [show ⟨0⟩ = (0 : CrossProduct ha) from rfl, smul_zero, zero_tmul]
-    | single σ k1 =>
-      simp only [smul_single]
-      induction bb using single_induction hb with
-      | zero => simp only [show ⟨0⟩ = (0 : CrossProduct hb) from rfl, tmul_zero, smul_zero]
-      | single σ' k2 =>
-        simp only [smul_single]
-
-        sorry
-      | add _ _ h11 h22 =>
-        sorry
-    | add _ _ h1 h2 => sorry
-
-instance : Module (CrossProduct (mulab K F a b ha hb))
-    (CrossProduct ha ⊗[F] CrossProduct hb) where
-  smul x ab := smulLinear K F a b ha hb ab x
-  one_smul ab := by
-    change smulLinear _ _ _ _ _ _ _ ⟨_⟩ = _
-    rw [single_in_xAsBasis, map_smul]
-    induction ab using TensorProduct.induction_on with
-    | zero => simp only [Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, map_zero,
-        x_AsBasis_apply, LinearMap.zero_apply, smul_zero]
-    | tmul aa bb =>
-        simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, smulsmul,
-          Basis.constr_basis]
-        change ((((a (1, 1)) * (b (1, 1))) : Kˣ).1)⁻¹ • _ = _
-        rw [Units.val_mul, _root_.mul_inv, ← one_smul K (u 1),
-          ← single_in_xAsBasis ha 1 1, ← one_smul K (v 1),
-          ← single_in_xAsBasis hb 1 1, mul_comm, mul_smul, smul_tmul', ← smul_mul_assoc,
-          smul_single, _root_.mul_one, show ⟨Pi.single _ _⟩ = (1 : CrossProduct ha) from rfl,
-          _root_.one_mul, ← tmul_smul, ← smul_mul_assoc, smul_single, _root_.mul_one,
-          show ⟨Pi.single _ _⟩ = (1 : CrossProduct hb) from rfl, _root_.one_mul]
-    | add _ _ h1 h2 => rw [map_add, LinearMap.add_apply, smul_add, h1, h2]
-  mul_smul aabb1 aabb2 ab := by
-    change smulLinear _ _ _ _ _ _ _ _ = smulLinear _ _ _ _ _ _ (smulLinear _ _ _ _ _ _ _ _) _
-    induction aabb1 using single_induction with
-    | zero => sorry
-    | single σ k =>
-    induction aabb2 using single_induction with
-      | zero => sorry
-      | single σ' k' =>
-        simp only [mul_single_in_xAsBasis, Pi.mul_apply, Units.val_mul, x_AsBasis_apply, map_smul]
-        induction ab using TensorProduct.induction_on with
-        | zero => sorry
-        | tmul aa bb =>
-          simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, smulsmul, single_in_xAsBasis,
-            one_smul, Basis.constr_basis, map_smul, smul_tmul']
-          sorry
-        | add _ _ h11 h12 => sorry
-      | add _ _ h1' h2' => sorry
-    | add _ _ h1 h2 => sorry
-
-  smul_zero := sorry
-  smul_add := sorry
-  add_smul := sorry
-  zero_smul := sorry
-
-example (a b : K) : (a * b)⁻¹ = a⁻¹ * b⁻¹ := by exact _root_.mul_inv a b
-instance : Module (CrossProduct (mulab K F a b ha hb)) (M K F a b ha hb) := sorry
-
-end map_mul
+end RelativeBrGroup
