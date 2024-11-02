@@ -156,21 +156,6 @@ abbrev M := (A ⊗[F] B) ⧸ Submodule.span F (S hα hβ)
 
 open MulOpposite
 
--- def SAsIdeal : Ideal (A ⊗[F] B)ᵐᵒᵖ where
---   carrier := op '' Submodule.span F (S hα hβ)
---   add_mem' := by
---     rintro _ _ ⟨x, hx, rfl⟩ ⟨y, hy, rfl⟩
---     refine ⟨x + y, Submodule.add_mem _ hx hy, rfl⟩
---   zero_mem' := by
---     refine ⟨0, Submodule.zero_mem _, rfl⟩
---   smul_mem' := by
---     rintro ⟨x⟩ _ ⟨y, hy, rfl⟩
---     refine ⟨y • x, Submodule.span_induction hy ?_ ?_ ?_ ?_, unop_injective rfl⟩
---     · rintro _ ⟨⟨k, a, b⟩, rfl⟩
---       simp only [smul_eq_mul, SetLike.mem_coe]
---       induction x using TensorProduct.induction_on
---       sorry
-
 instance : IsScalarTower K A A where
   smul_assoc k a a' := by
     induction a using single_induction with
@@ -1276,5 +1261,7 @@ def isoSnd :
     Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) where
   __ := toSndAddMonoidHom K F
   __ := fromSndAddMonoidHom K F
+
+#print axiom isoSnd
 
 end RelativeBrGroup
