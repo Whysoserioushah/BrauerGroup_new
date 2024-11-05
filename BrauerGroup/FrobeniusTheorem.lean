@@ -16,21 +16,25 @@ variable {D : Type} [DivisionRing D]
 section prerequisites
 
 set_option synthInstance.maxHeartbeats 40000 in
-theorem rank_1_D_iso_R [Algebra ℝ D] : FiniteDimensional.finrank ℝ D = 1 → Nonempty (D≃ₐ[ℝ] ℝ) := fun h => by
+theorem rank_1_D_iso_R [Algebra ℝ D] : FiniteDimensional.finrank ℝ D = 1 →
+    Nonempty (D≃ₐ[ℝ] ℝ) := fun h => by
   have h' := Subalgebra.finrank_eq_one_iff (F := ℝ) (S := (⊤ : Subalgebra ℝ D))
   have : FiniteDimensional.finrank ℝ (⊤ : Subalgebra ℝ D) = 1 := by
     simp_all only [Subalgebra.finrank_eq_one_iff, Subalgebra.bot_eq_top_of_finrank_eq_one]
   exact ⟨Subalgebra.topEquiv.symm.trans $ Subalgebra.equivOfEq _ _
     (h'.1 this)|>.trans $ Algebra.botEquiv ℝ D⟩
 
-lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K]: Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
+lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K]:
+    Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
   --Zulip
   sorry
 
-lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : finrank ℝ K = 2) : Nonempty (K ≃ₐ[ℝ] ℂ) := by
+lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : finrank ℝ K = 2) :
+    Nonempty (K ≃ₐ[ℝ] ℂ) := by
     haveI : FiniteDimensional ℝ K := .of_finrank_eq_succ h
     haveI : Algebra.IsAlgebraic ℝ K := Algebra.IsAlgebraic.of_finite _ _
-    haveI : Algebra.IsAlgebraic ℝ (AlgebraicClosure K) := Algebra.IsAlgebraic.trans (K := ℝ) (L := K)
+    haveI : Algebra.IsAlgebraic ℝ (AlgebraicClosure K) :=
+      Algebra.IsAlgebraic.trans (K := ℝ) (L := K)
     let ι₀ : (AlgebraicClosure K) →ₐ[ℝ] ℂ :=
         IsAlgClosed.lift (R := ℝ) (M := ℂ) (S := AlgebraicClosure K)
     let ι₁ : K →ₐ[ℝ] AlgebraicClosure K :=
@@ -91,7 +95,8 @@ instance CAlg : Algebra ℂ (DD D e) where
 --   exact DequivC
 
 end isoC
-variable [Algebra ℝ D] [hD : IsCentralSimple ℝ D] (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k) (e : k ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ D]
+variable [Algebra ℝ D] [hD : IsCentralSimple ℝ D] (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
+  (e : k ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ D]
 
 open ComplexConjugate
 
@@ -159,9 +164,9 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
             Subalgebra.coe_val, Function.comp_apply,
             Units.val_inv_eq_inv_val, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
             IsUnit.inv_mul_cancel, mul_one, IsUnit.inv_mul_cancel_right]), mul_one, mul_assoc,
-          mul_assoc (x.1^2 * _) _ _, inv_mul_cancel₀ (by simp_all only [AlgHom.coe_comp, Subalgebra.coe_val,
-            Function.comp_apply, Units.val_inv_eq_inv_val, isUnit_iff_ne_zero, ne_eq, Units.ne_zero,
-            not_false_eq_true, IsUnit.inv_mul_cancel, mul_one]),
+          mul_assoc (x.1^2 * _) _ _, inv_mul_cancel₀ (by simp_all only [AlgHom.coe_comp,
+            Subalgebra.coe_val, Function.comp_apply, Units.val_inv_eq_inv_val, isUnit_iff_ne_zero,
+            ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel, mul_one]),
           ← pow_two, mul_one] at this
         exact this.symm
       by_contra! hxx
@@ -184,10 +189,10 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
             rw [add_eq_zero_iff_eq_neg, ← neg_smul] at hst1
             apply_fun ((-t)⁻¹ • ·) at hst1
             rw [← smul_assoc, ← smul_assoc, smul_eq_mul,
-              smul_eq_mul, inv_mul_cancel₀ (by simp_all only [AlgHom.coe_comp, Subalgebra.coe_val, Function.comp_apply,
-                Units.val_inv_eq_inv_val, Subtype.forall, Subtype.coe_eta, ne_eq, not_true_eq_false, false_implies,
-                mul_neg, neg_smul, neg_eq_zero, not_false_eq_true]),
-              one_smul] at hst1
+              smul_eq_mul, inv_mul_cancel₀ (by simp_all only [AlgHom.coe_comp, Subalgebra.coe_val,
+                Function.comp_apply, Units.val_inv_eq_inv_val, Subtype.forall, Subtype.coe_eta,
+                ne_eq, not_true_eq_false, false_implies, mul_neg, neg_smul, neg_eq_zero,
+                not_false_eq_true]), one_smul] at hst1
             have : x.1^2 ∈ Subalgebra.center ℝ D := by
               rw [Subalgebra.mem_center_iff]
               intro d
@@ -208,9 +213,9 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
           (⊤ : Submodule ℝ k) := sorry
         exact FiniteDimensional.eq_of_le_of_finrank_eq le $ this.trans eq.symm
       have xink' : x.1 ∈ k := sorry
-
       sorry
-    sorry
+    change _ ∈ (⊥ : Subalgebra ℝ D)
+    rw [← IsCentralSimple.center_eq ℝ D]; exact x2_is_central
 
 open scoped algebraMap in
 abbrev V : Set D := {x | ∃ r : ℝ, r ≤ 0 ∧ x^2 = (r : D)}
