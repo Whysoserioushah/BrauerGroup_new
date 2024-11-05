@@ -10,7 +10,7 @@ package "BrauerGroup" where
   ]
   -- add any additional package configuration options here
 
-require InfiniteGaloisTheory from git "https://github.com/mbkybky/InfiniteGaloisTheory.git"
+require mathlib from git "https://github.com/leanprover-community/mathlib4"
 
 @[default_target]
 lean_lib «BrauerGroup» where

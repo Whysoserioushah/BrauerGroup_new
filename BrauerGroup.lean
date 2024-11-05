@@ -9,7 +9,7 @@ import BrauerGroup.ExtendScalar
 import BrauerGroup.FieldCat
 import BrauerGroup.FieldCatOver
 import BrauerGroup.GaloisDescent.Basic
-import BrauerGroup.GaloisFunctor
+-- import BrauerGroup.GaloisFunctor
 import BrauerGroup.GaloisSplit
 -- import BrauerGroup.GaloisSplit2
 import BrauerGroup.Lemmas
