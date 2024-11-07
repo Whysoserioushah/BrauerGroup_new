@@ -8,10 +8,11 @@ import BrauerGroup.Dual
 import BrauerGroup.ExtendScalar
 import BrauerGroup.FieldCat
 import BrauerGroup.FieldCatOver
+import BrauerGroup.FrobeniusTheorem
 import BrauerGroup.GaloisDescent.Basic
--- import BrauerGroup.GaloisFunctor
 import BrauerGroup.GaloisSplit
 -- import BrauerGroup.GaloisSplit2
+import BrauerGroup.IsoSecond
 import BrauerGroup.Lemmas
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.MoritaEquivalence
@@ -23,8 +24,11 @@ import BrauerGroup.RelativeBrauer
 import BrauerGroup.SkolemNoether
 import BrauerGroup.SplitDirect
 import BrauerGroup.SplittingOfCSA
--- import BrauerGroup.Subfield
+import BrauerGroup.Subfield.Basic
+import BrauerGroup.Subfield.Subfield
+import BrauerGroup.Subfield.splitting
 import BrauerGroup.TensorOfTypePQ.Basic
+import BrauerGroup.ToSecond
 import BrauerGroup.Wedderburn
 import BrauerGroup.exp
 import BrauerGroup.faithfullyflat

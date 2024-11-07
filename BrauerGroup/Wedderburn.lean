@@ -41,7 +41,8 @@ def TwoSidedIdeal.mapMatrix (I : TwoSidedIdeal A) : TwoSidedIdeal M[ι, A] := .m
     simpa only [Matrix.add_apply] using I.ringCon.add (h _ _) (h' _ _)
 }
 
-@[simp] lemma TwoSidedIdeal.mem_mapMatrix (I : TwoSidedIdeal A) (x) : x ∈ I.mapMatrix ι ↔ ∀ i j, x i j ∈ I :=
+@[simp] lemma TwoSidedIdeal.mem_mapMatrix (I : TwoSidedIdeal A) (x) : x ∈ I.mapMatrix A ι ↔
+    ∀ i j, x i j ∈ I :=
   Iff.rfl
 
 /--
@@ -51,7 +52,7 @@ Given an ideal `J ≤ Mₙ(A)`, we send it to `{x₀₀ | x ∈ J}`.
 -/
 @[simps]
 def TwoSidedIdeal.equivRingConMatrix (oo : ι) : TwoSidedIdeal A ≃ TwoSidedIdeal M[ι, A] where
-  toFun I := I.mapMatrix ι
+  toFun I := I.mapMatrix A ι
   invFun J := TwoSidedIdeal.mk'
     ((fun (x : M[ι, A]) => x oo oo) '' J)
     ⟨0, J.zero_mem, rfl⟩
@@ -85,7 +86,7 @@ def TwoSidedIdeal.equivRingConMatrix (oo : ι) : TwoSidedIdeal A ≃ TwoSidedIde
       by_cases hab : a = i ∧ b = j
       · rcases hab with ⟨ha, hb⟩
         subst ha hb
-        simp only [stdBasisMatrix, and_self, ↓reduceIte, StdBasisMatrix.mul_right_apply_same,
+        simp only [StdBasisMatrix.apply_same, StdBasisMatrix.mul_right_apply_same,
           StdBasisMatrix.mul_left_apply_same, one_mul, mul_one]
         specialize hy2 a b
         simp only [sub_zero] at hy2
@@ -260,7 +261,7 @@ lemma minimal_ideal_isSimpleModule {A : Type u} [Ring A]
   simp only [Submodule.map_top, Submodule.range_subtype]
   contrapose! I_minimal
   refine lt_of_le_of_ne (fun x hx ↦ ?_) I_minimal
-  simp only [Submodule.mem_map, Submodule.coeSubtype, Subtype.exists, exists_and_right,
+  simp only [Submodule.mem_map, Submodule.coe_subtype, Subtype.exists, exists_and_right,
     exists_eq_right] at hx
   exact hx.1
 
@@ -392,8 +393,10 @@ private lemma Wedderburn_Artin.aux.equivIdeal
     replace hy2 : y ≠ 0 := by contrapose! hy2; subst hy2; rfl
     obtain ⟨j, hj⟩ : ∃ (j : Fin n), y j ≠ 0 := by contrapose! hy2; ext; rw [hy2]; rfl
     have eq1 : Ideal.span {(y j).1} = I :=
-      Ideal.eq_of_le_of_isSimpleModule (ineq := by simp [Ideal.span_le]) (a := (y j).1)
-        (ne_zero := by contrapose! hj; rwa [Subtype.ext_iff]) (Ideal.subset_span (by simp))
+      Ideal.eq_of_le_of_isSimpleModule (A := A) I (Ideal.span {(y j).1})
+      (by simp only [Ideal.span_le, Set.singleton_subset_iff, Subtype.coe_prop]) (y j).1
+      (by contrapose! hj; rwa [Subtype.ext_iff]) $ Ideal.subset_span
+        (by simp only [Set.mem_singleton_iff])
 
     have mem : (i j).1 ∈ Ideal.span {(y j).1} := eq1.symm ▸ (i j).2
     rw [Ideal.mem_span_singleton'] at mem
@@ -524,7 +527,7 @@ theorem Wedderburn_Artin
 
 theorem Wedderburn_Artin'
     (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleOrder (TwoSidedIdeal A)] :
-    ∃ (n : ℕ) (_ : n ≠ 0) (S : Type u) (h : DivisionRing S),
+    ∃ (n : ℕ) (_ : n ≠ 0) (S : Type u) (_ : DivisionRing S),
     Nonempty (A ≃+* (M[Fin n, S])) := by
   classical
   obtain ⟨n, hn, I, inst, e⟩ := Wedderburn_Artin A
@@ -620,7 +623,7 @@ lemma algebraEndIdealMop.algebraMap_eq (I : Ideal B) :
 set_option maxHeartbeats 800000 in
 lemma Wedderburn_Artin_algebra_version
     [sim : IsSimpleOrder (TwoSidedIdeal B)]:
-    ∃ (n : ℕ) (_ : n ≠ 0) (S : Type v) (div_ring : DivisionRing S) (alg : Algebra K S),
+    ∃ (n : ℕ) (_ : n ≠ 0) (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
     Nonempty (B ≃ₐ[K] (M[Fin n, S])) := by
   classical
   have hB : IsArtinianRing B := .of_finite K B

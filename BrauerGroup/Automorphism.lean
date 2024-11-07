@@ -79,10 +79,10 @@ abbrev A_ij (n : ℕ) (i j : Fin n) (hij : i ≠ j): GL (Fin n) K where
     if hi : j ≠ y then simp [hi]
     else
     simp only [ne_eq, Decidable.not_not] at hi;
-    simp only [hi, and_true, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, ite_eq_right_iff,
-      one_ne_zero, imp_false, not_and]
+    simp only [hi, of_apply, and_true, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq,
+      Finset.mem_univ, ↓reduceIte, ite_eq_right_iff, one_ne_zero, imp_false, not_and]
     intro _
-    by_contra hy; exact hij $ hy.symm.trans hi.symm
+    by_contra! hy; exact hij $ hy.symm.trans hi.symm
   inv_val := by
     rw [sub_mul, mul_add, mul_add, mul_one, one_mul, mul_one, ← sub_sub, ← add_sub, sub_self,
       add_zero, sub_eq_self]
@@ -91,8 +91,8 @@ abbrev A_ij (n : ℕ) (i j : Fin n) (hij : i ≠ j): GL (Fin n) K where
     if hi : j ≠ y then simp [hi]
     else
     simp only [ne_eq, Decidable.not_not] at hi
-    simp only [hi, and_true, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, ite_eq_right_iff,
-      one_ne_zero, imp_false, not_and]
+    simp only [hi, of_apply, and_true, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq,
+      Finset.mem_univ, ↓reduceIte, ite_eq_right_iff, one_ne_zero, imp_false, not_and]
     intro _
     by_contra hy; exact hij $ hy.symm.trans hi.symm
 
@@ -156,8 +156,9 @@ lemma GL_centre_is_scalar (n : ℕ) (G : GL (Fin n) K) (hG : G ∈ Subgroup.cent
       let e1 := hG (stdBasisMatrix j i (1 : K))
       rw [← ext_iff] at e1
       specialize e1 j j
-      simp only [mul_apply, stdBasisMatrix, true_and, ite_mul, one_mul, zero_mul, Finset.sum_ite_eq,
-        Finset.mem_univ, ↓reduceIte, hij, and_false, mul_zero, Finset.sum_const_zero] at e1
+      simp only [stdBasisMatrix, mul_apply, of_apply, true_and, ite_mul, one_mul, zero_mul,
+        Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, hij, and_false, mul_zero,
+        Finset.sum_const_zero] at e1 ⊢
       exact e1
     have eq_diag (i j : Fin n): G i i = G j j := by
       let e2 := hG (stdBasisMatrix i j (1 : K))

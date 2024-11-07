@@ -270,16 +270,15 @@ lemma Subalgebra.centralizer_sup (K B : Type*) [CommRing K] [Ring B] [Algebra K 
       fun g hg => h g <| (le_sup_right : T ≤ S ⊔ T) hg⟩
   · rintro ⟨h1, h2⟩ g hg
     change g ∈ Algebra.adjoin _ _ at hg
-    refine Algebra.adjoin_induction hg ?_ ?_ ?_ ?_
-    · rintro y (hy | hy)
-      · exact h1 y hy
-      · exact h2 y hy
-    · intro k
-      exact Algebra.commutes k x
-    · intro y1 y2 hy1 hy2
-      simp [add_mul, hy1, hy2, mul_add]
-    · intro y1 y2 hy1 hy2
-      rw [mul_assoc, hy2, ← mul_assoc, hy1, mul_assoc]
+    refine Algebra.adjoin_induction (R := K) (A := B) (s := S ⊔ T) (x := g) ?_ ?_ ?_ ?_ hg
+    · rintro y hy
+      simp only [Set.sup_eq_union, Set.mem_union, SetLike.mem_coe] at hy
+      cases' hy with hy1 hy2
+      · exact h1 y hy1
+      · exact h2 y hy2
+    · exact fun k => Algebra.commutes k x
+    · exact fun _ _ _ _ _ _ => by simp_all only [Set.sup_eq_union, add_mul, mul_add]
+    · exact fun y1 y2 hy1 hy2 hy11 hy22 => by rw [mul_assoc, hy22, ← mul_assoc, hy11, mul_assoc]
 
 lemma TensorProduct.left_tensor_base_sup_base_tensor_right
     (K B C : Type*) [CommRing K] [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
@@ -297,7 +296,7 @@ lemma TensorProduct.left_tensor_base_sup_base_tensor_right
 
 -- We need to restrict the universe, because we used properties of flatness.
 lemma TensorProduct.submodule_tensor_inf_tensor_submodule [Small.{v, u} K]
-    (B C : Type v) [AddCommGroup B] [Module K B] [AddCommGroup C] [Module K C]
+    (B C : Type u) [AddCommGroup B] [Module K B] [AddCommGroup C] [Module K C]
     (b : Submodule K B) (c : Submodule K C) :
     LinearMap.range (TensorProduct.map b.subtype .id) ⊓
     LinearMap.range (TensorProduct.map .id c.subtype) =
@@ -326,9 +325,8 @@ lemma TensorProduct.submodule_tensor_inf_tensor_submodule [Small.{v, u} K]
     let α : b ⊗[K] c →ₗ[K] b ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
     let β : B ⊗[K] c →ₗ[K] B ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
     let γ : (B ⧸ b) ⊗[K] c →ₗ[K] (B ⧸ b) ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
-
     have γ_inj : Function.Injective γ :=
-      Module.Flat.iff_lTensor_preserves_injective_linearMap K (B ⧸ b) |>.1 inferInstance
+      Module.Flat.iff_lTensor_preserves_injective_linearMap K (B ⧸ b)|>.1 inferInstance
         c.subtype c.injective_subtype
 
     rintro z (hz : z ∈ LinearMap.range u' ⊓ LinearMap.range β)
@@ -512,7 +510,7 @@ lemma centralizer_tensorProduct_eq_left_tensorProduct_center
 
 -- We need to restrict the universe, because we used properties of flatness.
 lemma center_tensorProduct [Small.{v, u} K]
-    (B C : Type v) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
+    (B C : Type u) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
     Subalgebra.center K (B ⊗[K] C) =
       (Algebra.TensorProduct.map (Subalgebra.center K B).val
         (Subalgebra.center K C).val).range := by
@@ -580,7 +578,7 @@ lemma centerTensorCenter_injective (B C : Type v) [Ring B] [Algebra K B] [Ring C
     exact Subtype.val_injective
 
 noncomputable def centerTensor [Small.{v, u} K]
-    (B C : Type v) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
+    (B C : Type u) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
     Subalgebra.center K B ⊗[K] Subalgebra.center K C ≃ₗ[K]
     Subalgebra.center K (B ⊗[K] C) :=
     LinearEquiv.ofInjective (centerTensorCenter K B C) (centerTensorCenter_injective K B C) ≪≫ₗ
@@ -600,7 +598,7 @@ noncomputable def centerTensor [Small.{v, u} K]
         refine ⟨y, rfl⟩)) rfl rfl)
 
 lemma TensorProduct.isCentral [Small.{v, u} K]
-    (A B : Type v) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
+    (A B : Type u) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     (isCentral_A : Subalgebra.center K A ≤ ⊥)
     (isCentral_B : Subalgebra.center K B ≤ ⊥) :
     Subalgebra.center K (A ⊗[K] B) ≤ ⊥ := by
@@ -645,7 +643,7 @@ a non-zero element in an ideal that can be represented as a sum of tensor produc
 -/
 structure is_obtainable_by_sum_tmul
     {ιA A B : Type*} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : TwoSidedIdeal $ A ⊗[K] B) (n : ℕ) : Prop :=
+    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : TwoSidedIdeal $ A ⊗[K] B) (n : ℕ) : Prop where
   mem : x ∈ I
   ne_zero : x ≠ 0
   rep : ∃ (s : Finset ιA) (_ : s.card = n) (f : ιA → B),
@@ -874,7 +872,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
       | zero => simp [TwoSidedIdeal.zero_mem]
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
-        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span _ $ ⟨a, ⟨⟩, rfl⟩
+        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
       | add x y hx hy => exact TwoSidedIdeal.add_mem _ hx hy
 
   · rw [← TwoSidedIdeal.span_le]
@@ -915,7 +913,7 @@ instance TensorProduct.simple
       | zero => simp [TwoSidedIdeal.zero_mem]
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
-        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span _ $ ⟨a, ⟨⟩, rfl⟩
+        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
       | add x y hx hy => exact TwoSidedIdeal.add_mem _ hx hy
 
   apply TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
@@ -924,7 +922,8 @@ instance TensorProduct.simple
 -- `flatness`
 set_option synthInstance.maxHeartbeats 40000 in
 instance baseChange
-    [Small.{v, u} K] (L : Type v) [Field L] [Algebra K L] [h : IsCentralSimple K D] :
+    [Small.{v, u} K] (D L : Type u) [Ring D] [Algebra K D]
+    [Field L] [Algebra K L] [h : IsCentralSimple K D] :
     IsCentralSimple L (L ⊗[K] D) where
   is_central:= by
     intro _ H
@@ -947,7 +946,7 @@ instance baseChange
         RingHom.id_apply, hkx, hky]⟩
 
 instance tensorProduct [Small.{v, u} K]
-    {A B : Type v} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
+    {A B : Type u} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     [csA : IsCentralSimple K A] [csB : IsCentralSimple K B] :
     IsCentralSimple K (A ⊗[K] B) where
   is_central := TensorProduct.isCentral _ _ _ csA.1 csB.1
