@@ -295,7 +295,7 @@ lemma TensorProduct.left_tensor_base_sup_base_tensor_right
     exact Subalgebra.add_mem _ hx hy
 
 -- We need to restrict the universe, because we used properties of flatness.
-lemma TensorProduct.submodule_tensor_inf_tensor_submodule [Small.{v, u} K]
+lemma TensorProduct.submodule_tensor_inf_tensor_submodule
     (B C : Type u) [AddCommGroup B] [Module K B] [AddCommGroup C] [Module K C]
     (b : Submodule K B) (c : Submodule K C) :
     LinearMap.range (TensorProduct.map b.subtype .id) ⊓
@@ -509,7 +509,7 @@ lemma centralizer_tensorProduct_eq_left_tensorProduct_center
     rfl
 
 -- We need to restrict the universe, because we used properties of flatness.
-lemma center_tensorProduct [Small.{v, u} K]
+lemma center_tensorProduct
     (B C : Type u) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
     Subalgebra.center K (B ⊗[K] C) =
       (Algebra.TensorProduct.map (Subalgebra.center K B).val
@@ -577,7 +577,7 @@ lemma centerTensorCenter_injective (B C : Type v) [Ring B] [Algebra K B] [Ring C
   · apply Module.Flat.lTensor_preserves_injective_linearMap
     exact Subtype.val_injective
 
-noncomputable def centerTensor [Small.{v, u} K]
+noncomputable def centerTensor
     (B C : Type u) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
     Subalgebra.center K B ⊗[K] Subalgebra.center K C ≃ₗ[K]
     Subalgebra.center K (B ⊗[K] C) :=
@@ -597,7 +597,7 @@ noncomputable def centerTensor [Small.{v, u} K]
         obtain ⟨y, rfl⟩ := hx
         refine ⟨y, rfl⟩)) rfl rfl)
 
-lemma TensorProduct.isCentral [Small.{v, u} K]
+lemma TensorProduct.isCentral
     (A B : Type u) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     (isCentral_A : Subalgebra.center K A ≤ ⊥)
     (isCentral_B : Subalgebra.center K B ≤ ⊥) :
@@ -922,7 +922,7 @@ instance TensorProduct.simple
 -- `flatness`
 set_option synthInstance.maxHeartbeats 40000 in
 instance baseChange
-    [Small.{v, u} K] (D L : Type u) [Ring D] [Algebra K D]
+    (D L : Type u) [Ring D] [Algebra K D]
     [Field L] [Algebra K L] [h : IsCentralSimple K D] :
     IsCentralSimple L (L ⊗[K] D) where
   is_central:= by
@@ -945,7 +945,7 @@ instance baseChange
         Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
         RingHom.id_apply, hkx, hky]⟩
 
-instance tensorProduct [Small.{v, u} K]
+instance tensorProduct
     {A B : Type u} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     [csA : IsCentralSimple K A] [csB : IsCentralSimple K B] :
     IsCentralSimple K (A ⊗[K] B) where

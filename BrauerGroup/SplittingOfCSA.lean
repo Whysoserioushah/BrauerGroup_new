@@ -134,7 +134,7 @@ theorem centralsimple_over_extension_iff_nontrivial
       have hAt := hAt.1
       by_contra h
       simp only [le_bot_iff, ne_eq] at h
-      have : 1 < FiniteDimensional.finrank k (Subalgebra.center k A) := by
+      have : 1 < Module.finrank k (Subalgebra.center k A) := by
         have eq1 := Subalgebra.finrank_bot (F := k) (E := A)
         have ineq1 := Submodule.finrank_lt_finrank_of_lt
           (s := Subalgebra.toSubmodule (⊥ : Subalgebra k A))
@@ -150,29 +150,29 @@ theorem centralsimple_over_extension_iff_nontrivial
           (Submodule.inclusion (by simp)) (Submodule.inclusion (by simp)) rfl rfl)
           (LinearEquiv.refl _ _)) ≪≫ₗ
         (IsCentralSimple.centerTensor k K A)
-      have eq1 : FiniteDimensional.finrank k (Subalgebra.center k (K ⊗[k] A)) =
-                FiniteDimensional.finrank k K *
-                FiniteDimensional.finrank k (Subalgebra.center k A) := by
-        rw [LinearEquiv.finrank_eq e.symm, FiniteDimensional.finrank_tensorProduct]
-      have eq2 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-                FiniteDimensional.finrank k K *
-                FiniteDimensional.finrank k (Subalgebra.center k A) := by
+      have eq1 : Module.finrank k (Subalgebra.center k (K ⊗[k] A)) =
+                Module.finrank k K *
+                Module.finrank k (Subalgebra.center k A) := by
+        rw [LinearEquiv.finrank_eq e.symm, Module.finrank_tensorProduct]
+      have eq2 : Module.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+                Module.finrank k K *
+                Module.finrank k (Subalgebra.center k A) := by
         rw [← eq1]; congr
-      have eq3 : FiniteDimensional.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-                FiniteDimensional.finrank k K *
-                FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
-        rw [FiniteDimensional.finrank_mul_finrank]
+      have eq3 : Module.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+                Module.finrank k K *
+                Module.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
+        rw [Module.finrank_mul_finrank]
 
-      have eq4 : FiniteDimensional.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
+      have eq4 : Module.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
         simp only [le_bot_iff] at hAt
         rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
 
       rw [eq4, mul_one] at eq3
       rw [eq3] at eq2
-      have ineq0 : 0 < FiniteDimensional.finrank k K := FiniteDimensional.finrank_pos
+      have ineq0 : 0 < Module.finrank k K := Module.finrank_pos
       have ineq1 :
-        FiniteDimensional.finrank k K <
-        FiniteDimensional.finrank k K * FiniteDimensional.finrank k (Subalgebra.center k A) := by
+        Module.finrank k K <
+        Module.finrank k K * Module.finrank k (Subalgebra.center k A) := by
         apply lt_mul_right <;> assumption
       conv_lhs at ineq1 => rw [eq2]
       exact Nat.lt_irrefl _ ineq1
@@ -236,17 +236,17 @@ theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
 
 lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
     (h : IsCentralSimple k A) [FiniteDimensional k A]:
-    IsSquare (FiniteDimensional.finrank k A) := by
+    IsSquare (Module.finrank k A) := by
   haveI := hk_bar.1
   obtain ⟨n, _, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
   refine ⟨n, ?_⟩
-  have := FiniteDimensional.finrank_matrix k_bar (Fin n) (Fin n)
-  simp only [Fintype.card_fin] at this
+  have := Module.finrank_matrix k_bar k_bar (Fin n) (Fin n)
+  simp only [Fintype.card_fin, Module.finrank_self, mul_one] at this
   exact dim_eq k k_bar A|>.trans $ LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
 def deg (A : CSA k): ℕ := dim_is_sq k A k_bar A.is_central_simple|>.choose
 
-lemma deg_sq_eq_dim (A : CSA k): (deg k k_bar A) ^ 2 = FiniteDimensional.finrank k A :=
+lemma deg_sq_eq_dim (A : CSA k): (deg k k_bar A) ^ 2 = Module.finrank k A :=
   by rw [pow_two]; exact dim_is_sq k A k_bar A.is_central_simple|>.choose_spec.symm
 
 lemma deg_pos (A : CSA k): deg k k_bar A ≠ 0 := by
@@ -255,10 +255,10 @@ lemma deg_pos (A : CSA k): deg k k_bar A ≠ 0 := by
   rw [deg_sq_eq_dim k k_bar A, pow_two, mul_zero] at h
   haveI := A.is_central_simple.is_simple.1
   have Nontriv : Nontrivial A := inferInstance
-  have := FiniteDimensional.finrank_pos_iff (R := k) (M := A)|>.2 Nontriv
+  have := Module.finrank_pos_iff (R := k) (M := A)|>.2 Nontriv
   linarith
 
-structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] :=
+structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] where
   (n : ℕ) (hn : n ≠ 0)
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
 
@@ -279,9 +279,9 @@ def split_by_alg_closure (A : CSA k): split k A k_bar where
       have := deg_sq_eq_dim k k_bar A
       rw [pow_two] at this
       have e1 := LinearEquiv.finrank_eq iso'.toLinearEquiv|>.trans $
-        FiniteDimensional.finrank_matrix k_bar (Fin n) (Fin n)
-      simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
-        Fintype.card_fin] at e1
+        Module.finrank_matrix k_bar _ (Fin n) (Fin n)
+      simp only [Module.finrank_tensorProduct, Module.finrank_self, one_mul, Fintype.card_fin,
+        mul_one] at e1
       have := this.trans e1
       exact Nat.mul_self_inj.mp (id this.symm)
     exact iso'.trans e
@@ -327,9 +327,9 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       have := deg_sq_eq_dim k k_bar A
       rw [pow_two] at this
       have e6 := LinearEquiv.finrank_eq (e3.trans e4).toLinearEquiv|>.trans $
-        FiniteDimensional.finrank_matrix L' (Fin n) (Fin n)
-      simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
-        Fintype.card_fin] at e6
+        Module.finrank_matrix L' _ (Fin n) (Fin n)
+      simp only [Module.finrank_tensorProduct, Module.finrank_self, one_mul, Fintype.card_fin,
+        mul_one] at e6
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
     exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' _ (finCongr e5)
 

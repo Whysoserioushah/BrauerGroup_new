@@ -1,6 +1,8 @@
 import BrauerGroup.ToSecond
 
 import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.LinearAlgebra.Quotient.Basic
+import BrauerGroup.Mathlib.LinearAlgebra.Quotient.Defs
 
 suppress_compilation
 
@@ -99,20 +101,20 @@ def φ3 :
     Module.End F K :=
   AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
     rw [CrossProduct.dim_eq_square]
-    rw [finrank_linearMap, pow_two])
+    rw [Module.finrank_linearMap, pow_two])
 
 def φ4 :
     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
-    Matrix (Fin <| finrank F K) (Fin <| finrank F K) F :=
-  φ3 K F |>.trans <| LinearMap.toMatrixAlgEquiv <| finBasis F K
+    Matrix (Fin <| Module.finrank F K) (Fin <| Module.finrank F K) F :=
+  φ3 K F |>.trans <| LinearMap.toMatrixAlgEquiv <| Module.finBasis F K
 
 lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 := by
   ext1
   change Quotient.mk'' _ = Quotient.mk'' _
   erw [Quotient.eq'']
-  have : 0 < finrank F K := finrank_pos
+  have : 0 < Module.finrank F K := Module.finrank_pos
   change IsBrauerEquivalent _ _
-  refine ⟨1, finrank F K, by positivity, by positivity, AlgEquiv.trans ?_ <| φ4 K F⟩
+  refine ⟨1, Module.finrank F K, by positivity, by positivity, AlgEquiv.trans ?_ <| φ4 K F⟩
   exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
 
 lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
@@ -498,14 +500,15 @@ instance : MulAction C (M hα hβ) where
           ring
         | add z z' hz hz' =>
           change C_smul_aux hα hβ _ _ = C_smul_aux hα hβ _ _ at hz hz' ⊢
-          simp only [QuotientAddGroup.mk_add, map_add] at hz hz' ⊢
-          rw [hz, hz']
-          change _ = C_smul_aux hα hβ _ (C_smul_aux hα hβ _ _)
-          simp only [map_add]
-          rfl
+          rw [Submodule.Quotient.mk''_eq_mk] at hz hz'
+          rw [Submodule.Quotient.mk''_eq_mk, Submodule.Quotient.mk_add, map_add,
+            hz, hz']
+          change C_smul_aux hα hβ _ (C_smul_aux _ _ _ _) +
+            C_smul_aux hα hβ _ (C_smul_aux _ _ _ _) = C_smul_aux hα hβ _ (C_smul_aux hα hβ _ _)
+          rw [← map_add, ← map_add]
         | zero =>
           change C_smul_aux hα hβ _ _ = C_smul_aux hα hβ _ (C_smul_aux hα hβ _ _)
-          simp only [QuotientAddGroup.mk_zero, map_zero]
+          rw [show Quotient.mk'' 0 = (0 : M _ _) from rfl, map_zero, map_zero, map_zero]
       | add y y' hy hy' =>
         change C_smul hα hβ _ _ = C_smul hα hβ _ _ at hy hy' ⊢
         change _ = C_smul hα hβ _ (C_smul hα hβ _ _)
@@ -530,7 +533,7 @@ instance : MulAction C (M hα hβ) where
       simp only [map_zero, LinearMap.zero_apply]
 
 example : True := ⟨⟩
-
+-- #check QuotientAddGroup.mk_add
 instance : DistribMulAction C (M hα hβ) where
   smul_zero := by
     intro c
@@ -629,6 +632,8 @@ example : True := ⟨⟩
 -- instance : Algebra F (Module.End C (M hα hβ)) := Module.End.instAlgebra _ _ _
 
 -- set_option maxHeartbeats 400000 in
+instance : Module F (M hα hβ) := inferInstance
+
 noncomputable def φ0 :
     (A ⊗[F] B)ᵐᵒᵖ →ₐ[F] Module.End C (M hα hβ) where
   toFun x :=
@@ -659,7 +664,7 @@ noncomputable def φ0 :
     refine LinearMap.ext fun m => ?_
     simp only [MulOpposite.algebraMap_apply, Algebra.TensorProduct.algebraMap_apply, algebraMap_val,
       LinearMap.coe_mk, AddHom.coe_mk, Module.algebraMap_end_apply]
-    induction m using Quotient.inductionOn' with | h m =>
+    induction m using Submodule.Quotient.induction_on with | H m =>
     induction m using TensorProduct.induction_on with
     | tmul a b =>
       erw [Aox_FB_op_tmul_smul_mk_tmul]
@@ -667,12 +672,10 @@ noncomputable def φ0 :
         ← Algebra.smul_def, ← smul_tmul']
       rfl
     | add x y hx hy =>
-      simp only [QuotientAddGroup.mk_add, smul_add] at hx hy ⊢
-      erw [hx, hy]
+      simp only at hx hy ⊢
+      rw [Submodule.Quotient.mk_add, smul_add, hx, hy, smul_add]
     | zero =>
       erw [smul_zero]
-
-example : True := ⟨⟩
 
 set_option synthInstance.maxHeartbeats 40000 in
 def MtoAox_KB : M hα hβ →ₗ[F] A ⊗[K] B :=
@@ -746,6 +749,7 @@ LinearEquiv.ofLinear
       Submodule.liftQ_apply, lift.tmul, liftAddHom_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
       LinearMap.id_comp])
 
+open Module
 lemma M_F_dim [IsGalois F K] : finrank F (M hα hβ) = (finrank F K)^3 := by
   rw [LinearEquiv.finrank_eq (Aox_KBEquivM hα hβ),
     show finrank F (A ⊗[K] B) = finrank F K * finrank K (A ⊗[K] B) from
@@ -792,7 +796,7 @@ lemma exists_simple_module_directSum [IsGalois F K] :
   apply_fun ((↑) : ℕ → Cardinal) at eq
   rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp F S ι] at eq
   have ineq : Module.rank F C < Cardinal.aleph0 := by
-    rw [Module.rank_lt_alpeh0_iff]; infer_instance
+    rw [rank_lt_aleph0_iff]; infer_instance
   rw [eq] at ineq
   simp only [Cardinal.lift_id] at ineq
   haveI : Nontrivial S := IsSimpleModule.nontrivial C S
@@ -960,7 +964,7 @@ lemma dim_endCSM : (finrank F K)^2 =
         right_inv := fun _ => rfl }, CrossProduct.dim_eq_square] at eq1
   rw [eq1, matrixEquivTensor F (Module.End C SM) (Fin (Fintype.card ι)) |>.toLinearEquiv.finrank_eq,
     finrank_tensorProduct, finrank_matrix]
-  simp only [Fintype.card_fin, pow_two]
+  simp only [Fintype.card_fin, finrank_self, _root_.mul_one, pow_two]
   group
 
 def C_iso_aux'' : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM))ᵐᵒᵖ where
@@ -1015,7 +1019,7 @@ lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃�
   simp only [Nat.cast_mul] at eq
   rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp F SM ιM] at eq
   have ineq : Module.rank F K < Cardinal.aleph0 := by
-    rw [Module.rank_lt_alpeh0_iff]; infer_instance
+    rw [Module.rank_lt_aleph0_iff]; infer_instance
   replace ineq : Module.rank F K * (Module.rank F K * Module.rank F K) < Cardinal.aleph0 := by
     apply Cardinal.mul_lt_aleph0
     · assumption
@@ -1144,7 +1148,7 @@ lemma dim_endCM :
   simp only [Fintype.card_fin]
   rw [show finrank F K * Fintype.card ι * (finrank F K * Fintype.card ι) =
     (Fintype.card ι)^2 * (finrank F K)^2 by group]
-  rw [← _root_.mul_assoc, mul_comm _ ((Fintype.card ι)^2),
+  rw [finrank_self, _root_.mul_one, ← _root_.mul_assoc, mul_comm _ ((Fintype.card ι)^2),
     ← dim_endCSM, pow_two, pow_succ, pow_three]
   group
 
@@ -1264,8 +1268,5 @@ def isoSnd :
   __ := equivSnd
 
 #print axioms isoSnd
-/-
-'RelativeBrGroup.isoSnd' depends on axioms: [propext, Classical.choice, Quot.sound]
--/
 
 end RelativeBrGroup
