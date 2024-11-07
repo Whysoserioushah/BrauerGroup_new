@@ -1261,7 +1261,11 @@ def isoSnd :
     Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) where
   __ := toSndAddMonoidHom K F
   __ := fromSndAddMonoidHom K F
+  __ := equivSnd
 
-#print axiom isoSnd
+#print axioms isoSnd
+/-
+'RelativeBrGroup.isoSnd' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
 
 end RelativeBrGroup
