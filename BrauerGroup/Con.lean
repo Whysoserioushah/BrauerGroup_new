@@ -176,8 +176,10 @@ instance : Module Rᵐᵒᵖ I where
   zero_smul x := by
     ext ; show _ * 0 = 0; simp only [mul_zero]
 
-lemma comap_comap {S T : Type*} [Ring S] [Ring T] (f : R →+* S) (g : S →+* T) (I : TwoSidedIdeal T) :
-    TwoSidedIdeal.comap f (TwoSidedIdeal.comap g I) = TwoSidedIdeal.comap (g.comp f) I := rfl
+lemma comap_comap
+    {S T : Type*} [Ring S] [Ring T]
+    (f : R →+* S) (g : S →+* T) (I : TwoSidedIdeal T) :
+  TwoSidedIdeal.comap f (TwoSidedIdeal.comap g I) = TwoSidedIdeal.comap (g.comp f) I := rfl
 
 @[simp]
 def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (f : F) :
@@ -188,25 +190,23 @@ def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (
     have :=
       TwoSidedIdeal.comap_comap (R := R) (S := R') (RingEquivClass.toRingEquiv f) (RingEquivClass.toRingEquiv f).symm I
     simp at this
-    -- rw [TwoSidedIdeal.comap_comap]
-    -- have : ((@RingEquiv.symm R R' _ _ _ _ f)).comp f = (1 : R →+* R) := sorry
-
-    sorry
-  right_inv := fun I => SetLike.ext $ fun x => by sorry
-    -- simp
+    erw [TwoSidedIdeal.comap_comap (RingEquivClass.toRingEquiv f).toRingHom
+      (RingEquivClass.toRingEquiv f).symm.toRingHom]
+    simp only [RingEquiv.toRingHom_eq_coe, RingEquiv.symm_comp]
+    rfl
+  right_inv := fun I => SetLike.ext $ fun x => by
+    simp only [mem_comap, RingEquiv.apply_symm_apply]
   map_rel_iff' := by
     intro I J
     rw [le_iff, le_iff]
     constructor
     · rintro h x hx
-      specialize @h (RingEquivClass.toRingEquiv f x) (by sorry)
-        -- simpa using hx)
-      -- simpa using h
-      sorry
+
+      specialize @h (RingEquivClass.toRingEquiv f x) (by simpa [TwoSidedIdeal.mem_comap])
+      simpa [TwoSidedIdeal.mem_comap] using h
     · intro h x hx
       simp only [Equiv.coe_fn_mk, SetLike.mem_coe, mem_comap] at hx ⊢
       exact h hx
-  -- sorry
 
 
 -- protected def ker {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) :

@@ -251,8 +251,8 @@ lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (al
     · use - Real.sqrt r
       rwa [map_neg, eq_comm, eq_neg_iff_add_eq_zero]
 
-theorem rank_4_iso_H : FiniteDimensional.finrank ℝ D = 4 → Nonempty (D ≃ₐ[ℝ] ℍ[ℝ]) := by
+theorem rank_4_iso_H : Module.finrank ℝ D = 4 → Nonempty (D ≃ₐ[ℝ] ℍ[ℝ]) := by
   intro h'
   sorry
 
-theorem rank_2_D_iso_C : FiniteDimensional.finrank ℝ D = 2 → Nonempty (D≃ₐ[ℝ] ℂ) := sorry
+theorem rank_2_D_iso_C : Module.finrank ℝ D = 2 → Nonempty (D≃ₐ[ℝ] ℂ) := sorry
