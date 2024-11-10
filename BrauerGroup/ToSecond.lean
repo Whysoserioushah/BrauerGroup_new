@@ -17,7 +17,7 @@ structure GoodRep where
 carrier : CSA.{0, 0} F
 quot_eq : (Quotient.mk'' carrier) = X
 ι : K →ₐ[F] carrier
-dim_eq_square : finrank F carrier = (finrank F K) ^ 2
+dim_eq_square : Module.finrank F carrier = (Module.finrank F K) ^ 2
 
 namespace GoodRep
 
@@ -53,7 +53,7 @@ lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := b
   change Subalgebra.centralizer F (L.toSubalgebra : Set A) = L.toSubalgebra
   apply cor_two_3to1
   apply cor_two_2to3
-  change finrank F A = finrank F A.ι.range * finrank F A.ι.range
+  change Module.finrank F A = Module.finrank F A.ι.range * Module.finrank F A.ι.range
   rw [A.dim_eq_square, pow_two, LinearEquiv.finrank_eq (f := A.ιRange.toLinearEquiv.symm)]
 
 instance : Module K A where
@@ -75,13 +75,13 @@ instance : IsScalarTower F K A where
 
 instance : FiniteDimensional K A := FiniteDimensional.right F K A
 
-lemma dim_eq' [FiniteDimensional F K] : finrank K A = finrank F K := by
-  have : finrank F A = finrank F K * finrank K A :=
-    Eq.symm (finrank_mul_finrank F K A.carrier.carrier)
+lemma dim_eq' [FiniteDimensional F K] : Module.finrank K A = Module.finrank F K := by
+  have : Module.finrank F A = Module.finrank F K * Module.finrank K A :=
+    Eq.symm (Module.finrank_mul_finrank F K A.carrier.carrier)
   rw [A.dim_eq_square, pow_two] at this
   simp only [mul_eq_mul_left_iff] at this
   refine this.recOn Eq.symm fun rid => ?_
-  have : 0 < finrank F K := finrank_pos
+  have : 0 < Module.finrank F K := Module.finrank_pos
   omega
 
 end basic
@@ -350,9 +350,11 @@ lemma exists_iso :
   have eq1 := isoA.toLinearEquiv.finrank_eq
   have eq2 := isoB.toLinearEquiv.finrank_eq
   simp only [A.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin m)).toLinearEquiv,
-    finrank_tensorProduct, finrank_matrix, Fintype.card_fin] at eq1
+    Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
+    _root_.mul_one] at eq1
   simp only [B.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin n)).toLinearEquiv,
-    finrank_tensorProduct, finrank_matrix, Fintype.card_fin] at eq2
+    Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
+    _root_.mul_one] at eq2
   have eq3 := eq1.symm.trans eq2
   haveI : FiniteDimensional F (Matrix (Fin m) (Fin m) D) :=
     LinearEquiv.finiteDimensional isoA.toLinearEquiv
@@ -363,7 +365,7 @@ lemma exists_iso :
         map_add' := by intros; ext i j; by_cases i = j <;> aesop
         map_smul' := by intros; ext i j; by_cases i = j <;> aesop
       } : D →ₗ[F] Matrix (Fin m) (Fin m) D) fun _ _ H => Matrix.ext_iff.2 H 0 0
-  have : 0 < finrank F D := finrank_pos
+  have : 0 < Module.finrank F D := Module.finrank_pos
   rw [Nat.mul_right_inj, ← pow_two, ← pow_two] at eq3; swap; omega
   simp only [zero_le, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj] at eq3
   subst eq3
@@ -620,7 +622,7 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     congr 1
     simp only [B, Basis.span_apply]
 
-  simp only [Submodule.coeSubtype, map_sum, map_smul, smul_def] at eq0
+  simp only [Submodule.coe_subtype, map_sum, map_smul, smul_def] at eq0
   have eq1 (c : K) := calc A.ι (σ c) * (x_ σ).1.1
       _ = (x_ σ).1.1 * A.ι c := by
         rw [(x_ σ).2 c]; simp [_root_.mul_assoc]
@@ -1286,7 +1288,7 @@ def x_AsBasis : Basis (K ≃ₐ[F] K) K (CrossProduct ha) :=
     apply_fun valAddMonoidHom ha at hf
     replace hf := congr_fun hf σ
     simp only [map_sum, Finset.sum_apply, map_zero, Pi.zero_apply] at hf
-    simp only [valAddMonoidHom_apply, Finset.sum_pi_single, ite_eq_else] at hf
+    simp only [valAddMonoidHom_apply, Finset.sum_pi_single, ite_eq_right_iff] at hf
     exact hf hσ)
   (by
     rintro x -
@@ -1344,10 +1346,12 @@ lemma mul_single_in_xAsBasis (c d : K) (σ τ : K ≃ₐ[F] K) :
     IsUnit.inv_mul_cancel_right]
   field_simp
 
-lemma dim_eq_square [IsGalois F K] : finrank F (CrossProduct ha) = (finrank F K)^2 := by
-  have eq1 : finrank F (CrossProduct ha) = finrank F K * finrank K (CrossProduct ha) := by
-    rw [finrank_mul_finrank]
-  rw [finrank_eq_card_basis (x_AsBasis ha), IsGalois.card_aut_eq_finrank] at eq1
+lemma dim_eq_square [IsGalois F K] : Module.finrank F (CrossProduct ha) =
+    (Module.finrank F K)^2 := by
+  have eq1 : Module.finrank F (CrossProduct ha) = Module.finrank F K *
+      Module.finrank K (CrossProduct ha) := by
+    rw [Module.finrank_mul_finrank]
+  rw [Module.finrank_eq_card_basis (x_AsBasis ha), IsGalois.card_aut_eq_finrank] at eq1
   rw [eq1, pow_two]
 
 lemma one_def : (1 : CrossProduct ha) = (a 1).1⁻¹ • x_AsBasis ha 1 := by
@@ -1619,10 +1623,6 @@ instance : Module (RingHom.range <| πRes I) I.ringCon.Quotient where
     erw [smul_def_quot, smul_def_quot]
     change _ = Quotient.mk'' _
     erw [Quotient.eq'']
-    change I.ringCon _ _
-    rw [I.rel_iff]
-    simp only [sub_self]
-    exact I.zero_mem
   add_smul := by
     intro a a' x
     induction x using Quotient.inductionOn' with | h y =>
@@ -1924,11 +1924,11 @@ instance [IsGalois F K] : IsCentralSimple F (CrossProduct ha) where
   is_central := is_central ha
 
 instance [IsGalois F K] : FiniteDimensional F (CrossProduct ha) :=
-  .of_finrank_eq_succ (n := (finrank F K)^2 - 1) (by
+  .of_finrank_eq_succ (n := (Module.finrank F K)^2 - 1) (by
     rw [dim_eq_square]
     rw [← Nat.pred_eq_sub_one, Nat.succ_pred_eq_of_pos]
     apply pow_two_pos_of_ne_zero
-    have : 0 < finrank F K := finrank_pos
+    have : 0 < Module.finrank F K := Module.finrank_pos
     omega)
 
 def asCSA [IsGalois F K] : CSA F :=
@@ -1966,7 +1966,7 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
       exact isMulTwoCoboundary_of_twoCoboundaries (G := K ≃ₐ[F] K) (M := Kˣ)
         ⟨_, by
           change (twoCoboundaries (galAct F K)).quotientRel.r ⟨a, _⟩ ⟨b, _⟩ at hab
-          rw [Submodule.quotientRel_r_def] at hab
+          rw [Submodule.quotientRel_def] at hab
           exact hab⟩
 
     obtain ⟨c, hc⟩ := hc
@@ -2142,7 +2142,7 @@ lemma toSnd_fromSnd :
   rw [show A.toH2 y_ = Quotient.mk'' ⟨b, _⟩ by rfl]
   rw [Quotient.eq'']
   change (twoCoboundaries (galAct F K)).quotientRel.r _ _
-  rw [Submodule.quotientRel_r_def]
+  rw [Submodule.quotientRel_def]
   suffices H : IsMulTwoCoboundary _ from
     (twoCoboundariesOfIsMulTwoCoboundary H).2
   refine ⟨fun _ => 1, ?_⟩

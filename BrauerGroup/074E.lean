@@ -4,6 +4,7 @@ import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
 import Mathlib.FieldTheory.Finiteness
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.CategoryTheory.Preadditive.AdditiveFunctor
+import Mathlib.LinearAlgebra.Dimension.Free
 
 open CategoryTheory
 
@@ -262,7 +263,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     [Module.Finite A M] [Module.Finite A N] :
 
     Nonempty (M ≃ₗ[A] N) ↔
-    FiniteDimensional.finrank k M = FiniteDimensional.finrank k N := by
+    Module.finrank k M = Module.finrank k N := by
 
   haveI : FiniteDimensional k M := Module.Finite.trans A M
   haveI : FiniteDimensional k N := Module.Finite.trans A N
@@ -303,13 +304,13 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           intros a
           apply_fun iso using LinearEquiv.injective _
           apply Subsingleton.elim⟩
-        have eq : FiniteDimensional.finrank k M = 0 := by
-          rw [FiniteDimensional.finrank_eq_zero_iff]
+        have eq : Module.finrank k M = 0 := by
+          rw [Module.finrank_eq_zero_iff]
           exact fun m => ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
-        have eq' : FiniteDimensional.finrank k N = 0 := by
+        have eq' : Module.finrank k N = 0 := by
           rw [← h, eq]
         haveI : Unique N := ⟨⟨0⟩, by
-          rw [FiniteDimensional.finrank_zero_iff] at eq'
+          rw [Module.finrank_zero_iff] at eq'
           intro n
           exact Subsingleton.elim _ _⟩
         refine ⟨⟨0, 0, fun x => Subsingleton.elim _ _, fun x => Subsingleton.elim _ _⟩⟩
@@ -318,13 +319,13 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           intros a
           apply_fun iso' using LinearEquiv.injective _
           apply Subsingleton.elim⟩
-        have eq : FiniteDimensional.finrank k N = 0 := by
-          rw [FiniteDimensional.finrank_eq_zero_iff]
+        have eq : Module.finrank k N = 0 := by
+          rw [Module.finrank_eq_zero_iff]
           exact fun m => ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
-        have eq' : FiniteDimensional.finrank k M = 0 := by
+        have eq' : Module.finrank k M = 0 := by
           rw [h, eq]
         haveI : Unique M := ⟨⟨0⟩, by
-          rw [FiniteDimensional.finrank_zero_iff] at eq'
+          rw [Module.finrank_zero_iff] at eq'
           intro n
           exact Subsingleton.elim _ _⟩
         refine ⟨⟨0, 0, fun x => Subsingleton.elim _ _, fun x => Subsingleton.elim _ _⟩⟩
@@ -355,7 +356,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
         change iso' (algebraMap k A a • _) = algebraMap k A a • _
         rw [map_smul] }
     have eq' := LinearEquiv.finrank_eq ISO'
-    have EQ : FiniteDimensional.finrank k (ι →₀ S) = FiniteDimensional.finrank k (ι' →₀ S) := by
+    have EQ : Module.finrank k (ι →₀ S) = Module.finrank k (ι' →₀ S) := by
       rw [← eq, h, eq']
 
     haveI : Module.Finite k (ι →₀ S) := Module.Finite.equiv ISO
@@ -364,9 +365,9 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
       suffices IsNoetherian k S from inferInstance
       rw [IsNoetherian.iff_rank_lt_aleph0]
       apply_fun ((↑) : ℕ → Cardinal) at eq
-      rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp] at eq
+      rw [Module.finrank_eq_rank, Module.finrank_eq_rank, rank_finsupp] at eq
       have ineq : Module.rank k M < Cardinal.aleph0 := by
-        rw [Module.rank_lt_alpeh0_iff]; infer_instance
+        rw [Module.rank_lt_aleph0_iff]; infer_instance
       rw [eq] at ineq
       simp only [Cardinal.lift_id] at ineq
       have ineq2 := @Cardinal.le_mul_right (Module.rank k S) (Cardinal.mk ι)
@@ -377,9 +378,9 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     haveI : Fintype ι := by
       refine (@Cardinal.lt_aleph0_iff_fintype ι).1 ?_ |>.some
       apply_fun ((↑) : ℕ → Cardinal) at eq
-      rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp] at eq
+      rw [Module.finrank_eq_rank, Module.finrank_eq_rank, rank_finsupp] at eq
       have ineq : Module.rank k M < Cardinal.aleph0 := by
-        rw [Module.rank_lt_alpeh0_iff]; infer_instance
+        rw [Module.rank_lt_aleph0_iff]; infer_instance
       rw [eq] at ineq
       simp only [Cardinal.lift_id] at ineq
       have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ι) (Module.rank k S)
@@ -392,9 +393,9 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     haveI : Fintype ι' := by
       refine (@Cardinal.lt_aleph0_iff_fintype ι').1 ?_ |>.some
       apply_fun ((↑) : ℕ → Cardinal) at eq'
-      rw [finrank_eq_rank, finrank_eq_rank, rank_finsupp] at eq'
+      rw [Module.finrank_eq_rank, Module.finrank_eq_rank, rank_finsupp] at eq'
       have ineq : Module.rank k N < Cardinal.aleph0 := by
-        rw [Module.rank_lt_alpeh0_iff]; infer_instance
+        rw [Module.rank_lt_aleph0_iff]; infer_instance
       rw [eq'] at ineq
       simp only [Cardinal.lift_id] at ineq
       have ineq2 := @Cardinal.le_mul_left (Cardinal.mk ι') (Module.rank k S)
@@ -405,11 +406,11 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
       rw [mul_comm] at ineq2
       exact lt_of_le_of_lt ineq2 ineq
 
-    rw [FiniteDimensional.finrank_finsupp,  FiniteDimensional.finrank_finsupp] at EQ
+    rw [Module.finrank_finsupp,  Module.finrank_finsupp] at EQ
     simp only [Cardinal.lift_id] at EQ
     simp only [mul_eq_mul_right_iff] at EQ
     replace EQ := EQ.resolve_right
-      (by have := FiniteDimensional.finrank_pos (R := k) (M := S); omega)
+      (by have := Module.finrank_pos (R := k) (M := S); omega)
     rw [Fintype.card_eq] at EQ
     obtain ⟨e⟩ := EQ
     let E : (ι →₀ S) ≃ₗ[A] (ι' →₀ S) :=
@@ -722,7 +723,7 @@ instance end_simple_mod_finite
     (by ext; simp) (by ext; simp)
   have : Module.Finite k D := by
     haveI inst1 : Module.Finite k (Matrix (Fin n) (Fin n) D) := e.toLinearEquiv.finiteDimensional
-    rw [← Module.rank_lt_alpeh0_iff] at inst1 ⊢
+    rw [← Module.rank_lt_aleph0_iff] at inst1 ⊢
     have eq1 := rank_mul_rank k D (Matrix (Fin n) (Fin n) D)
     simp only [rank_matrix', Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
       Cardinal.lift_natCast] at eq1
@@ -1077,7 +1078,7 @@ lemma Wedderburn_Artin_uniqueness₁
 
   haveI : Module.Finite k D := by
     haveI inst1 : Module.Finite k (Matrix (Fin n) (Fin n) D) := wdb.toLinearEquiv.finiteDimensional
-    rw [← Module.rank_lt_alpeh0_iff] at inst1 ⊢
+    rw [← Module.rank_lt_aleph0_iff] at inst1 ⊢
     have eq1 := rank_mul_rank k D (Matrix (Fin n) (Fin n) D)
     simp only [rank_matrix', Cardinal.mk_fintype, Fintype.card_fin, Cardinal.lift_mul,
       Cardinal.lift_natCast] at eq1
@@ -1085,24 +1086,15 @@ lemma Wedderburn_Artin_uniqueness₁
     exact lt_of_le_of_lt (Cardinal.le_mul_left (a := Module.rank k D) (b := n * n) (by
       simpa only [ne_eq, mul_eq_zero, Nat.cast_eq_zero, or_self] using NeZero.ne n)) inst1
 
-  have eq1 := FiniteDimensional.finrank_matrix D (Fin n) (Fin n)
-  have eq2 := FiniteDimensional.finrank_matrix D (Fin n') (Fin n')
+  have eq1 := Module.finrank_matrix k D (Fin n) (Fin n)
+  have eq2 := Module.finrank_matrix k D (Fin n') (Fin n')
   simp only [Fintype.card_fin] at eq1 eq2
-  have eq11 :
-      FiniteDimensional.finrank k (Matrix (Fin n) (Fin n) D) =
-      n * n * FiniteDimensional.finrank k D := by
-    rw [← FiniteDimensional.finrank_mul_finrank k D (Matrix (Fin n) (Fin n) D), eq1]
-    ring
-  have eq21 : FiniteDimensional.finrank k (Matrix (Fin n') (Fin n') D) =
-      n' * n' * FiniteDimensional.finrank k D := by
-    rw [← FiniteDimensional.finrank_mul_finrank k D (Matrix (Fin n') (Fin n') D), eq2]
-    ring
-  have eq3 : n * n * FiniteDimensional.finrank k D = n' * n' * FiniteDimensional.finrank k D := by
-    rw [← eq11, ← eq21]
+  have eq3 : n * n * Module.finrank k D = n' * n' * Module.finrank k D := by
+    rw [← eq1, ← eq2]
     exact LinearEquiv.finrank_eq e
   simp only [mul_eq_mul_right_iff] at eq3
   replace eq3 := eq3.resolve_right (fun rid => by
-    rw [FiniteDimensional.finrank_zero_iff] at rid
+    rw [Module.finrank_zero_iff] at rid
     simpa using rid.elim 0 1)
   simpa [← pow_two] using eq3
 

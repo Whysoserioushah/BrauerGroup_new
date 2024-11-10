@@ -12,7 +12,7 @@ noncomputable def dualTensorPower (p : ℕ) :
   PiTensorProduct.lift
   { toFun := fun f => PiTensorProduct.lift
       { toFun := fun v => ∏ i : Fin p, f i (v i)
-        map_add' := by
+        map_update_add' := by
           intros _ v i x₁ x₂
           simp only
           have (j : Fin p) : f j (Function.update v i (x₁ + x₂) j) =
@@ -32,7 +32,7 @@ noncomputable def dualTensorPower (p : ℕ) :
           simp_rw [this, Finset.update_eq_piecewise]; clear this
           erw [Finset.prod_piecewise, Finset.prod_piecewise, Finset.prod_piecewise]
           simp only [Finset.mem_univ, Finset.inter_singleton_of_mem, Finset.prod_singleton, add_mul]
-        map_smul' := by
+        map_update_smul' := by
           intro _ v i a x
           simp only [smul_eq_mul]
           have (j : Fin p) : f j (Function.update v i (a • x) j) =
@@ -48,7 +48,7 @@ noncomputable def dualTensorPower (p : ℕ) :
           erw [Finset.prod_piecewise, Finset.prod_piecewise]
           simp only [Finset.mem_univ, Finset.inter_singleton_of_mem, smul_eq_mul,
             Finset.prod_singleton, mul_assoc] }
-    map_add' := by
+    map_update_add' := by
       intro _ f i g₁ g₂
       ext y
       simp only [LinearMap.compMultilinearMap_apply, PiTensorProduct.lift.tprod,
@@ -74,7 +74,7 @@ noncomputable def dualTensorPower (p : ℕ) :
       erw [Finset.prod_piecewise, Finset.prod_piecewise, Finset.prod_piecewise]
       simp only [Finset.mem_univ, Finset.inter_singleton_of_mem, Finset.prod_const,
         Finset.card_singleton, pow_one, add_mul]
-    map_smul' := by
+    map_update_smul' := by
       intro _ f i a g
       ext y
       simp only [LinearMap.compMultilinearMap_apply, PiTensorProduct.lift.tprod,
@@ -99,7 +99,6 @@ noncomputable def dualTensorPower (p : ℕ) :
 lemma dualTensorPower_tprod (p : ℕ) (f : Fin p → Module.Dual k V) (v : Fin p → V) :
     dualTensorPower k V p (tprod k f) (tprod k v) = ∏ i : Fin p, f i (v i) := by
   simp only [dualTensorPower, lift.tprod, MultilinearMap.coe_mk]
-
 
 end
 

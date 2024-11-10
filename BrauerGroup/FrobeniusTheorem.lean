@@ -15,11 +15,11 @@ variable {D : Type} [DivisionRing D]
 
 section prerequisites
 
-set_option synthInstance.maxHeartbeats 40000 in
-theorem rank_1_D_iso_R [Algebra ℝ D] : FiniteDimensional.finrank ℝ D = 1 →
+set_option synthInstance.maxHeartbeats 60000 in
+theorem rank_1_D_iso_R [Algebra ℝ D] : Module.finrank ℝ D = 1 →
     Nonempty (D≃ₐ[ℝ] ℝ) := fun h => by
   have h' := Subalgebra.finrank_eq_one_iff (F := ℝ) (S := (⊤ : Subalgebra ℝ D))
-  have : FiniteDimensional.finrank ℝ (⊤ : Subalgebra ℝ D) = 1 := by
+  have : Module.finrank ℝ (⊤ : Subalgebra ℝ D) = 1 := by
     simp_all only [Subalgebra.finrank_eq_one_iff, Subalgebra.bot_eq_top_of_finrank_eq_one]
   exact ⟨Subalgebra.topEquiv.symm.trans $ Subalgebra.equivOfEq _ _
     (h'.1 this)|>.trans $ Algebra.botEquiv ℝ D⟩
@@ -29,7 +29,7 @@ lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensio
   --Zulip
   sorry
 
-lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : finrank ℝ K = 2) :
+lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : Module.finrank ℝ K = 2) :
     Nonempty (K ≃ₐ[ℝ] ℂ) := by
     haveI : FiniteDimensional ℝ K := .of_finrank_eq_succ h
     haveI : Algebra.IsAlgebraic ℝ K := Algebra.IsAlgebraic.of_finite _ _
@@ -112,7 +112,7 @@ abbrev f : k →ₐ[ℝ] k where
     simp only [AlgEquiv.commutes, Complex.coe_algebraMap, Complex.conj_ofReal]
     rw [← mul_one (algebraMap _ _ r), ← Algebra.smul_def]
     nth_rw 1 [← mul_one r]
-    unfold Complex.ofReal'
+    unfold Complex.ofReal
     rw [← smul_eq_mul, show (⟨r • 1, 0⟩ : ℂ) = r • ⟨1, 0⟩ by
       apply Complex.ext
       · simp only [smul_eq_mul, mul_one, Complex.real_smul, Complex.mul_re, Complex.ofReal_re,
@@ -211,18 +211,18 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
         .mk (M := k) (v := ![1, ⟨x.1^2, xink⟩]) indep' $ by
         simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.range_cons,
           Matrix.range_empty, Set.union_empty, Set.union_singleton, top_le_iff]
-        have : FiniteDimensional.finrank ℝ (Submodule.span ℝ
+        have : Module.finrank ℝ (Submodule.span ℝ
           {⟨x.1^2, xink⟩, (1 : k)})= 2 := by
           apply LinearIndependent.span_eq_top_of_card_eq_finrank' at indep'
           simp only [Nat.succ_eq_add_one, zero_add, Nat.reduceAdd, Fintype.card_fin,
             Matrix.range_cons, Matrix.range_empty, Set.union_empty, Set.union_singleton] at indep'
-          have : 2 = FiniteDimensional.finrank ℝ k := by
+          have : 2 = Module.finrank ℝ k := by
             rw [LinearEquiv.finrank_eq e.toLinearEquiv]
             symm
             exact Complex.finrank_real_complex
           apply indep' at this
           rw [this, finrank_top]
-          exact (show FiniteDimensional.finrank ℝ k = 2 by
+          exact (show Module.finrank ℝ k = 2 by
               rw [LinearEquiv.finrank_eq e.toLinearEquiv]
               exact Complex.finrank_real_complex
           )
@@ -230,7 +230,7 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
           e.toLinearEquiv.finrank_eq.trans Complex.finrank_real_complex
         have le : Submodule.span _ {⟨x.1 ^ 2, xink⟩, (1 : k)} ≤
           (⊤ : Submodule ℝ k) := by exact fun ⦃x_1⦄ a ↦ trivial
-        exact FiniteDimensional.eq_of_le_of_finrank_eq le $ this.trans eq.symm
+        exact Submodule.eq_of_le_of_finrank_eq le $ this.trans eq.symm
 
       have xink' : x.1 ∈ k := sorry
       sorry
@@ -271,8 +271,8 @@ lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (al
     · use - Real.sqrt r
       rwa [map_neg, eq_comm, eq_neg_iff_add_eq_zero]
 
-theorem rank_4_iso_H : FiniteDimensional.finrank ℝ D = 4 → Nonempty (D ≃ₐ[ℝ] ℍ[ℝ]) := by
+theorem rank_4_iso_H : Module.finrank ℝ D = 4 → Nonempty (D ≃ₐ[ℝ] ℍ[ℝ]) := by
   intro h'
   sorry
 
-theorem rank_2_D_iso_C : FiniteDimensional.finrank ℝ D = 2 → Nonempty (D≃ₐ[ℝ] ℂ) := sorry
+theorem rank_2_D_iso_C : Module.finrank ℝ D = 2 → Nonempty (D≃ₐ[ℝ] ℂ) := sorry

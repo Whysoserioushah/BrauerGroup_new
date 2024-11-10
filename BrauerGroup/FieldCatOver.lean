@@ -60,7 +60,7 @@ instance hasForgetToRing : HasForget₂ (FieldCatOver K) RingCat where
 instance hasForgetToModule : HasForget₂ (FieldCatOver K) (ModuleCat K) where
   forget₂ :=
     { obj := fun M => ModuleCat.of K M
-      map := fun f => ModuleCat.ofHom f.toLinearMap }
+      map := fun f => ModuleCat.asHom f.toLinearMap }
 
 @[simp]
 lemma forget₂_module_obj (X : FieldCatOver K) :
@@ -69,7 +69,7 @@ lemma forget₂_module_obj (X : FieldCatOver K) :
 
 @[simp]
 lemma forget₂_module_map {X Y : FieldCatOver K} (f : X ⟶ Y) :
-    (forget₂ (FieldCatOver K) (ModuleCat K)).map f = ModuleCat.ofHom f.toLinearMap :=
+    (forget₂ (FieldCatOver K) (ModuleCat K)).map f = ModuleCat.asHom f.toLinearMap :=
   rfl
 
 /-- The object in the category of R-algebras associated to a type equipped with the appropriate

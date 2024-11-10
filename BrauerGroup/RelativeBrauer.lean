@@ -55,9 +55,9 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
         have := deg_sq_eq_dim F F_bar A
         rw [pow_two] at this
         have e1 := LinearEquiv.finrank_eq iso'.toLinearEquiv|>.trans $
-          FiniteDimensional.finrank_matrix _ (Fin n) (Fin n)
-        simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self,
-          _root_.one_mul, Fintype.card_fin] at e1
+          Module.finrank_matrix _ _ (Fin n) (Fin n)
+        simp only [Module.finrank_tensorProduct, Module.finrank_self, _root_.one_mul,
+          Fintype.card_fin, _root_.mul_one] at e1
         have := this.trans e1
         exact Nat.mul_self_inj.mp (id this.symm)
       exact iso'.trans e⟩⟩,

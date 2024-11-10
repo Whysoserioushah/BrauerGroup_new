@@ -301,7 +301,7 @@ theorem e_hat_linear_independent : LinearIndependent ℒ e^' := by
   intro s g h
   have h' : ∑ i ∈ s, algebraMap ℒ k⁻ (g i) • e i = 0 := by
     apply_fun Submodule.subtype _ at h
-    simpa only [IntermediateField.algebraMap_apply, map_sum, map_smul, Submodule.coeSubtype,
+    simpa only [IntermediateField.algebraMap_apply, map_sum, map_smul, Submodule.coe_subtype,
       map_zero] using h
 
   have H := (linearIndependent_iff'.1 $ e |>.linearIndependent) s (algebraMap ℒ k⁻ ∘ g) h'
@@ -309,16 +309,16 @@ theorem e_hat_linear_independent : LinearIndependent ℒ e^' := by
   simpa using H i hi
 
 -- shortcut instance search
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 60000 in
 instance : Module ℒ (ℒ ⊗[k] A) := TensorProduct.leftModule
 
 instance : FiniteDimensional ℒ (intermediateTensor' k k⁻ A ℒ) :=
     Module.Finite.equiv (intermediateTensorEquiv' k k_bar A ℒ).symm
 
 omit [NeZero n] in
-theorem dim_ℒ_eq : FiniteDimensional.finrank ℒ (intermediateTensor' k k⁻ A ℒ) = n^2 := by
+theorem dim_ℒ_eq : Module.finrank ℒ (intermediateTensor' k k⁻ A ℒ) = n^2 := by
     have eq1 := dim_eq k k⁻ A |>.trans iso.toLinearEquiv.finrank_eq
-    simp only [FiniteDimensional.finrank_matrix, Fintype.card_fin] at eq1
+    simp only [Module.finrank_matrix, Fintype.card_fin, Module.finrank_self, mul_one] at eq1
     rw [pow_two, ← eq1, dim_eq k ℒ A]
     exact LinearEquiv.finrank_eq (intermediateTensorEquiv' k k_bar A ℒ)
 
@@ -328,7 +328,7 @@ def e_hat : Basis (Fin n × Fin n) ℒ (intermediateTensor' k k_bar A ℒ) :=
 
 local notation "e^" => e_hat n k k_bar A iso
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 60000 in
 def isoRestrict' : ℒ ⊗[k] A ≃ₗ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
   (intermediateTensorEquiv' k k_bar A ℒ).symm ≪≫ₗ
   Basis.equiv (e^) (Matrix.stdBasis ℒ (Fin n) (Fin n)) (Equiv.refl _)
@@ -367,7 +367,7 @@ lemma comm_triangle :
     (inclusion n k k_bar A iso).toLinearMap := by
   ext a
   simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
-    LinearMap.coe_comp, Submodule.coeSubtype, LinearEquiv.coe_coe, Function.comp_apply, inclusion,
+    LinearMap.coe_comp, Submodule.coe_subtype, LinearEquiv.coe_coe, Function.comp_apply, inclusion,
     AlgHom.toLinearMap_apply, Algebra.TensorProduct.map_tmul, _root_.map_one, AlgHom.coe_id, id_eq]
   simp only [intermediateTensorEquiv', intermediateTensorEquiv, LinearEquiv.symm_symm,
     LinearEquiv.coe_symm_mk]
@@ -390,7 +390,7 @@ lemma comm_square' :
   intro i
   conv_lhs => simp only [AlgEquiv.toLinearEquiv_toLinearMap, e_hat,
     basisOfLinearIndependentOfCardEqFinrank,
-    Basis.coe_mk, e_hat', LinearMap.coe_comp, LinearMap.coe_restrictScalars, Submodule.coeSubtype,
+    Basis.coe_mk, e_hat', LinearMap.coe_comp, LinearMap.coe_restrictScalars, Submodule.coe_subtype,
     Function.comp_apply, AlgEquiv.toLinearMap_apply, LinearEquiv.coe_coe, AlgHom.toLinearMap_apply]
   simp only [ee_apply, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
     Basis.equiv_apply, Equiv.refl_apply, AlgHom.toLinearMap_apply]
@@ -402,7 +402,7 @@ lemma comm_square' :
   simp only [Matrix.stdBasisMatrix]
   aesop
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 60000 in
 /--
      isoRestrict
   ℒ ⊗_k A -----> M_n(ℒ)
@@ -419,15 +419,15 @@ lemma comm_square :
   rw [← comm_triangle n k k_bar A iso, ← LinearMap.comp_assoc, comm_square' n k k_bar A iso]
   rfl
 
-instance : OneHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
-    ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
+-- instance : OneHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
+--     ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
 
-  sorry
+--   sorry
 
-instance : MulHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
-    ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
+-- instance : MulHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
+--     ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
 
-  sorry
+--   sorry
 
 set_option synthInstance.maxHeartbeats 40000 in
 lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by

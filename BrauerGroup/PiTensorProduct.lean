@@ -16,7 +16,7 @@ namespace PiTensorProduct
 def extendScalars : (⨂[k] i, V i) →ₗ[k] ⨂[K] i, (K ⊗[k] V i) :=
   PiTensorProduct.lift
   { toFun := fun v => tprod _ fun i => 1 ⊗ₜ v i
-    map_add' := by
+    map_update_add' := by
       intro _ v i x y
       simp only
       have eq (j : ι) : (1 : K) ⊗ₜ Function.update v i x j =
@@ -27,7 +27,7 @@ def extendScalars : (⨂[k] i, V i) →ₗ[k] ⨂[K] i, (K ⊗[k] V i) :=
         Function.update (fun i : ι => 1 ⊗ₜ v i) i (1 ⊗ₜ[k] y) j := by
         simp only [Function.update, eq_rec_constant, dite_eq_ite]; aesop
       simp_rw [eq]; clear eq
-      rw [← MultilinearMap.map_add]
+      rw [← MultilinearMap.map_update_add]
       congr
       ext
       simp only [Function.update]
@@ -35,7 +35,7 @@ def extendScalars : (⨂[k] i, V i) →ₗ[k] ⨂[K] i, (K ⊗[k] V i) :=
       · subst h
         simp only [tmul_add]
       · rfl
-    map_smul' := by
+    map_update_smul' := by
       intro _ v i a x
       simp only
       have eq (j : ι) : (1 : K) ⊗ₜ Function.update v i (a • x) j =
@@ -45,7 +45,7 @@ def extendScalars : (⨂[k] i, V i) →ₗ[k] ⨂[K] i, (K ⊗[k] V i) :=
         · subst h; simp only [tmul_smul, algebraMap_smul]
         · rfl
       simp_rw [eq]; clear eq
-      rw [MultilinearMap.map_smul]
+      rw [MultilinearMap.map_update_smul]
       rw [algebraMap_smul]
       congr 2
       ext

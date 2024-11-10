@@ -2,6 +2,7 @@ import BrauerGroup.QuatBasic
 import BrauerGroup.CentralSimple
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.LinearAlgebra.FreeModule.PID
+import Mathlib.RingTheory.TensorProduct.Free
 
 suppress_compilation
 
@@ -14,19 +15,19 @@ universe u
 variable (K L : Type u) [Field K] [Field L] [Algebra K L]
   (V : Type u) [AddCommGroup V] [Module K V] [Module.Finite K V]
 
-lemma dim_eq : FiniteDimensional.finrank K V = FiniteDimensional.finrank L (L ⊗[K] V) := by
-  let b := FiniteDimensional.finBasis K V
+lemma dim_eq : Module.finrank K V = Module.finrank L (L ⊗[K] V) := by
+  let b := Module.finBasis K V
   let b' := Algebra.TensorProduct.basis L b
-  rw [FiniteDimensional.finrank_eq_card_basis b, FiniteDimensional.finrank_eq_card_basis b']
+  rw [Module.finrank_eq_card_basis b, Module.finrank_eq_card_basis b']
 
-theorem tensor_C_is_CSA : IsCentralSimple ℂ (ℂ ⊗[ℚ] D) := IsCentralSimple.baseChange ℚ D ℂ
+-- theorem tensor_C_is_CSA : IsCentralSimple ℂ (ℂ ⊗[ℚ] D) := IsCentralSimple.baseChange ℚ D ℂ
 
 variable [FiniteDimensional ℚ D]
 instance : FiniteDimensional ℂ (ℂ ⊗[ℚ] D) := Module.Finite.base_change ℚ ℂ D
 
 omit h in
-lemma finrank_four (hD : FiniteDimensional.finrank ℚ D = 4):
-    FiniteDimensional.finrank ℂ (ℂ ⊗[ℚ] D) = 4 := (dim_eq ℚ ℂ D).symm.trans hD
+lemma finrank_four (hD : Module.finrank ℚ D = 4):
+    Module.finrank ℂ (ℂ ⊗[ℚ] D) = 4 := (dim_eq ℚ ℂ D).symm.trans hD
 
 instance Gen_Quat_is_CSA [NeZero a] [NeZero b] : IsCentralSimple ℚ (ℍ[ℚ, a, b]) where
   is_central := by
@@ -117,7 +118,7 @@ def complex_quat_eqv (c d : ℂ) [NeZero c] [NeZero d]: ℍ[ℂ, c, d] ≃ₐ[�
   (by sorry)|>.some
 
 variable (E : Type) [Ring E] [Algebra ℂ E] [h : IsCentralSimple ℂ E]
-    [FiniteDimensional ℂ E] (hD : FiniteDimensional.finrank ℂ E = 4)
+    [FiniteDimensional ℂ E] (hD : Module.finrank ℂ E = 4)
 
 /-- by prove {1, i, j, k} in E is indeed a basis of E read FiniteDimensional.finBasis -/
 theorem CSA_is_quat : ∃(a b : ℂ) (_ : NeZero a) (_ : NeZero b),

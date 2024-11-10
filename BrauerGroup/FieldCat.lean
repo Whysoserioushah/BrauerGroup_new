@@ -120,8 +120,8 @@ lemma FieldEquiv_coe_eq {X Y : Type _} [Field X] [Field Y] (e : X ≃+* Y) :
 instance hasForgetToCommRingCat : HasForget₂ FieldCat CommRingCat :=
   BundledHom.forget₂ _ _
 
-instance hasForgetToRingCat : HasForget₂ FieldCat RingCat :=
-  BundledHom.forget₂ _ _ |>.trans _
+-- instance hasForgetToRingCat : HasForget₂ FieldCat RingCat :=
+--   BundledHom.forget₂ _ Field.toCommRing |>.tran _
 
 instance hasForgetToAddCommGrp : HasForget₂ FieldCat AddCommGrp where
   -- can't use BundledHom.mkHasForget₂, since AddCommGroup is an induced category

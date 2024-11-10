@@ -116,6 +116,7 @@ lemma centralizer_tensor_le_inf_centralizer :
   rw [Algebra.TensorProduct.map_range]
   exact hy
 
+set_option synthInstance.maxHeartbeats 40000 in
 include 𝒜 𝒜' in
 lemma centralizer_tensor_centralizer :
     Subalgebra.centralizer F (A := A ⊗[F] A')
@@ -227,7 +228,7 @@ lemma centralizer_mulLeft_le_of_isCentralSimple :
       Set (B ⊗[F] Bᵐᵒᵖ)) =
     (Algebra.TensorProduct.includeRight (R := F) (A := B) (B := Bᵐᵒᵖ)).range := by
     refine le_antisymm ?_ ?_
-    · set ℬ := FiniteDimensional.finBasis F Bᵐᵒᵖ
+    · set ℬ := Module.finBasis F Bᵐᵒᵖ
       intro z hz
       obtain ⟨s, b, rfl⟩ := IsCentralSimple.TensorProduct.eq_repr_basis_right F B Bᵐᵒᵖ ℬ z
       refine Subalgebra.sum_mem _ fun i hi => ?_
@@ -248,7 +249,7 @@ lemma centralizer_mulLeft_le_of_isCentralSimple :
       rw [← hx, Algebra.algebraMap_eq_smul_one, smul_tmul]
       simp only [AlgHom.mem_range, Algebra.TensorProduct.includeRight_apply]
       exact ⟨_, rfl⟩
-    · set ℬ := FiniteDimensional.finBasis F B
+    · set ℬ := Module.finBasis F B
       rintro _ ⟨z, rfl⟩ _ ⟨y, rfl⟩
       simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.includeLeft_apply,
         Algebra.TensorProduct.includeRight_apply, Algebra.TensorProduct.tmul_mul_tmul, mul_one,
@@ -494,10 +495,9 @@ def Subalgebra.conjEquiv (B : Subalgebra F A) (x : Aˣ) : B ≃ₐ[F] B.conj x :
   AlgEquiv.ofAlgHom (B.toConj x) (B.fromConj x)
     (by ext; simp [mul_assoc]) (by ext; simp [mul_assoc])
 
-open FiniteDimensional in
 omit [FiniteDimensional F A] [IsCentralSimple F A] in
 lemma Subalgebra.finrank_conj (B : Subalgebra F A) (x : Aˣ) :
-    finrank F (B.conj x) = finrank F B := by
+    Module.finrank F (B.conj x) = Module.finrank F B := by
   rw [LinearEquiv.finrank_eq (Subalgebra.conjEquiv B x).toLinearEquiv]
 
 omit [FiniteDimensional F A] [IsCentralSimple F A] in
@@ -540,7 +540,8 @@ lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
       ext ⟨_, ⟨a, ha, rfl⟩⟩
       simp only [toConj, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
       generalize_proofs
-      rw [TwoSidedIdeal.mem_mk'] <;> try assumption
+      rw [TwoSidedIdeal.mem_mk']
+      try assumption
       simp only [Set.mem_image, SetLike.mem_coe, TwoSidedIdeal.mem_comap, AlgHom.coe_mk,
         RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, Subtype.mk.injEq, Units.mul_left_inj,
         Units.mul_right_inj, Subtype.exists, exists_and_right, exists_eq_right, ha,
@@ -550,7 +551,8 @@ lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
       ext ⟨a, ha⟩
       simp only [TwoSidedIdeal.mem_comap]
       generalize_proofs
-      rw [TwoSidedIdeal.mem_mk'] <;> try assumption
+      rw [TwoSidedIdeal.mem_mk']
+      try assumption
       simp only [toConj, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
         Set.mem_image, SetLike.mem_coe, Subtype.mk.injEq, Units.mul_left_inj, Units.mul_right_inj,
         Subtype.exists, exists_and_right, exists_eq_right, ha, exists_true_left]
@@ -559,7 +561,9 @@ lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
       simp only [Equiv.coe_fn_mk]
       constructor
       · rintro H ⟨_, ⟨a, ha1, rfl⟩⟩ ha2
-        have := @H ⟨a, ha1⟩ (by simpa using ha2)
+        have := @H ⟨a, ha1⟩ (by
+          simp only [toConj, TwoSidedIdeal.mem_comap, AlgHom.coe_mk, RingHom.coe_mk,
+            MonoidHom.coe_mk, OneHom.coe_mk, ha2])
         simp only [toConj, TwoSidedIdeal.mem_comap, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
           OneHom.coe_mk] at this
         exact this
@@ -605,16 +609,16 @@ namespace centralizer_isSimple.aux
 open FiniteDimensional
 
 instance :
-    IsCentralSimple F (Matrix (Fin (finrank F B)) (Fin (finrank F B)) F) := by
-  haveI : NeZero (finrank F B) := by
-    have : 0 < finrank F B := FiniteDimensional.finrank_pos
+    IsCentralSimple F (Matrix (Fin (Module.finrank F B)) (Fin (Module.finrank F B)) F) := by
+  haveI : NeZero (Module.finrank F B) := by
+    have : 0 < Module.finrank F B := Module.finrank_pos
     constructor
     omega
   apply MatrixRing.isCentralSimple F
 
 instance : IsCentralSimple F (Module.End F B) := by
-  have := algEquivMatrix (FiniteDimensional.finBasis F B)
-  apply algEquivMatrix (FiniteDimensional.finBasis F B) |>.symm.isCentralSimple
+  have := algEquivMatrix (Module.finBasis F B)
+  apply algEquivMatrix (Module.finBasis F B) |>.symm.isCentralSimple
 
 instance : IsCentralSimple F (A ⊗[F] Module.End F B) :=
   IsCentralSimple.tensorProduct F
@@ -758,14 +762,15 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
     (B := (Algebra.TensorProduct.includeRight (R := F) (A := A) (B := Module.End F B) |>.comp
           (Module.End.leftMul F B).val).range) (x := x)
   rw [temp] at eq2; clear temp
-  rw [centralizer_inclusionRight (𝒜 := finBasis F A)] at eq2
+  rw [centralizer_inclusionRight (𝒜 := Module.finBasis F A)] at eq2
   rw [centralizer_mulLeft] at eq2
 
   rw [← eq2]
   refine ⟨?_⟩
   apply auxLeft
 
-lemma finrank_mop (B : Type*) [Ring B] [Algebra F B] : finrank F Bᵐᵒᵖ = finrank F B := by
+lemma finrank_mop (B : Type*) [Ring B] [Algebra F B] : Module.finrank F Bᵐᵒᵖ =
+    Module.finrank F B := by
   refine LinearEquiv.finrank_eq
     { toFun := MulOpposite.unop
       map_add' := by intros; rfl
@@ -805,36 +810,36 @@ lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
 
 set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 200000 in
-open centralizer_isSimple.aux FiniteDimensional in
+open centralizer_isSimple.aux in
 variable (F) in
 lemma dim_centralizer  :
-    FiniteDimensional.finrank F (Subalgebra.centralizer F (B : Set A)) *
-    FiniteDimensional.finrank F B = FiniteDimensional.finrank F A := by
+    Module.finrank F (Subalgebra.centralizer F (B : Set A)) *
+    Module.finrank F B = Module.finrank F A := by
 
   letI (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
       Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
 
   haveI : Module.Free F (Module.End.rightMul F B) := Module.Free.of_divisionRing F _
 
-  obtain ⟨x, ⟨eqv⟩⟩ := step1 B (FiniteDimensional.finBasis _ _)
+  obtain ⟨x, ⟨eqv⟩⟩ := step1 B (Module.finBasis _ _)
   let leqv := eqv.toLinearEquiv
-  have : finrank F (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) =
-    finrank F _ := LinearEquiv.finrank_eq leqv
-  simp only [finrank_tensorProduct] at this
-  rw [FiniteDimensional.finrank_linearMap, Subalgebra.finrank_conj] at this
+  have : Module.finrank F (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) =
+    Module.finrank F _ := LinearEquiv.finrank_eq leqv
+  simp only [Module.finrank_tensorProduct] at this
+  rw [Module.finrank_linearMap, Subalgebra.finrank_conj] at this
   have eq' := auxRight (Module.End.rightMul F B) A |>.toLinearEquiv.finrank_eq
   rw [← eq'] at this
-  have eq' := finrank_tensorProduct (R := F) (S := F) (M := A) (M' := Module.End.rightMul F B)
+  have eq' := Module.finrank_tensorProduct (R := F) (S := F) (M := A) (M' := Module.End.rightMul F B)
   rw [eq'] at this
-  have eq' : finrank F (Module.End.rightMul F B) = finrank F Bᵐᵒᵖ :=
+  have eq' : Module.finrank F (Module.End.rightMul F B) = Module.finrank F Bᵐᵒᵖ :=
     Module.End.rightMulEquiv (F := F) (B := B) |>.toLinearEquiv.finrank_eq
   rw [eq'] at this
-  rw [show finrank F Bᵐᵒᵖ = finrank F B by rw [finrank_mop], ← mul_assoc] at this
+  rw [show Module.finrank F Bᵐᵒᵖ = Module.finrank F B by rw [finrank_mop], ← mul_assoc] at this
   rw [Nat.mul_left_inj] at this
   · exact this
 
   rw [← pos_iff_ne_zero]
-  exact finrank_pos
+  exact Module.finrank_pos
 
 lemma double_centralizer :
     Subalgebra.centralizer F (Subalgebra.centralizer F (B : Set A) : Set A) = B := by
@@ -842,14 +847,14 @@ lemma double_centralizer :
   apply Subalgebra.eq_of_le_of_finrank_eq
   · intro x hx y hy
     exact hy x hx |>.symm
-  · haveI := centralizer_isSimple B (FiniteDimensional.finBasis F _)
+  · haveI := centralizer_isSimple B (Module.finBasis F _)
     have eq1 := dim_centralizer F B
     have eq2 := dim_centralizer F (A := A) (Subalgebra.centralizer F B)
     have eq3 := eq1.trans eq2.symm
     rw [mul_comm] at eq3
     have eq4 := Nat.mul_left_inj (by
-      suffices 0 < FiniteDimensional.finrank F (Subalgebra.centralizer F (B : Set A)) by omega
-      apply FiniteDimensional.finrank_pos) |>.1 eq3
+      suffices 0 < Module.finrank F (Subalgebra.centralizer F (B : Set A)) by omega
+      apply Module.finrank_pos) |>.1 eq3
 
     exact eq4
 
@@ -871,5 +876,5 @@ noncomputable def writeAsTensorProduct [IsCentralSimple F B] :
     fun x y => show _ = _ by simpa using y.2 x x.2) <|
       bijective_of_dim_eq_of_isCentralSimple F (B ⊗[F] Subalgebra.centralizer F (B : Set A)) A
         _ <| by
-        rw [FiniteDimensional.finrank_tensorProduct]
+        rw [Module.finrank_tensorProduct]
         rw [← dim_centralizer (B := B), mul_comm]

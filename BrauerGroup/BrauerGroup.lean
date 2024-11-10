@@ -11,7 +11,7 @@ suppress_compilation
 universe u v v₁ v₂ w
 
 variable (K : Type u) [Field K]
-variable (A B : Type v) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
+variable (A B : Type u) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
 
 open scoped TensorProduct BigOperators
 
@@ -19,10 +19,10 @@ lemma bijective_of_dim_eq_of_isCentralSimple
     [csa_source : IsSimpleOrder (TwoSidedIdeal A)]
     [fin_source : FiniteDimensional K A]
     [fin_target : FiniteDimensional K B]
-    (f : A →ₐ[K] B) (h : FiniteDimensional.finrank K A = FiniteDimensional.finrank K B) :
+    (f : A →ₐ[K] B) (h : Module.finrank K A = Module.finrank K B) :
     Function.Bijective f := by
   obtain hA|hA := subsingleton_or_nontrivial A
-  · have eq1 : FiniteDimensional.finrank K A = 0 := by
+  · have eq1 : Module.finrank K A = 0 := by
       rw [finrank_zero_iff_forall_zero]
       intro x
       apply Subsingleton.elim
@@ -48,7 +48,7 @@ lemma bijective_of_dim_eq_of_isCentralSimple
     · refine ⟨H, ?_⟩
       change Function.Surjective f.toLinearMap
       have := f.toLinearMap.finrank_range_add_finrank_ker
-      rw [show FiniteDimensional.finrank K ↥(LinearMap.ker f.toLinearMap) = 0 by
+      rw [show Module.finrank K (LinearMap.ker f.toLinearMap) = 0 by
         rw [finrank_zero_iff_forall_zero]
         rintro ⟨x, hx⟩
         rw [LinearMap.ker_eq_bot (f := f.toLinearMap) |>.2 H] at hx
@@ -74,7 +74,7 @@ lemma bijective_of_surj_of_isCentralSimple
     have eq1 : (1 : B) ≠ 0 := one_ne_zero
     exact eq1 this |>.elim, h⟩
 
-instance tensor_CSA_is_CSA [Small.{v, u} K ] [hA: IsCentralSimple K A] [hB: IsCentralSimple K B] :
+instance tensor_CSA_is_CSA [hA: IsCentralSimple K A] [hB: IsCentralSimple K B] :
     IsCentralSimple K (A ⊗[K] B) where
    is_central := IsCentralSimple.TensorProduct.isCentral K A B hA.is_central hB.is_central
    is_simple := by haveI := hA.is_simple; exact IsCentralSimple.TensorProduct.simple K A B
@@ -140,17 +140,17 @@ instance fin_end : FiniteDimensional K (Module.End K A) :=
 
 omit hA in
 lemma dim_eq :
-    FiniteDimensional.finrank K (A ⊗[K] Aᵐᵒᵖ) = FiniteDimensional.finrank K (Module.End K A) := by
-  rw [FiniteDimensional.finrank_tensorProduct]
-  rw [show FiniteDimensional.finrank K (Module.End K A) =
-    FiniteDimensional.finrank K
-      (Matrix (Fin $ FiniteDimensional.finrank K A) (Fin $ FiniteDimensional.finrank K A) K) from
-    (algEquivMatrix $ FiniteDimensional.finBasis _ _).toLinearEquiv.finrank_eq]
-  rw [FiniteDimensional.finrank_matrix, Fintype.card_fin]
-  rw [show FiniteDimensional.finrank K Aᵐᵒᵖ = FiniteDimensional.finrank K A from
+    Module.finrank K (A ⊗[K] Aᵐᵒᵖ) = Module.finrank K (Module.End K A) := by
+  rw [Module.finrank_tensorProduct]
+  rw [show Module.finrank K (Module.End K A) =
+    Module.finrank K (Matrix (Fin $ Module.finrank K A) (Fin $ Module.finrank K A) K) from
+    (algEquivMatrix $ Module.finBasis _ _).toLinearEquiv.finrank_eq]
+  rw [Module.finrank_matrix, Fintype.card_fin]
+  rw [show Module.finrank K Aᵐᵒᵖ = Module.finrank K A from
     (MulOpposite.opLinearEquiv K : A ≃ₗ[K] Aᵐᵒᵖ).symm.finrank_eq]
+  simp only [Module.finrank_self, mul_one]
 
-def equivEnd [Small.{v, u} K] : A ⊗[K] Aᵐᵒᵖ ≃ₐ[K] Module.End K A :=
+def equivEnd : A ⊗[K] Aᵐᵒᵖ ≃ₐ[K] Module.End K A :=
   AlgEquiv.ofBijective (toEnd K A) $
     @bijective_of_dim_eq_of_isCentralSimple K _ _ _ _ _ _ _
       (@IsCentralSimple.TensorProduct.simple K _ A Aᵐᵒᵖ _ _ _ _ hA.2 _) _ _ _ $ dim_eq K A
@@ -158,14 +158,14 @@ def equivEnd [Small.{v, u} K] : A ⊗[K] Aᵐᵒᵖ ≃ₐ[K] Module.End K A :=
 end tensor_self_op
 
 open tensor_self_op in
-def tensor_self_op [Small.{v} K] [IsCentralSimple K A] [FiniteDimensional K A] :
+def tensor_self_op [IsCentralSimple K A] [FiniteDimensional K A] :
     A ⊗[K] Aᵐᵒᵖ ≃ₐ[K]
-    (Matrix (Fin $ FiniteDimensional.finrank K A) (Fin $ FiniteDimensional.finrank K A) K) :=
-  equivEnd K A |>.trans $ algEquivMatrix $ FiniteDimensional.finBasis _ _
+    (Matrix (Fin $ Module.finrank K A) (Fin $ Module.finrank K A) K) :=
+  equivEnd K A |>.trans $ algEquivMatrix $ Module.finBasis _ _
 
-def tensor_op_self [Small.{v} K] [IsCentralSimple K A] [FiniteDimensional K A] :
+def tensor_op_self [IsCentralSimple K A] [FiniteDimensional K A] :
     Aᵐᵒᵖ ⊗[K] A ≃ₐ[K]
-    (Matrix (Fin $ FiniteDimensional.finrank K A) (Fin $ FiniteDimensional.finrank K A) K) :=
+    (Matrix (Fin $ Module.finrank K A) (Fin $ Module.finrank K A) K) :=
   (Algebra.TensorProduct.comm _ _ _).trans $ tensor_self_op _ _
 
 /-
@@ -179,7 +179,7 @@ def tensor_op_self [Small.{v} K] [IsCentralSimple K A] [FiniteDimensional K A] :
 -/
 
 
-structure CSA (K : Type u) [Field K] :=
+structure CSA (K : Type u) [Field K] where
   (carrier : Type v)
   [ring : Ring carrier]
   [algebra : Algebra K carrier]
@@ -201,7 +201,7 @@ instance (A : CSA K) : FiniteDimensional K A := A.fin_dim
 
 variable {K : Type u} [Field K]
 
-structure BrauerEquivalence (A B : CSA.{u, v} K) :=
+structure BrauerEquivalence (A B : CSA K) where
 (n m : ℕ) (hn: n ≠ 0) (hm : m ≠ 0)
 (iso: Matrix (Fin n) (Fin n) A ≃ₐ[K] Matrix (Fin m) (Fin m) B)
 
@@ -253,9 +253,9 @@ def CSA_Setoid : Setoid (CSA K) where
   r := IsBrauerEquivalent
   iseqv := IsBrauerEquivalent.Braur_is_eqv
 
-def mul (A B : CSA.{u, u} K) : CSA K where
+def mul (A B : CSA K) : CSA K where
   carrier := A ⊗[K] B
-  is_central_simple := @tensor_CSA_is_CSA K _ A B _ _ _ _ _ A.is_central_simple B.is_central_simple
+  is_central_simple := tensor_CSA_is_CSA K A B
   fin_dim := Module.Finite.tensorProduct K A B
 
 def is_fin_dim_of_mop (A : Type*) [Ring A] [Algebra K A] [FiniteDimensional K A] :
@@ -384,7 +384,7 @@ lemma matrixEquivForward_surjective
   erw [Algebra.coe_lmul_eq_mul]
   rw [LinearMap.mul]
   simp only [LinearMap.mk₂_apply]
-  simp only [Matrix.stdBasisMatrix, mul_ite, mul_one, mul_zero]
+  simp only [Matrix.stdBasisMatrix, Matrix.of_apply, mul_ite, mul_one, mul_zero]
   split_ifs with h1 h2 h3 h4 h5
   · rfl
   · simp only [not_and, ne_eq] at h3
@@ -483,22 +483,22 @@ theorem mul_assoc' (A B C : BrGroup (K := K)) : A * B * C = A * (B * C) := by
 
 lemma mul_inv (A : CSA.{u, u} K) : IsBrauerEquivalent (mul A (inv (K := K) A)) one_in' := by
   unfold mul inv one_in'
-  let n := FiniteDimensional.finrank K A
+  let n := Module.finrank K A
   have hn : n ≠ 0 := by
     by_contra! hn
     simp only [n] at hn
-    have := FiniteDimensional.finrank_pos_iff (R := K) (M := A) |>.2 inferInstance
+    have := Module.finrank_pos_iff (R := K) (M := A) |>.2 inferInstance
     omega
   have := tensor_self_op K A
   exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso _|>.trans this⟩⟩
 
 lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) one_in' := by
   unfold mul inv one_in'
-  let n := FiniteDimensional.finrank K A
+  let n := Module.finrank K A
   have hn : n ≠ 0 := by
     by_contra! hn
     simp only [n] at hn
-    have := FiniteDimensional.finrank_pos_iff (R := K) (M := A) |>.2 $ inferInstance
+    have := Module.finrank_pos_iff (R := K) (M := A) |>.2 $ inferInstance
     omega
   have := tensor_op_self K A
   exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso _|>.trans this⟩⟩
@@ -624,8 +624,8 @@ def e2 :
         · rw [Matrix.one_apply_ne h]
           apply Finset.sum_eq_zero
           intros k
-          simp only [Finset.mem_univ, Matrix.stdBasisMatrix, ite_eq_right_iff, one_ne_zero,
-            imp_false, not_and, true_implies]
+          simp only [Finset.mem_univ, Matrix.stdBasisMatrix, Matrix.of_apply, ite_eq_right_iff,
+            one_ne_zero, imp_false, not_and, forall_const]
           rintro rfl
           exact h }
 
@@ -660,11 +660,10 @@ def e3Aux1 : E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E] E ⊗[K] A ⊗[K] Matri
     (Algebra.TensorProduct.includeLeft : E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E]
       (E ⊗[K] Matrix (Fin m) (Fin m) K) ⊗[K] A)
 
-
 lemma e3Aux2 (hm : m ≠ 0) [IsCentralSimple K A] :
     IsCentralSimple E ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K)) :=
   haveI : Nonempty (Fin m) := ⟨0, by omega⟩
-  tensor_CSA_is_CSA.{u, u} E (E ⊗[K] A) (E ⊗[K] Matrix (Fin m) (Fin m) K)
+  tensor_CSA_is_CSA E (E ⊗[K] A) (E ⊗[K] Matrix (Fin m) (Fin m) K)
 
 lemma e3Aux2' (hm : m ≠ 0) [IsCentralSimple K A] :
     IsCentralSimple E (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := by
@@ -1008,10 +1007,6 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
             (Aux F K E A).map_add, mul_add]
       · rename_i a b c d
         simp only [add_mul, (Aux F K E A).map_add, c, d])
-
-
-
-
 
 lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
     [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] :

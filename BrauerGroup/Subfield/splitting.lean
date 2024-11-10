@@ -18,7 +18,7 @@ set_option synthInstance.maxHeartbeats 40000 in
 set_option maxSynthPendingDepth 2 in
 lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : isSplit F A K) :
     ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) * (Quotient.mk'' B) = 1 ∧
-      ∃ (ι : K →ₐ[F] B), (finrank F K)^2 = finrank F B := by
+      ∃ (_ : K →ₐ[F] B), (Module.finrank F K)^2 = Module.finrank F B := by
   obtain ⟨n, hn, ⟨iso⟩⟩ := split
   let iso' := iso.trans (algEquivMatrix' (R := K) (n := Fin n)).symm
   let emb : A →ₐ[F] Module.End F (Fin n → K) :=
@@ -42,15 +42,16 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
   haveI csa1 : IsCentralSimple F (AlgHom.range emb) := e |>.isCentralSimple
   haveI := csa1.2
   haveI : NeZero n := ⟨hn⟩
-  haveI : NeZero (finrank F (Fin n → K)) := by
+  haveI : NeZero (Module.finrank F (Fin n → K)) := by
     constructor
-    have : 0 < finrank F (Fin n → K) := finrank_pos
+    have : 0 < Module.finrank F (Fin n → K) := Module.finrank_pos
     omega
-  haveI : IsCentralSimple F (Matrix (Fin (finrank F (Fin n → K))) (Fin (finrank F (Fin n → K))) F) := by
+  haveI : IsCentralSimple F (Matrix (Fin (Module.finrank F (Fin n → K)))
+    (Fin (Module.finrank F (Fin n → K))) F) := by
     apply MatrixRing.isCentralSimple
 
   haveI : IsCentralSimple F (Module.End F (Fin n → K)) := by
-    have f := algEquivMatrix (R := F) (M := Fin n → K) (finBasis _ _)
+    have f := algEquivMatrix (R := F) (M := Fin n → K) (Module.finBasis _ _)
     refine f.symm.isCentralSimple
   haveI : IsCentralSimple F F :=
   { is_central := Subsingleton.le (Subalgebra.center _ _) ⊥
@@ -109,29 +110,33 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
         SubalgebraClass.coe_algebraMap, Module.algebraMap_end_apply] }, ?_⟩
   · change Quotient.mk'' _ = Quotient.mk'' (CSA.mk F)
     have := writeAsTensorProduct (B := emb.range)
-    have iso : A ⊗[F] B ≃ₐ[F] Matrix (Fin (finrank F (Fin n → K))) (Fin (finrank F (Fin n → K))) F :=
+    have iso : A ⊗[F] B ≃ₐ[F] Matrix (Fin (Module.finrank F (Fin n → K)))
+      (Fin (Module.finrank F (Fin n → K))) F :=
       AlgEquiv.symm <|
-        AlgEquiv.trans (algEquivMatrix (R := F) (M := Fin n → K) (finBasis _ _)).symm
+        AlgEquiv.trans (algEquivMatrix (R := F) (M := Fin n → K) (Module.finBasis _ _)).symm
         (writeAsTensorProduct (B := emb.range) |>.trans <|
           Algebra.TensorProduct.congr e.symm AlgEquiv.refl)
     apply Quotient.sound'
-    exact ⟨1, (finrank F (Fin n → K)), by omega,
-      by have : 0 < finrank F (Fin n → K) := finrank_pos; omega, AlgEquiv.trans (dim_one_iso _) iso⟩
-  · show finrank F K ^ 2 = finrank F B
-    have dim_eq1 : finrank F B * _ = _ := dim_centralizer F emb.range
-    rw [finrank_linearMap, show finrank F (Fin n → K) = finrank F K * finrank K (Fin n → K) from
-      (finrank_mul_finrank F K (Fin n → K)).symm, finrank_fin_fun,
-      show finrank F emb.range = finrank F A from e.symm.toLinearEquiv.finrank_eq,
-      show finrank F K * n * (finrank F K * n) = (finrank F K)^2 * n ^ 2 by
+    exact ⟨1, (Module.finrank F (Fin n → K)), by omega,
+      by have : 0 < Module.finrank F (Fin n → K) := Module.finrank_pos; omega,
+        AlgEquiv.trans (dim_one_iso _) iso⟩
+  · show Module.finrank F K ^ 2 = Module.finrank F B
+    have dim_eq1 : Module.finrank F B * _ = _ := dim_centralizer F emb.range
+    rw [Module.finrank_linearMap, show Module.finrank F (Fin n → K) =
+      Module.finrank F K * Module.finrank K (Fin n → K) from
+      (Module.finrank_mul_finrank F K (Fin n → K)).symm, Module.finrank_fin_fun,
+      show Module.finrank F emb.range = Module.finrank F A from e.symm.toLinearEquiv.finrank_eq,
+      show Module.finrank F K * n * (Module.finrank F K * n) = (Module.finrank F K)^2 * n ^ 2 by
         simp only [pow_two]; group] at dim_eq1
     have dim_eq2 := iso.toLinearEquiv.finrank_eq
-    simp only [finrank_tensorProduct, finrank_self, _root_.one_mul, finrank_matrix,
+    simp only [Module.finrank_tensorProduct, Module.finrank_self, _root_.one_mul, Module.finrank_matrix,
       Fintype.card_fin] at dim_eq2
     rw [dim_eq2, ← pow_two] at dim_eq1
-    let m := finrank F B
-    let M := finrank F K
+    let m := Module.finrank F B
+    let M := Module.finrank F K
     haveI : Nontrivial B := ⟨0, 1, fun r => by
       simp only [zero_ne_one] at r⟩
+    simp only [_root_.mul_one] at dim_eq1
     change m * n ^ 2 = M^2 * _ at dim_eq1
     change M^2 = m
     clear_value m M
@@ -149,7 +154,7 @@ theorem 3.3
 theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
     isSplit F A K ↔
     ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) = (Quotient.mk'' B) ∧
-      ∃ (ι : K →ₐ[F] B), (finrank F K)^2 = finrank F B := by
+      ∃ (_ : K →ₐ[F] B), (Module.finrank F K)^2 = Module.finrank F B := by
   constructor
   · intro split
     obtain ⟨B, eq1, ι, eq2⟩ := exists_embedding_of_isSplit K F A split
@@ -166,9 +171,9 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
       rfl
     · refine LinearEquiv.finrank_eq (opLinearEquiv F)
   · rintro ⟨B, eq, ⟨ι, dim_eq⟩⟩
-    let n := finrank F K
-    have n_pos : 0 < n := finrank_pos
-    replace dim_eq : finrank F B = n^2 := dim_eq.symm
+    let n := Module.finrank F K
+    have n_pos : 0 < n := Module.finrank_pos
+    replace dim_eq : Module.finrank F B = n^2 := dim_eq.symm
     letI : Module K B :=
     { smul := fun c a => a * ι c
       one_smul := by intros; show _ * _ = _; simp
@@ -257,20 +262,21 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
         | add m n hm hn =>
           simp only [add_mul, map_add, LinearMap.add_apply, hm, LinearMap.mul_apply, hn])
     haveI : FiniteDimensional K B := FiniteDimensional.right F K B
-    let e : Module.End K B ≃ₐ[K] Matrix _ _ _ := algEquivMatrix (finBasis _ _)
+    let e : Module.End K B ≃ₐ[K] Matrix _ _ _ := algEquivMatrix (Module.finBasis _ _)
     rw [split_sound' K F A B (Quotient.eq''.1 eq).some]
-    refine ⟨finrank K B, fun r => by have := finrank_pos (R := K) (M := B); omega,
+    refine ⟨Module.finrank K B, fun r => by have := Module.finrank_pos (R := K) (M := B); omega,
       ⟨AlgEquiv.trans (AlgEquiv.ofBijective μAlg ?_) e⟩⟩
     apply bijective_of_dim_eq_of_isCentralSimple
-    rw [show finrank K (K ⊗[F] B) = n^2 by simp [dim_eq]]
-    rw [show finrank K (Module.End K B) = n^2 by
-      rw [finrank_linearMap]
-      have eq : finrank F B = finrank F K * finrank K B := (finrank_mul_finrank F K B).symm
-      change finrank F B = n * finrank K B at eq
+    rw [show Module.finrank K (K ⊗[F] B) = n^2 by simp [dim_eq]]
+    rw [show Module.finrank K (Module.End K B) = n^2 by
+      rw [Module.finrank_linearMap]
+      have eq : Module.finrank F B = Module.finrank F K * Module.finrank K B :=
+        (Module.finrank_mul_finrank F K B).symm
+      change Module.finrank F B = n * Module.finrank K B at eq
       rw [dim_eq, pow_two] at eq
-      replace eq : n = finrank K B := by
-        set m := finrank K B
-        have m_pos : 0 < m := finrank_pos
+      replace eq : n = Module.finrank K B := by
+        set m := Module.finrank K B
+        have m_pos : 0 < m := Module.finrank_pos
         clear_value n m
         simp only [mul_eq_mul_left_iff] at eq
         refine eq.resolve_right (by omega)
@@ -437,8 +443,8 @@ lemma right_inv (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] 
     | tmul k a =>
       simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, AlgHom.mapMatrix_apply]
       ext i' j'
-      simp only [Matrix.smul_apply, Matrix.map_apply, Algebra.TensorProduct.includeRight_apply,
-        Matrix.stdBasisMatrix]
+      simp only [Matrix.stdBasisMatrix, Matrix.smul_apply, Matrix.map_apply, Matrix.of_apply,
+        Algebra.TensorProduct.includeRight_apply]
       split_ifs with hij
       · simp only [smul_tmul', smul_eq_mul, _root_.mul_one]
       · simp only [tmul_zero, smul_zero]

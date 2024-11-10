@@ -94,7 +94,7 @@ noncomputable def QuotientTensorEquiv_invFun (M R L: Type u) [CommRing R] [AddCo
     rintro _ ⟨x, rfl⟩
     simp only [LinearMap.mem_ker]
     obtain ⟨i, s, t, rfl⟩ := TensorProduct.puretensor_repr (x := x)
-    simp only [map_sum, LinearMap.rTensor_tmul, Submodule.coeSubtype, lift.tmul, LinearMap.coe_mk,
+    simp only [map_sum, LinearMap.rTensor_tmul, Submodule.coe_subtype, lift.tmul, LinearMap.coe_mk,
       AddHom.coe_mk]
     apply Finset.sum_eq_zero
     intros x _
@@ -202,7 +202,7 @@ lemma Module.FaithfullyFlat.of_flat_and_faithful_aux2
           apply_fun (LinearMap.lTensor (M := M) E.subtype) using
             (Module.Flat.lTensor_preserves_injective_linearMap (M := M) E.subtype $
               Submodule.injective_subtype E)
-          simp only [LinearMap.lTensor_tmul, Submodule.coeSubtype, eq1, map_zero])
+          simp only [LinearMap.lTensor_tmul, Submodule.coe_subtype, eq1, map_zero])
     simp only [Finset.sum_const_zero] at heqx
     exact heqx
   have hEEE : (⊤ : Submodule R (M ⊗[R] E)) ≠ 0 := Submodule.nontrivial_iff_ne_bot.1
@@ -233,7 +233,7 @@ def Module.FaithfullyFlat.of_flat_and_faithful.equiv'InnerBackwardInner
     [ft : Module.Flat R M]
     (N₁ N₂ N₃ : Type u) [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃]
     [Module R N₁] [Module R N₂] [Module R N₃] (l12 : N₁ →ₗ[R] N₂) (l23 : N₂ →ₗ[R] N₃)
-    (ex' : Function.Exact (LinearMap.rTensor M l12) (LinearMap.rTensor M l23)) :
+    (_ : Function.Exact (LinearMap.rTensor M l12) (LinearMap.rTensor M l23)) :
     (LinearMap.range l12) ⊗[R] M  ≃ₗ[R]
     (LinearMap.range (LinearMap.rTensor M (LinearMap.range l12).subtype)) :=
   LinearEquiv.ofBijective
@@ -276,7 +276,7 @@ lemma Module.FaithfullyFlat.of_flat_and_faithful.equiv'InnerBackwardInner_symm_a
   induction y using TensorProduct.induction_on with
   | zero => simp
   | tmul a m =>
-    simp only [LinearMap.rTensor_tmul, Submodule.coeSubtype, equiv'InnerBackwardInner,
+    simp only [LinearMap.rTensor_tmul, Submodule.coe_subtype, equiv'InnerBackwardInner,
       LinearEquiv.ofBijective_apply]
     ext
     simp [LinearMap.rangeRestrict, LinearMap.codRestrict_apply]
@@ -340,7 +340,7 @@ lemma Module.FaithfullyFlat.of_flat_and_faithful.equiv'Inner_comp'
   rw [show (⟨a, ha⟩ ⊗ₜ[R] m : (LinearMap.ker l23) ⊗[R] M) =
     (LinearMap.rTensor M <| Submodule.inclusion le1) y by
     apply_fun LinearMap.rTensor M (Submodule.subtype _)
-    · simp only [LinearMap.rTensor_tmul, Submodule.coeSubtype, ← hy]
+    · simp only [LinearMap.rTensor_tmul, Submodule.coe_subtype, ← hy]
       rw [← LinearMap.comp_apply, ← LinearMap.rTensor_comp]
       congr 1
     · apply Module.Flat.rTensor_preserves_injective_linearMap
@@ -412,7 +412,7 @@ def Module.FaithfullyFlat.of_flat_and_faithful.equiv'
         refine ⟨⟨⟨l12 a, le1 <| by simp only [LinearMap.mem_range, exists_apply_eq_apply]⟩,
           by simpa only [LinearMap.mem_range, Subtype.exists] using ⟨l12 a, ⟨_, rfl⟩, rfl⟩⟩ ⊗ₜ[R] m,
           ?_⟩
-        simp only [LinearMap.rTensor_tmul, Submodule.coeSubtype, equiv'Inner, equiv'InnerBackward,
+        simp only [LinearMap.rTensor_tmul, Submodule.coe_subtype, equiv'Inner, equiv'InnerBackward,
           LinearEquiv.ofLinear_symm_apply, LinearMap.coe_comp, LinearEquiv.coe_coe,
           Function.comp_apply]
         rw [Submodule.inclusion_apply]
@@ -422,7 +422,7 @@ def Module.FaithfullyFlat.of_flat_and_faithful.equiv'
         simp_rw [← hy]
         rw [equiv'InnerBackwardInner_symm_apply]
         apply_fun (LinearMap.ker l23).subtype.rTensor M
-        · simp only [LinearMap.rTensor_tmul, Submodule.coeSubtype, ← hy];
+        · simp only [LinearMap.rTensor_tmul, Submodule.coe_subtype, ← hy];
           rw [← LinearMap.comp_apply, ← LinearMap.rTensor_comp]
           rfl
         rw [Module.Flat.iff_rTensor_preserves_injective_linearMap] at ft
@@ -483,7 +483,7 @@ lemma Module.FaithfullyFlat.iff_flat_and_faithful
       haveI h1 : Subsingleton
         ((LinearMap.ker l23) ⊗[R] M ⧸
           LinearMap.range ((LinearMap.range (Submodule.inclusion le1)).subtype.rTensor M)) := by
-        refine @Function.Surjective.subsingleton (f := equiv'.symm) ?_ equiv'.symm.surjective
+        refine @Function.Surjective.subsingleton _ _ (f := equiv'.symm) ?_ equiv'.symm.surjective
         rw [Submodule.subsingleton_quotient_iff_eq_top, Submodule.range_inclusion,
           Submodule.comap_subtype_eq_top]
         rw [LinearMap.exact_iff] at hlt'

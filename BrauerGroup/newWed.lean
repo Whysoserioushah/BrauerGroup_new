@@ -238,7 +238,7 @@ lemma OrthogonalIdempotents.sum_mul_of_mem (I : Type u) [Fintype I]  [DecidableE
 
 lemma orth_idem_directSum_apply_spec (I : Type u) [Fintype I]  [DecidableEq I] (s : Finset I)
     (e : I → R) (i : s) (a : R) (he : OrthogonalIdempotents e) :
-    ortho_idem_directsum (e := e) s i ⟨a * ∑ i : s, e i, Submodule.smul_mem _ _ $
+    ortho_idem_directsum (e := e) R I s i ⟨a * ∑ i : s, e i, Submodule.smul_mem _ _ $
       Submodule.mem_span_singleton_self _ ⟩ =
       DirectSum.of _ i ⟨a • e i, Submodule.smul_mem _ _ $ Submodule.mem_span_singleton_self _⟩ := by
     -- DirectSum.mk _ Finset.univ fun ⟨i, _⟩ ↦
@@ -356,7 +356,8 @@ lemma aux00 (I : Type u) [Fintype I] [DecidableEq I] (s : Finset I)
     split_ifs with H
     · subst H
       simp only [Submodule.mk_eq_zero]
-      rw [mul_assoc, Finset.sum_coe_sort s e, OrthogonalIdempotents.sum_mul_of_mem (he := he) j.2,
+      rw [mul_assoc, Finset.sum_coe_sort s e,
+        OrthogonalIdempotents.sum_mul_of_mem R I e (he := he) j.2,
         ← (Submodule.mem_span_singleton.1 x.2).choose_spec, smul_mul_assoc, he.2, smul_zero]
       exact Subtype.coe_ne_coe.mpr h
     · rfl
@@ -394,7 +395,7 @@ def ortho_idem_directsum_equiv
   simp only [Ideal.submodule_span_eq]
   change Submodule.subtype _ _ = _
   rw [map_sum]
-  simp only [Finset.univ_eq_attach, Submodule.coeSubtype]
+  simp only [Finset.univ_eq_attach, Submodule.coe_subtype]
   rw [Submodule.mem_span_singleton] at hx
   obtain ⟨a, rfl⟩ := hx
   simp only [Finset.coe_sort_coe, smul_eq_mul]
@@ -523,7 +524,7 @@ abbrev toDirectsum2 (I : Type u) [Fintype I] [DecidableEq I]
       · rfl
   }
 
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 600000 in
 def ortho_idem_decomp_ring (I : Type u) [Fintype I] [DecidableEq I]
     (e : I → R) (he : ∑ i : I, e i  = 1) (he' : OrthogonalIdempotents e)
     [(i : I) → (x : (Submodule.span R {e i})) → Decidable (x ≠ 0)] :
@@ -554,7 +555,7 @@ def ortho_idem_decomp_ring (I : Type u) [Fintype I] [DecidableEq I]
       LinearMap.coe_mk, AddHom.coe_mk, DFinsupp.single_apply, lof_eq_of, of_apply] ) :
   (⨁ (i : I), { x // x ∈ Submodule.span R {e i} }) ≃ₗ[R]
   ⨁ (i : { x // x ∈ Finset.univ }), { x // x ∈ Submodule.span R {e i.1} }) ≪≫ₗ
-  (ortho_idem_directsum_equiv (he := he') Finset.univ).symm ≪≫ₗ
+  (ortho_idem_directsum_equiv R I Finset.univ e he').symm ≪≫ₗ
     LinearEquiv.ofLinear (Submodule.subtype _)
       { toFun := fun r =>
         ⟨r, by
@@ -570,7 +571,7 @@ end
 
 section indecomp
 
-structure Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop :=
+structure Module.Indecomposable (M : Type u) [AddCommGroup M] [Module R M] : Prop where
   non_bot : Nontrivial M
   no_directsum : (∀ (x y : Submodule R M), ⊥ < x → x < ⊤ → ⊥ < y → y < ⊤ → IsCompl x y → False)
 

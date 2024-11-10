@@ -26,8 +26,8 @@ variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensio
     [IsCentralSimple K D]
 
 theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
-    FiniteDimensional.finrank K D = FiniteDimensional.finrank K k *
-    FiniteDimensional.finrank K k := by
+    Module.finrank K D = Module.finrank K k *
+    Module.finrank K k := by
   have dimdim := dim_centralizer K (A := D) k.1 |>.symm
   have := comm_of_centralizer K D k.1 $ fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ Subtype.ext_iff.2 $ k.2 x y hx hy
   have eq : k.1 = Subalgebra.centralizer K (A := D) k.1 := by
@@ -41,9 +41,9 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     { mul_comm := by
         rintro ⟨x, hx⟩ ⟨y, hy⟩
         simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
-        refine Algebra.adjoin_induction₂ (ha := hx) (hb := hy) ?_ ?_ ?_
-          ?_ ?_ ?_ ?_ ?_
-        · intro α hα β hβ
+        refine Algebra.adjoin_induction₂  ?_ ?_ ?_
+          ?_ ?_ ?_ ?_ ?_ hx hy
+        · intro α β hα hβ
           simp only [Set.mem_insert_iff, SetLike.mem_coe] at hα hβ
           rcases hα with rfl|hα <;> rcases hβ with rfl|hβ
           · rfl
@@ -57,13 +57,13 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
         · intros; rw [Algebra.commutes]
 
         · intros; rw [Algebra.commutes]
-        · intro _ _  _ h1 h2
+        · intro _ _  _ _ _ _ h1 h2
           simp only [add_mul, h1, h2, mul_add]
-        · intro _ _  _ h1 h2
+        · intro _ _ _ _ _ _ h1 h2
           simp only [add_mul, h1, h2, mul_add]
-        · intro x y z h1 h2
+        · intro _ _ _ _ _ _ h1 h2
           rw [mul_assoc, h2, ← mul_assoc, h1, mul_assoc]
-        · intro x y z h1 h2
+        · intro _ _ _ _ _ _ h1 h2
           rw [← mul_assoc, h1, mul_assoc, h2, mul_assoc] }
 
     have : IsField (Algebra.adjoin K (insert a k) : Subalgebra K D) := by
@@ -111,8 +111,8 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
 
 lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     [hA : IsCentralSimple K A] (L : SubField K A) :
-    Subalgebra.centralizer K L.1 = L.1 ↔ FiniteDimensional.finrank K A =
-    FiniteDimensional.finrank K L * FiniteDimensional.finrank K L :=
+    Subalgebra.centralizer K L.1 = L.1 ↔ Module.finrank K A =
+    Module.finrank K L * Module.finrank K L :=
   haveI := hA.2
   ⟨fun h ↦ by
   have := dim_centralizer K (A := A) L.1 ; rw [h] at this ; exact this.symm, fun h ↦ by
@@ -121,12 +121,12 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
   cases' this with h1 h2
   · exact Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1 fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
       simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq, L.2 x y hx hy]) h1.symm|>.symm
-  · have := FiniteDimensional.finrank_pos (R := K) (M := L.1)
+  · have := Module.finrank_pos (R := K) (M := L.1)
     simp_all only [mul_zero, lt_self_iff_false]⟩
 
 lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     [hA : IsCentralSimple K A] (L : SubField K A) :
-    FiniteDimensional.finrank K A = FiniteDimensional.finrank K L * FiniteDimensional.finrank K L →
+    Module.finrank K A = Module.finrank K L * Module.finrank K L →
     (∀ (L' : Subalgebra K A) (_ : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') :=
   fun hrank L' hL' hLL ↦ by
   haveI := hA.2
@@ -139,7 +139,7 @@ lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     exact le_antisymm hLL fun x hx => this.symm ▸ Subalgebra.mem_centralizer_iff _ |>.2
       fun y hy => hL' _ hx _ (hLL hy) |>.symm
 
-  · have := FiniteDimensional.finrank_pos (R := K) (M := L.1)
+  · have := Module.finrank_pos (R := K) (M := L.1)
     simp_all only [mul_zero, lt_self_iff_false]
 
 lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
@@ -155,7 +155,7 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
       Set.ssubset_iff_of_subset this|>.1 $ Set.lt_iff_ssubset.1 Llt
     obtain ⟨a, ⟨ha1, ha2⟩⟩ := exist_ele
     specialize H (Algebra.adjoin K (insert a L.1)) (fun x hx y hy ↦ by
-      refine Algebra.adjoin_induction₂ (ha := hx) (hb := hy) (fun x hx y hy ↦ by
+      refine Algebra.adjoin_induction₂ (fun x y hx hy ↦ by
         simp only [Set.mem_insert_iff, SetLike.mem_coe] at hx hy
         rcases hx with rfl|hx <;> rcases hy with rfl|hy
         · rfl
@@ -167,10 +167,10 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
         · exact L.2 _ _ hx hy)
         (fun k1 k2 ↦ Algebra.commutes _ _) (fun k x _ ↦ Algebra.commutes _ _)
         (fun k x _ ↦ Algebra.commutes _ _|>.symm)
-        (fun x y z hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
-        (fun x y z hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
-        (fun x y z hxz hyz ↦ by rw [mul_assoc, hyz, ← mul_assoc, hxz, mul_assoc])
-        (fun x y z hxy hxz ↦ by rw [← mul_assoc, hxy, mul_assoc, hxz, ← mul_assoc]))
+        (fun x y z _ _ _ hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
+        (fun x y z _ _ _ hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
+        (fun x y z _ _ _ hxz hyz ↦ by rw [mul_assoc, hyz, ← mul_assoc, hxz, mul_assoc])
+        (fun x y z _ _ _ hxy hxz ↦ by rw [← mul_assoc, hxy, mul_assoc, hxz, ← mul_assoc]) hx hy)
       (by nth_rw 1 [← Algebra.adjoin_eq L.1] ; exact Algebra.adjoin_mono (Set.subset_insert _ _))
     have : L.1 ≠ Algebra.adjoin K (insert a L.1) := ne_of_mem_of_not_mem' (a := a)
       (by exact (Algebra.adjoin_le_iff |>.1 (Algebra.adjoin_mono (R := K) (s := {a})
@@ -212,8 +212,8 @@ variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D]
 instance (a : D) : CommRing (Algebra.adjoin K (insert a (Subalgebra.center K D))) where
   mul_comm := fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
     simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
-    exact Algebra.adjoin_induction₂ (ha := hx) (hb := hy)
-      (fun α hα β hβ ↦ by
+    exact Algebra.adjoin_induction₂
+      (fun α β hα hβ ↦ by
         simp only [Set.mem_insert_iff, SetLike.mem_coe] at hα hβ
         rcases hα with rfl|hα <;> rcases hβ with rfl|hβ
         · rfl
@@ -226,10 +226,11 @@ instance (a : D) : CommRing (Algebra.adjoin K (insert a (Subalgebra.center K D))
       (fun k1 k2 ↦ Algebra.commutes _ _)
       (fun k x _ ↦ Algebra.commutes _ _)
       (fun k x _ ↦ Algebra.commutes _ _|>.symm)
-      (fun x y z hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
-      (fun x y z hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
-      (fun x y z hxz hyz ↦ by rw [mul_assoc, hyz, ← mul_assoc, hxz, mul_assoc])
-      (fun x y z hxy hxz ↦ by rw [← mul_assoc, hxy, mul_assoc, hxz, ← mul_assoc])
+      (fun x y z _ _ _ hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
+      (fun x y z _ _ _ hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
+      (fun x y z _ _ _ hxz hyz ↦ by rw [mul_assoc, hyz, ← mul_assoc, hxz, mul_assoc])
+      (fun x y z _ _ _ hxy hxz ↦ by
+        rw [← mul_assoc, hxy, mul_assoc, hxz, ← mul_assoc]) hx hy
 
 abbrev maxSubfieldOfDiv (a : D): SubField K D := {
   __ := (Algebra.adjoin K (insert a (Subalgebra.center K D)))

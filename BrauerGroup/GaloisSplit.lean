@@ -10,25 +10,25 @@ noncomputable section one
 variable (K K_bar : Type u) [Field K] (A : CSA K)[Field K_bar] [Algebra K K_bar]
   [IsAlgClosure K K_bar]
 
-def Basis_of_K : Basis (Fin (FiniteDimensional.finrank K A)) K_bar (K_bar ⊗[K] A):=
-  Algebra.TensorProduct.basis K_bar (FiniteDimensional.finBasis K A)
+def Basis_of_K : Basis (Fin (Module.finrank K A)) K_bar (K_bar ⊗[K] A):=
+  Algebra.TensorProduct.basis K_bar (Module.finBasis K A)
 
 omit [IsAlgClosure K K_bar] in
-theorem Basis_apply (i : Fin (FiniteDimensional.finrank K A)) :
-    Basis_of_K K K_bar A i = 1 ⊗ₜ (FiniteDimensional.finBasis K A i) :=
-  Algebra.TensorProduct.basis_apply (FiniteDimensional.finBasis K A) i
+theorem Basis_apply (i : Fin (Module.finrank K A)) :
+    Basis_of_K K K_bar A i = 1 ⊗ₜ (Module.finBasis K A i) :=
+  Algebra.TensorProduct.basis_apply (Module.finBasis K A) i
 
 variable {K K_bar A} in
 abbrev b (e : split K A K_bar := split_by_alg_closure K K_bar A)
-    (i j : Fin e.n) (x : Fin (FiniteDimensional.finrank K A.carrier)) : K_bar :=
+    (i j : Fin e.n) (x : Fin (Module.finrank K A.carrier)) : K_bar :=
   ((Basis_of_K K K_bar A).repr
     (e.iso.symm (Matrix.stdBasisMatrix i j 1))) x
 
 lemma b_spec (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (i j : Fin e.n) :
     Matrix.stdBasisMatrix i j (1 : K_bar) =
-    e.iso (∑ k : Fin (FiniteDimensional.finrank K A.carrier),
-      b e i j k ⊗ₜ FiniteDimensional.finBasis K A k) := by
+    e.iso (∑ k : Fin (Module.finrank K A.carrier),
+      b e i j k ⊗ₜ Module.finBasis K A k) := by
   let x (i j : Fin e.n):= e.iso.symm $ Matrix.stdBasisMatrix i j (1 : K_bar)
   have (i j : Fin e.n) := (Basis_of_K K K_bar A).linearCombination_repr (x i j)
   simp only [Finsupp.linearCombination, Basis_apply, Finsupp.coe_lsum, Finsupp.sum,
@@ -48,7 +48,7 @@ abbrev K' (e : split K A K_bar := split_by_alg_closure K K_bar A) : Intermediate
   IntermediateField.adjoin K (Finset.image (Function.uncurry $ Function.uncurry $ b e) Finset.univ)
 
 def b_as_K' (e : split K A K_bar := split_by_alg_closure K K_bar A) (i j : Fin e.n)
-    (k : Fin (FiniteDimensional.finrank K A)) :
+    (k : Fin (Module.finrank K A)) :
     K' K K_bar A e :=
   ⟨b e i j k,  by
     simp only [K', Finset.coe_image, Finset.coe_univ, Set.image_univ]
@@ -56,8 +56,8 @@ def b_as_K' (e : split K A K_bar := split_by_alg_closure K K_bar A) (i j : Fin e
     simp only [Set.mem_range, Prod.exists, Function.uncurry_apply_pair, exists_apply_eq_apply3]⟩
 
 lemma coe_b_as_K' (e : split K A K_bar := split_by_alg_closure K K_bar A) (i j : Fin e.n)
-    (k : Fin (FiniteDimensional.finrank K A)) :
-    (b_as_K' (e := e) i j k : K_bar) = b e i j k := rfl
+    (k : Fin (Module.finrank K A)) :
+    (b_as_K' _ _ _ (e := e) i j k : K_bar) = b e i j k := rfl
 
 open IntermediateField in
 instance (e : split K A K_bar := split_by_alg_closure K K_bar A) :
@@ -73,11 +73,11 @@ set_option synthInstance.maxHeartbeats 60000 in
 instance (e : split K A K_bar) :
   Algebra ((K' K K_bar A e)) ((K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
-set_option synthInstance.maxHeartbeats 60000 in
+set_option synthInstance.maxHeartbeats 80000 in
 instance (e : split K A K_bar) :
   Module ((K' K K_bar A e)) ((K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
-set_option synthInstance.maxHeartbeats 60000 in
+set_option synthInstance.maxHeartbeats 80000 in
 instance (e : split K A K_bar) :
   DistribSMul ((K' K K_bar A e)) ((K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
@@ -86,20 +86,20 @@ private def emb (e : split K A K_bar := split_by_alg_closure K K_bar A) :
   Algebra.TensorProduct.map (Algebra.ofId (K' (e := e)) _) (AlgHom.id _ _)
 
 private lemma emb_tmul (e : split K A K_bar := split_by_alg_closure K K_bar A) :
-  ∀ (x : K' K K_bar A e) (y : A), emb (e := e) (x ⊗ₜ y) =
+  ∀ (x : K' K K_bar A e) (y : A), emb _ _ _ e (x ⊗ₜ y) =
     (x.1 ⊗ₜ y) := by
   intros
   simp only [emb, Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq]
   rfl
 
-instance (e): AddMonoidHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
-    ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
+-- instance (e): AddMonoidHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
+--     ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
 
 set_option synthInstance.maxHeartbeats 160000 in
 set_option maxHeartbeats 400000 in
 lemma basis'_li (e) : LinearIndependent ↥(K' K K_bar A e) fun i : Fin e.n × Fin e.n ↦
-  ∑ j : Fin (FiniteDimensional.finrank K A.carrier),
-    b_as_K' K K_bar A e i.1 i.2 j ⊗ₜ[K] (FiniteDimensional.finBasis K A.carrier) j := by
+  ∑ j : Fin (Module.finrank K A.carrier),
+    b_as_K' K K_bar A e i.1 i.2 j ⊗ₜ[K] (Module.finBasis K A.carrier) j := by
         rw [linearIndependent_iff]
         intro c hc
         apply_fun (emb (e := e)) at hc
@@ -117,7 +117,7 @@ lemma basis'_li (e) : LinearIndependent ↥(K' K K_bar A e) fun i : Fin e.n × F
         ext ⟨i, j⟩
         have := Matrix.ext_iff.2 hc i j
         simp only [Matrix.smul_stdBasisMatrix, smul_eq_mul, mul_one, Matrix.zero_apply] at this
-        simp only [Matrix.sum_apply, Matrix.stdBasisMatrix] at this
+        simp only [Matrix.stdBasisMatrix, Matrix.sum_apply, Matrix.of_apply] at this
         have p_eq (x : Fin e.n × Fin e.n) : (x.1 = i ∧ x.2 = j) = (x = ⟨i, j⟩) := by
           aesop
         simp_rw [p_eq] at this
@@ -132,18 +132,18 @@ def basis' (e : split K A K_bar := split_by_alg_closure K K_bar A) :
     haveI : NeZero e.n := ⟨e.hn⟩
     haveI :  Nonempty (Fin e.n × Fin e.n) := inferInstance
     basisOfLinearIndependentOfCardEqFinrank (lin_ind := basis'_li (e := e)) $ by
-      simp only [Fintype.card_prod, Fintype.card_fin, FiniteDimensional.finrank_tensorProduct,
-        FiniteDimensional.finrank_self, one_mul]
+      simp only [Fintype.card_prod, Fintype.card_fin, Module.finrank_tensorProduct,
+        Module.finrank_self, one_mul]
       have := LinearEquiv.finrank_eq (R := K_bar) e.iso.toLinearEquiv
-      simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
-        FiniteDimensional.finrank_matrix, Fintype.card_fin] at this ⊢
+      simp only [Module.finrank_tensorProduct, Module.finrank_self, one_mul, Module.finrank_matrix,
+        Fintype.card_fin, mul_one] at this ⊢
       exact this.symm
 
 @[simp]
 lemma basis'_apply (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (i j : Fin e.n) :
-    basis' (e := e) (i, j) = ∑ k : (Fin $ FiniteDimensional.finrank K A),
-      b_as_K' (e := e) i j k ⊗ₜ FiniteDimensional.finBasis K A k := by
+    basis' _ _ _ (e := e) (i, j) = ∑ k : (Fin $ Module.finrank K A),
+      b_as_K' _ _ _ (e := e) i j k ⊗ₜ Module.finBasis K A k := by
   simp only [basis', coe_basisOfLinearIndependentOfCardEqFinrank]
 
 set_option synthInstance.maxHeartbeats 40000 in
@@ -156,7 +156,7 @@ def e'Aux (e : split K A K_bar := split_by_alg_closure K K_bar A) :
 set_option synthInstance.maxHeartbeats 40000 in
 lemma e'Aux_apply_basis (e : split K A K_bar := split_by_alg_closure K K_bar A)
     (i j : Fin e.n) :
-    (e'Aux (e := e) (∑ k, b_as_K' (e := e) i j k ⊗ₜ FiniteDimensional.finBasis K A k)) =
+    (e'Aux _ _ _ (e := e) (∑ k, (b_as_K' _ _ _ (e := e) i j k ⊗ₜ Module.finBasis K A k))) =
     Matrix.stdBasisMatrix i j 1 := by
   simp only [e'Aux]
   have := (basis' (e := e)).equiv_apply (b' := Matrix.stdBasis (K' K K_bar A e) (Fin e.n) (Fin e.n))
@@ -201,15 +201,15 @@ lemma emb_comm_square (e : split K A K_bar := split_by_alg_closure K K_bar A):
   simp_rw [coe_b_as_K']
   rw [← b_spec (e := e)]
   ext
-  simp only [Matrix.stdBasisMatrix, Matrix.map_apply, RingHom.map_ite_one_zero]
+  simp only [Matrix.stdBasisMatrix, Matrix.of_apply, Matrix.map_apply, RingHom.map_ite_one_zero]
 
 set_option synthInstance.maxHeartbeats 60000 in
 instance (e : split K A K_bar := split_by_alg_closure K K_bar A):
   HMul (↥(K' K K_bar A e) ⊗[K] A.carrier) (↥(K' K K_bar A e) ⊗[K] A.carrier)
   (↥(K' K K_bar A e) ⊗[K] A.carrier) := inferInstance
 
-instance (e) : MulHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
-    ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
+-- instance (e) : MulHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
+--     ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
 
 set_option synthInstance.maxHeartbeats 60000 in
 lemma e'_map_mul (e : split K A K_bar := split_by_alg_closure K K_bar A)
@@ -225,11 +225,11 @@ lemma e'_map_mul (e : split K A K_bar := split_by_alg_closure K K_bar A)
   rw [← eq, _root_.map_mul (f := emb (e := e)), _root_.map_mul (f := e.iso),
     _root_.map_mul (f := emb' (e := e)), ← eqx, ← eqy]
 
-instance (e) : OneHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier
-  →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
-    ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
+-- instance (e) : OneHomClass ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier
+--   →ₐ[{ x // x ∈ K' K K_bar A e }] K_bar ⊗[K] A.carrier)
+--     ({ x // x ∈ K' K K_bar A e } ⊗[K] A.carrier) (K_bar ⊗[K] A.carrier) := sorry
 
-set_option synthInstance.maxHeartbeats 60000 in
+-- set_option synthInstance.maxHeartbeats 60000 in
 lemma e'_map_one (e : split K A K_bar := split_by_alg_closure K K_bar A) :
     (e'Aux K K_bar A e) 1 = 1 := by
   have eq := congr($(emb_comm_square (e := e)) 1)
