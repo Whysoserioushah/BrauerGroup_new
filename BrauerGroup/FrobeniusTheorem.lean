@@ -170,7 +170,7 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
           ← pow_two, mul_one] at this
         exact this.symm
       by_contra! hxx
-      have : LinearIndependent ℝ ![(1 : D), x.1^2] := by
+      have indep : LinearIndependent ℝ ![(1 : D), x.1^2] := by
         rw [LinearIndependent.pair_iff]
         by_contra! hh
         obtain ⟨s, t, ⟨hst1, hst2⟩⟩ := hh
@@ -199,19 +199,39 @@ lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.
               rw [← hst1]
               simp only [Algebra.mul_smul_comm, mul_one, Algebra.smul_mul_assoc, one_mul]
             exact hxx this
-      have xink : x.1^2 ∈ k := sorry
-      have indep' : LinearIndependent ℝ (M := k) ![1, ⟨x.1^2, xink⟩] := sorry
+
+      have xink : x.1^2 ∈ k := by
+        sorry
+
+      have indep' : LinearIndependent ℝ (M := k) ![1, ⟨x.1^2, xink⟩] := by
+
+        sorry
+
       have IsBasis : Basis (Fin (Nat.succ 0).succ) ℝ k :=
         .mk (M := k) (v := ![1, ⟨x.1^2, xink⟩]) indep' $ by
         simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.range_cons,
           Matrix.range_empty, Set.union_empty, Set.union_singleton, top_le_iff]
         have : Module.finrank ℝ (Submodule.span ℝ
-          {⟨x.1^2, xink⟩, (1 : k)})= 2 := sorry
+          {⟨x.1^2, xink⟩, (1 : k)})= 2 := by
+          apply LinearIndependent.span_eq_top_of_card_eq_finrank' at indep'
+          simp only [Nat.succ_eq_add_one, zero_add, Nat.reduceAdd, Fintype.card_fin,
+            Matrix.range_cons, Matrix.range_empty, Set.union_empty, Set.union_singleton] at indep'
+          have : 2 = Module.finrank ℝ k := by
+            rw [LinearEquiv.finrank_eq e.toLinearEquiv]
+            symm
+            exact Complex.finrank_real_complex
+          apply indep' at this
+          rw [this, finrank_top]
+          exact (show Module.finrank ℝ k = 2 by
+              rw [LinearEquiv.finrank_eq e.toLinearEquiv]
+              exact Complex.finrank_real_complex
+          )
         have eq := Submodule.topEquiv.finrank_eq.trans $
           e.toLinearEquiv.finrank_eq.trans Complex.finrank_real_complex
         have le : Submodule.span _ {⟨x.1 ^ 2, xink⟩, (1 : k)} ≤
-          (⊤ : Submodule ℝ k) := sorry
+          (⊤ : Submodule ℝ k) := by exact fun ⦃x_1⦄ a ↦ trivial
         exact Submodule.eq_of_le_of_finrank_eq le $ this.trans eq.symm
+
       have xink' : x.1 ∈ k := sorry
       sorry
     change _ ∈ (⊥ : Subalgebra ℝ D)
