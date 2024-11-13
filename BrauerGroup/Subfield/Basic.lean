@@ -13,8 +13,8 @@ section def_and_lemmas
 
 @[ext]
 structure SubField (K A : Type u) [Field K] [Semiring A] [Algebra K A] extends Subalgebra K A where
-  mul_comm : ∀(x y : A), x ∈ carrier → y ∈ carrier → x * y = y * x
-  inverse : ∀(x : A), x ∈ carrier → x ≠ 0 → ∃(y : A), (y ∈ carrier ∧ x * y = 1)
+  mul_comm : ∀ (x y : A), x ∈ carrier → y ∈ carrier → x * y = y * x
+  inverse : ∀ (x : A), x ∈ carrier → x ≠ 0 → ∃(y : A), (y ∈ carrier ∧ x * y = 1)
 
 /-- Reinterpret SubFields as `Subalgebras` -/
 add_decl_doc SubField.toSubalgebra

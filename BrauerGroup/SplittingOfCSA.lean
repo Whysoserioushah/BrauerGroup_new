@@ -1,10 +1,9 @@
 import BrauerGroup.BrauerGroup
-import BrauerGroup.Quaternion
 import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
-import BrauerGroup.faithfullyflat
+import BrauerGroup.Faithfullyflat
 
 suppress_compilation
 
@@ -21,82 +20,6 @@ open RingCon
 instance module_over_over (A : CSA k) (I : TwoSidedIdeal A):
     Module k I := Module.compHom I (algebraMap k A)
 
--- lemma one_tensor_bot_RingCon [FiniteDimensional k K] {x : A} (_ : IsCentralSimple K (K ⊗[k] A))
---   (h : 1 ⊗ₜ[k] x ∈ (⊥ : RingCon (K ⊗[k] A))) :
---     x ∈ (⊥ : RingCon A) := by
---   let h1 : k ⊗[k] A ≃ₐ[k] A := Algebra.TensorProduct.lid _ _
---   let h2 : k →ₗ[k] K := {
---     toFun := algebraMap k K
---     map_add' := by simp only [map_add, implies_true]
---     map_smul' := by intro x y; simp only [smul_eq_mul, map_mul, RingHom.id_apply, Algebra.smul_def]
---   }
---   have h4 : Function.Injective (LinearMap.rTensor A h2) := by
---     apply Module.Flat.rTensor_preserves_injective_linearMap
---     simp only [LinearMap.coe_mk, AddHom.coe_mk, h2]
---     exact Basis.algebraMap_injective (FiniteDimensional.finBasis k K)
---   suffices x = 0 by tauto
---   suffices (1 : k) ⊗ₜ[k] x = 0 by
---     obtain h := map_zero h1
---     rw [← this, Algebra.TensorProduct.lid_tmul, Algebra.smul_def] at h
---     simp_all
---   suffices (algebraMap k K) 1 ⊗ₜ[k] x = 0 by
---     have h : (LinearMap.rTensor A h2) (1 ⊗ₜ[k] x) = (algebraMap k K) 1 ⊗ₜ[k] x := by tauto
---     rw [this, show 0 = (LinearMap.rTensor A h2) 0 by simp ] at h
---     tauto
---   simp; tauto
-
--- lemma RingCon_Injective_top [FiniteDimensional k K] {I : RingCon A}
---     (Is_CSA : IsCentralSimple K (K ⊗[k] A))
---     (h : (RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i} : RingCon (K ⊗[k] A)) = ⊤) :
---     I = ⊤ := by
---   let f : RingCon A → RingCon (K ⊗[k] A) :=
---     fun I => RingCon.span {x| ∃(a : K), ∃ i ∈ I, x = a ⊗ₜ i}
---   let g : RingCon (K ⊗[k] A) → RingCon A :=
---     fun J => RingCon.span {x| 1 ⊗ₜ x ∈ J}
---   have hf : Function.Injective f := by
---     apply Function.LeftInverse.injective (g := g)
---     intro J
---     apply LE.le.antisymm'
---     · simp [f, g]
---       rw [le_iff]
---       intro a ha
---       simp only [SetLike.mem_coe]
---       suffices a ∈ {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}} by
---         have := subset_span {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}}
---         apply this
---         tauto
---       simp only [Set.mem_setOf_eq]
---       suffices (1 : K) ⊗ₜ[k] a ∈ {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i} by
---         have := subset_span {x | ∃ a : K, ∃ i ∈ J, x = a ⊗ₜ[k] i}
---         apply this
---         tauto
---       simp only [Set.mem_setOf_eq]
---       tauto
---     · simp only [g, f]
---       rw [← span_le]
---       intro x hx
---       simp only [Set.mem_setOf_eq] at hx
---       simp only [SetLike.mem_coe]
---       -- rw [le_iff]
---       -- intro a ha
---       -- obtain ⟨ι, m, xA, yA, hι, ha'⟩ := RingCon.mem_span_iff_exists_fin
---       --   {x | (1 : K) ⊗ₜ[k] x ∈ span {x | ∃ a, ∃ i ∈ J, x = a ⊗ₜ[k] i}} a|>.1 ha
---       sorry
---   suffices f ⊤ = ⊤ by rw [← this] at h; tauto
---   rw [← top_le_iff, le_iff]
---   intro x _
---   simp only [SetLike.mem_coe, f]
---   induction x using TensorProduct.induction_on with
---   | zero =>
---     exact RingCon.zero_mem _
---   | tmul b c =>
---     suffices b ⊗ₜ[k] c ∈ ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A)) by
---       have := subset_span ({x | ∃ a, ∃ i ∈ (⊤ : RingCon A), x = a ⊗ₜ[k] i} : Set (K ⊗[k] A))
---       apply this; tauto
---     use b; use c; tauto
---   | add b c hb hc =>
---     simp only [SetLike.mem_coe] at hb hc
---     exact add_mem _ (hb (show b ∈ ⊤ by tauto)) (hc (show c ∈ ⊤ by tauto))
 
 set_option synthInstance.maxHeartbeats 50000 in
 theorem is_simple_A
@@ -332,65 +255,3 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
         mul_one] at e6
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
     exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' _ (finCongr e5)
-
-variable [FiniteDimensional k A]
-
--- theorem sepclosure_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
---     [hk_bar : IsAlgClosure k k_bar] (A : CSA k):
---     isSplit k A k_s := by
---   obtain ⟨n, hn, D, _, _, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version k_s (k_s ⊗[k] A)
---   refine ⟨deg k k_bar A, deg_pos k k_bar A, ⟨?_⟩⟩
---   haveI := is_fin_dim_of_wdb k_s (k_s ⊗[k] A) n D (by omega) iso
---   set d : ℕ := FiniteDimensional.finrank k_s D with d_eq
---   if hd' : d = 1 then
---     haveI : Nontrivial D := GroupWithZero.toNontrivial
---     haveI := FiniteDimensional.finrank_pos_iff (R := k_s) (M := D)|>.2 this
---     have k_s_sim: IsSimpleOrder (TwoSidedIdeal k_s) := by exact
---       instIsSimpleOrderTwoSidedIdeal_brauerGroup k_s
---     have inj : Function.Injective (Algebra.ofId k_s D) := by
---       have H := RingCon.IsSimpleOrder.iff_eq_zero_or_injective k_s|>.1 k_s_sim
---       specialize @H D _ (Algebra.ofId k_s D)
---       refine H.resolve_left fun rid => ?_
---       rw [eq_top_iff, RingCon.le_iff] at rid
---       specialize @rid 1 ⟨⟩
---       simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, RingCon.mem_ker, _root_.map_one,
---         one_ne_zero] at rid
---     have e : k_s ≃ₐ[k_s] D :=
---       AlgEquiv.ofBijective (Algebra.ofId k_s D) ⟨inj, by
---         change Function.Surjective (Algebra.ofId k_s D).toLinearMap
---         rw [← LinearMap.range_eq_top]
---         have eq := (Algebra.ofId k_s D).toLinearMap.finrank_range_add_finrank_ker
---         rw [FiniteDimensional.finrank_self, LinearMap.ker_eq_bot.2 inj, finrank_bot, add_zero] at eq
---         apply Submodule.eq_top_of_finrank_eq
---         rw [eq, ← d_eq, hd']⟩
---     have e1 := iso.trans $ e.mapMatrix (m := Fin n)|>.symm
---     have e2 : n = deg k k_bar A := by
---       have := deg_sq_eq_dim k k_bar A
---       rw [pow_two] at this
---       have e3 := LinearEquiv.finrank_eq e1.toLinearEquiv|>.trans $
---         FiniteDimensional.finrank_matrix k_s (Fin n) (Fin n)
---       simp only [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
---         Fintype.card_fin] at e3
---       exact Nat.mul_self_inj.mp (id (this.trans e3).symm)
---     exact e1.trans $ Matrix.reindexAlgEquiv k_s $ finCongr e2
---   else
---   have hd : 1 < d := by
---     suffices d ≠ 0 by omega
---     by_contra! h
---     obtain d_eq := d_eq.symm
---     rw [h, FiniteDimensional.finrank_zero_iff (R := k_s) (M := D),
---       ← not_nontrivial_iff_subsingleton] at d_eq
---     tauto
---   -- suffices Matrix (Fin n) (Fin n) D ≃ₐ[k_s] Matrix (Fin (deg k k_bar A)) (Fin (deg k k_bar A)) k_s by
---   --   exact ((id this.symm).trans (id iso.symm)).symm
---   -- have e1 := deg_sq_eq_dim k k_bar A
---   -- have e2 := matrixEquivTensor (A := D) (R := k_s) (n := Fin n)
---   -- have e3 := LinearEquiv.finrank_eq e2.toLinearEquiv
---   -- have e4 := LinearEquiv.finrank_eq iso.toLinearEquiv
---   -- rw [FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_matrix k_s (Fin n) (Fin n),
---   --   ← e4, FiniteDimensional.finrank_tensorProduct, FiniteDimensional.finrank_self, one_mul,
---   --   Fintype.card_fin, ← e1] at e3; clear e4 e1
---   sorry
-
-theorem finite_sep_split (A : CSA k): ∃(L : Type u)(_ : Field L)(_ : Algebra k L)
-    (fin_dim : FiniteDimensional k L)(_ : Algebra.IsSeparable k L), isSplit k A L := sorry

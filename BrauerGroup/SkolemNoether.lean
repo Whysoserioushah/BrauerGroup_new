@@ -10,14 +10,6 @@ open scoped TensorProduct
 
 variable (K : Type u) [Field K]
 
--- variable {A B M: Type u} [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
---         [csA : IsCentralSimple K A] [hSimple : IsSimpleOrder (RingCon B)]
---         [AddCommGroup M][Module A M][IsSimpleModule A M]
--- variable (L: Module.End A M)
--- -- lemma first
--- -- def L:= Module.End A M
--- -- instance (L: Module.End A M): DivisionRing L := sorry
-
 set_option linter.unusedVariables false in
 def module_inst (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
@@ -268,12 +260,7 @@ lemma iso_fg [hB1 : IsSimpleOrder (TwoSidedIdeal B)]:
   haveI := hA.2
   rw [linearEquiv_iff_finrank_eq_over_simple_ring K]
   rfl
--- -- lemma SkolemNoether_aux (A : Type u) [Ring A] [Algebra K A]
--- --   (M : Type u) [AddCommGroup M] [Module A M] [Module K M] [IsScalarTower K A M]
--- --   (B : Type u) [Ring B] [Algebra K B] [Module B M] [IsScalarTower K B M]
--- --   [IsSimpleModule A M] [IsSimpleModule (B ⊗[K] (Aᵐᵒᵖ )) M] :
--- --   ∃ (φ : M →ₗ[A] M), function.surjective φ := sorry
--- -- variable (A: Type u ) [Ring A] [Algebra K A] [FiniteDimensional K A]:
+
 /--
 End_End_A
 -/

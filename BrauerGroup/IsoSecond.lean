@@ -1,8 +1,5 @@
 import BrauerGroup.ToSecond
-
 import Mathlib.LinearAlgebra.Dimension.Constructions
-import Mathlib.LinearAlgebra.Quotient.Basic
-import BrauerGroup.Mathlib.LinearAlgebra.Quotient.Defs
 
 suppress_compilation
 
@@ -664,7 +661,7 @@ noncomputable def φ0 :
     refine LinearMap.ext fun m => ?_
     simp only [MulOpposite.algebraMap_apply, Algebra.TensorProduct.algebraMap_apply, algebraMap_val,
       LinearMap.coe_mk, AddHom.coe_mk, Module.algebraMap_end_apply]
-    induction m using Submodule.Quotient.induction_on with | H m =>
+    induction m using Quotient.inductionOn' with | h m =>
     induction m using TensorProduct.induction_on with
     | tmul a b =>
       erw [Aox_FB_op_tmul_smul_mk_tmul]
@@ -673,7 +670,9 @@ noncomputable def φ0 :
       rfl
     | add x y hx hy =>
       simp only at hx hy ⊢
-      rw [Submodule.Quotient.mk_add, smul_add, hx, hy, smul_add]
+      have := congr($hx + $hy)
+      rw [← smul_add, ← smul_add] at this
+      exact this
     | zero =>
       erw [smul_zero]
 

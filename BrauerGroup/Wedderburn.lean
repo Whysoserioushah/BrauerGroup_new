@@ -673,54 +673,6 @@ lemma Wedderburn_Artin_algebra_version
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
     exact congr_arg e $ by ext; simp
 
--- instance (priority := high) (M : Type*) [AddCommGroup M] [Module B M]   :
---     Algebra K (Module.End B M) :=
---   letI : Module K M := Module.compHom M (algebraMap K B)
---   letI : SMulCommClass B K M :=
---   { smul_comm := fun b k m =>
---       show b • (algebraMap K B k) • m = _ by
---       rw [← MulAction.mul_smul, ← Algebra.commutes, MulAction.mul_smul]
---       rfl }
---   letI : IsScalarTower K B M :=
---   { smul_assoc := fun k b m => by
---       rw [Algebra.smul_def, MulAction.mul_smul]; rfl }
-
---   Module.End.instAlgebra K B M
-
--- def test' (D : Type*) [DivisionRing D] [Algebra K D] (m : ℕ) (hm : m ≠ 0)
---     (Wdb : B ≃ₐ[K] M[Fin m, D]) (M : Type*)
---     [AddCommGroup M] [Module B M] [IsSimpleModule B M] :
---     Module.End B M ≃ₐ[K] Dᵐᵒᵖ := by sorry
-
--- theorem Wedderburn_Artin_divisionRing_unique_algebra_version
---     (D E : Type*) [DivisionRing D] [DivisionRing E] [Algebra K D] [Algebra K E]
---     (m n : ℕ) (hm : m ≠ 0) (hn : n ≠ 0)
---     (iso : M[Fin m, D] ≃ₐ[K] M[Fin n, E]) : Nonempty $ D ≃ₐ[K] E := by
---   haveI : Inhabited (Fin m) := ⟨0, by omega⟩
---   haveI : Inhabited (Fin n) := ⟨0, by omega⟩
-
---   haveI : IsSimpleModule D (ModuleCat.of D D) := inferInstanceAs (IsSimpleModule D D)
---   haveI : IsSimpleModule E (ModuleCat.of E E) := inferInstanceAs (IsSimpleModule E E)
-
---   haveI : IsSimpleModule M[Fin m, D] (Fin m → D) :=
---     IsMoritaEquivalent.division_ring.IsSimpleModule.functor
---       D M[Fin m, D] (moritaEquivalentToMatrix D (Fin m)) (.of D D)
-
---   let iso1 := test' K M[Fin m, D] E n hn iso (Fin m → D)
---   let iso2 := test' K M[Fin m, D] D m hm AlgEquiv.refl (Fin m → D)
---   let iso3 := iso1.symm.trans iso2
---   refine ⟨{
---     toFun := fun x => iso3.symm (.op x) |>.unop
---     invFun := fun x => iso3 (.op x) |>.unop
---     left_inv := fun d => by simp
---     right_inv := fun e => by simp
---     map_mul' := fun x y => by simp
---     map_add' := fun x y => by simp
---     commutes' := fun k => MulOpposite.op_injective $ by
---       simp only [op_unop]
---       exact iso3.symm.commutes k
---   }⟩
-
 omit [FiniteDimensional K B] in
 theorem is_central_of_wdb
     (hctr : Subalgebra.center K B = ⊥)

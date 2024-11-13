@@ -998,10 +998,6 @@ theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
   apply_fun (· ⟨0, by omega⟩ ⟨0, by omega⟩) at hk
   simpa using hk
 
--- restrict to 4d case
--- theorem exists_quaternionAlgebra_iso (hK : (2 : K) ≠ 0) :
---     ∃ a b : K, Nonempty (D ≃ₐ[K] ℍ[K, a, b]) := sorry
-
 section
 
 lemma isSimpleOrder_iff (α : Type*) [LE α] [BoundedOrder α] :

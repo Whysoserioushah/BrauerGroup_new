@@ -7,7 +7,7 @@ Authors: Jujian Zhang
 import BrauerGroup.SkolemNoether
 import BrauerGroup.Lemmas
 
-import BrauerGroup.faithfullyflat
+import BrauerGroup.Faithfullyflat
 
 universe u v
 

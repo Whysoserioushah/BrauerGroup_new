@@ -101,17 +101,7 @@ lemma mem_relativeBrGroup (A : CSA F) :
     Quotient.mk'' A ∈ RelativeBrGroup K F ↔
     isSplit F A K :=
   BrauerGroup.split_iff K F A |>.symm
--- lemma ele_of_relBrGroup : ∀ A ∈ RelativeBrGroup K F,
---     isSplit F (@Quotient.out (CSA F) (BrauerGroup.CSA_Setoid) A) K := fun A hA ↦ by
---   let F_bar := AlgebraicClosure F
---   rw [BrauerGroup.split_iff K F F_bar]
---   change _ = 1 at hA
---   rw [← hA]
---   simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
---   have := Quotient.out_eq' A
---   conv_rhs => rw [← this]
---   erw [Quotient.map'_mk'']
---   rfl
+
 lemma split_sound (A B : CSA F) (h0 : BrauerEquivalence A B) (h : isSplit F A K) :
     isSplit F B K := by
   rw [split_iff] at h ⊢

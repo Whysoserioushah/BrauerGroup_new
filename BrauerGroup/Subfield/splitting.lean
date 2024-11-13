@@ -1,6 +1,6 @@
 import BrauerGroup.Subfield.Subfield
 import BrauerGroup.«074E»
-import BrauerGroup.faithfullyflat
+import BrauerGroup.Faithfullyflat
 import BrauerGroup.RelativeBrauer
 import Mathlib.RingTheory.MatrixAlgebra
 import BrauerGroup.SplittingOfCSA
@@ -403,19 +403,6 @@ lemma Martrix.one_eq_sum (A : Type u) (n : Type*) [Ring A] [Algebra F A] [Decida
     (1 : Matrix n n A) = ∑ i : n, ∑ j : n, Matrix.stdBasisMatrix i j (if i = j then 1 else 0) := by
   rw [Matrix.matrix_eq_sum_stdBasisMatrix (m := n) (n := n) 1]
   refine Finset.sum_congr rfl $ fun i _ => Finset.sum_congr rfl $ fun j _ => rfl
-
--- noncomputable abbrev invFun_algHom (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]:
---     Matrix n n (K ⊗[F] A) →ₐ[K] K ⊗[F] Matrix n n A :=
---   AlgHom.ofLinearMap (invFun_linearMap K F A n)
---   (by
---     simp only [LinearMap.coe_mk, invFun_toFun, LinearMap.coe_toAddHom, Fintype.sum_prod_type,
---       AddHom.coe_mk, Matrix.one_apply, Algebra.TensorProduct.one_def]
---     rw [Martrix.one_eq_sum F A n, TensorProduct.tmul_sum]
---     simp_rw [TensorProduct.tmul_sum]
---     refine Finset.sum_congr rfl $ fun i hi => Finset.sum_congr rfl $ fun j hj ↦ by
---       split_ifs with hij
---       · simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk]
---       · simp only [map_zero, Matrix.stdBasisMatrix_zero, tmul_zero]) sorry
 
 lemma left_inv (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]
     (M : K ⊗[F] Matrix n n A) : invFun_linearMap K F A n (toTensorMatrix K F A n M) = M := by

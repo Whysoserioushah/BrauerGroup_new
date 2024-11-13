@@ -1,7 +1,7 @@
 import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 import Mathlib.Algebra.DirectSum.Ring
 
-import BrauerGroup.Subfield.splitting
+import BrauerGroup.Subfield.Splitting
 
 import BrauerGroup.Subfield.Subfield
 

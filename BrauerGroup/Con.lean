@@ -34,48 +34,6 @@ lemma sum {f g : ι → R} (h : ∀ i ∈ s, t.ringCon (f i) (g i)) :
 
 variable (t)
 
--- /--
--- An alternative constructor for `RingCon`, making it obvious that we are view it as a
--- two-sided-ideal.
--- -/
--- @[simps]
--- def fromIdeal
---     (carrier : Set R)
---     (zero : 0 ∈ carrier)
---     (add : ∀ a b, a ∈ carrier → b ∈ carrier → a + b ∈ carrier)
---     (neg : ∀ a, a ∈ carrier → -a ∈ carrier)
---     (left_absorb : ∀ a b, b ∈ carrier → a * b ∈ carrier)
---     (right_absorb : ∀ a b, a ∈ carrier → a * b ∈ carrier) : RingCon R where
---   r a b := a - b ∈ carrier
---   iseqv :=
---   { refl := fun a ↦ by simpa
---     symm := fun {x y} h ↦ by
---       simpa only [show y - x = -(x - y) by abel] using neg _ h
---     trans := fun {a b c } h1 h2 ↦ by
---       simpa only [show a - c = (a - b) + (b - c) by abel] using add _ _ h1 h2 }
---   mul' {a b c d} h1 h2 := show _ - _ ∈ _ by
---     change a * c - b * d ∈ carrier
---     rw [show a * c - b * d = (a - b) * c + b * (c - d) by
---       rw [sub_mul, mul_sub]; aesop]
---     exact add _ _ (right_absorb _ _ h1) (left_absorb _ _ h2)
---   add' {a b c d} h1 h2 := by
---     change (a + c) - (b + d) ∈ carrier
---     rw [show (a + c) - (b + d) = (a - b) + (c - d) by abel]
---     exact add _ _ h1 h2
-
--- @[simp] lemma mem_fromIdeal
---     (carrier : Set R)
---     (zero : 0 ∈ carrier)
---     (add : ∀ a b, a ∈ carrier → b ∈ carrier → a + b ∈ carrier)
---     (neg : ∀ a, a ∈ carrier → -a ∈ carrier)
---     (left_absorb : ∀ a b, b ∈ carrier → a * b ∈ carrier)
---     (right_absorb : ∀ a b, a ∈ carrier → a * b ∈ carrier)
---     (x) :
---     x ∈ fromIdeal carrier zero add neg left_absorb right_absorb ↔ x ∈ carrier := by
---   simp only [fromIdeal]
---   change _ ∈ carrier ↔ _
---   rw [sub_zero]
-
 variable (I : TwoSidedIdeal R)
 
 lemma smul_mem (r : R) {x} (hx : x ∈ I) : r • x ∈ I := by
@@ -207,22 +165,6 @@ def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (
     · intro h x hx
       simp only [Equiv.coe_fn_mk, SetLike.mem_coe, mem_comap] at hx ⊢
       exact h hx
-
-
--- protected def ker {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) :
---     TwoSidedIdeal R :=
---   .mk' {x | f x = 0} (map_zero f)
---     (fun {a b} ha hb => show f (a + b) = 0 by rw [map_add f, ha, hb, zero_add])
---     (fun {a} ha => show f (-a) = 0 by rw [map_neg f, ha, neg_zero])
---     (fun {a b} hb => show f (a * b) = 0 by rw [map_mul f, hb, mul_zero])
---     (fun {a b} ha => show f (a * b) = 0 by rw [map_mul f, ha, zero_mul])
-
--- @[simp]
--- lemma mem_ker {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) (x) :
---     x ∈ TwoSidedIdeal.ker f ↔ f x = 0 := by
---       simp only [TwoSidedIdeal.ker, mem_mk']
---       generalize_proofs h1 h2 h3 h4 h5
---       aesop
 
 lemma injective_iff_ker_eq_bot {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) :
     Function.Injective f ↔ TwoSidedIdeal.ker f = ⊥ := by
