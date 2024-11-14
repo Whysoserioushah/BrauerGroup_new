@@ -275,7 +275,7 @@ variable {F B : Type u}
 variable [Field F] [Ring B] [Algebra F B] [IsSimpleRing B] [FiniteDimensional F B]
 
 variable (F B) in
-private def centralizerMulLeftCopy :
+def centralizerMulLeftCopy :
     (Subalgebra.centralizer F (Set.range (LinearMap.mulLeft F) : Set <| Module.End F B)) →ₗ[F]
     (B →ₗ[Subalgebra.center F B] B) where
   toFun a :=

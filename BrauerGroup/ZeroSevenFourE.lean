@@ -738,7 +738,7 @@ instance (D : Type v) [DivisionRing D] : Module.Finite Dᵐᵒᵖ D := by
   rw [show x = (MulOpposite.op x : Dᵐᵒᵖ) • 1 by simp]
   exact Submodule.smul_mem _ _ $ Submodule.subset_span rfl
 
-private noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
+noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
     Basis (Fin n) Dᵐᵒᵖ (Fin n → D) :=
   .mk (v := fun i => Pi.single i 1)
     (by
@@ -833,7 +833,7 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
     rfl
 
 omit [IsSimpleRing A] in
-private lemma exists_gen (M : Type v) [AddCommGroup M]
+lemma exists_gen (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M] :
     ∃ m : M, m ≠ 0 ∧ ∀ m', ∃ a : A, m' = a • m := by
     have i : Submodule.IsPrincipal (⊤ : Submodule A M) := inferInstance

@@ -114,7 +114,7 @@ lemma intermediateTensor_mono {L1 L2 : IntermediateField K K_bar} (h : L1 ≤ L2
   simp only [AlgHom.toNonUnitalAlgHom_eq_coe, NonUnitalAlgHom.toDistribMulActionHom_eq_coe,
     Submodule.mem_comap, LinearMap.mem_range, exists_apply_eq_apply]
 
-private abbrev SetOfFinite : Set (IntermediateField K K_bar) :=
+abbrev SetOfFinite : Set (IntermediateField K K_bar) :=
   {M | FiniteDimensional K M}
 
 omit [IsAlgClosure K K_bar] in
