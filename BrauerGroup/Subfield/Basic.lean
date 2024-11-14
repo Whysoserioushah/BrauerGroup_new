@@ -1,5 +1,4 @@
 import BrauerGroup.DoubleCentralizer
-import BrauerGroup.Lemmas
 import Mathlib.Tactic
 import Mathlib.RingTheory.Adjoin.Basic
 
@@ -44,7 +43,7 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempt
     suffices (⟨x, hx⟩ : (Algebra.ofId K A).range) * ⟨e ((e.symm ⟨x, hx⟩)⁻¹), _⟩ = 1 from
       Subtype.ext_iff.1 this
     nth_rw 1 [← e.apply_symm_apply ⟨x, hx⟩, ← _root_.map_mul, mul_inv_cancel₀ _, map_one]
-    simp only [ne_eq, AddEquivClass.map_eq_zero_iff]
+    simp only [ne_eq, EmbeddingLike.map_eq_zero_iff]
     exact Subtype.coe_ne_coe.1 hx0 ⟩⟩⟩
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : PartialOrder (SubField K A) where

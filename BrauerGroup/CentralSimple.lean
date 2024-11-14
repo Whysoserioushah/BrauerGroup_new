@@ -8,6 +8,9 @@ import BrauerGroup.Con
 import BrauerGroup.Wedderburn
 import Mathlib.RingTheory.Flat.Basic
 import Mathlib.LinearAlgebra.TensorProduct.RightExactness
+import Mathlib.RingTheory.SimpleRing.Matrix
+import Mathlib.Algebra.Central.Basic
+import BrauerGroup.Centralizer
 
 /-!
 # Characteristic predicate for central simple algebras
@@ -28,30 +31,30 @@ universe u v w
 open Classical
 open scoped BigOperators
 
-/--
-For a field `K` and a `K`-algebra `D`, we say that `D` is a central algebra over `K` if the center
-of `D` is exactly `K` and that `D` is a simple ring.
--/
-class IsCentralSimple
-    (K : Type u) [Field K] (D : Type v) [Ring D] [Algebra K D] : Prop where
-  is_central : Subalgebra.center K D ≤ ⊥
-  [is_simple : IsSimpleOrder (TwoSidedIdeal D)]
+-- /--
+-- For a field `K` and a `K`-algebra `D`, we say that `D` is a central algebra over `K` if the center
+-- of `D` is exactly `K` and that `D` is a simple ring.
+-- -/
+-- class IsCentralSimple
+--     (K : Type u) [Field K] (D : Type v) [Ring D] [Algebra K D] : Prop where
+--   is_central : Subalgebra.center K D ≤ ⊥
+--   [is_simple : IsSimpleRing D]
 
-lemma IsCentralSimple.center_eq
-    (K D : Type*) [Field K] [Ring D] [Algebra K D] [IsCentralSimple K D] :
-    Subalgebra.center K D = ⊥ :=
-  le_antisymm IsCentralSimple.is_central $ by
-    rintro _ ⟨x, rfl⟩
-    rw [Subalgebra.mem_center_iff]
-    exact (Algebra.commutes' x · |>.symm)
+-- lemma IsCentralSimple.center_eq
+--     (K D : Type*) [Field K] [Ring D] [Algebra K D] [IsCentralSimple K D] :
+--     Subalgebra.center K D = ⊥ :=
+--   le_antisymm IsCentralSimple.is_central $ by
+--     rintro _ ⟨x, rfl⟩
+--     rw [Subalgebra.mem_center_iff]
+--     exact (Algebra.commutes' x · |>.symm)
 
 
 variable (K : Type u) [Field K]
 
 open Matrix in
-instance MatrixRing.isCentralSimple (ι : Type) [Fintype ι] [Nonempty ι] [DecidableEq ι] :
-    IsCentralSimple K (Matrix ι ι K) where
-  is_central _ h := mem_range_scalar_of_commute_stdBasisMatrix fun _ _ _ =>
+instance MatrixRing.isCentral (ι : Type) [Fintype ι] [Nonempty ι] [DecidableEq ι] :
+    Algebra.IsCentral K (Matrix ι ι K) where
+  out _ h := mem_range_scalar_of_commute_stdBasisMatrix fun _ _ _ =>
     Subalgebra.mem_center_iff.mp h _
 
 namespace IsCentralSimple
@@ -78,207 +81,35 @@ instance (B : Type*) [Ring B] [Algebra K B]: Algebra K (Subring.center B) :=
     rw [Subring.mem_center_iff]
     exact fun y => Algebra.commutes x y |>.symm
 
-lemma TensorProduct.eq_repr_basis_right
-    (B : Type*) [Ring B] [Algebra K B]
-    (C : Type*) [Ring C] [Algebra K C]
-    {ιC : Type*} (𝒞 : Basis ιC K C)
-    (x : B ⊗[K] C) :
-    ∃ (s : Finset ιC) (b : ιC → B), ∑ i ∈ s, b i ⊗ₜ[K] 𝒞 i = x := by
-  let ℬ := Basis.ofVectorSpace K B
-  let 𝒯 := Basis.tensorProduct ℬ 𝒞
-  have eq1 := calc x
-      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) ij • 𝒯 ij := 𝒯.linearCombination_repr x |>.symm
-      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) (ij.1, ij.2) • 𝒯 (ij.1, ij.2) :=
-          Finset.sum_congr rfl <| by simp
-      _ = ∑ i ∈ (𝒯.repr x).support.image Prod.fst, ∑ j ∈ (𝒯.repr x).support.image Prod.snd,
-            𝒯.repr x (i, j) • 𝒯 (i, j) := by
-          rw [← Finset.sum_product']
-          apply Finset.sum_subset
-          · rintro ⟨i, j⟩ hij
-            simp only [Finsupp.mem_support_iff, ne_eq, Finset.mem_product, Finset.mem_image,
-              Prod.exists, exists_and_right, exists_eq_right, Subtype.exists, 𝒯] at hij ⊢
-            exact ⟨⟨j, hij⟩, ⟨i.1, ⟨i.2, hij⟩⟩⟩
-          · rintro ⟨i, j⟩ hij1 hij2
-            simp only [Finset.mem_product, Finset.mem_image, Finsupp.mem_support_iff, ne_eq,
-              Prod.exists, exists_and_right, exists_eq_right, Subtype.exists, Decidable.not_not,
-              Basis.tensorProduct_apply, smul_eq_zero, 𝒯] at hij1 hij2 ⊢
-            rw [hij2]
-            tauto
-      _ = ∑ j ∈ (𝒯.repr x).support.image Prod.snd, ∑ i ∈ (𝒯.repr x).support.image Prod.fst,
-            𝒯.repr x (i, j) • 𝒯 (i, j) := Finset.sum_comm
-      _ = ∑ j ∈ (𝒯.repr x).support.image Prod.snd, ∑ i ∈ (𝒯.repr x).support.image Prod.fst,
-            𝒯.repr x (i, j) • (ℬ i ⊗ₜ[K] 𝒞 j) := by
-          refine Finset.sum_congr rfl fun _ _ => ?_
-          simp only [𝒯, Basis.tensorProduct_apply]
-      _ =  ∑ j ∈ (𝒯.repr x).support.image Prod.snd, ∑ i ∈ (𝒯.repr x).support.image Prod.fst,
-            (𝒯.repr x (i, j) • ℬ i) ⊗ₜ[K] 𝒞 j := by
-          refine Finset.sum_congr rfl fun _ _ => Finset.sum_congr rfl fun _ _ => ?_
-          rw [TensorProduct.smul_tmul']
-      _ =  ∑ j ∈ (𝒯.repr x).support.image Prod.snd, (∑ i ∈ (𝒯.repr x).support.image Prod.fst,
-            (𝒯.repr x (i, j) • ℬ i)) ⊗ₜ[K] 𝒞 j := by
-          refine Finset.sum_congr rfl fun _ _ => ?_
-          rw [TensorProduct.sum_tmul]
-  exact ⟨_, _, eq1.symm⟩
-
-lemma TensorProduct.eq_repr_basis_left
-    (B : Type*) [Ring B] [Algebra K B]
-    (C : Type*) [Ring C] [Algebra K C]
-    {ιB : Type*} (ℬ : Basis ιB K B)
-    (x : B ⊗[K] C) :
-    ∃ (s : Finset ιB) (c : ιB → C), ∑ i ∈ s, ℬ i ⊗ₜ[K] c i = x := by
-  let 𝒞 := Basis.ofVectorSpace K C
-  let 𝒯 := Basis.tensorProduct ℬ 𝒞
-  have eq1 := calc x
-      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) ij • 𝒯 ij := 𝒯.linearCombination_repr x |>.symm
-      _ = ∑ ij ∈ (𝒯.repr x).support, (𝒯.repr x) (ij.1, ij.2) • 𝒯 (ij.1, ij.2) :=
-          Finset.sum_congr rfl <| by simp
-      _ = ∑ i ∈ (𝒯.repr x).support.image Prod.fst, ∑ j ∈ (𝒯.repr x).support.image Prod.snd,
-            𝒯.repr x (i, j) • 𝒯 (i, j) := by
-          rw [← Finset.sum_product']
-          apply Finset.sum_subset
-          · rintro ⟨i, j⟩ hij
-            simp only [Finsupp.mem_support_iff, ne_eq, Finset.mem_product, Finset.mem_image,
-              Prod.exists, exists_and_right, exists_eq_right, Subtype.exists, 𝒯] at hij ⊢
-            exact ⟨⟨j.1, ⟨j.2, hij⟩⟩, ⟨i, hij⟩⟩
-          · rintro ⟨i, j⟩ hij1 hij2
-            simp only [Finset.mem_product, Finset.mem_image, Finsupp.mem_support_iff, ne_eq,
-              Prod.exists, exists_and_right, exists_eq_right, Subtype.exists, Decidable.not_not,
-              Basis.tensorProduct_apply, smul_eq_zero, 𝒯] at hij1 hij2 ⊢
-            rw [hij2]
-            tauto
-      _ = ∑ i ∈ (𝒯.repr x).support.image Prod.fst, ∑ j ∈ (𝒯.repr x).support.image Prod.snd,
-            𝒯.repr x (i, j) • (ℬ i ⊗ₜ[K] 𝒞 j) := by
-          refine Finset.sum_congr rfl fun _ _ => ?_
-          simp only [𝒯, Basis.tensorProduct_apply]
-      _ =  ∑ i ∈ (𝒯.repr x).support.image Prod.fst, ∑ j ∈ (𝒯.repr x).support.image Prod.snd,
-            ℬ i ⊗ₜ[K] (𝒯.repr x (i, j) • 𝒞 j : C) := by
-          refine Finset.sum_congr rfl fun _ _ => Finset.sum_congr rfl fun _ _ => ?_
-          rw [TensorProduct.smul_tmul', TensorProduct.smul_tmul]
-      _ =  ∑ i ∈ (𝒯.repr x).support.image Prod.fst,
-            ℬ i ⊗ₜ[K] (∑ j ∈ (𝒯.repr x).support.image Prod.snd, (𝒯.repr x (i, j) • 𝒞 j)) := by
-          refine Finset.sum_congr rfl fun _ _ => ?_
-          rw [TensorProduct.tmul_sum]
-  exact ⟨_, _, eq1.symm⟩
-
-lemma TensorProduct.sum_tmul_basis_right_eq_zero
+lemma TensorProduct.sum_tmul_basis_right_eq_zero'
     (B : Type*) [Ring B] [Algebra K B]
     (C : Type*) [Ring C] [Algebra K C]
     {ιC : Type*} (𝒞 : Basis ιC K C)
     (s : Finset ιC) (b : ιC → B)
     (h : ∑ i ∈ s, b i ⊗ₜ[K] 𝒞 i = 0) :
     ∀ i ∈ s, b i = 0 := by
-  let ℬ := Basis.ofVectorSpace K B
-  let 𝒯 := Basis.tensorProduct ℬ 𝒞
-  let I := s.biUnion fun i => (ℬ.repr (b i)).support
-  have eq1 := calc (0 : B ⊗[K] C)
-      _ = ∑ i ∈ s, b i ⊗ₜ[K] 𝒞 i := h.symm
-      _ = ∑ i ∈ s, (∑ k ∈ (ℬ.repr (b i)).support, (ℬ.repr (b i)) k • ℬ k) ⊗ₜ[K] 𝒞 i := by
-          refine Finset.sum_congr rfl fun z _ => ?_
-          congr
-          exact ℬ.linearCombination_repr (b z) |>.symm
-      _ = ∑ i ∈ s, ∑ k ∈ (ℬ.repr (b i)).support, (ℬ.repr (b i)) k • (ℬ k ⊗ₜ[K] 𝒞 i) := by
-          refine Finset.sum_congr rfl fun z _ => ?_
-          rw [TensorProduct.sum_tmul]
-          refine Finset.sum_congr rfl fun _ _ => ?_
-          rw [TensorProduct.smul_tmul']
-      _ = ∑ i ∈ s, ∑ k ∈ I, (ℬ.repr (b i)) k • (ℬ k ⊗ₜ[K] 𝒞 i) := by
-          refine Finset.sum_congr rfl fun j h => ?_
-          apply Finset.sum_subset
-          · intro i hi
-            simp only [Finsupp.mem_support_iff, ne_eq, Finset.mem_biUnion, I] at hi ⊢
-            exact ⟨_, h, hi⟩
-          · intro i hi1 hi2
-            simp only [Finsupp.mem_support_iff, ne_eq, Decidable.not_not, smul_eq_zero]
-              at hi1 hi2 ⊢
-            tauto
-      _ = ∑ k ∈ I, ∑ i ∈ s, (ℬ.repr (b i)) k • (ℬ k ⊗ₜ[K] 𝒞 i) := Finset.sum_comm
-      _ = ∑ ij ∈ I ×ˢ s, (ℬ.repr (b ij.2)) ij.1 • (ℬ ij.1 ⊗ₜ[K] 𝒞 ij.2) := by
-          rw [Finset.sum_product]
-      _ = ∑ ij ∈ I ×ˢ s, (ℬ.repr (b ij.2)) ij.1 • 𝒯 ij := by
-          refine Finset.sum_congr rfl fun ij _ => ?_
-          rw [Basis.tensorProduct_apply]
-  have LI := 𝒯.linearIndependent
-  rw [linearIndependent_iff'] at LI
-  specialize LI (I ×ˢ s) _ eq1.symm
-  intro i hi
-  rw [← ℬ.linearCombination_repr (b i)]
-  change ∑ _ ∈ _, _ = 0
-  simp only [LinearMap.coe_smulRight, LinearMap.id_coe, id_eq]
-  refine Finset.sum_eq_zero fun j hj => ?_
-  specialize LI ⟨j, i⟩ (by
-    simp only [Finset.mem_product, Finset.mem_biUnion, Finsupp.mem_support_iff, ne_eq, I] at hj ⊢
-    refine ⟨⟨_, hi, hj⟩, hi⟩)
-  simp [LI]
+  intro i
+  have := TensorProduct.sum_tmul_basis_right_eq_zero (κ := ιC) 𝒞 (M := B)
+    { support := s.filter fun i => b i ≠ 0
+      toFun := fun x => if x ∈ s then b x else 0
+      mem_support_toFun := by simp }
+    (by
+      simp only [Finsupp.sum, ne_eq, Finsupp.coe_mk, Finset.sum_filter, ite_not]
+      convert h using 1
+      congr!
+      aesop)
+  simpa using Finsupp.ext_iff.mp this i
 
-lemma TensorProduct.sum_tmul_basis_left_eq_zero
+lemma TensorProduct.sum_tmul_basis_left_eq_zero'
     (B : Type*) [Ring B] [Algebra K B]
     (C : Type*) [Ring C] [Algebra K C]
     {ιB : Type*} (ℬ : Basis ιB K B)
     (s : Finset ιB) (c : ιB → C)
     (h : ∑ i ∈ s, ℬ i ⊗ₜ[K] c i = 0) :
     ∀ i ∈ s, c i = 0 := by
-  let 𝒞 := Basis.ofVectorSpace K C
-  let 𝒯 := Basis.tensorProduct ℬ 𝒞
-  let I := s.biUnion fun i => (𝒞.repr (c i)).support
-  have eq1 := calc (0 : B ⊗[K] C)
-      _ = ∑ i ∈ s, ℬ i ⊗ₜ[K] c i := h.symm
-      _ = ∑ i ∈ s, (ℬ i ⊗ₜ[K] (∑ k ∈ (𝒞.repr (c i)).support, (𝒞.repr (c i)) k • 𝒞 k)) := by
-          refine Finset.sum_congr rfl fun z _ => ?_
-          congr
-          exact 𝒞.linearCombination_repr (c z) |>.symm
-      _ = ∑ i ∈ s, ∑ k ∈ (𝒞.repr (c i)).support, (𝒞.repr (c i)) k • (ℬ i ⊗ₜ[K] 𝒞 k) := by
-          refine Finset.sum_congr rfl fun z _ => ?_
-          rw [TensorProduct.tmul_sum]
-          simp_rw [TensorProduct.smul_tmul', TensorProduct.smul_tmul]
-      _ = ∑ i ∈ s, ∑ k ∈ I, (𝒞.repr (c i)) k • (ℬ i ⊗ₜ[K] 𝒞 k) := by
-          refine Finset.sum_congr rfl fun j h => ?_
-          apply Finset.sum_subset
-          · intro i hi
-            simp only [Finsupp.mem_support_iff, ne_eq, Finset.mem_biUnion, I] at hi ⊢
-            exact ⟨_, h, hi⟩
-          · intro i hi1 hi2
-            simp only [Finsupp.mem_support_iff, ne_eq, Decidable.not_not, smul_eq_zero]
-              at hi1 hi2 ⊢
-            tauto
-      _ = ∑ ij ∈ s ×ˢ I, (𝒞.repr (c ij.1)) ij.2 • (ℬ ij.1 ⊗ₜ[K] 𝒞 ij.2) := by
-          rw [Finset.sum_product]
-      _ = ∑ ij ∈ s ×ˢ I, (𝒞.repr (c ij.1)) ij.2 • 𝒯 ij := by
-          refine Finset.sum_congr rfl fun ij _ => ?_
-          rw [Basis.tensorProduct_apply]
-  have LI := 𝒯.linearIndependent
-  rw [linearIndependent_iff'] at LI
-  specialize LI (s ×ˢ I) _ eq1.symm
-  intro i hi
-  rw [← 𝒞.linearCombination_repr (c i)]
-  change ∑ _ ∈ _, _ = 0
-  simp only [LinearMap.coe_smulRight, LinearMap.id_coe, id_eq]
-  refine Finset.sum_eq_zero fun j hj => ?_
-  specialize LI ⟨i, j⟩ (by
-    simp only [Finset.mem_product, Finset.mem_biUnion, Finsupp.mem_support_iff, ne_eq, I] at hj ⊢
-    exact ⟨hi, ⟨_, hi, hj⟩⟩)
-  simp [LI]
-
-lemma Subalgebra.centralizer_sup (K B : Type*) [CommRing K] [Ring B] [Algebra K B]
-    (S T : Subalgebra K B) :
-    Subalgebra.centralizer K ((S ⊔ T : Subalgebra K B) : Set B) =
-    Subalgebra.centralizer K S ⊓ Subalgebra.centralizer K T := by
-  ext x
-  simp only [Subalgebra.mem_centralizer_iff, SetLike.mem_coe, Algebra.mem_inf]
-  constructor
-  · intro h
-    exact ⟨fun g hg => h g <| (le_sup_left : S ≤ S ⊔ T) hg,
-      fun g hg => h g <| (le_sup_right : T ≤ S ⊔ T) hg⟩
-  · rintro ⟨h1, h2⟩ g hg
-    change g ∈ Algebra.adjoin _ _ at hg
-    refine Algebra.adjoin_induction (R := K) (A := B) (s := S ⊔ T) (x := g) ?_ ?_ ?_ ?_ hg
-    · rintro y hy
-      simp only [Set.sup_eq_union, Set.mem_union, SetLike.mem_coe] at hy
-      cases' hy with hy1 hy2
-      · exact h1 y hy1
-      · exact h2 y hy2
-    · exact fun k => Algebra.commutes k x
-    · exact fun _ _ _ _ _ _ => by simp_all only [Set.sup_eq_union, add_mul, mul_add]
-    · exact fun y1 y2 hy1 hy2 hy11 hy22 => by rw [mul_assoc, hy22, ← mul_assoc, hy11, mul_assoc]
+  apply TensorProduct.sum_tmul_basis_right_eq_zero' K C B ℬ s c
+  apply_fun TensorProduct.comm K B C at h
+  simpa using h
 
 lemma TensorProduct.left_tensor_base_sup_base_tensor_right
     (K B C : Type*) [CommRing K] [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
@@ -375,139 +206,6 @@ lemma TensorProduct.submodule_tensor_inf_tensor_submodule
 
 end should_be_elsewhere
 
-lemma centralizer_tensorProduct_eq_center_tensorProduct_right
-    (B : Type*) [Ring B] [Algebra K B]
-    (C : Type*) [Ring C] [Algebra K C] :
-    Subalgebra.centralizer K
-      (Algebra.TensorProduct.map (AlgHom.id K B) (Algebra.ofId K C)).range =
-      (Algebra.TensorProduct.map (Subalgebra.center K B).val (AlgHom.id K C)).range := by
-  ext w; constructor
-  · intro hw
-    rw [Subalgebra.mem_centralizer_iff] at hw
-    let 𝒞 := Basis.ofVectorSpace K C
-    obtain ⟨S, b, rfl⟩ := TensorProduct.eq_repr_basis_right K B C 𝒞 w
-
-    have aux (i) (hi : i ∈ S) : b i ∈ Subalgebra.center K B := by
-      rw [Subalgebra.mem_center_iff]
-      intro x
-      specialize hw (x ⊗ₜ[K] 1) (by
-        simp only [AlgHom.coe_range, Set.mem_range]
-        exact ⟨x ⊗ₜ[K] 1, by simp⟩)
-      simp only [Finset.mul_sum, Algebra.TensorProduct.tmul_mul_tmul, one_mul, Finset.sum_mul,
-        mul_one] at hw
-      rw [← sub_eq_zero, ← Finset.sum_sub_distrib] at hw
-      simp_rw [← TensorProduct.sub_tmul] at hw
-      simpa [sub_eq_zero] using TensorProduct.sum_tmul_basis_right_eq_zero K B C 𝒞 S _ hw i hi
-    exact Subalgebra.sum_mem _ fun j hj => ⟨⟨b j, aux _ hj⟩ ⊗ₜ[K] 𝒞 j, by simp⟩
-  · rintro ⟨w, rfl⟩
-    rw [Subalgebra.mem_centralizer_iff]
-    rintro _ ⟨x, rfl⟩
-    induction w using TensorProduct.induction_on with
-    | zero => simp
-    | tmul b c =>
-      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.map_tmul,
-        Subalgebra.coe_val, AlgHom.coe_id, id_eq]
-      induction x using TensorProduct.induction_on with
-      | zero => simp
-      | tmul x0 x1 =>
-        simp only [Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq,
-          Algebra.TensorProduct.tmul_mul_tmul]
-        rcases b with ⟨b, hb⟩
-        congr 1
-        · rw [Subalgebra.mem_center_iff] at hb
-          exact hb _
-        · exact Algebra.commutes _ _
-      | add x x' hx hx' =>
-        rw [map_add, add_mul, hx, hx', mul_add]
-    | add y z hy hz =>
-      rw [map_add, mul_add, hy, hz, add_mul]
-
-lemma centralizer_tensorProduct_eq_left_tensorProduct_center
-    (B : Type*) [Ring B] [Algebra K B]
-    (C : Type*) [Ring C] [Algebra K C] :
-    Subalgebra.centralizer K
-      (Algebra.TensorProduct.map (Algebra.ofId K B) (AlgHom.id K C)).range =
-      (Algebra.TensorProduct.map (AlgHom.id K B) (Subalgebra.center K C).val).range := by
-  have H1 := centralizer_tensorProduct_eq_center_tensorProduct_right K C B
-  ext z
-  have h1 :
-      z ∈ Subalgebra.centralizer K
-        (Algebra.TensorProduct.map (Algebra.ofId K B) (AlgHom.id K C)).range  ↔
-      (Algebra.TensorProduct.comm K B C z) ∈ Subalgebra.centralizer K
-        (Algebra.TensorProduct.map (AlgHom.id K C) (Algebra.ofId K B)).range := by
-    rw [Subalgebra.mem_centralizer_iff, Subalgebra.mem_centralizer_iff]
-    constructor
-    · rintro h _ ⟨x, rfl⟩
-      specialize h (Algebra.TensorProduct.comm K C B
-        (Algebra.TensorProduct.map (AlgHom.id K C) (Algebra.ofId K B) x))
-        (by
-          simp only [AlgHom.coe_range, Set.mem_range]
-          refine ⟨Algebra.TensorProduct.comm K C K x, ?_⟩
-          change (AlgHom.comp (Algebra.TensorProduct.map (Algebra.ofId K B) (AlgHom.id K C))
-            (Algebra.TensorProduct.comm K C K)) x =
-            (AlgHom.comp (Algebra.TensorProduct.comm K C B)
-              (Algebra.TensorProduct.map (AlgHom.id K C) (Algebra.ofId K B))) x
-          refine DFunLike.congr_fun ?_ x
-          ext
-          simp)
-
-      apply_fun Algebra.TensorProduct.comm K C B
-      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, map_mul]
-      convert h  <;>
-      rw [← Algebra.TensorProduct.comm_symm] <;>
-      simp only [AlgEquiv.symm_apply_apply]
-    · rintro h _ ⟨x, rfl⟩
-      specialize h (Algebra.TensorProduct.comm K B C
-        (Algebra.TensorProduct.map (Algebra.ofId K B) (AlgHom.id K C) x))
-        (by
-          simp only [AlgHom.coe_range, Set.mem_range]
-          refine ⟨Algebra.TensorProduct.comm K K C x, ?_⟩
-          change (AlgHom.comp (Algebra.TensorProduct.map (AlgHom.id K C) (Algebra.ofId K B))
-            (Algebra.TensorProduct.comm K K C)) x =
-            (AlgHom.comp (Algebra.TensorProduct.comm K B C)
-              (Algebra.TensorProduct.map (Algebra.ofId K B) (AlgHom.id K C))) x
-          refine DFunLike.congr_fun ?_ x
-          ext
-          simp)
-      apply_fun Algebra.TensorProduct.comm K B C
-      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, map_mul]
-      convert h
-  rw [h1, H1]
-  simp only [AlgHom.mem_range]
-  constructor
-  · rintro ⟨x, hx⟩
-    apply_fun (Algebra.TensorProduct.comm K B C).symm at hx
-    simp only [AlgEquiv.symm_apply_apply] at hx
-    refine ⟨(Algebra.TensorProduct.comm K B _).symm x, Eq.trans ?_ hx⟩
-    simp only [Algebra.TensorProduct.comm_symm]
-    change (AlgHom.comp (Algebra.TensorProduct.map (AlgHom.id K B) (Subalgebra.center K C).val)
-      (Algebra.TensorProduct.comm K (Subalgebra.center K C) B)) x =
-      (AlgHom.comp (Algebra.TensorProduct.comm K C B)
-      (Algebra.TensorProduct.map (Subalgebra.center K C).val (AlgHom.id K B))) x
-    refine DFunLike.congr_fun ?_ x
-    ext x
-    simp only [AlgHom.coe_comp, AlgHom.coe_coe, Function.comp_apply,
-      Algebra.TensorProduct.includeLeft_apply, Algebra.TensorProduct.comm_tmul,
-      Algebra.TensorProduct.map_tmul, map_one, Subalgebra.coe_val]
-    rfl
-  · rintro ⟨x, hx⟩
-    refine ⟨Algebra.TensorProduct.comm _ _ _ x, ?_⟩
-    apply_fun (Algebra.TensorProduct.comm K B C).symm
-    simp only [AlgEquiv.symm_apply_apply]
-    rw [← hx]
-    change AlgHom.comp (Algebra.TensorProduct.comm K B C).symm
-      (AlgHom.comp (Algebra.TensorProduct.map (Subalgebra.center K C).val (AlgHom.id K B))
-        (Algebra.TensorProduct.comm K B ↥(Subalgebra.center K C))) x =
-      (Algebra.TensorProduct.map (AlgHom.id K B) (Subalgebra.center K C).val) x
-    refine DFunLike.congr_fun ?_ x
-    ext x
-    simp only [AlgHom.coe_comp, AlgHom.coe_coe, Function.comp_apply,
-      Algebra.TensorProduct.includeLeft_apply, Algebra.TensorProduct.comm_tmul,
-      Algebra.TensorProduct.map_tmul, map_one, AlgHom.coe_id, id_eq,
-      Algebra.TensorProduct.comm_symm_tmul, Algebra.TensorProduct.map_comp_includeLeft,
-      AlgHom.comp_id]
-    rfl
-
 -- We need to restrict the universe, because we used properties of flatness.
 lemma center_tensorProduct
     (B C : Type u) [Ring B] [Algebra K B] [Ring C] [Algebra K C] :
@@ -516,8 +214,8 @@ lemma center_tensorProduct
         (Subalgebra.center K C).val).range := by
   rw [show Subalgebra.center K (B ⊗[K] C) = Subalgebra.centralizer K (⊤ : Subalgebra K (B ⊗[K] C))
     by simp, ← TensorProduct.left_tensor_base_sup_base_tensor_right K B C,
-    Subalgebra.centralizer_sup, centralizer_tensorProduct_eq_center_tensorProduct_right,
-    centralizer_tensorProduct_eq_left_tensorProduct_center]
+    Subalgebra.centralizer_sup, Subalgebra.centralizer_tensorProduct_eq_center_tensorProduct_left,
+    Subalgebra.centralizer_tensorProduct_eq_center_tensorProduct_right]
   suffices eq :
     Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val (AlgHom.id K C)).range ⊓
     Subalgebra.toSubmodule (Algebra.TensorProduct.map (AlgHom.id K B) (Subalgebra.center K C).val).range =
@@ -597,18 +295,18 @@ noncomputable def centerTensor
         obtain ⟨y, rfl⟩ := hx
         refine ⟨y, rfl⟩)) rfl rfl)
 
-lemma TensorProduct.isCentral
+instance TensorProduct.isCentral
     (A B : Type u) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    (isCentral_A : Subalgebra.center K A ≤ ⊥)
-    (isCentral_B : Subalgebra.center K B ≤ ⊥) :
-    Subalgebra.center K (A ⊗[K] B) ≤ ⊥ := by
+    [isCentral_A : Algebra.IsCentral K A] [isCentral_B : Algebra.IsCentral K B] :
+    Algebra.IsCentral K (A ⊗[K] B) := by
+  constructor
   intro _ H
   obtain ⟨x, rfl⟩ := le_of_eq (center_tensorProduct K A B) H; clear H
   induction x using TensorProduct.induction_on with
   | zero => exact ⟨0, by simp⟩
   | tmul a b =>
-    obtain ⟨a', ha⟩ := isCentral_A a.2
-    obtain ⟨b', hb⟩ := isCentral_B b.2
+    obtain ⟨a', ha⟩ := isCentral_A.1 a.2
+    obtain ⟨b', hb⟩ := isCentral_B.1 b.2
     refine ⟨b' * a', ?_⟩
     simp only [AlgHom.toRingHom_eq_coe, map_mul, RingHom.coe_coe, Algebra.TensorProduct.map_tmul,
       Subalgebra.coe_val, ← ha, ← hb]
@@ -665,24 +363,25 @@ lemma is_obtainable_by_sum_tmul.exists_minimal_element
   · change x = 0 at hx1
     subst hx1
     exact hx0 I.zero_mem |>.elim
-  obtain ⟨s, c, rfl⟩ := TensorProduct.eq_repr_basis_left K A B 𝒜 x
+  obtain ⟨s, rfl⟩ := TensorProduct.eq_repr_basis_left 𝒜 x
   let n := @Nat.find (fun n => ∃ x : A ⊗[K] B, is_obtainable_by_sum_tmul x 𝒜 I n) _
-    ⟨s.card, ∑ i ∈ s, 𝒜 i ⊗ₜ[K] c i, ⟨hx0, hx1, s, rfl, c, rfl⟩⟩
+    ⟨s.support.card, ∑ i ∈ s.support, 𝒜 i ⊗ₜ[K] s i, ⟨hx0, hx1, s.support, rfl, s, rfl⟩⟩
   obtain ⟨x, hx⟩ : ∃ x, is_obtainable_by_sum_tmul x 𝒜 I n :=
     @Nat.find_spec (fun n => ∃ x : A ⊗[K] B, is_obtainable_by_sum_tmul x 𝒜 I n) _
-      ⟨s.card, ∑ i ∈ s, 𝒜 i ⊗ₜ[K] c i, ⟨hx0, hx1, s, rfl, c, rfl⟩⟩
+      ⟨s.support.card, ∑ i ∈ s.support, 𝒜 i ⊗ₜ[K] s i, ⟨hx0, hx1, s.support, rfl, s, rfl⟩⟩
   refine ⟨n, x, hx, fun m y hy => ?_⟩
   by_contra r
   simp only [not_le] at r
   have := @Nat.find_min (fun n => ∃ x : A ⊗[K] B, is_obtainable_by_sum_tmul x 𝒜 I n) _
-      ⟨s.card, ∑ i ∈ s, 𝒜 i ⊗ₜ[K] c i, ⟨hx0, hx1, s, rfl, c, rfl⟩⟩ m r
+      ⟨s.support.card, ∑ i ∈ s.support, 𝒜 i ⊗ₜ[K] s i, ⟨hx0, hx1, s.support, rfl, s, rfl⟩⟩ m r
   simp only [not_exists] at this
   exact this y hy
 
 lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
     {A B : Type v} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     [isSimple_A : IsSimpleOrder $ TwoSidedIdeal A]
-    [isCentralSimple_B : IsCentralSimple K B]
+    [isCentral_B : Algebra.IsCentral K B]
+    [isSimple_B : IsSimpleRing B]
     (I : TwoSidedIdeal (A ⊗[K] B)) :
     I = TwoSidedIdeal.span
       (Set.image (Algebra.TensorProduct.includeLeft : A →ₐ[K] A ⊗[K] B) $
@@ -747,7 +446,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
         · rintro (rfl|⟨_, hx2⟩) <;> assumption
 
 
-      have span_bi₀ : TwoSidedIdeal.span {b i₀} = ⊤ := isCentralSimple_B.2.2 _ |>.resolve_left fun r => by
+      have span_bi₀ : TwoSidedIdeal.span {b i₀} = ⊤ := isSimple_B.1.2 _ |>.resolve_left fun r => by
         have mem : b i₀ ∈ (⊥ : TwoSidedIdeal B) := by
           rw [← r]
           apply TwoSidedIdeal.subset_span
@@ -766,7 +465,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
 
       let ω := ∑ i ∈ s, 𝒜 i ⊗ₜ[K] b i
       let Ω := ∑ i : ℐ, (1 ⊗ₜ[K] xL i) * ω * (1 ⊗ₜ[K] xR i)
-      have Ω_in_I : Ω ∈ I := TwoSidedIdeal.sum_mem _ _ fun i _ => I.mul_mem_right _ _ $
+      have Ω_in_I : Ω ∈ I := TwoSidedIdeal.finsetSum_mem _ _ _ fun i _ => I.mul_mem_right _ _ <|
         I.mul_mem_left _ _ x_mem
 
       have Ω_eq :
@@ -806,10 +505,10 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
         intro x
         specialize Ω_prop_3 x
         simp only [Finset.mul_sum, Finset.sum_mul, ← sub_eq_zero, sub_zero]
-        rw [← Finset.sum_sub_distrib]
-        simpa using TensorProduct.sum_tmul_basis_left_eq_zero K A B 𝒜 (s.erase i₀) _ Ω_prop_3 i hi
+        rw [← Finset.sum_sub_distrib, sub_zero]
+        simpa using TensorProduct.sum_tmul_basis_left_eq_zero' _ _ _ 𝒜 (s.erase i₀) _ Ω_prop_3 i hi
 
-      simp_rw [IsCentralSimple.center_eq, Algebra.mem_bot, Set.mem_range] at Ω_prop_4
+      simp_rw [Algebra.IsCentral.center_eq_bot, Algebra.mem_bot, Set.mem_range] at Ω_prop_4
       choose k hk using Ω_prop_4
       have Ω_eq2 := calc Ω
         _ = 𝒜 i₀ ⊗ₜ[K] 1 + ∑ i ∈ s.erase i₀, 𝒜 i ⊗ₜ[K] ∑ j : ℐ, xL j * b i * xR j := Ω_eq
@@ -882,16 +581,16 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
 
 instance TensorProduct.simple
     (A B : Type v) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    [isSimple_A : IsSimpleOrder $ TwoSidedIdeal A]
-    [isCentralSimple_B : IsCentralSimple K B] :
-    IsSimpleOrder (TwoSidedIdeal (A ⊗[K] B)) := by
-  haveI := isCentralSimple_B.2
+    [isSimple_A : IsSimpleRing A]
+    [isCentral_B : Algebra.IsCentral K B]
+    [isSimple_B : IsSimpleRing B] :
+    IsSimpleRing (A ⊗[K] B) := by
   let f : A →ₐ[K] A ⊗[K] B := Algebra.TensorProduct.includeLeft
   suffices eq1 : ∀ (I : TwoSidedIdeal (A ⊗[K] B)),
       I = TwoSidedIdeal.span (Set.image f $ I.comap f) by
-    refine ⟨fun I => ?_⟩
+    refine ⟨⟨fun I => ?_⟩⟩
     specialize eq1 I
-    rcases isSimple_A.2 (I.comap f) with h|h
+    rcases isSimple_A.1.2 (I.comap f) with h|h
     · left
       rw [h, TwoSidedIdeal.coe_bot_set, Set.image_singleton, map_zero] at eq1
       rw [eq1, eq_bot_iff, TwoSidedIdeal.le_iff]
@@ -899,7 +598,7 @@ instance TensorProduct.simple
       rw [SetLike.mem_coe, TwoSidedIdeal.mem_span_iff_exists_fin] at hx
       obtain ⟨ι, inst, xL, xR, y, rfl⟩ := hx
       rw [SetLike.mem_coe]
-      refine TwoSidedIdeal.sum_mem _ _ fun i _ => ?_
+      refine TwoSidedIdeal.finsetSum_mem _ _ _ fun i _ => ?_
       have := (y i).2
       simp only [Set.mem_singleton_iff] at this
       rw [this, mul_zero, zero_mul]
@@ -923,15 +622,16 @@ instance TensorProduct.simple
 set_option synthInstance.maxHeartbeats 40000 in
 instance baseChange
     (D L : Type u) [Ring D] [Algebra K D]
-    [Field L] [Algebra K L] [h : IsCentralSimple K D] :
-    IsCentralSimple L (L ⊗[K] D) where
-  is_central:= by
+    [Field L] [Algebra K L]
+    [h : Algebra.IsCentral K D] [IsSimpleRing D]  :
+    Algebra.IsCentral L (L ⊗[K] D) where
+  out:= by
     intro _ H
     obtain ⟨x, rfl⟩ := le_of_eq (center_tensorProduct K L D) H; clear H
     induction x using TensorProduct.induction_on with
     | zero => exact ⟨0, by simp⟩
     | tmul l d =>
-      obtain ⟨k, hk⟩ := h.is_central d.2
+      obtain ⟨k, hk⟩ := h.out d.2
       refine ⟨k • l, ?_⟩
       simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.map_tmul,
         Subalgebra.coe_val, ← hk]
@@ -945,16 +645,6 @@ instance baseChange
         Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
         RingHom.id_apply, hkx, hky]⟩
 
-instance tensorProduct
-    {A B : Type u} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    [csA : IsCentralSimple K A] [csB : IsCentralSimple K B] :
-    IsCentralSimple K (A ⊗[K] B) where
-  is_central := TensorProduct.isCentral _ _ _ csA.1 csB.1
-  is_simple := by
-    haveI : IsSimpleOrder (TwoSidedIdeal A) := csA.2
-    haveI : IsSimpleOrder (TwoSidedIdeal B) := csB.2
-    exact TensorProduct.simple K A B
-
 end IsCentralSimple
 
 section CSA_implies_CSA
@@ -964,47 +654,33 @@ variable (B : Type*) [Ring B]
 lemma top_eq_ring (R :Type*)[Ring R] : (⊤ : TwoSidedIdeal R) = (⊤ : Set R) := by
   aesop
 
-lemma _root_.AlgEquiv.isCentralSimple {K B C : Type*}
-    [Field K] [Ring B] [Algebra K B] [hcs : IsCentralSimple K B]
+lemma _root_.AlgEquiv.isCentral {K B C : Type*}
+    [Field K] [Ring B] [Algebra K B]
+    [hc : Algebra.IsCentral K B]
     [Ring C] [Algebra K C] (e : B ≃ₐ[K] C):
-    IsCentralSimple K C where
-  is_central z hz := by
-    obtain ⟨k, hk⟩ := hcs.is_central (show e.symm z ∈ _ by
+    Algebra.IsCentral K C where
+  out z hz := by
+    obtain ⟨k, hk⟩ := hc.out (show e.symm z ∈ _ by
       simp only [Subalgebra.mem_center_iff] at hz ⊢
       exact fun x => by simpa using congr(e.symm $(hz (e x))))
     exact ⟨k, by simpa [Algebra.ofId_apply] using congr(e $hk)⟩
-  is_simple := by
-    haveI := hcs.is_simple
-    exact TwoSidedIdeal.orderIsoOfRingEquiv e.symm.toRingEquiv |>.isSimpleOrder
 
 theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
-    (n : ℕ) (D : Type*) (hn : 0 < n) (h : DivisionRing D) [Algebra K D]
-    (Wdb: B ≃ₐ[K] (Matrix (Fin n) (Fin n) D)):
-    IsCentralSimple K B → IsCentralSimple K D := by
-  intro BCS
-  letI : Nonempty (Fin n) := ⟨0, hn⟩
-  haveI := TwoSidedIdeal.equivRingConMatrix' D (ι := (Fin n)) ⟨0, hn⟩ |>.isSimpleOrder
+    (n : ℕ) (D : Type*) [NeZero n] (h : DivisionRing D) [Algebra K D]
+    (Wdb: B ≃ₐ[K] (Matrix (Fin n) (Fin n) D)) [Algebra.IsCentral K B] [IsSimpleRing B] :
+    Algebra.IsCentral K D := by
+  haveI := TwoSidedIdeal.equivRingConMatrix' D (ι := (Fin n)) 0 |>.isSimpleOrder
   refine ⟨fun d hd => ?_⟩
-  obtain ⟨k, hk⟩ := Wdb.isCentralSimple.is_central (show (Matrix.diagonal fun _ => d)  ∈ _ by
-    rw [Matrix.mem_center_iff']
-    refine ⟨⟨d, hd⟩, ?_⟩
-    ext i j
-    simp only [Matrix.diagonal_apply, Matrix.smul_apply, Matrix.one_apply, smul_ite, smul_zero]
-    split_ifs
-    · change _ = d • (1 : D)
-      simp only [smul_eq_mul, mul_one]
-    · rfl)
+  obtain ⟨k, hk⟩ := Wdb.isCentral.1
+    (show (Matrix.diagonal fun _ => d) ∈ _ by
+      rw [Matrix.mem_center_iff']
+      refine ⟨⟨d, hd⟩, ?_⟩
+      ext i j
+      simp only [Matrix.diagonal_apply, Matrix.smul_apply, Matrix.one_apply, smul_ite, smul_zero]
+      split_ifs
+      · change _ = d • (1 : D)
+        simp only [smul_eq_mul, mul_one]
+      · rfl)
   refine ⟨k, ?_⟩
-  apply_fun (· ⟨0, by omega⟩ ⟨0, by omega⟩) at hk
+  apply_fun (· 0 0) at hk
   simpa using hk
-
-section
-
-lemma isSimpleOrder_iff (α : Type*) [LE α] [BoundedOrder α] :
-    IsSimpleOrder α ↔ Nontrivial α ∧ ∀ (a : α), a = ⊥ ∨ a = ⊤ := by
-  constructor
-  · intro h; refine ⟨inferInstance, fun a => h.2 a⟩
-  · rintro ⟨h, h'⟩; constructor; exact h'
-
-
-end

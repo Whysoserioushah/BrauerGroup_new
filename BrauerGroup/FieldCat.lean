@@ -150,23 +150,6 @@ namespace CategoryTheory.Iso
 def FieldCatIsoToRingEquiv {X Y : FieldCat} (i : X ≅ Y) : X ≃+* Y :=
   RingEquiv.ofHomInv i.hom i.inv i.hom_inv_id i.inv_hom_id
 
--- /-- Build a `RingEquiv` from an isomorphism in the category `CommRingCat`. -/
--- def commRingCatIsoToRingEquiv {X Y : CommRingCat} (i : X ≅ Y) : X ≃+* Y :=
---   RingEquiv.ofHomInv i.hom i.inv i.hom_inv_id i.inv_hom_id
-
--- -- Porting note: make this high priority to short circuit simplifier
--- @[simp (high)]
--- theorem commRingIsoToRingEquiv_toRingHom {X Y : CommRingCat} (i : X ≅ Y) :
---     i.commRingCatIsoToRingEquiv.toRingHom = i.hom := by
---   ext
---   rfl
-
--- -- Porting note: make this high priority to short circuit simplifier
--- @[simp (high)]
--- theorem commRingIsoToRingEquiv_symm_toRingHom {X Y : CommRingCat} (i : X ≅ Y) :
---     i.commRingCatIsoToRingEquiv.symm.toRingHom = i.inv := by
---   ext
---   rfl
 
 end CategoryTheory.Iso
 
@@ -177,13 +160,6 @@ def fieldEquivIsoRingIso {X Y : Type u} [Field X] [Field Y] :
   hom e := FieldEquiv.toFieldCatIso e
   inv i := i.FieldCatIsoToRingEquiv
 
--- /-- Ring equivalences between `CommRingCat`s are the same as (isomorphic to) isomorphisms
--- in `CommRingCat`. -/
--- def ringEquivIsoCommRingIso {X Y : Type u} [CommRing X] [CommRing Y] :
---     X ≃+* Y ≅ CommRingCat.of X ≅ CommRingCat.of Y where
---   hom e := e.toCommRingCatIso
---   inv i := i.commRingCatIsoToRingEquiv
-
 instance FieldCat.forget_reflects_isos : (forget FieldCat.{u}).ReflectsIsomorphisms where
   reflects {X Y} f _ := by
     let i := asIso ((forget FieldCat).map f)
@@ -191,20 +167,6 @@ instance FieldCat.forget_reflects_isos : (forget FieldCat.{u}).ReflectsIsomorphi
     let e : X ≃+* Y := { ff, i.toEquiv with }
     exact (FieldEquiv.toFieldCatIso e).isIso_hom
 
--- instance CommRingCat.forget_reflects_isos : (forget CommRingCat.{u}).ReflectsIsomorphisms where
---   reflects {X Y} f _ := by
---     let i := asIso ((forget CommRingCat).map f)
---     let ff : X →+* Y := f
---     let e : X ≃+* Y := { ff, i.toEquiv with }
---     exact e.toCommRingCatIso.isIso_hom
-
--- theorem CommRingCat.comp_eq_ring_hom_comp {R S T : CommRingCat} (f : R ⟶ S) (g : S ⟶ T) :
---     f ≫ g = g.comp f :=
---   rfl
-
--- theorem CommRingCat.ringHom_comp_eq_comp {R S T : Type _} [CommRing R] [CommRing S] [CommRing T]
---     (f : R →+* S) (g : S →+* T) : g.comp f = CommRingCat.ofHom f ≫ CommRingCat.ofHom g :=
---   rfl
 
 -- It would be nice if we could have the following,
 -- but it requires making `reflectsIsomorphisms_forget₂` an instance,
@@ -213,36 +175,3 @@ instance FieldCat.forget_reflects_isos : (forget FieldCat.{u}).ReflectsIsomorphi
 attribute [local instance] reflectsIsomorphisms_forget₂
 
 example : (forget₂ FieldCat AddCommGrp).ReflectsIsomorphisms := by infer_instance
-
-/-!
-`@[simp]` lemmas for `RingHom.comp` and categorical identities.
--/
-
--- @[simp] theorem RingHom.comp_id_semiringCat
---     {G : SemiRingCat.{u}} {H : Type u} [Semiring H] (f : G →+* H) : f.comp (𝟙 G) = f :=
---   Category.id_comp (SemiRingCat.ofHom f)
--- @[simp] theorem RingHom.id_semiringCat_comp
---     {G : Type u} [Semiring G] {H : SemiRingCat.{u}} (f : G →+* H) : RingHom.comp (𝟙 H) f = f :=
---   Category.comp_id (SemiRingCat.ofHom f)
-
--- @[simp] theorem RingHom.comp_id_commSemiringCat
---     {G : CommSemiRingCat.{u}} {H : Type u} [CommSemiring H] (f : G →+* H) : f.comp (𝟙 G) = f :=
---   Category.id_comp (CommSemiRingCat.ofHom f)
--- @[simp] theorem RingHom.id_commSemiringCat_comp
---     {G : Type u} [CommSemiring G] {H : CommSemiRingCat.{u}} (f : G →+* H) :
---     RingHom.comp (𝟙 H) f = f :=
---   Category.comp_id (CommSemiRingCat.ofHom f)
-
--- @[simp] theorem RingHom.comp_id_ringCat
---     {G : RingCat.{u}} {H : Type u} [Ring H] (f : G →+* H) : f.comp (𝟙 G) = f :=
---   Category.id_comp (RingCat.ofHom f)
--- @[simp] theorem RingHom.id_ringCat_comp
---     {G : Type u} [Ring G] {H : RingCat.{u}} (f : G →+* H) : RingHom.comp (𝟙 H) f = f :=
---   Category.comp_id (RingCat.ofHom f)
-
--- @[simp] theorem RingHom.comp_id_commRingCat
---     {G : CommRingCat.{u}} {H : Type u} [CommRing H] (f : G →+* H) : f.comp (𝟙 G) = f :=
---   Category.id_comp (CommRingCat.ofHom f)
--- @[simp] theorem RingHom.id_commRingCat_comp
---     {G : Type u} [CommRing G] {H : CommRingCat.{u}} (f : G →+* H) : RingHom.comp (𝟙 H) f = f :=
---   Category.comp_id (CommRingCat.ofHom f)

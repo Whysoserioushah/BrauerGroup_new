@@ -110,8 +110,9 @@ lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 
   change Quotient.mk'' _ = Quotient.mk'' _
   erw [Quotient.eq'']
   have : 0 < Module.finrank F K := Module.finrank_pos
+  haveI : NeZero (Module.finrank F K) := ⟨by omega⟩
   change IsBrauerEquivalent _ _
-  refine ⟨1, Module.finrank F K, by positivity, by positivity, AlgEquiv.trans ?_ <| φ4 K F⟩
+  refine ⟨1, Module.finrank F K, AlgEquiv.trans ?_ <| φ4 K F⟩
   exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
 
 lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
@@ -838,7 +839,7 @@ instance : Nonempty ι := by
   simp only [not_nonempty_iff] at this
   haveI : Subsingleton (ι →₀ SM) := inferInstance
   haveI : Subsingleton C := isoιSM hα hβ |>.toEquiv.subsingleton
-  haveI : Nontrivial C := TwoSidedIdeal.instNontrivialOfIsSimpleOrder_brauerGroup C
+  haveI : Nontrivial C := inferInstance
   rw [← not_subsingleton_iff_nontrivial] at this
   contradiction
 
@@ -919,30 +920,29 @@ AlgEquiv.ofRingEquiv (f := mopEquivEnd C) <| by
 
 set_option synthInstance.maxHeartbeats 40000 in
 set_option maxHeartbeats 600000 in
-def C_iso_aux : Cᵐᵒᵖ ≃ₐ[F] Module.End C (Fin (Fintype.card ι) → SM) := by
--- let e : C ≃ₗ[F] Fin (Fintype.card ι) → SM := (isoιSM hα hβ).restrictScalars F ≪≫ₗ isoιSMPow' hα hβ
-let iso1 : Module.End C (Fin (Fintype.card ι) → SM) ≃ₐ[F] Module.End C C :=
-{ toFun := fun x => (isoιSMPow' hα hβ).symm ∘ₗ x ∘ₗ (isoιSMPow' hα hβ)
-  invFun := fun x => (isoιSMPow' hα hβ) ∘ₗ x ∘ₗ (isoιSMPow' hα hβ).symm
-  left_inv := by
-    intro x; ext; simp
-  right_inv := by
-    intro x; ext; simp
-  map_mul' := by
-    intro x y; ext; simp
-  map_add' := by
-    intro x y; ext; simp
-  commutes' := by
-    intro f
-    ext σ
-    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
-      Module.algebraMap_end_apply, smul_val, one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul,
-      mul_inv_rev, crossProductSMul_single]
-    rw [show f • (isoιSMPow' hα hβ) 1 = algebraMap F C f • (isoιSMPow' hα hβ) 1 by rfl]
-    rw [map_smul]
-    simp only [algebraMap_val, LinearEquiv.symm_apply_apply, smul_eq_mul, _root_.mul_one, smul_val,
-      one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, crossProductSMul_single] }
-refine mopEquivEnd' hα hβ |>.trans iso1.symm
+def C_iso_aux : Cᵐᵒᵖ ≃ₐ[F] Module.End C (Fin (Fintype.card ι) → SM) :=
+  let iso1 : Module.End C (Fin (Fintype.card ι) → SM) ≃ₐ[F] Module.End C C :=
+  { toFun := fun x => (isoιSMPow' hα hβ).symm ∘ₗ x ∘ₗ (isoιSMPow' hα hβ)
+    invFun := fun x => (isoιSMPow' hα hβ) ∘ₗ x ∘ₗ (isoιSMPow' hα hβ).symm
+    left_inv := by
+      intro x; ext; simp
+    right_inv := by
+      intro x; ext; simp
+    map_mul' := by
+      intro x y; ext; simp
+    map_add' := by
+      intro x y; ext; simp
+    commutes' := by
+      intro f
+      ext σ
+      simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+        Module.algebraMap_end_apply, smul_val, one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul,
+        mul_inv_rev, crossProductSMul_single]
+      rw [show f • (isoιSMPow' hα hβ) 1 = algebraMap F C f • (isoιSMPow' hα hβ) 1 by rfl]
+      rw [map_smul]
+      simp only [algebraMap_val, LinearEquiv.symm_apply_apply, smul_eq_mul, _root_.mul_one, smul_val,
+        one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, crossProductSMul_single] }
+  mopEquivEnd' hα hβ |>.trans iso1.symm
 
 example : True := ⟨⟩
 
@@ -1205,11 +1205,9 @@ lemma isBrauerEquivalent : IsBrauerEquivalent (⟨A ⊗[F] B⟩ : CSA F) ⟨C⟩
     (Matrix.reindexAlgEquiv _ _ finProdFinEquiv)
   let iso2 := φ4 hα hβ
   let iso3 := iso11.trans iso2.symm
-  refine ⟨1, finrank F K, Nat.one_ne_zero,
-    by have : 0 < finrank F K := finrank_pos; omega, ?_⟩
-  have e : Matrix (Fin 1) (Fin 1) (⟨A⊗[F] B⟩ : CSA F) ≃ₐ[F] (⟨A ⊗[F] B⟩ : CSA F) := by
-    exact dim_one_iso (CSA.mk (A ⊗[F] B)).carrier
-  exact e.trans iso3.symm
+  haveI : NeZero (finrank F K) := ⟨by have : 0 < finrank F K := finrank_pos; omega⟩
+  exact ⟨1, finrank F K, (dim_one_iso (CSA.mk (A ⊗[F] B))).trans iso3.symm⟩
+
 end iso
 
 end map_mul

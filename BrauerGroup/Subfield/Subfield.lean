@@ -3,7 +3,7 @@ import BrauerGroup.Subfield.Basic
 universe u
 
 instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : Subalgebra K A)
-  (hL : ∀(x y : L), x * y = y * x) :
+  (hL : ∀ (x y : L), x * y = y * x) :
     L ≤ Subalgebra.centralizer K (A := A) L := by
   intro l hl
   simp only [Subalgebra.mem_centralizer_iff, SetLike.mem_coe]
@@ -23,7 +23,7 @@ instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L 
 section cors_of_DC
 
 variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensional K D]
-    [IsCentralSimple K D]
+    [Algebra.IsCentral K D] [IsSimpleRing D]
 
 theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     Module.finrank K D = Module.finrank K k *
@@ -110,10 +110,9 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
   exact dimdim
 
 lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
-    [hA : IsCentralSimple K A] (L : SubField K A) :
+    [Algebra.IsCentral K A] [IsSimpleRing A] (L : SubField K A) :
     Subalgebra.centralizer K L.1 = L.1 ↔ Module.finrank K A =
     Module.finrank K L * Module.finrank K L :=
-  haveI := hA.2
   ⟨fun h ↦ by
   have := dim_centralizer K (A := A) L.1 ; rw [h] at this ; exact this.symm, fun h ↦ by
   have := dim_centralizer K (A := A) L.1 ; rw [h] at this
@@ -125,11 +124,10 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     simp_all only [mul_zero, lt_self_iff_false]⟩
 
 lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
-    [hA : IsCentralSimple K A] (L : SubField K A) :
+    [Algebra.IsCentral K A] [IsSimpleRing A] (L : SubField K A) :
     Module.finrank K A = Module.finrank K L * Module.finrank K L →
     (∀ (L' : Subalgebra K A) (_ : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') :=
   fun hrank L' hL' hLL ↦ by
-  haveI := hA.2
   have := dim_centralizer K (A := A) L.1 |>.symm
   simp only [this, SubField.coe_toSubalgebra] at hrank
   erw [mul_eq_mul_right_iff] at hrank
@@ -143,7 +141,7 @@ lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     simp_all only [mul_zero, lt_self_iff_false]
 
 lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
-    [IsCentralSimple K A] (L : SubField K A) :
+    [Algebra.IsCentral K A] [IsSimpleRing A] (L : SubField K A) :
     (∀ (L' : Subalgebra K A)  (_ : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') →
     Subalgebra.centralizer K L = L.1 := by
   intro H

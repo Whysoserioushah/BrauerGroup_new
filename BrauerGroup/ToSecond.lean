@@ -356,15 +356,7 @@ lemma exists_iso :
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq2
   have eq3 := eq1.symm.trans eq2
-  haveI : FiniteDimensional F (Matrix (Fin m) (Fin m) D) :=
-    LinearEquiv.finiteDimensional isoA.toLinearEquiv
-  haveI : FiniteDimensional F D := by
-    refine FiniteDimensional.of_injective
-      ({
-        toFun := fun x => Matrix.diagonal fun _ => x
-        map_add' := by intros; ext i j; by_cases i = j <;> aesop
-        map_smul' := by intros; ext i j; by_cases i = j <;> aesop
-      } : D →ₗ[F] Matrix (Fin m) (Fin m) D) fun _ _ H => Matrix.ext_iff.2 H 0 0
+  haveI : FiniteDimensional F D := is_fin_dim_of_wdb _ _ _ _ isoB
   have : 0 < Module.finrank F D := Module.finrank_pos
   rw [Nat.mul_right_inj, ← pow_two, ← pow_two] at eq3; swap; omega
   simp only [zero_le, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj] at eq3
@@ -759,7 +751,7 @@ lemma crossProductMul_single_single (c d : K) :
   apply Finset.sum_eq_single_of_mem (h := by simp)
   rintro ⟨σ', τ'⟩ - neq
   simp only [ne_eq, Prod.mk.injEq, not_and] at neq
-  simp only [Function.update_eq_self_iff, Pi.zero_apply, mul_eq_zero, AddEquivClass.map_eq_zero_iff,
+  simp only [Function.update_eq_self_iff, Pi.zero_apply, mul_eq_zero, EmbeddingLike.map_eq_zero_iff,
     Units.ne_zero, or_false, Pi.single_apply]
   split_ifs <;> aesop
 
@@ -1420,7 +1412,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
     apply val_injective
     simp only [← _root_.mul_assoc, mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
       crossProductMul_single_single, _root_.mul_one, map_mul, map_inv₀, a_one_right' ha,
-      isUnit_iff_ne_zero, ne_eq, AddEquivClass.map_eq_zero_iff, Units.ne_zero, not_false_eq_true,
+      isUnit_iff_ne_zero, ne_eq, EmbeddingLike.map_eq_zero_iff, Units.ne_zero, not_false_eq_true,
       IsUnit.inv_mul_cancel_right, mul_inv_cancel, _root_.one_mul, map_one, AlgEquiv.one_apply,
       a_one_left ha, Pi.single_inj]
     field_simp
@@ -1905,8 +1897,8 @@ lemma π_inj (ne_top : I ≠ ⊤): Function.Injective (π I) := by
 end is_simple_proofs
 
 open is_simple_proofs in
-instance is_simple : IsSimpleOrder (TwoSidedIdeal <| CrossProduct ha) where
-  eq_bot_or_eq_top := by
+instance is_simple : IsSimpleRing (CrossProduct ha) :=
+⟨⟨by
     intro I
     by_contra! h
 
@@ -1918,10 +1910,10 @@ instance is_simple : IsSimpleOrder (TwoSidedIdeal <| CrossProduct ha) where
     change _ ↔ _ = I.ringCon.mk' 0
     erw [Quotient.eq'']
     change _ ↔ I.ringCon _ _
-    rw [I.rel_iff, sub_zero]
+    rw [I.rel_iff, sub_zero]⟩⟩
 
-instance [IsGalois F K] : IsCentralSimple F (CrossProduct ha) where
-  is_central := is_central ha
+instance [IsGalois F K] : Algebra.IsCentral F (CrossProduct ha) where
+  out := is_central ha
 
 instance [IsGalois F K] : FiniteDimensional F (CrossProduct ha) :=
   .of_finrank_eq_succ (n := (Module.finrank F K)^2 - 1) (by
@@ -2093,7 +2085,7 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
               GoodRep.crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply,
               _root_.mul_one, map_mul, map_inv₀, Pi.single_inj]
             simp only [a_one_left hb, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
-              IsUnit.inv_mul_cancel_right, AddEquivClass.map_eq_zero_iff]
+              IsUnit.inv_mul_cancel_right, EmbeddingLike.map_eq_zero_iff]
             specialize hc σ τ
             rw [Units.ext_iff] at hc
             field_simp at hc

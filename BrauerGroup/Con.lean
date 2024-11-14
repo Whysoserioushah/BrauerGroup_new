@@ -1,4 +1,6 @@
+import Mathlib.RingTheory.TwoSidedIdeal.BigOperators
 import Mathlib.RingTheory.TwoSidedIdeal.Operations
+import Mathlib.RingTheory.SimpleRing.Basic
 import Mathlib.Algebra.BigOperators.Ring
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.RingTheory.Ideal.Basic
@@ -9,28 +11,9 @@ variable {R : Type*} [Ring R] (t : TwoSidedIdeal R)
 
 open BigOperators MulOpposite
 
-namespace AddCon
-
-variable {r s}
-
-lemma sum {f g : ι → M} (h : ∀ i ∈ s, r (f i) (g i)) :
-    r (∑ i in s, f i) (∑ i in s, g i) := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa using r.refl 0
-  | @insert i s hi ih =>
-    rw [Finset.sum_insert hi, Finset.sum_insert hi]
-    exact r.add (h _ (by simp)) <| ih fun i hi ↦ h _ (by aesop)
-
-end AddCon
-
 namespace TwoSidedIdeal
 
 variable {t s}
-
-lemma sum {f g : ι → R} (h : ∀ i ∈ s, t.ringCon (f i) (g i)) :
-    t.ringCon (∑ i in s, f i) (∑ i in s, g i) :=
-  t.ringCon.toAddCon.sum h
 
 variable (t)
 
@@ -38,9 +21,6 @@ variable (I : TwoSidedIdeal R)
 
 lemma smul_mem (r : R) {x} (hx : x ∈ I) : r • x ∈ I := by
   simpa using I.ringCon.mul (I.ringCon.refl r) hx
-
-lemma sum_mem (f : ι → R) (h : ∀ i ∈ s, f i ∈ I) : ∑ i in s, f i ∈ I := by
-  simpa using I.sum h
 
 /--
 Any two-sided-ideal in `A` corresponds to a two-sided-ideal in `Aᵒᵖ`.
@@ -93,23 +73,6 @@ def toMopOrderIso : (TwoSidedIdeal R) ≃o (TwoSidedIdeal Rᵐᵒᵖ) where
       exact b.ringCon.symm this
 
 variable {R' : Type*} [Ring R']
-
--- /--
--- Pulling back a RingCon across a ring hom.
--- -/
--- @[simps!]
--- def comap {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (J : TwoSidedIdeal R') (f : F) :
---     TwoSidedIdeal R :=
---   .mk {
---     __ := J.ringCon.toCon.comap f (map_mul f)
---     __ := J.ringCon.toAddCon.comap f (map_add f)
---     }
-
--- @[simp] lemma mem_comap {F : Type*} [FunLike F R R'] [RingHomClass F R R']
---     (J : TwoSidedIdeal R') (f : F) (x) :
---     x ∈ J.comap f ↔ f x ∈ J := by
---   change J.ringCon (f x) (f 0) ↔ J.ringCon (f x) 0
---   simp
 
 lemma comap_injective {F : Type*} [FunLike F R R'] [RingHomClass F R R']
     (f : F) (hf : Function.Surjective f) :
@@ -230,7 +193,6 @@ lemma mem_span_iff_exists_fin (s : Set R) (x : R) :
   apply ringCon_injective
   refine sInf_eq_of_forall_ge_of_forall_gt_exists_lt ?_ ?_
   · rintro I (hI : ∀ a b, _ → _)
-    -- rw [le_iff]
     suffices span' s ≤ .mk I by
       rw [ringCon_le_iff] at this
       exact this
@@ -238,7 +200,7 @@ lemma mem_span_iff_exists_fin (s : Set R) (x : R) :
     rw [mem_span'_iff_exists_fin] at h
     obtain ⟨n, finn, xL, xR, y, rfl⟩ := h
     rw [mem_iff]
-    refine TwoSidedIdeal.sum_mem _ _ fun i _ ↦ TwoSidedIdeal.mul_mem_right _ _ _
+    refine TwoSidedIdeal.finsetSum_mem _ _ _ fun i _ ↦ TwoSidedIdeal.mul_mem_right _ _ _
       (TwoSidedIdeal.mul_mem_left _ _ _ <| hI (y i) 0 (by simp))
   · rintro I hI
     exact ⟨(span' s).ringCon, fun a b H ↦ ⟨PUnit, inferInstance, fun _ ↦ 1, fun _ ↦ 1,
@@ -261,9 +223,9 @@ lemma span_le {s : Set R} {I : TwoSidedIdeal R} : s ⊆ I ↔ span s ≤ I := by
   · intro h x hx
     rw [SetLike.mem_coe, mem_span_iff_exists_fin] at hx
     obtain ⟨n, finn, xL, xR, y, rfl⟩ := hx
-    exact I.sum_mem _ fun i _ => I.mul_mem_right _ _ (I.mul_mem_left _ _ <| h (y i).2)
+    exact I.finsetSum_mem _ _ fun i _ => I.mul_mem_right _ _ (I.mul_mem_left _ _ <| h (y i).2)
   · intro h x hx
-    exact h $ subset_span hx
+    exact h <| subset_span hx
 
 lemma coe_bot_set : ((⊥ : TwoSidedIdeal R) : Set R) = {0} := by
   ext x
@@ -281,12 +243,6 @@ universe u
 
 variable (A : Type u) [Ring A]
 
-instance [so : IsSimpleOrder (TwoSidedIdeal A)] : Nontrivial A := by
-  refine subsingleton_or_nontrivial A |>.resolve_left fun r => ?_
-  obtain ⟨x, y, hxy⟩ := so.1
-  exact hxy $ SetLike.ext fun a => (show a = 0 from Subsingleton.elim _ _) ▸
-    by simp [TwoSidedIdeal.zero_mem]
-
 instance [Nontrivial A] : Nontrivial (TwoSidedIdeal A) :=
 ⟨⊥, ⊤, by
       apply_fun (fun I => I.ringCon 0 1)
@@ -295,44 +251,9 @@ instance [Nontrivial A] : Nontrivial (TwoSidedIdeal A) :=
       simp only [iff_false]
       exact zero_ne_one⟩
 
-lemma eq_bot_or_eq_top [so : IsSimpleOrder (TwoSidedIdeal A)] (I : TwoSidedIdeal A) :
-    I = ⊥ ∨ I = ⊤ := so.2 I
-
-lemma IsSimpleOrder.iff_eq_zero_or_injective [Nontrivial A] :
-    IsSimpleOrder (TwoSidedIdeal A) ↔
-    ∀ ⦃B : Type u⦄ [Ring B] (f : A →+* B), TwoSidedIdeal.ker f = ⊤ ∨ Function.Injective f := by
-  classical
-  constructor
-  · intro so B _ f
-    if hker : TwoSidedIdeal.ker f = ⊤
-    then exact Or.inl hker
-    else
-      replace hker := so.2 (TwoSidedIdeal.ker f) |>.resolve_right hker
-      rw [injective_iff_ker_eq_bot]
-      exact Or.inr hker
-  · intro h
-    refine ⟨fun I => ?_⟩
-    rcases h I.ringCon.mk' with h|h
-    · right
-      rw [eq_top_iff, le_iff]
-      rintro x -
-      have mem : x ∈ TwoSidedIdeal.ker I.ringCon.mk' := by rw [h]; trivial
-      rw [mem_ker] at mem
-      change _ = I.ringCon.mk' 0 at mem
-      exact I.ringCon.eq.mp mem
-    · left
-      rw [injective_iff_ker_eq_bot] at h
-      rw [eq_bot_iff, le_iff]
-      intro x hx
-      have mem : x ∈ TwoSidedIdeal.ker I.ringCon.mk' := by
-        rw [mem_ker]
-        exact I.ringCon.eq.mpr hx
-      rw [h] at mem
-      exact mem
-
-lemma IsSimpleOrder.iff_eq_zero_or_injective'
+lemma _root_.IsSimpleRing.iff_eq_zero_or_injective'
     (k : Type*) [CommRing k] [Algebra k A] [Nontrivial A] :
-    IsSimpleOrder (TwoSidedIdeal A) ↔
+    IsSimpleRing A ↔
     ∀ ⦃B : Type u⦄ [Ring B] [Algebra k B] (f : A →ₐ[k] B),
       TwoSidedIdeal.ker f = ⊤ ∨ Function.Injective f := by
   classical
@@ -341,11 +262,11 @@ lemma IsSimpleOrder.iff_eq_zero_or_injective'
     if hker : TwoSidedIdeal.ker f.toRingHom = ⊤
     then exact Or.inl hker
     else
-      replace hker := so.2 (TwoSidedIdeal.ker f) |>.resolve_right hker
+      replace hker := so.1.2 (TwoSidedIdeal.ker f) |>.resolve_right hker
       rw [injective_iff_ker_eq_bot]
       exact Or.inr hker
   · intro h
-    refine ⟨fun I => ?_⟩
+    refine ⟨⟨fun I => ?_⟩⟩
     letI : Algebra k I.ringCon.Quotient :=
     { __ := I.ringCon.mk'.comp (algebraMap k A)
       smul := fun a => Quotient.map' (fun b => a • b) fun x y (h : I.ringCon x y) =>

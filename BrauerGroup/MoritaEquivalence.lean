@@ -315,7 +315,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
       map_smul' := fun x m => funext fun i => Subtype.ext $ by
         simp only [RingHom.id_apply]
         change _ = Subtype.val (∑ _, _)
-        simp only [AddSubgroup.val_finset_sum, α_coe, smul_α_coe]
+        simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe]
 
         simp_rw [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one, ← Finset.sum_smul]
         congr 2
@@ -357,7 +357,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
       rw [show _ • x = 0 from Subtype.ext_iff.1 $ congr_fun hx i]
       rfl, fun v => by
       refine ⟨∑ k : ι, (stdBasisMatrix k default 1 : M[ι, R]) • (v k), ?_⟩
-      simp only [α_coe, map_sum, LinearMapClass.map_smul, LinearMap.coe_mk, AddHom.coe_mk]
+      simp only [map_sum, _root_.map_smul, LinearMap.coe_mk, AddHom.coe_mk]
       conv_rhs => rw [show v = ∑ k : ι, Function.update (0 : ι → (α R ι M)) k (v k) by
         ext i
         simp only [Finset.sum_apply, Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite,
@@ -367,7 +367,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
       by_cases hij : i = j
       · subst hij
         change Subtype.val (∑ _, _) = _
-        simp only [AddSubgroup.val_finset_sum, α_coe, smul_α_coe, Function.update_same]
+        simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe, Function.update_same]
         simp_rw [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one]
         rw [Finset.sum_eq_single_of_mem (a := default), StdBasisMatrix.apply_same]
         pick_goal 2
@@ -386,7 +386,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         pick_goal 2
         · exact Ne.symm hij
         change Subtype.val (∑ _, _) = 0
-        simp only [AddSubgroup.val_finset_sum, α_coe, smul_α_coe]
+        simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe]
         apply Finset.sum_eq_zero
         intro k _
         rw [StdBasisMatrix.apply_of_ne, stdBasisMatrix_zero, zero_smul]
@@ -501,8 +501,7 @@ lemma trans [IsMoritaEquivalent.{u, u', v, v'} R S] [IsMoritaEquivalent.{u', u''
 instance matrix (n : ℕ) : IsMoritaEquivalent.{u, u, v, v} R M[Fin (n + 1), R] where
   out := ⟨moritaEquivalentToMatrix R (Fin (n + 1))⟩
 
-lemma matrix' (n : ℕ) (hn : n ≠ 0) : IsMoritaEquivalent.{u, u, v, v} R M[Fin n, R] :=
-  letI : Inhabited (Fin n) := ⟨⟨0, by omega⟩⟩
+lemma matrix' (n : ℕ) [hn : NeZero n] : IsMoritaEquivalent.{u, u, v, v} R M[Fin n, R] :=
   { out := ⟨moritaEquivalentToMatrix R (Fin n)⟩ }
 
 lemma ofIso (e : R ≃+* S) : IsMoritaEquivalent.{u, u', v, v} R S where

@@ -3,7 +3,7 @@ import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finrank
-import BrauerGroup.Faithfullyflat
+import BrauerGroup.LemmasAboutSimpleRing
 
 suppress_compilation
 
@@ -11,8 +11,8 @@ universe u v w
 variable (k A K: Type u) [Field k] [Field K] [Algebra k K] [Ring A]
   [Algebra k A]
 
-variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
-  (k_s : Type u) [Field k_s] [Algebra k k_s] --[IsSepClosure k k_s]
+variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
+  [hk_bar : IsAlgClosure k k_bar] (k_s : Type u) [Field k_s] [Algebra k k_s]
 
 open scoped TensorProduct
 open RingCon
@@ -20,105 +20,114 @@ open RingCon
 instance module_over_over (A : CSA k) (I : TwoSidedIdeal A):
     Module k I := Module.compHom I (algebraMap k A)
 
-
 set_option synthInstance.maxHeartbeats 50000 in
-theorem is_simple_A
-    (hAt : IsCentralSimple K (K ⊗[k] A)):
-    IsSimpleOrder (TwoSidedIdeal A) := by
-  haveI := hAt.2
-  apply IsSimpleRing.right_of_tensor k K A
+theorem is_simple_A [IsSimpleRing (K ⊗[k] A)] :
+    IsSimpleRing A := IsSimpleRing.right_of_tensor k K A
 
-theorem centralsimple_over_extension_iff_subsingleton
+theorem central_over_extension_iff_subsingleton
     [Subsingleton A] [FiniteDimensional k A] [FiniteDimensional k K] :
-    IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) := by
+    Algebra.IsCentral k A ↔ Algebra.IsCentral K (K ⊗[k] A) := by
   have : Subsingleton (K ⊗[k] A) := by
     rw [← subsingleton_iff_zero_eq_one, show (0 : K ⊗[k] A) = 0 ⊗ₜ 0 by simp,
         show (1 : K ⊗[k] A) = 1 ⊗ₜ 1 by rfl, show (1 : A) = 0 from Subsingleton.elim _ _]
     simp
-  constructor
+  constructor <;>
   · intro h
-    have := h.2
-    have : Nontrivial A := inferInstance
-    rw [← not_subsingleton_iff_nontrivial] at this
-    contradiction
+    refine ⟨fun x hx => ?_⟩
+    rw [show x = 0 from Subsingleton.elim _ _]
+    exact Subalgebra.zero_mem ⊥
+
+theorem isSimple_over_extension_iff_subsingleton
+    [Subsingleton A] [FiniteDimensional k A] [FiniteDimensional k K] :
+    IsSimpleRing A ↔ IsSimpleRing (K ⊗[k] A) := by
+  have : Subsingleton (K ⊗[k] A) := by
+    rw [← subsingleton_iff_zero_eq_one, show (0 : K ⊗[k] A) = 0 ⊗ₜ 0 by simp,
+        show (1 : K ⊗[k] A) = 1 ⊗ₜ 1 by rfl, show (1 : A) = 0 from Subsingleton.elim _ _]
+    simp
+  constructor <;>
   · intro h
-    have := h.2
     have : Nontrivial (K ⊗[k] A) := inferInstance
     rw [← not_subsingleton_iff_nontrivial] at this
     contradiction
 
-set_option synthInstance.maxHeartbeats 40000 in
-theorem centralsimple_over_extension_iff_nontrivial
+-- set_option synthInstance.maxHeartbeats 40000 in
+theorem centralSimple_over_extension_iff_nontrivial
     [Nontrivial A] [FiniteDimensional k A] [FiniteDimensional k K] :
-    IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) where
-  mp := fun hA ↦ IsCentralSimple.baseChange k A K
-  mpr := fun hAt ↦ {
-    is_central := by
-      have hAt := hAt.1
-      by_contra h
-      simp only [le_bot_iff, ne_eq] at h
-      have : 1 < Module.finrank k (Subalgebra.center k A) := by
-        have eq1 := Subalgebra.finrank_bot (F := k) (E := A)
-        have ineq1 := Submodule.finrank_lt_finrank_of_lt
-          (s := Subalgebra.toSubmodule (⊥ : Subalgebra k A))
-          (t := Subalgebra.toSubmodule (Subalgebra.center k A)) (by
-          simp only [OrderEmbedding.lt_iff_lt]
-          rw [bot_lt_iff_ne_bot]
-          exact h)
-        erw [eq1] at ineq1
-        exact ineq1
-      let e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A) :=
-        (TensorProduct.congr (Submodule.topEquiv.symm ≪≫ₗ
-          show _ ≃ₗ[k] Subalgebra.toSubmodule (Subalgebra.center k K) from LinearEquiv.ofLinear
-          (Submodule.inclusion (by simp)) (Submodule.inclusion (by simp)) rfl rfl)
-          (LinearEquiv.refl _ _)) ≪≫ₗ
-        (IsCentralSimple.centerTensor k K A)
-      have eq1 : Module.finrank k (Subalgebra.center k (K ⊗[k] A)) =
-                Module.finrank k K *
-                Module.finrank k (Subalgebra.center k A) := by
-        rw [LinearEquiv.finrank_eq e.symm, Module.finrank_tensorProduct]
-      have eq2 : Module.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-                Module.finrank k K *
-                Module.finrank k (Subalgebra.center k A) := by
-        rw [← eq1]; congr
-      have eq3 : Module.finrank k (Subalgebra.center K (K ⊗[k] A)) =
-                Module.finrank k K *
-                Module.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
-        rw [Module.finrank_mul_finrank]
+    (Algebra.IsCentral k A ∧ IsSimpleRing A) ↔
+    (Algebra.IsCentral K (K ⊗[k] A) ∧ IsSimpleRing (K ⊗[k] A)) where
+  mp := fun ⟨_, _⟩ ↦ ⟨inferInstance, inferInstance⟩
+  mpr := fun ⟨⟨hAt⟩, _⟩ ↦ ⟨by
+    constructor
+    by_contra h
+    simp only [le_bot_iff, ne_eq] at h
+    have : 1 < Module.finrank k (Subalgebra.center k A) := by
+      have eq1 := Subalgebra.finrank_bot (F := k) (E := A)
+      have ineq1 := Submodule.finrank_lt_finrank_of_lt
+        (s := Subalgebra.toSubmodule (⊥ : Subalgebra k A))
+        (t := Subalgebra.toSubmodule (Subalgebra.center k A)) (by
+        simp only [OrderEmbedding.lt_iff_lt]
+        rw [bot_lt_iff_ne_bot]
+        exact h)
+      erw [eq1] at ineq1
+      exact ineq1
+    let e : K ⊗[k] Subalgebra.center k A ≃ₗ[k] Subalgebra.center k (K ⊗[k] A) :=
+      (TensorProduct.congr (Submodule.topEquiv.symm ≪≫ₗ
+        show _ ≃ₗ[k] Subalgebra.toSubmodule (Subalgebra.center k K) from LinearEquiv.ofLinear
+        (Submodule.inclusion (by simp)) (Submodule.inclusion (by simp)) rfl rfl)
+        (LinearEquiv.refl _ _)) ≪≫ₗ
+      (IsCentralSimple.centerTensor k K A)
+    have eq1 : Module.finrank k (Subalgebra.center k (K ⊗[k] A)) =
+              Module.finrank k K *
+              Module.finrank k (Subalgebra.center k A) := by
+      rw [LinearEquiv.finrank_eq e.symm, Module.finrank_tensorProduct]
+    have eq2 : Module.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+              Module.finrank k K *
+              Module.finrank k (Subalgebra.center k A) := by
+      rw [← eq1]; congr
+    have eq3 : Module.finrank k (Subalgebra.center K (K ⊗[k] A)) =
+              Module.finrank k K *
+              Module.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
+      rw [Module.finrank_mul_finrank]
 
-      have eq4 : Module.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
-        simp only [le_bot_iff] at hAt
-        rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
+    have eq4 : Module.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
+      simp only [le_bot_iff] at hAt
+      rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
 
-      rw [eq4, mul_one] at eq3
-      rw [eq3] at eq2
-      have ineq0 : 0 < Module.finrank k K := Module.finrank_pos
-      have ineq1 :
-        Module.finrank k K <
-        Module.finrank k K * Module.finrank k (Subalgebra.center k A) := by
-        apply lt_mul_right <;> assumption
-      conv_lhs at ineq1 => rw [eq2]
-      exact Nat.lt_irrefl _ ineq1
-    is_simple := is_simple_A k A K hAt }
+    rw [eq4, mul_one] at eq3
+    rw [eq3] at eq2
+    have ineq0 : 0 < Module.finrank k K := Module.finrank_pos
+    have ineq1 :
+      Module.finrank k K <
+      Module.finrank k K * Module.finrank k (Subalgebra.center k A) := by
+      apply lt_mul_right <;> assumption
+    conv_lhs at ineq1 => rw [eq2]
+    exact Nat.lt_irrefl _ ineq1, is_simple_A k A K⟩
 
 theorem centralsimple_over_extension_iff
     [FiniteDimensional k A] [FiniteDimensional k K] :
-    IsCentralSimple k A ↔ IsCentralSimple K (K ⊗[k] A) := by
+    (Algebra.IsCentral k A ∧ IsSimpleRing A) ↔
+    (Algebra.IsCentral K (K ⊗[k] A) ∧ IsSimpleRing (K ⊗[k] A)) := by
   obtain h|h := subsingleton_or_nontrivial A
-  · apply centralsimple_over_extension_iff_subsingleton
-  · apply centralsimple_over_extension_iff_nontrivial
+  · refine ⟨fun ⟨_, _⟩ ↦ ⟨?_, ?_⟩, fun ⟨_, _⟩ ↦ ⟨?_, ?_⟩⟩
+    · rwa [← central_over_extension_iff_subsingleton]
+    · rwa [← isSimple_over_extension_iff_subsingleton]
+    · rwa [central_over_extension_iff_subsingleton k A K]
+    · rwa [isSimple_over_extension_iff_subsingleton k A K]
+  · apply centralSimple_over_extension_iff_nontrivial
 
 def extension_CSA (A : CSA k) [FiniteDimensional k K]: CSA K where
   carrier := K ⊗[k] A
-  is_central_simple := centralsimple_over_extension_iff k A K|>.1 A.is_central_simple
   fin_dim := Module.Finite.base_change k K A.carrier
 
-def extension_inv [FiniteDimensional k A] (hT : IsCentralSimple K (K ⊗[k] A)) [FiniteDimensional K (K ⊗[k] A)]
+def extension_inv [FiniteDimensional k A]
+    [Algebra.IsCentral K (K ⊗[k] A)] [IsSimpleRing (K ⊗[k] A)]
+    [FiniteDimensional K (K ⊗[k] A)]
     [FiniteDimensional k K]: CSA k where
   carrier := A
-  is_central_simple := centralsimple_over_extension_iff k A K|>.2 hT
+  isCentral := centralsimple_over_extension_iff k A K |>.2 ⟨inferInstance, inferInstance⟩ |>.1
+  isSimple := centralsimple_over_extension_iff k A K |>.2 ⟨inferInstance, inferInstance⟩ |>.2
   fin_dim := by
-    have := centralsimple_over_extension_iff k A K|>.2 hT
+    have := centralsimple_over_extension_iff k A K |>.2 ⟨inferInstance, inferInstance⟩ |>.2
     let to_ten: A →ₐ[k] K ⊗[k] A :=
     {
       toFun := fun a ↦ 1 ⊗ₜ a
@@ -129,36 +138,29 @@ def extension_inv [FiniteDimensional k A] (hT : IsCentralSimple K (K ⊗[k] A)) 
       commutes' := fun _ ↦ Algebra.TensorProduct.algebraMap_apply' _|>.symm
     }
     have Isinj : Function.Injective to_ten := by
-      haveI := this.is_simple
-      haveI : Nontrivial A := inferInstance
-      exact TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective A|>.1 inferInstance
-        to_ten.toRingHom|>.resolve_left (by
-        intro h
-        rw [SetLike.ext_iff] at h
-        specialize h 1
-        simp only [TwoSidedIdeal.mem_ker, map_one, one_ne_zero, false_iff] at h
-        exact h ⟨⟩)
+      exact IsSimpleRing.injective_ringHom to_ten.toRingHom
     haveI : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
     exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj
 
 theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
-    [hk_bar : IsAlgClosure k k_bar][hA : FiniteDimensional k A]:
-    IsCentralSimple k A ↔ (∃(n : ℕ)(_ : n ≠ 0)(L : Type u)(_ : Field L)(_ : Algebra k L)
-    (_ : FiniteDimensional k L), Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)) := by
+    [hk_bar : IsAlgClosure k k_bar] [hA : FiniteDimensional k A]:
+    (Algebra.IsCentral k A ∧ IsSimpleRing A) ↔
+      (∃ (n : ℕ) (_ : NeZero n) (L : Type u) (_ : Field L) (_ : Algebra k L)
+        (_ : FiniteDimensional k L), Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)) := by
   constructor
-  · intro hA
+  · rintro ⟨_, _⟩
     haveI := hk_bar.1
     obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
     refine ⟨n, hn, ?_⟩
-    have := @lemma_tto.isoRestrict n ({out := hn}) k k_bar A _ _ _ _ _ _ _ iso
     use lemma_tto.ℒℒ n k k_bar A iso
-    refine ⟨_, _, inferInstance, ⟨this⟩⟩
+    refine ⟨_, _, inferInstance, ⟨lemma_tto.isoRestrict n k k_bar A iso⟩⟩
   · rintro ⟨n, hn, L, _, _, _, ⟨iso⟩⟩
-    haveI : Nonempty (Fin n) := ⟨0, by omega⟩
-    exact (centralsimple_over_extension_iff k A L).mpr $ AlgEquiv.isCentralSimple iso.symm
+    refine (centralsimple_over_extension_iff k A L).mpr <| ⟨iso.symm.isCentral, ⟨?_⟩⟩
+    rw [← TwoSidedIdeal.orderIsoOfRingEquiv iso.symm.toRingEquiv |>.isSimpleOrder_iff]
+    exact IsSimpleRing.simple
 
 lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
-    (h : IsCentralSimple k A) [FiniteDimensional k A]:
+    [Algebra.IsCentral k A] [IsSimpleRing A] [FiniteDimensional k A]:
     IsSquare (Module.finrank k A) := by
   haveI := hk_bar.1
   obtain ⟨n, _, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
@@ -167,31 +169,29 @@ lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlg
   simp only [Fintype.card_fin, Module.finrank_self, mul_one] at this
   exact dim_eq k k_bar A|>.trans $ LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
-def deg (A : CSA k): ℕ := dim_is_sq k A k_bar A.is_central_simple|>.choose
+def deg (A : CSA k): ℕ := dim_is_sq k A k_bar |>.choose
 
 lemma deg_sq_eq_dim (A : CSA k): (deg k k_bar A) ^ 2 = Module.finrank k A :=
-  by rw [pow_two]; exact dim_is_sq k A k_bar A.is_central_simple|>.choose_spec.symm
+  by rw [pow_two]; exact dim_is_sq k A k_bar |>.choose_spec.symm
 
-lemma deg_pos (A : CSA k): deg k k_bar A ≠ 0 := by
+instance deg_pos (A : CSA k): NeZero (deg k k_bar A) := by
+  constructor
   by_contra! h
   apply_fun (λ x => x^2) at h
   rw [deg_sq_eq_dim k k_bar A, pow_two, mul_zero] at h
-  haveI := A.is_central_simple.is_simple.1
-  have Nontriv : Nontrivial A := inferInstance
-  have := Module.finrank_pos_iff (R := k) (M := A)|>.2 Nontriv
+  have := Module.finrank_pos_iff (R := k) (M := A)|>.2 inferInstance
   linarith
 
 structure split (A : CSA k) (K : Type*) [Field K] [Algebra k K] where
-  (n : ℕ) (hn : n ≠ 0)
+  (n : ℕ) [hn : NeZero n]
   (iso : K ⊗[k] A ≃ₐ[K] Matrix (Fin n) (Fin n) K)
 
 def isSplit (L : Type u) [Field L] [Algebra k L]: Prop :=
-  ∃(n : ℕ)(_ : n ≠ 0),
+  ∃ (n : ℕ) (_ : NeZero n),
   Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)
 
 def split_by_alg_closure (A : CSA k): split k A k_bar where
   n := deg k k_bar A
-  hn := by haveI := deg_pos k k_bar A; omega
   iso := by
     haveI := hk_bar.1
     choose n _ iso using simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
@@ -212,9 +212,8 @@ def split_by_alg_closure (A : CSA k): split k A k_bar where
 def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebra k L]
     (hA : split k A L) [Algebra L L'] [Algebra k L'] [IsScalarTower k L L'] : split k A L' where
   n := deg k k_bar A
-  hn := by haveI := deg_pos k k_bar A; omega
   iso := by
-    obtain ⟨n, _, iso⟩ := hA
+    obtain ⟨n, iso⟩ := hA
     let e1 : L' ⊗[k] A ≃ₐ[L] L' ⊗[L] L ⊗[k] A := {
       __ := absorb_eqv k L L' A
       commutes' := fun _ => rfl

@@ -7,8 +7,8 @@ variable (K : Type u) [Field K]
 open TensorProduct in
 lemma IsSimpleRing.left_of_tensor (B C : Type u)
     [Ring B] [Ring C] [Algebra K C] [Algebra K B]
-    [hbc : IsSimpleOrder (TwoSidedIdeal (B ⊗[K] C))] :
-    IsSimpleOrder (TwoSidedIdeal B) := by
+    [hbc : IsSimpleRing (B ⊗[K] C)] :
+    IsSimpleRing B := by
   have hB : Subsingleton B ∨ Nontrivial B := subsingleton_or_nontrivial B
   have hC : Subsingleton C ∨ Nontrivial C := subsingleton_or_nontrivial C
   rcases hB with hB|hB
@@ -22,7 +22,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       refine SetLike.ext fun x => ?_
       rw [show x = 0 from Subsingleton.elim _ _]
       refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ => TwoSidedIdeal.zero_mem _⟩
-    have H := hbc.1
+    have H := hbc.1.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
 
@@ -37,12 +37,12 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       refine SetLike.ext fun x => ?_
       rw [show x = 0 from Subsingleton.elim _ _]
       refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ => TwoSidedIdeal.zero_mem _⟩
-    have H := hbc.1
+    have H := hbc.1.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
 
   by_contra h
-  rw [TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective' (k := K) (A := B)] at h
+  rw [IsSimpleRing.iff_eq_zero_or_injective' (k := K) (A := B)] at h
   push_neg at h
   obtain ⟨B', _, _, f, h1, h2⟩ := h
   have : Nontrivial B' := by
@@ -53,7 +53,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     simp only [TwoSidedIdeal.mem_ker]
     refine ⟨fun _ => trivial, fun _ => Subsingleton.elim _ _⟩
   let F : B ⊗[K] C →ₐ[K] (B' ⊗[K] C) := Algebra.TensorProduct.map f (AlgHom.id _ _)
-  have hF := TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
+  have hF := IsSimpleRing.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
 
   rcases hF with hF|hF
   · have : Nontrivial (B' ⊗[K] C) := by
@@ -84,10 +84,10 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
 open TensorProduct in
 lemma IsSimpleRing.right_of_tensor (B C : Type u)
     [Ring B] [Ring C] [Algebra K C] [Algebra K B]
-    [hbc : IsSimpleOrder (TwoSidedIdeal (B ⊗[K] C))] :
-    IsSimpleOrder (TwoSidedIdeal C) := by
-  haveI : IsSimpleOrder (TwoSidedIdeal (C ⊗[K] B)) := by
+    [hbc : IsSimpleRing (B ⊗[K] C)] :
+    IsSimpleRing C := by
+  haveI : IsSimpleRing (C ⊗[K] B) := by
     let e : C ⊗[K] B ≃ₐ[K] (B ⊗[K] C) := Algebra.TensorProduct.comm _ _ _
     have := TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv
-    exact (OrderIso.isSimpleOrder_iff this).mpr hbc
+    exact ⟨(OrderIso.isSimpleOrder_iff this).mpr hbc.1⟩
   apply IsSimpleRing.left_of_tensor (K := K) (B := C) (C := B)
