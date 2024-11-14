@@ -10,14 +10,6 @@ open scoped TensorProduct
 
 variable (K : Type u) [Field K]
 
--- variable {A B M: Type u} [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
---         [csA : IsCentralSimple K A] [hSimple : IsSimpleOrder (RingCon B)]
---         [AddCommGroup M][Module A M][IsSimpleModule A M]
--- variable (L: Module.End A M)
--- -- lemma first
--- -- def L:= Module.End A M
--- -- instance (L: Module.End A M): DivisionRing L := sorry
-
 set_option linter.unusedVariables false in
 def module_inst (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
@@ -228,62 +220,54 @@ instance (K A B M : Type u)
 
 instance tensor_is_simple (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [IsSimpleOrder (TwoSidedIdeal B)][AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    [IsSimpleModule A M] [csa_A : IsCentralSimple K A]: IsSimpleOrder
-    (TwoSidedIdeal (B ⊗[K] (Module.End A M))) := by
-  haveI := csa_A.2
+    [IsSimpleRing B] [AddCommGroup M] [Module K M] [Module A M]
+    [IsScalarTower K A M] [IsSimpleModule A M]
+    [Algebra.IsCentral K A] [csa_A : IsSimpleRing A] :
+    IsSimpleRing (B ⊗[K] Module.End A M) := by
   obtain ⟨n, hn, D, hD1, hD2, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version K A
-  have : NeZero n := { out := hn }
   obtain ⟨e1⟩ := end_simple_mod_of_wedderburn' K A n D iso M
-  haveI : IsCentralSimple K (Module.End A M) :=
-    AlgEquiv.isCentralSimple (hcs := CSA_op_is_CSA K D $
-      CSA_implies_CSA K A n D (by omega) _ iso csa_A) e1.symm
-  exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M) _ _ _ _ _ this
+  haveI := CSA_implies_CSA K A n D _ iso
+  haveI : Algebra.IsCentral K (Module.End A M) := e1.symm.isCentral
+
+  exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M) _ _ _ _ _ this _
 
 variable (K A B M : Type u)
-    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
-    [Algebra K B] [hB : IsSimpleOrder (RingCon B)] [AddCommGroup M] [Module K M] [Module A M]
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Algebra.IsCentral K A] [IsSimpleRing A] [Ring B]
+    [Algebra K B] [hB : IsSimpleRing B] [AddCommGroup M] [Module K M] [Module A M]
     [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A)
 
 set_option linter.unusedVariables false in
 lemma findimB (K A B M : Type u)
-    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
-    [Algebra K B] [hB : IsSimpleOrder (TwoSidedIdeal B)] [AddCommGroup M] [Module K M] [Module A M]
-    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A):
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Algebra.IsCentral K A] [IsSimpleRing A] [Ring B]
+    [Algebra K B] [hB : IsSimpleRing B] [AddCommGroup M] [Module K M] [Module A M]
+    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A) :
     FiniteDimensional K B := FiniteDimensional.of_injective (K := K) (V₂ := A) f (by
-    haveI := hA.2
-    haveI : Nontrivial A := TwoSidedIdeal.instNontrivialOfIsSimpleOrder_brauerGroup A
     change Function.Injective f
-    have H := TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective B|>.1 hB (B := A) f
-    refine H.resolve_left fun rid => ?_
-    rw [eq_top_iff, TwoSidedIdeal.le_iff] at rid
-    specialize @rid 1 ⟨⟩
-    simp only [AlgHom.toRingHom_eq_coe, SetLike.mem_coe, TwoSidedIdeal.mem_ker, _root_.map_one,
-        one_ne_zero] at rid )
+    have H := IsSimpleRing.injective_ringHom_or_subsingleton_codomain f.toRingHom
+    refine H.resolve_right fun rid => ?_
+    have : Nontrivial A := inferInstance
+    rw [← not_subsingleton_iff_nontrivial] at this
+    contradiction)
 
 omit hB in
-lemma iso_fg [hB1 : IsSimpleOrder (TwoSidedIdeal B)]:
+lemma iso_fg [hB1 : IsSimpleRing B]:
   Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
   haveI := findimB K A B M f g
-  haveI := hA.2
   rw [linearEquiv_iff_finrank_eq_over_simple_ring K]
   rfl
--- -- lemma SkolemNoether_aux (A : Type u) [Ring A] [Algebra K A]
--- --   (M : Type u) [AddCommGroup M] [Module A M] [Module K M] [IsScalarTower K A M]
--- --   (B : Type u) [Ring B] [Algebra K B] [Module B M] [IsScalarTower K B M]
--- --   [IsSimpleModule A M] [IsSimpleModule (B ⊗[K] (Aᵐᵒᵖ )) M] :
--- --   ∃ (φ : M →ₗ[A] M), function.surjective φ := sorry
--- -- variable (A: Type u ) [Ring A] [Algebra K A] [FiniteDimensional K A]:
+
 /--
 End_End_A
 -/
 theorem SkolemNoether (K A B M : Type u)
-    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
-    [Algebra K B] [hB : IsSimpleOrder (TwoSidedIdeal B)] [AddCommGroup M] [Module K M] [Module A M]
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Algebra.IsCentral K A] [IsSimpleRing A] [Ring B]
+    [Algebra K B] [hB : IsSimpleRing B] [AddCommGroup M] [Module K M] [Module A M]
     [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A):
     ∃(x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
   obtain ⟨φ⟩ := iso_fg K A B M f g
-  have := hA.2
   let ISO := end_end_iso K A M
   let Φ : Module.End (Module.End A M) M :=
     { toFun := fun m => φ m
@@ -353,12 +337,11 @@ theorem SkolemNoether (K A B M : Type u)
     ZeroHom.coe_mk, LinearMap.id_coe, id_eq]
 
 theorem SkolemNoether' (K A B : Type u)
-    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [hA : IsCentralSimple K A] [Ring B]
-    [Algebra K B] [hB : IsSimpleOrder (TwoSidedIdeal B)] (f g : B →ₐ[K] A):
-    ∃(x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
-  have := hA.2
+    [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
+    [Algebra.IsCentral K A] [IsSimpleRing A] [Ring B]
+    [Algebra K B] [hB : IsSimpleRing B] (f g : B →ₐ[K] A):
+    ∃ (x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
   obtain ⟨n, hn, S, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version K A
-  haveI : NeZero n := ⟨hn⟩
   letI := Module.compHom (Fin n → S) e.toRingEquiv.toRingHom
   have : IsSimpleModule A (Fin n → S) := simple_mod_of_wedderburn K A n S e
   haveI : IsScalarTower K A (Fin n → S) := by
