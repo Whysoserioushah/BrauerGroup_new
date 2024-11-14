@@ -1,4 +1,8 @@
-\chapter{Morita Equivalence}
+\chapter{Morita Equivalence}\label{chap:morita}
+
+This chapter intertwine with \cref{chap:wed-artin}: \cref{sec:stacks-074e} depends on \cref{sec:wed-artin-proof}; while \cref{sec:wed-artin-unique} depends on \cref{sec:stacks-074e}.
+
+\section{Construction of the equivalence}\label{sec:morita-construction}
 
 Let $R$ be a ring and $0 \ne n\in \mathbb{N}$. In this chapter, we prove that the category $R$-modules and the category of $\Mat_{n}(R)$-modules are equivalent. Then we use the equivalence to prove several useful lemmas.
 
@@ -34,6 +38,26 @@ Note that all modules are assumed to be left modules; when we need to consider r
 
   Let $M$ be an $\Mat_{n}(R)$-module, then the counit $\hat{\tilde{M}}\cong M$ is given by $m \mapsto (\delta_{i0}\cdot m)$. This map is both injective and surjective.
 \end{proof}
+
+\section{Stacks 074E}\label{sec:stacks-074e}
+
+Let $A$ be a finite dimensional simple $k$-algebra.
+
+\begin{lemma}
+  Let $M$ and $N$ be simple $A$-modules, then $M$ and $N$ are isomorphic as $A$-modules.
+  \leanok
+  \lean{linearEquiv_of_isSimpleModule_over_simple_ring}
+\end{lemma}
+
+\begin{proof}
+  By~\cref{thm:wed-artin-algebra}, there exists non-zero $n\in\mathbb N$, $k$-division algebra $D$ such that $A\cong \Mat_{n}(D)$ as $k$-algebras. Then by~\cref{thm:morita}, we have equivalence of category $e : \MOD_{A}\cong\MOD_{D}$. Since simple module is a categorical notion (it can be defined in terms monomorphisms), $e(M)$ and $e(N)$ are simple $D$-modules. Since $D$ is a division ring, $e(M)$ and $e(N)$ are isomorphic as $D$-modules, therefore $M$ and $N$ are isomorphic as $A$-modules.
+\end{proof}
+
+\begin{lemma}
+  Let $M$ be an $A$-module, there exists a simple $A$-module $S$ such that $M$ is a direct sum of copies of $S$, i.e. $M \cong \bigoplus_{i \in \iota} S$ for some indexing set $\iota$.
+  \leanok
+  \lean{directSum_simple_module_over_simple_ring}
+\end{lemma}
 
 %%% Local Variables:
 %%% mode: LaTeX

@@ -287,20 +287,20 @@ lemma Wedderburn_Artin.aux.one_eq
   exact ⟨Fintype.card n, x ∘ (Fintype.equivFin _).symm, y ∘ (Fintype.equivFin _).symm, hy ▸
     Fintype.sum_bijective (Fintype.equivFin _).symm (Equiv.bijective _) _ _ fun k ↦ rfl⟩
 
-private noncomputable abbrev Wedderburn_Artin.aux.n
+noncomputable abbrev Wedderburn_Artin.aux.n
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) : ℕ := by
   classical
   exact Nat.find <| Wedderburn_Artin.aux.one_eq I I_nontrivial
 
-private noncomputable abbrev Wedderburn_Artin.aux.x
+noncomputable abbrev Wedderburn_Artin.aux.x
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     Fin (Wedderburn_Artin.aux.n I I_nontrivial) → A  := by
   classical
   exact (Nat.find_spec <| Wedderburn_Artin.aux.one_eq I I_nontrivial).choose
 
-private noncomputable abbrev Wedderburn_Artin.aux.i
+noncomputable abbrev Wedderburn_Artin.aux.i
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     Fin (Wedderburn_Artin.aux.n I I_nontrivial) → I := by
@@ -308,14 +308,14 @@ private noncomputable abbrev Wedderburn_Artin.aux.i
   exact (Nat.find_spec <| Wedderburn_Artin.aux.one_eq I I_nontrivial).choose_spec.choose
 
 open Wedderburn_Artin.aux in
-private noncomputable abbrev Wedderburn_Artin.aux.nxi_spec
+noncomputable abbrev Wedderburn_Artin.aux.nxi_spec
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     ∑ j : Fin (n I I_nontrivial), (i I I_nontrivial j) * (x I I_nontrivial j) = 1 := by
   classical
   exact (Nat.find_spec <| Wedderburn_Artin.aux.one_eq I I_nontrivial).choose_spec.choose_spec
 
-private lemma Wedderburn_Artin.aux.n_ne_zero
+lemma Wedderburn_Artin.aux.n_ne_zero
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     NeZero <| Wedderburn_Artin.aux.n I I_nontrivial := by
@@ -335,7 +335,7 @@ private lemma Wedderburn_Artin.aux.n_ne_zero
     _ = 0 := by simp
 
 open Wedderburn_Artin.aux in
-private noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
+noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     ∀ j, x I I_nontrivial j ≠ 0 ∧ i I I_nontrivial j ≠ 0 := by
@@ -365,7 +365,7 @@ private noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
   then rw [xj_eq, mul_zero, zero_add] at one_eq; exact ⟨_, _, one_eq.symm⟩
   else erw [hj xj_eq, Submodule.coe_zero, zero_mul, zero_add] at one_eq; exact ⟨_, _, one_eq.symm⟩
 
-private lemma Wedderburn_Artin.aux.equivIdeal
+lemma Wedderburn_Artin.aux.equivIdeal
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) (I_minimal : ∀ J : Ideal A, J ≠ ⊥ → ¬ J < I) :
     ∃ (n : ℕ) (_ : NeZero n), Nonempty ((Fin n → I) ≃ₗ[A] A) := by
