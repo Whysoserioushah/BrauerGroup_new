@@ -69,6 +69,16 @@ Now, we can find the smallest $n$ such that $1\in A$ can be written as $\sum_{i=
 \section{Uniqueness of the classification}\label{sec:wed-artin-unique}
 In the previous section, we know that finite dimensional simple $K$-algebra $B$ over is in fact a matrix algebras of a division $K$-algebra $S$. In this section, we prove that the division algebra $S$ is essentially unique.
 
+\begin{theorem}[Uniqueness of Wedderburn-Artin theorem] Let $B$ be a finite-dimensional simple $K$-algebra. Suppose $B$ is isomorphic as $k$-algebras to both $\Mat_{n}(D)$ and $\Mat_{n'}(D')$ where $n, n'$ are non-zero natural numbers and $D, D'$ are $k$-division algebra, then $n = n'$ and $D \cong D'$ as $k$-algebras.\label{thm:wed-artin-unique}
+  \leanok
+  \lean{Wedderburn_Artin_uniqueness₀}
+\end{theorem}
+
+\begin{proof}
+  Since $D^{n}$ is a simple $B$-module, by~\cref{lem:end-simple-iso}, we see that $\End_{A}D^{n}\cong D^{\opp}$ and $\End_{A}D^{n}\cong D'^{\opp}$ as $k$-algebras. Thus $D^{\opp}\cong D'^{\opp}$ as $k$-algebras, consequently $D\cong D'$ as $k$-algebras as well. Since $A \cong \Mat_{n}(D)\cong \Mat_{n'}(D')\cong \Mat_{n'}(D)$ as $k$-algebras and $A$ is finite $k$-dimensional, a dimension argument shows that $n=n'$.
+\end{proof}
+
 %%% Local Variables:
 %%% mode: LaTeX
+%%% TeX-master: "../print"
 %%% End:
