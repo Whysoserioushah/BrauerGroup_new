@@ -1,0 +1,41 @@
+\chapter{Morita Equivalence}
+
+Let $R$ be a ring and $0 \ne n\in \mathbb{N}$. In this chapter, we prove that the category $R$-modules and the category of $\Mat_{n}(R)$-modules are equivalent. Then we use the equivalence to prove several useful lemmas.
+
+\begin{construction}\label{con:morita-eqv-functor0}
+  \leanok
+  \lean{matrix_smul_vec_def}
+  If $M$ is an $R$-module, we have a natural $\Mat_{n}(R)$-module structure on $\hat{M}:=M^{n}$ given by $(m_{ij})\cdot (v_{k})=\sum_{j}m_{ij}\cdot v_{j}$.
+  If $f : M \to N$ is an $R$-linear map, then $\hat{f} : M^{n}\to N^{n}$ given by $(v_{i}) \mapsto (f(v_{i}))$ is a $\Mat_{n}(R)$-linear map. Thus we have a well-defined functor $\MOD_{R} \Longrightarrow \MOD_{\Mat_{n}(R)}$.
+\end{construction}
+
+Note that all modules are assumed to be left modules; when we need to consider right $R$-modules, we will consider left $R^{\opp}$-modules instead. We use $\delta_{ij}$ to denote the matrix whose $(i,j)$-th entry is $1$ and $0$ elsewhere. $\delta_{ij}$ forms a basis for matrices.
+
+\begin{construction}\label{con:morita-eqv-functor1}
+  \leanok
+  \lean{fromModuleCatOverMatrix.smul_α_coe}
+  If $M$ is a $\Mat_{n}(R)$-module, then $\tilde{M} := \{\delta_{ij}\cdot m | m \in M\} \subseteq M$ is an $R$-module given by $r \cdot (\delta_{ij}\cdot m) := (r\cdot \delta_{ij})\cdot m$. More over if $f : M \to N$ is a $\Mat_{n}(R)$-linear map, $\tilde{f} : \tilde{M} \to \tilde{N}$ given by $f$ is $R$-linear. Hence, we have a functor $\MOD_{\Mat_{n}(R)}\Longrightarrow \MOD_{R}$.
+\end{construction}
+
+\begin{theorem}[Morita Equivalence]\label{thm:morita}
+  The functors constructed in \cref{con:morita-eqv-functor0} and \cref{con:morita-eqv-functor1} form an equivalence of category.
+  \leanok
+  \lean{moritaEquivalentToMatrix}
+\end{theorem}
+
+\begin{proof}
+  Let $M$ be an $R$-module, then the unit $\tilde{\hat{M}} \cong M$ is given by
+  \[
+    \begin{aligned}
+      x \mapsto \sum_{j} x_{j} \\
+      (x,0,\dots,0) \mapsfrom x
+    \end{aligned}
+  \]
+
+  Let $M$ be an $\Mat_{n}(R)$-module, then the counit $\hat{\tilde{M}}\cong M$ is given by $m \mapsto (\delta_{i0}\cdot m)$. This map is both injective and surjective.
+\end{proof}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:
