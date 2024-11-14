@@ -2,11 +2,15 @@
 % both by the pdf version and the web version.
 % This should be most of your macros.
 
+\theoremstyle{plain}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{remark}
 \newtheorem{remark}{Remark}[section]
 
+\theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{construction}[definition]{Construction}
 
@@ -15,4 +19,12 @@
 
 \DeclareMathOperator{\MOD}{\mathfrak{Mod}}
 
+\DeclareMathOperator{\range}{range}
+\DeclareMathOperator{\im}{im}
+
 \newcommand{\opp}{\mathsf{opp}}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:

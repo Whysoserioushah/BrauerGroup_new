@@ -20,7 +20,7 @@ Note that all modules are assumed to be left modules; when we need to consider r
 \begin{construction}\label{con:morita-eqv-functor1}
   \leanok
   \lean{fromModuleCatOverMatrix.smul_α_coe}
-  If $M$ is a $\Mat_{n}(R)$-module, then $\tilde{M} := \{\delta_{ij}\cdot m | m \in M\} \subseteq M$ is an $R$-module given by $r \cdot (\delta_{ij}\cdot m) := (r\cdot \delta_{ij})\cdot m$. More over if $f : M \to N$ is a $\Mat_{n}(R)$-linear map, $\tilde{f} : \tilde{M} \to \tilde{N}$ given by $f$ is $R$-linear. Hence, we have a functor $\MOD_{\Mat_{n}(R)}\Longrightarrow \MOD_{R}$.
+  If $M$ is a $\Mat_{n}(R)$-module, then $\widetilde{M} := \{\delta_{ij}\cdot m | m \in M\} \subseteq M$ is an $R$-module given by $r \cdot (\delta_{ij}\cdot m) := (r\cdot \delta_{ij})\cdot m$. More over if $f : M \to N$ is a $\Mat_{n}(R)$-linear map, $\widetilde{f} : \widetilde{M} \to \widetilde{N}$ given by $f$ is $R$-linear. Hence, we have a functor $\MOD_{\Mat_{n}(R)}\Longrightarrow \MOD_{R}$.
 \end{construction}
 
 \begin{theorem}[Morita Equivalence]\label{thm:morita}
@@ -30,7 +30,7 @@ Note that all modules are assumed to be left modules; when we need to consider r
 \end{theorem}
 
 \begin{proof}
-  Let $M$ be an $R$-module, then the unit $\tilde{\hat{M}} \cong M$ is given by
+  Let $M$ be an $R$-module, then the unit $\widetilde{\hat{M}} \cong M$ is given by
   \[
     \begin{aligned}
       x \mapsto \sum_{j} x_{j} \\
@@ -38,7 +38,7 @@ Note that all modules are assumed to be left modules; when we need to consider r
     \end{aligned}
   \]
 
-  Let $M$ be an $\Mat_{n}(R)$-module, then the counit $\hat{\tilde{M}}\cong M$ is given by $m \mapsto (\delta_{i0}\cdot m)$. This map is both injective and surjective.
+  Let $M$ be an $\Mat_{n}(R)$-module, then the counit $\hat{\widetilde{M}}\cong M$ is given by $m \mapsto (\delta_{i0}\cdot m)$. This map is both injective and surjective.
 \end{proof}
 
 \section{Stacks 074E}\label{sec:stacks-074e}

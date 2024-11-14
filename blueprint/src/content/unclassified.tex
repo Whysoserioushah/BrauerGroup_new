@@ -1,0 +1,35 @@
+\setcounter{chapter}{-1}
+\chapter{A Collection of Useful Lemmas}
+
+\begin{lemma}\label{lem:expand-tensor-in-basis}
+  Let $M$ and $N$ be $R$-modules such that $\mathcal{C}_{i\in\iota}$ is a basis for $N$, then every elements of $x \in M \otimes_{R} N$ can be uniquely written as $\sum_{i\in\iota}m_{i}\otimes \mathcal{C}_{i}$ where only finitely many $m_{i}$'s are non-zero
+\end{lemma}
+
+\begin{proof}
+  Given the basis $\mathcal{C}$, we have $R$-linear isomorphism $N \cong\bigoplus_{i\in\iota}R$, hence $M\otimes_{R}N \cong \bigoplus_{i\in\iota}(M\otimes_{R}R)\cong\bigoplus_{i\in\iota}M$ as $R$-modules.
+\end{proof}
+By switching $M$ and $N$, the symmetric statement goes without saying.
+
+\noindent\rule{\textwidth}{0.2pt}
+
+\begin{lemma}
+
+  Let $K$ be a field, $M$ and $N$ be flat $K$-modules. Suppose $p \subseteq M$ and $q \subseteq N$ are $K$-submodules, then $(p \otimes_{K} N) \sqcap (M \otimes_{K} q) = p \otimes_{K} q$ as $K$-submodules.
+\end{lemma}
+
+\begin{proof}
+  The hard direction is to show $(p \otimes_{R} N) \sqcap (M \otimes_{R} q) \le p \otimes_{R} q$. Consider the following diagram:
+  \[
+    \begin{tikzcd}
+      p \otimes_{K} q \ar[r, "u"] \ar[d, "\alpha"] & M \otimes_{K} q \ar[r, "v"] \ar[d, "\beta"] & {}^{M}/_{p} \otimes_{K} q \ar[d, "\gamma"] \\
+      p \otimes_{K} N \ar[r, "u'"] & M \otimes_{K} N \ar[r, "v'"] & ^{M}/_{p} \otimes_{K} N
+    \end{tikzcd}
+  \]
+  Since $^{M}/_{p}$ is flat, $\gamma$ is injective.
+  Let $z \in (p \otimes_{R} N) \sqcap (M \otimes_{R} q) = \im \beta \sqcap \im u'$. By abusing notation, replace $z$ with some elements of $M \otimes_{K} q$ and continue with $\beta(z)\in\im \beta \sqcap \im u'$. Since $v'(\beta(z))=\gamma(v(z))$ and that $\beta(z)\in \im u'$, we conclude that $\gamma(v(z))=0$, that is $z\in\ker v=\im u$. We abuse notation again, let $z \in p \otimes_{K} q$, we need to show $\beta(u(z))\in\im \beta \sqcap \im u'$, but $\beta\circ u=u'\circ\alpha$, we finish the proof.
+\end{proof}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:
