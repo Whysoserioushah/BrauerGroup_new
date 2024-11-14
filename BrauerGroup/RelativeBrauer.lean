@@ -5,7 +5,7 @@ Authors: Yunzhou Xie, Jujian Zhang
 -/
 
 import BrauerGroup.SplittingOfCSA
-import BrauerGroup.«074E»
+import BrauerGroup.ZeroSevenFourE
 import Mathlib.RingTheory.MatrixAlgebra
 import BrauerGroup.Subfield.Subfield
 

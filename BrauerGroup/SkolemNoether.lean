@@ -1,5 +1,5 @@
 import BrauerGroup.BrauerGroup
-import BrauerGroup.«074E»
+import BrauerGroup.ZeroSevenFourE
 
 suppress_compilation
 

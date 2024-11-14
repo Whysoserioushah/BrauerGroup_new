@@ -1,5 +1,5 @@
 import BrauerGroup.Subfield.Subfield
-import BrauerGroup.«074E»
+import BrauerGroup.ZeroSevenFourE
 import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.RelativeBrauer
 import Mathlib.RingTheory.MatrixAlgebra

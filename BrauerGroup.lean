@@ -18,4 +18,4 @@ import BrauerGroup.Subfield.Splitting
 import BrauerGroup.Subfield.Subfield
 import BrauerGroup.ToSecond
 import BrauerGroup.Wedderburn
-import BrauerGroup.«074E»
+import BrauerGroup.ZeroSevenFourE
