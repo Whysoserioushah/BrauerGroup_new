@@ -1,4 +1,5 @@
 import BrauerGroup.Wedderburn
+import BrauerGroup.CoproductModuleCat
 
 import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
 import Mathlib.FieldTheory.Finiteness
@@ -6,7 +7,7 @@ import Mathlib.Algebra.Algebra.Basic
 import Mathlib.CategoryTheory.Preadditive.AdditiveFunctor
 import Mathlib.LinearAlgebra.Dimension.Free
 
-open CategoryTheory
+open CategoryTheory DirectSum
 
 universe u v w
 
@@ -39,186 +40,15 @@ lemma linearEquiv_of_isSimpleModule_over_simple_ring
       (e₃.unitIso.app (ModuleCat.of A N)).symm
   exact ⟨iso₅.toLinearEquiv⟩
 
-noncomputable abbrev iso₄_toFun (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A]
-    [IsSimpleRing A] [FiniteDimensional k A] (b M D: Type v) (n : ℕ)
-    [Inhabited (Fin n)] [DivisionRing D]
-    [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
-  ↑(ModuleCat.of A (b →₀ ↑((ModuleCat.restrictScalars iso₁.toRingEquiv.toRingHom).obj
-  (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D)))))) → Fin n → b →₀ D :=
-  fun x i ↦ Finsupp.ofSupportFinite (fun y => x.toFun y i) $
-    Set.Finite.subset (Finsupp.finite_support x) fun y hy => by
-      simp only [AlgEquiv.toRingEquiv_eq_coe, AlgEquiv.symm_toRingEquiv,
-        Function.mem_support, ne_eq, Finsupp.fun_support_eq, Finset.mem_coe,
-        Finsupp.mem_support_iff] at hy ⊢
-      contrapose! hy
-      change x.toFun y = 0 at hy
-      rw [hy]; rfl
-
-noncomputable abbrev iso₄iso₄ (k : Type u) (A : Type v) [Field k]
-    [Ring A] [Algebra k A] [IsSimpleRing A] [FiniteDimensional k A]
-    (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
-    [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
-  ModuleCat.of A (b →₀ ((ModuleCat.restrictScalars iso₁.symm.toRingEquiv.symm.toRingHom).obj
-  (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D))))) ⟶
-  (ModuleCat.restrictScalars ↑iso₁.symm.toRingEquiv.symm).obj
-    (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D (b →₀ D)))) :=
-  ModuleCat.semilinearMapAddEquiv _ _ _ $
-  { toFun := iso₄_toFun k A b M D n iso₁
-    map_add' := fun x x' => funext fun i => Finsupp.ext fun y => rfl
-    map_smul' := fun a x => funext fun i => Finsupp.ext fun y => show ∑ j : Fin n, _ = _ by
-      erw [matrix_smul_vec_apply]
-      erw [Finsupp.coe_finset_sum]
-      simp only [AlgEquiv.toRingEquiv_eq_coe, AlgEquiv.symm_toRingEquiv,
-        RingEquiv.symm_symm, AlgEquiv.toRingEquiv_toRingHom, RingHom.toMonoidHom_eq_coe,
-        OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe, MonoidHom.coe_coe, RingHom.coe_coe,
-        ZeroHom.coe_mk, smul_eq_mul, Finsupp.ofSupportFinite, Finset.sum_apply]
-      rfl }
-
-noncomputable abbrev iso₄_invFun (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A]
-    [IsSimpleRing A]
-    [FiniteDimensional k A](b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
-    [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)
-    (v : ↑(ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D (b →₀ D))))):
-  ↑((ModuleCat.restrictScalars iso₁.toRingEquiv.toRingHom).obj
-  (ModuleCat.mk (R := (Matrix (Fin n) (Fin n) D)) (Matrix (Fin n) (Fin n) D))) → b →₀
-  ↑((ModuleCat.restrictScalars iso₁.toRingEquiv.toRingHom).obj
-  (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D)))) := fun x =>
-  Finsupp.ofSupportFinite (fun y i =>  ∑ j : Fin n,  x i j * (v j).toFun y) $
-  Set.Finite.subset (s := ⋃ j : Fin n, (v j).support) (Set.toFinite _)
-    fun y hy => by
-      simp only [AlgEquiv.toRingEquiv_eq_coe, AlgEquiv.symm_toRingEquiv, smul_eq_mul,
-        Function.mem_support, ne_eq, Set.mem_iUnion, Finset.mem_coe,
-        Finsupp.mem_support_iff] at hy ⊢
-      contrapose! hy
-      refine funext fun i => ?_
-
-      simp_rw [show ∀ i, (v i).toFun y = 0 from hy, mul_zero]
-      simp only [Finset.sum_const_zero]
-      rfl
-
 variable (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A]
     [IsSimpleRing A] [FiniteDimensional k A]
-
-noncomputable abbrev iso₄inv' (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
-    [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
-  (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D (b →₀ D)))) →
-  ((ModuleCat.restrictScalars ↑iso₁.symm.toRingEquiv.symm.toRingHom).obj (ModuleCat.mk (Matrix (Fin n) (Fin n) D))) →ₗ[A]
-  (ModuleCat.of A (b →₀ ((ModuleCat.restrictScalars iso₁.toRingEquiv.toRingHom).obj
-  (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D)))))) := fun v => {
-    toFun := iso₄_invFun k A b M D n iso₁ v
-    map_add' := fun x y => Finsupp.ext fun z => funext fun i => by
-      erw [Finsupp.add_apply]
-      rw [Pi.add_apply]
-      simp only [AlgEquiv.toRingEquiv_eq_coe, AlgEquiv.symm_toRingEquiv,
-        Finsupp.ofSupportFinite, Finsupp.coe_mk, iso₄_invFun]
-      rw [← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      erw [Matrix.add_apply, add_mul]
-    map_smul' := by
-      rintro a (x : (ModuleCat.restrictScalars _).obj $ ModuleCat.of _ _)
-      simp only [AlgEquiv.toRingEquiv_eq_coe, AlgEquiv.symm_toRingEquiv,
-        ModuleCat.restrictScalars.smul_def, RingEquiv.symm_symm,
-        AlgEquiv.toRingEquiv_toRingHom, RingHom.coe_coe, smul_eq_mul,
-        RingHom.id_apply, iso₄_invFun]
-      refine Finsupp.ext fun y => ?_
-      erw [Finsupp.smul_apply]
-      simp only [Finsupp.ofSupportFinite, Finsupp.coe_mk]
-      refine funext fun i => ?_
-      erw [matrix_smul_vec_apply]
-      simp only [RingEquiv.symm_symm, AlgEquiv.toRingEquiv_toRingHom,
-        RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe,
-        MonoidHom.coe_coe, RingHom.coe_coe, ZeroHom.coe_mk, smul_eq_mul]
-      simp_rw [Matrix.mul_apply, Finset.mul_sum, Finset.sum_mul]
-      conv_lhs => rw [Finset.sum_comm]
-      refine Finset.sum_congr rfl $ fun j _ ↦ Finset.sum_congr rfl $ fun k _ ↦ by rw [mul_assoc] }
-
-noncomputable abbrev iso₄inv (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
-    [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
-  (ModuleCat.restrictScalars ↑iso₁.symm.toRingEquiv.symm).obj (ModuleCat.of
-  (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D (b →₀ D)))) ⟶
-  ModuleCat.of A (b →₀ ↑((ModuleCat.restrictScalars iso₁.toRingEquiv.toRingHom).obj
-  (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D))))) :=
-  ModuleCat.RestrictionCoextensionAdj.HomEquiv.toRestriction _
-  { toFun := iso₄inv' k A b M D n iso₁
-    map_add' := fun x x' => by
-      simp only [AlgEquiv.toRingEquiv_eq_coe, AlgEquiv.symm_toRingEquiv, iso₄_invFun]
-      refine LinearMap.ext fun y => ?_
-      erw [LinearMap.add_apply]
-      simp only [LinearMap.coe_mk, AddHom.coe_mk]
-      refine Finsupp.ext fun z => ?_
-      erw [Finsupp.add_apply]
-      simp only [iso₄_invFun, Finsupp.ofSupportFinite, Finsupp.coe_mk]
-      refine funext fun i => ?_
-      erw [Pi.add_apply]
-      rw [← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      erw [Pi.add_apply]
-      rw [show (x j + x' j).toFun z = (x j).toFun z + (x' j).toFun z from rfl, mul_add]
-    map_smul' := fun m x => by
-      dsimp only [AlgEquiv.toRingEquiv_eq_coe, AlgEquiv.symm_toRingEquiv,
-        ModuleCat.restrictScalars.smul_def, RingHom.coe_coe, smul_eq_mul,
-        AddHom.toFun_eq_coe, AddHom.coe_mk, RingHom.id_apply, iso₄inv', iso₄_invFun]
-      refine LinearMap.ext fun y => ?_
-      change _ = (_ : _ →ₗ[_] _).toFun _
-      erw [ModuleCat.CoextendScalars.smul_apply]
-      simp only [iso₄_invFun, LinearMap.coe_mk, AddHom.coe_mk]
-      refine Finsupp.ext fun z => ?_
-      simp only [Finsupp.ofSupportFinite, Finsupp.coe_mk]
-      refine funext fun i => ?_
-      simp_rw [Matrix.mul_apply]
-      change ∑ j : Fin n, y i j * ((∑ k : Fin n, m j k • x k : b →₀ _) z) = _
-      simp_rw [Finsupp.coe_finset_sum]
-      simp only [Finset.sum_apply, Finset.mul_sum, Finset.sum_mul]
-      conv_lhs => rw [Finset.sum_comm]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      simp only [smul_eq_mul, mul_assoc]; rfl }
-
-lemma hom_inv_id_iso₄ (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
-    [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
-  iso₄iso₄ k A b M D n iso₁ ≫ iso₄inv k A b M D n iso₁ =
-  𝟙 (ModuleCat.of A (b →₀ ((ModuleCat.restrictScalars iso₁.symm.toRingEquiv.symm.toRingHom).obj
-    (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D)))))) := by
-  ext x
-  unfold iso₄iso₄ iso₄inv iso₄inv' iso₄_toFun iso₄_invFun
-  simp only [ModuleCat.coe_comp, Function.comp_apply]
-  rw [ModuleCat.RestrictionCoextensionAdj.HomEquiv.toRestriction_apply]
-  erw [ModuleCat.id_apply (M := (ModuleCat.of A (b →₀
-    ((ModuleCat.restrictScalars iso₁.symm.toRingEquiv.symm.toRingHom).obj
-    (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D D))))))) (m := x)]
-  rw [LinearMap.coe_mk, AddHom.coe_mk]
-  refine Finsupp.ext fun y => ?_
-  simp only [Finsupp.ofSupportFinite, Finsupp.coe_mk]
-  refine funext fun i => ?_
-  simp_rw [Matrix.one_apply, ite_mul, zero_mul, one_mul]
-  rw [Finset.sum_ite_eq, if_pos (Finset.mem_univ _)]
-  erw [ModuleCat.semilinearMapAddEquiv_apply_apply]
-  rfl
-
-lemma inv_hom_id_iso₄ (b M D: Type v) (n : ℕ) [Inhabited (Fin n)] [DivisionRing D]
-    [Algebra k D] [AddCommGroup M] [Module A M] (iso₁ : A ≃ₐ[k] Matrix (Fin n) (Fin n) D):
-  iso₄inv k A b M D n iso₁ ≫ iso₄iso₄ k A b M D n iso₁ =
-  𝟙 ((ModuleCat.restrictScalars iso₁.symm.toRingEquiv.symm.toRingHom).obj
-    (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → ↑(ModuleCat.of D (b →₀ D))))) := by
-  ext x
-  unfold iso₄iso₄ iso₄inv iso₄inv' iso₄_toFun iso₄_invFun
-  rw [ModuleCat.coe_comp, Function.comp_apply,
-    ModuleCat.RestrictionCoextensionAdj.HomEquiv.toRestriction_apply]
-  erw [ModuleCat.id_apply (m := x)]
-  rw [LinearMap.coe_mk, AddHom.coe_mk]
-  refine funext fun y => ?_
-  erw [ModuleCat.semilinearMapAddEquiv_apply_apply]
-  rw [LinearMap.coe_mk, AddHom.coe_mk]
-  refine Finsupp.ext fun z => ?_
-  simp only [Finsupp.ofSupportFinite, Finsupp.coe_mk]
-  simp_rw [Matrix.one_apply, ite_mul, zero_mul, one_mul]
-  rw [Finset.sum_ite_eq, if_pos (Finset.mem_univ _)]
-  rfl
 
 lemma directSum_simple_module_over_simple_ring
     (k : Type u) (A : Type v) [Field k] [Ring A] [Algebra k A] [IsSimpleRing A]
     [FiniteDimensional k A] (M : Type v) [AddCommGroup M] [Module A M] :
     ∃ (S : Type v) (_ : AddCommGroup S) (_ : Module A S) (_ : IsSimpleModule A S)
       (ι : Type v), Nonempty (M ≃ₗ[A] (ι →₀ S)) := by
+  classical
   obtain ⟨n, hn, D, inst1, inst2, ⟨iso₁⟩⟩ := Wedderburn_Artin_algebra_version k A
   let e₁ := moritaEquivalentToMatrix D (Fin n)
   let e₂ : ModuleCat A ≌ ModuleCat (Matrix (Fin n) (Fin n) D) :=
@@ -234,15 +64,61 @@ lemma directSum_simple_module_over_simple_ring
   let iso₂ : M' ≅ ModuleCat.of D (b →₀ D) := LinearEquiv.toModuleIso hb.repr
   let iso₃ : ModuleCat.of A M ≅ e.inverse.obj (ModuleCat.of D (b →₀ D)) :=
     e.unitIso.app (ModuleCat.of A M) ≪≫ (e.inverse.mapIso iso₂)
+  let iso₄₀ :
+      ModuleCat.of A (b →₀ e.inverse.obj (ModuleCat.of D D)) ≅
+      ModuleCat.of A (⨁ (i : b), e.inverse.obj (ModuleCat.of D D)) :=
+    LinearEquiv.toModuleIso (finsuppLequivDFinsupp _)
+  let iso₄₁ :
+    ModuleCat.of A (⨁ (i : b), e.inverse.obj (ModuleCat.of D D)) ≅
+    ∐ fun i : b ↦ ModuleCat.of A (e.inverse.obj (ModuleCat.of D D)) :=
+        Iso.symm (ModuleCat.coprodIsoDirectSum _)
+  let iso₄₂ :
+    (∐ fun i : b ↦ ModuleCat.of A (e.inverse.obj (ModuleCat.of D D))) ≅
+    e.inverse.obj (∐ fun i : b ↦ ModuleCat.of D D) :=
+      { hom := Limits.Sigma.desc fun i ↦ e.inverse.map <|
+          Limits.Sigma.ι (fun i : b ↦ ModuleCat.of D D) i
+        inv := -- e.inverse.map (Limits.Sigma.desc fun i ↦ _) ≫ e.unitInv.app _
+          e.symm.toAdjunction.homEquiv _ _ |>.symm
+            (Limits.Sigma.desc fun i ↦
+              e.symm.toAdjunction.homEquiv _ _ <| Limits.Sigma.ι
+                (fun i : b ↦ e.inverse.obj <| ModuleCat.of D D) i)
+        hom_inv_id := by
+          ext i : 1
+          simp only [ModuleCat.of_coe, Equivalence.symm_inverse, Equivalence.symm_functor,
+            Adjunction.homEquiv, Functor.comp_obj, Equivalence.toAdjunction,
+            show e.symm.unit = e.counitInv by aesop_cat,
+            show e.symm.counit = e.unitInv by aesop_cat, Equiv.coe_fn_mk, Equiv.coe_fn_symm_mk, ←
+            Category.assoc, Limits.colimit.ι_desc, Limits.Cofan.mk_pt, Limits.Cofan.mk_ι_app, ←
+            Functor.map_comp, Category.comp_id]
+          simp only [Functor.map_comp, Equivalence.inv_fun_map, Functor.comp_obj, Functor.id_obj,
+            Equivalence.inverse_counitInv_comp_assoc, Category.assoc, Iso.hom_inv_id_app,
+            Category.comp_id]
+        inv_hom_id := by
+          apply_fun (e.symm.toAdjunction.homEquiv _ _)
+          apply Limits.Sigma.hom_ext
+          intro i
+          simp only [Equivalence.symm_inverse, Equivalence.symm_functor, Adjunction.homEquiv,
+            Functor.comp_obj, Equivalence.toAdjunction_unit,
+            show e.symm.unit = e.counitInv by aesop_cat, Equivalence.toAdjunction_counit,
+            show e.symm.counit = e.unitInv by aesop_cat, ModuleCat.of_coe, Equiv.coe_fn_mk,
+            Equiv.coe_fn_symm_mk, Category.assoc, Functor.map_comp, Equivalence.fun_inv_map,
+            Functor.id_obj, Equivalence.counitInv_functor_comp_assoc, Iso.inv_hom_id_app_assoc,
+            Limits.colimit.ι_desc_assoc, Discrete.functor_obj_eq_as, Limits.Cofan.mk_pt,
+            Limits.Cofan.mk_ι_app, CategoryTheory.Functor.map_id, Category.comp_id]
+          simp only [← Functor.map_comp, Limits.colimit.ι_desc, Limits.Cofan.mk_pt,
+            Limits.Cofan.mk_ι_app, Equivalence.fun_inv_map, Functor.comp_obj, Functor.id_obj,
+            Iso.inv_hom_id_app_assoc]  }
+  let iso₄₃ : e.inverse.obj (∐ fun i : b ↦ ModuleCat.of D D) ≅
+    e.inverse.obj (ModuleCat.of D (⨁ i : b, D)) :=
+    e.inverse.mapIso (ModuleCat.coprodIsoDirectSum _)
+  let iso₄₄ : e.inverse.obj (ModuleCat.of D (⨁ i : b, D)) ≅
+    e.inverse.obj (ModuleCat.of D (b →₀ D)) :=
+    e.inverse.mapIso (LinearEquiv.toModuleIso (finsuppLequivDFinsupp _).symm)
+
   let iso₄ :
       ModuleCat.of A (b →₀ e.inverse.obj (ModuleCat.of D D)) ≅
       e.inverse.obj (ModuleCat.of D (b →₀ D)) :=
-      show ModuleCat.of A (b →₀ (ModuleCat.restrictScalars _).obj (ModuleCat.of _ _)) ≅
-        (ModuleCat.restrictScalars _).obj (ModuleCat.of _ _) from
-        { hom := iso₄iso₄ k A b M D n iso₁
-          inv := iso₄inv k A b M D n iso₁
-          hom_inv_id := hom_inv_id_iso₄ k A b M D n iso₁
-          inv_hom_id := inv_hom_id_iso₄ k A b M D n iso₁ }
+    iso₄₀ ≪≫ iso₄₁ ≪≫ iso₄₂ ≪≫ iso₄₃ ≪≫ iso₄₄
   exact iso₃ ≪≫ iso₄.symm |>.toLinearEquiv
 
 lemma directSum_simple_module_over_simple_ring'

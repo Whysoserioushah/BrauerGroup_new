@@ -59,6 +59,10 @@ Let $A$ be a finite dimensional simple $k$-algebra.
   \lean{directSum_simple_module_over_simple_ring}
 \end{lemma}
 
+\begin{proof}
+  By~\cref{thm:wed-artin-algebra}, there exists non-zero $n\in\mathbb N$, $k$-division algebra $D$ such that $A\cong \Mat_{n}(D)$ as $k$-algebras. Then by~\cref{thm:morita}, we have equivalence of category $e : \MOD_{A}\cong\MOD_{D}$. Since simple module is a categorical notion (it can be defined in terms monomorphisms), $e^{-1}(D)$ is a simple module over $A$. Since $e(M)$ is a free module over $D$, we can write $e(M)$ as $\bigoplus_{i\in \iota} D$ for some indexing set $\iota$. By precomposing the unit of $e$, we get an isomorphism $M \cong e^{-1}\left(\bigoplus_{i\in\iota} D\right)$. We only need to prove $e^{-1}\left(\bigoplus_{i\in\iota} D\right)\cong\bigoplus_{i\in\iota}e^{-1}\left(D\right)$. This is because direct sum is the categorical coproduct.
+\end{proof}
+
 %%% Local Variables:
 %%% mode: LaTeX
 %%% TeX-master: "../print"
