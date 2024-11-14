@@ -14,8 +14,8 @@ import BrauerGroup.RelativeBrauer
 import BrauerGroup.SkolemNoether
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.Subfield.Basic
-import BrauerGroup.Subfield.Splitting
 import BrauerGroup.Subfield.Subfield
+import BrauerGroup.Subfield.splitting
 import BrauerGroup.ToSecond
 import BrauerGroup.Wedderburn
 import BrauerGroup.«074E»
