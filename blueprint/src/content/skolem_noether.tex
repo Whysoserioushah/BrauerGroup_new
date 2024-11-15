@@ -1,4 +1,4 @@
-\chapter{Skolem-Noether Theorem}
+\section{Skolem-Noether Theorem}\label{sec:skolem-noether}
 
 Let $K$ be a field, $A$, $B$ be $K$-algebras where $A$ is central simple and finite $K$-dimensional and $B$ is simple. Let $M$ be a simple $A$-module.
 
@@ -33,8 +33,10 @@ Given that $B$ is simple, any $k$-algebra homomorphism $f : B\to A$ injective; t
   By~\cref{lem:iso-of-dim-eq}, it is sufficient to prove $\dim_{K}M^{f}=\dim_{K}M^{g}$. But as $K$-vector space, $M^{f}$ and $M^{g}$ are {\em literally\/} $M$.
 \end{proof}
 
-\begin{theorem}[Skolem-Noether]
+\begin{theorem}[Skolem-Noether]\label{thm:skolem-noether}
   Let $f, g : B \to A$ be two $K$-algebra homomorphism. Then $f$ and $g$ differ only by a conjugation. That is there exists a unit $x \in A^{\times}$ such that $g = x f x^{-1}$.
+  \leanok
+  \lean{SkolemNoether'}
 \end{theorem}
 
 \begin{proof}
