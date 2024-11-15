@@ -1,13 +1,75 @@
-\chapter{Simple Rings and Central Simple Algebras}\label{chap:simple-ring-csa}
+\chapter{Central Simple Algebras}\label{chap:csa}
 
 \section{Simple Rings}\label{sec:simple-ring}
 
-\begin{definition}[Simple Ring] A ring $R$ is simple if the only two-sided-ideals of $R$ are ${0}$ and $R$.
+\begin{definition}[Simple Ring] A ring $R$ is simple if the only two-sided-ideals of $R$ are ${0}$ and $R$. An algebra is simple if it is simple as a ring.
   \leanok
   \lean{IsSimpleRing}
 \end{definition}
 
+\begin{definition}[Central Algebras]
+  Let $R$ be a ring and $A$ an $R$-algebra, we say $A$ is central if and only if the centre of $A$ is $R$
+  \leanok
+  \lean{Algebra.IsCentral}
+\end{definition}
 
+\begin{remark}
+  Simpleness is invariant under ring isomorphism and centrality is invariant under algebra isomorphism.
+\end{remark}
+
+Let $K$ be a field and $A, B$ be $K$-algebras.
+\begin{lemma}
+  \label{lem:tensor-central}
+  If $A$ and $B$ are central $K$-algebras, $A\otimes_{K}B$ is a central $K$-algebra as well.
+  \leanok
+  \lean{IsCentralSimple.TensorProduct.isCentral}
+\end{lemma}
+\begin{proof}
+  Assume $A$ and $B$ are central algebras, then by~\cref{lem:center-tensor}   $Z\left(A\otimes_{R}B\right)=Z\left(A\right)\otimes_{R}Z\left(B\right)=R\otimes_{R}R=R$.
+\end{proof}
+
+\begin{theorem}
+  \label{thm:tensor-csa}
+  If $A$ is a simple $K$-algebra and $B$ is a central simple $K$-algebra, $A\otimes_{K}B$ is a central simple $K$-algebra as well.
+  \leanok
+  \lean{IsCentralSimple.TensorProduct.simple}
+\end{theorem}
+\begin{proof}
+  By~\cref{lem:tensor-central}, we need to prove $A\otimes_{K}B$ is a simple ring. Denote $f$ as the map $A\to A\otimes_{K}B$. It is sufficient to prove that for every two-sided-ideal $I\subseteq A\otimes_{K}B$, we have $I = \left\langle f\left(f^{-1}\left(I\right)\right)\right\rangle$. Indeed, since $A$ is simple $f^{-1}\left(I\right)$ is either $\left\{0\right\}$ or $A$, if it is $\left\{0\right\}$, then $I=\left\{0\right\}$; if it is $A$, then $I$ is $A$ as well.
+
+  We will prove that $I \le \left\langle f\left(f^{-1}\left(I\right)\right)\right\rangle$, the other direction is straightforward.
+  Without loss of generality assume $I\ne\left\{0\right\}$.
+  Let $\McA$ be an arbitrary basis of $A$, by \cref{lem:expand-tensor-in-basis}, we see that every element $x \in A\otimes_{K}B$ can be written as $\sum_{i=0}^{n}\McA_{i}\otimes b_{i}$ for some natrual number $n$ and some choice of $b_{i}\in B$ and $\McA_{i}\in \McA$. Since $I$ is not empty, we see there exists a non-zero element $\omega\in I$ such that its expansion $\sum_{i=0}^{n}\McA_{i}\otimes b_{i}$ has the minimal $n$. In particular, all $b_{i}$ are non-zero and $n\ne0$. We have $\omega=\McA_{0}\otimes b_{0}+\sum_{i=1}^{n}\McA_{i}\otimes b_{i}$. Since $B$ is simple, $1 \in B = \left\langle\langle b_{0} \right\rangle$; hence we write $1\in\sum_{j=0}^{m}x_{i}b_{0}y_{i}$ for some $x_{i},y_{i}\in B$. Define $\Omega := \sum_{j=0}^{m}(1\otimes x_{i})\omega(1\otimes y_{i})$ which is also in $I$. We write
+\[
+  \begin{aligned}
+    \Omega &= \McA_{0} \otimes \left(\sum_{j=0}^{m}x_{j}b_{0}y_{j}\right) + \sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}x_{j}b_{i}y_{j}\right) \\
+    &= \McA_{0}\otimes 1 + \sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}x_{j}b_{i}y_{j}\right)
+  \end{aligned}
+\]
+For every $\beta\in B$, we have that $\left(1\otimes \beta\right)\Omega - \Omega\left(1\otimes \beta\right)$ is in I and is equal to
+\[
+\sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}\beta x_{j}b_{i}y_{j}-x_{j}b_{i}y_{j}\beta\right),
+\]
+which is an expansion of $n-1$ terms, thus $\left(1\otimes\beta\right)\Omega-\Omega\left(1\otimes\beta\right)$ must be $0$. Hence we conclude that for all $i=1,\dots,n$,   $\sum_{j=0}^{m}x_{j}b_{i}y_{j}\in Z\left(B\right)=K$. Hence for all $i=1,\dots,n$, we find a $\kappa_{i}\in K$ such that $\kappa_{i}=\sum_{j=0}^{m}x_{j}b_{i}y_{j}$. Hence we can calculate $\Omega$ as
+\[
+  \begin{aligned}
+    \Omega &= \McA_{0}\otimes 1 + \sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}\right) \\
+      &= \McA_{0}\otimes 1 + \sum_{i=1}^{n}\McA_{i}\otimes\kappa_{i} \\
+    &= \left(\McA_{0}+\sum_{i=1}^{n}\kappa_{i}\cdot\McA_{i}\right) \otimes 1
+  \end{aligned}.
+\]
+From this, we note that $\McA_{0}+\sum_{i}^{n}\kappa_{i}\cdot\McA_{i}\in f^{-1}\left(I\right)$; since $A$ is simple, we immediately conclude that $f^{-1}\left(I\right) = A$, once we know $\McA_{0}+\sum_{i=1}^{n}\kappa_{i}\cdot \McA_{i}$ is not zero. If it is zero, by the fact that $\McA$ is a linearly independent set, we conclude that $1,\kappa_{1},\dots,\kappa_{n}$ are all zero; which is a contradiction. Since $f^{-1}\left(I\right) = A$, we know $\left\langle f\left(f^{-1}I\right)\right\rangle = A \otimes_{K} B$.
+\end{proof}
+
+\begin{corollary}\label{lem:cas-basechange}
+  Central simple algebras are stable under base change. That is, if $L/K$ is a field extension and $D$ is a central simple algebra over $K$, then $L\otimes_{K} D$ is central simple over $L$.
+  \leanok
+  \lean{IsCentralSimple.baseChange}
+\end{corollary}
+
+\begin{proof}
+  By~\cref{thm:tensor-csa}, $L\otimes_{K} D$ is simple. Let $x\in Z\left(L\otimes_{K}D\right)$, by~\cref{lem:center-tensor}, we have $x\in Z\left(L\right)\otimes Z\left(D\right)=Z\left(L\right)$. Without loss of generality, we can assume that $x = l \otimes d$ is a pure tensor, then $l \in Z\left(L\right)$ and $d \in K$. Therefore $x = d\cdot l \in L$.
+\end{proof}
 
 %%% Local Variables:
 %%% mode: LaTeX

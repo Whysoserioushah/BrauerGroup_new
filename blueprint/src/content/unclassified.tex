@@ -52,8 +52,18 @@ A symmetric statement goes without saying.
 \end{proof}
 
 \begin{remark}
-  Since $\im\left(R\otimes_{R}B\to A\otimes_{R}B\right)=\im\left(A\to A\otimes_{R}B\right)$, we conclide $C_{A\otimes_{R}B}\left(\im\left(R\otimes_{R}B\to A\otimes_{R}B\right)\right)$ is $Z(A)\otimes_{R}B$ as well.
+  Since $\im\left(R\otimes_{R}B\to A\otimes_{R}B\right)=\im\left(A\to A\otimes_{R}B\right)$, we conclude its centralizer in $A\otimes_{R}B$ is $Z(A)\otimes_{R}B$ as well.
 \end{remark}
+
+\begin{lemma}
+  \label{lem:center-tensor}
+  Assume $R$ is a field. The centre of $A\otimes_{R} B$ is $Z\left(A\right)\otimes_{R}Z\left(B\right)$.
+  \leanok
+  \lean{IsCentralSimple.center_tensorProduct}
+\end{lemma}
+\begin{proof}
+ From previous lemmas, we know that $Z\left(A\otimes_{R}B\right)$ is equal to $Z\left(A\right)\otimes_{R}B \sqcap A\otimes_{R}Z\left(B\right)$ which is $Z\left(A\right)\otimes_{R}Z\left(B\right)$
+\end{proof}
 
 %%% Local Variables:
 %%% mode: LaTeX
