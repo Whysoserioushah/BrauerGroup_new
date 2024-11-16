@@ -432,70 +432,10 @@ lemma Wedderburn_Artin.aux.equivIdeal
       (show n - 1 < n by omega) ⟨_, _, one_eq'.symm⟩
   exact ⟨n, n_ne, ⟨LinearEquiv.ofBijective g ⟨g_inj, g_surj⟩⟩⟩
 
-namespace endPowEquivMatrix
-
-variable {A : Type*} [Ring A]
-    {M : Type*} [AddCommGroup M] [Module A M] {n : ℕ}
-
-abbrev toFun : Module.End A (Fin n → M) → Matrix (Fin n) (Fin n) (Module.End A M) :=
-  fun f i j ↦
-  { toFun := fun x ↦ f (Function.update 0 j x) i
-    map_add' := fun x y ↦ show  f _ i = (f _ + f _) i by
-      rw [← f.map_add, ← Function.update_add, add_zero]
-    map_smul' := fun x y ↦ show f _ _ = (x • f _) _ by
-      rw [← f.map_smul, ← Function.update_smul, smul_zero] }
-
-abbrev invFun : Matrix (Fin n) (Fin n) (Module.End A M) → Module.End A (Fin n → M) :=
-  fun M' ↦
-  { toFun := fun x i ↦ ∑ j : Fin n, M' i j (x j)
-    map_add' := fun x y ↦ by
-      simp only [map_add, ← Finset.sum_add_distrib, Pi.add_apply]
-      ext
-      dsimp
-      exact Finset.sum_add_distrib
-    map_smul' := by
-      intro a x
-      simp only [Pi.smul_apply, LinearMapClass.map_smul, RingHom.id_apply, Finset.smul_sum]
-      ext
-      dsimp
-      exact Eq.symm Finset.smul_sum
-  }
-end endPowEquivMatrix
-
--- count_heartbeats in -- 17331
 def endPowEquivMatrix (A : Type*) [Ring A]
     (M : Type*) [AddCommGroup M] [Module A M] (n : ℕ):
-    Module.End A (Fin n → M) ≃+* Matrix (Fin n) (Fin n) (Module.End A M) where
-  toFun := endPowEquivMatrix.toFun
-  invFun := endPowEquivMatrix.invFun
-  left_inv f := by
-    ext i x j : 3
-    simp only [of_apply, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.coe_comp, LinearMap.coe_single,
-      Function.comp_apply, Finset.sum_apply, Function.update, eq_rec_constant, Pi.zero_apply,
-      dite_eq_ite, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte]
-    rw [← Fintype.sum_apply, ← map_sum]
-    congr! 1
-    ext k : 1
-    simp [Pi.single, Function.update]
-  right_inv M := by
-    ext i j x : 3
-    simp only [Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite, Finset.sum_apply,
-      Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, of_apply, LinearMap.coe_mk, AddHom.coe_mk]
-    rw [show ∑ k : Fin n, ((M i k) (if k = j then x else 0)) =
-      ∑ k : Fin n, if k = j then (M i k x) else 0
-      from Finset.sum_congr rfl fun k _ ↦ by split_ifs <;> aesop]
-    simp
-  map_mul' f g := by
-    ext i j x : 2
-    simp only [of_apply, LinearMap.coe_mk, AddHom.coe_mk, mul_apply, LinearMap.coeFn_sum,
-      Finset.sum_apply, LinearMap.mul_apply, AddSubmonoid.coe_finset_sum,
-      Submodule.coe_toAddSubmonoid]
-    rw [← Fintype.sum_apply, ← map_sum]
-    congr! 1
-    ext k : 1
-    simp [Function.update]
-  map_add' _ _ := by ext i j x : 2; simp
-
+    Module.End A (Fin n → M) ≃+* Matrix (Fin n) (Fin n) (Module.End A M) :=
+  endVecAlgEquivMatrixEnd (Fin n) ℤ A M
 
 theorem Wedderburn_Artin_ideal_version
     (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :

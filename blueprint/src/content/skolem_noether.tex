@@ -1,46 +1,66 @@
 \section{Skolem-Noether Theorem}\label{sec:skolem-noether}
 
-Let $K$ be a field, $A$, $B$ be $K$-algebras where $A$ is central simple and finite $K$-dimensional and $B$ is simple. Let $M$ be a simple $A$-module.
+Let $K$ be a field, $A$, $B$ be $K$-algebras where $A$ is central simple and
+finite $K$-dimensional and $B$ is simple. Let $M$ be a simple $A$-module.
 
 \begin{construction}
-  For any $K$-algebra homomorphism $f : B \to A$, we give $M$ a $B \otimes_{K}\End_{A}M$-module structure by defining $(b\otimes l)\cdot m$ to be $f(b)\cdot l(m)$. To emphasis $f$, we denote $M$ with the $B\otimes_{K}\End_{A}M$-module structure by $M^{f}$.
-  \leanok
-  \lean{IsMod}
+  For any $K$-algebra homomorphism $f : B \to A$, we give $M$ a
+  $B \otimes_{K}\End_{A}M$-module structure by defining $(b\otimes l)\cdot m$ to
+  be $f(b)\cdot l(m)$. To emphasis $f$, we denote $M$ with the
+  $B\otimes_{K}\End_{A}M$-module structure by $M^{f}$. \leanok \lean{IsMod}
 \end{construction}
 
 \begin{lemma}
-  Let $f : B \to A$ be a $K$-algebra homomorphism, $M^{f}$ is finitely generated as a $B\otimes_{K}\End_{A}M$-module.
-  \leanok
-  \lean{module_inst_findim}
+  Let $f : B \to A$ be a $K$-algebra homomorphism, $M^{f}$ is finitely generated
+  as a $B\otimes_{K}\End_{A}M$-module. \leanok \lean{module_inst_findim}
 \end{lemma}
 \begin{proof}
-  Since $M$ is a finite $A$-module and $A$ a finite dimensional $K$-vector space, $M$ is a finite dimensional $K$-vector space as well. Suppose $S \subseteq M$ generates $M$ as $K$-module, the claim is that $S$ generates $M^{f}$ as well. Let $x \in M^{f}$, we write $x = \sum_{i}\lambda_{i}\cdot s_{i}$ with $\lambda_{i}\in K$ and $s_{i}\in S$.
-  Note that $\lambda_{i}\cdot s_{i} = (\rho(\lambda_{i})\otimes\mathbf{1}_{M})$ in $M^{f}$ where $\rho : K \to B$ is the map giving $B$ its $K$-algebra structure. Hence $x$ is in the span of $S$ in $M^{f}$ as well.
+  Since $M$ is a finite $A$-module and $A$ a finite dimensional $K$-vector
+  space, $M$ is a finite dimensional $K$-vector space as well. Suppose
+  $S \subseteq M$ generates $M$ as $K$-module, the claim is that $S$ generates
+  $M^{f}$ as well. Let $x \in M^{f}$, we write
+  $x = \sum_{i}\lambda_{i}\cdot s_{i}$ with $\lambda_{i}\in K$ and $s_{i}\in S$.
+  Note that $\lambda_{i}\cdot s_{i} = (\rho(\lambda_{i})\otimes\mathbf{1}_{M})$
+  in $M^{f}$ where $\rho : K \to B$ is the map giving $B$ its $K$-algebra
+  structure. Hence $x$ is in the span of $S$ in $M^{f}$ as well.
 \end{proof}
 
 \begin{remark}
-Given that $B$ is simple, any $k$-algebra homomorphism $f : B\to A$ injective; therefore by finite $K$-dimensionality of $A$, $B$ is finite $K$-dimensional as well.
+  Given that $B$ is simple, any $k$-algebra homomorphism $f : B\to A$ injective;
+  therefore by finite $K$-dimensionality of $A$, $B$ is finite $K$-dimensional
+  as well.
 \end{remark}
 
 \begin{lemma}
   \label{lem:iso-fg}
-  Let $f,g : B \to A$ be two $K$-algebra homomorphisms. Then $M^{f}$ and $M^{g}$ are isomorphic as $B\otimes_{K}\End_{A}M$-module.
-  \leanok
-  \lean{iso_fg}
+  Let $f,g : B \to A$ be two $K$-algebra homomorphisms. Then $M^{f}$ and $M^{g}$
+  are isomorphic as $B\otimes_{K}\End_{A}M$-module. \leanok \lean{iso_fg}
 \end{lemma}
 
 \begin{proof}
-  By~\cref{lem:iso-of-dim-eq}, it is sufficient to prove $\dim_{K}M^{f}=\dim_{K}M^{g}$. But as $K$-vector space, $M^{f}$ and $M^{g}$ are {\em literally\/} $M$.
+  By~\cref{lem:iso-of-dim-eq}, it is sufficient to prove
+  $\dim_{K}M^{f}=\dim_{K}M^{g}$. But as $K$-vector space, $M^{f}$ and $M^{g}$
+  are {\em literally\/} $M$.
 \end{proof}
 
 \begin{theorem}[Skolem-Noether]\label{thm:skolem-noether}
-  Let $f, g : B \to A$ be two $K$-algebra homomorphism. Then $f$ and $g$ differ only by a conjugation. That is there exists a unit $x \in A^{\times}$ such that $g = x f x^{-1}$.
-  \leanok
-  \lean{SkolemNoether'}
+  Let $f, g : B \to A$ be two $K$-algebra homomorphism. Then $f$ and $g$ differ
+  only by a conjugation. That is there exists a unit $x \in A^{\times}$ such
+  that $g = x f x^{-1}$. \leanok \lean{SkolemNoether'}
 \end{theorem}
 
 \begin{proof}
-  Let $M$ be any simple $A$-module (which exists by~\cref{lem:exists-simple-mod}). By~\cref{lem:iso-fg}, we have some isomorphism $\phi : M^{f}\cong M^{g}$ as $B\otimes_{K}\End_{A}M$-module. Since $M$ is simple, we have that $M$ is a balanced  $A$-module by~\cref{lem:iso-end-end}. Let $e$ denote the $k$-algerba isomorphism $A \cong \End_{\End_{A}M}M$ given by the $A$-action on $M$. Since both $\phi$ and $\phi^{-1}$ defines an element of $\End_{\End_{A}M}M$, we define $a := e^{-1}(\phi)$ and $b := e^{-1}(\phi^{-1})$. Then $ab = 1$ since $e(ab)=e(a)\cdot e(b)=\phi\phi^{-1}=1$. We prove that the image of $f$ and $afb$ under $e$ are the same; that is for all $x\in B$ and $m\in M$, $e(g(x))(m) = e(a f(x) b)(m)$. The right hand side is equal to
+  Let $M$ be any simple $A$-module (which exists
+  by~\cref{lem:exists-simple-mod}). By~\cref{lem:iso-fg}, we have some
+  isomorphism $\phi : M^{f}\cong M^{g}$ as $B\otimes_{K}\End_{A}M$-module. Since
+  $M$ is simple, we have that $M$ is a balanced $A$-module
+  by~\cref{lem:iso-end-end}. Let $e$ denote the $k$-algerba isomorphism
+  $A \cong \End_{\End_{A}M}M$ given by the $A$-action on $M$. Since both $\phi$
+  and $\phi^{-1}$ defines an element of $\End_{\End_{A}M}M$, we define
+  $a := e^{-1}(\phi)$ and $b := e^{-1}(\phi^{-1})$. Then $ab = 1$ since
+  $e(ab)=e(a)\cdot e(b)=\phi\phi^{-1}=1$. We prove that the image of $f$ and
+  $afb$ under $e$ are the same; that is for all $x\in B$ and $m\in M$,
+  $e(g(x))(m) = e(a f(x) b)(m)$. The right hand side is equal to
   \[
     \begin{aligned}
       e(af(x)b)(m) &=\left(e(a)\circ e(f(x))\circ e(b)\right)(m) \\
@@ -48,7 +68,11 @@ Given that $B$ is simple, any $k$-algebra homomorphism $f : B\to A$ injective; t
                    &=\phi\left(f(x)\cdot\phi^{-1}(m)\right) \\
     \end{aligned}.
   \]
-  Similarly, the left hand side is equal to $g(x)\cdot m$. Note that $\phi$ is $B\otimes \End_{A}M$-linear. Therefore $\phi\left(\left(x\otimes\mathbf{1}\right)\cdot \phi^{-1}(m)\right) = \left(x\otimes\mathbf{1}\right)\cdot m$. Unfolding the definition of $M^{f}$ and $M^{g}$, we see this is saying precisely $\phi\left(f(x)\cdot\phi^{-1}(m)\right)=g(x)\cdot m$.
+  Similarly, the left hand side is equal to $g(x)\cdot m$. Note that $\phi$ is
+  $B\otimes \End_{A}M$-linear. Therefore
+  $\phi\left(\left(x\otimes\mathbf{1}\right)\cdot \phi^{-1}(m)\right) = \left(x\otimes\mathbf{1}\right)\cdot m$.
+  Unfolding the definition of $M^{f}$ and $M^{g}$, we see this is saying
+  precisely $\phi\left(f(x)\cdot\phi^{-1}(m)\right)=g(x)\cdot m$.
 \end{proof}
 
 

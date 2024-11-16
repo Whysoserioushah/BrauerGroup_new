@@ -1,7 +1,84 @@
 \section{Double Centralizer Theorem}\label{sec:double-centralizer}
 
-Let $F$ be a field and $A$ a finite dimensional central simple $F$-algebra. Let $S\subseteq A$ be an $F$-subalgebra.
+In this section let $F$ be a field and $A$ an $F$-algebra. Define
+$\McL_{A} \subseteq \End_{F}A$ to be
+\[\left\{f : A \to A|f(x)=ax~\text{for some}~a\in A\right\},\]
+i.e. $F$-linear maps defined by left multiplication; similarly define
+$\McR_{A}$. Note that $\McL_{A}$ and $\McR_A$ are $F$-subalgebras of
+$\End_{F}A$. When we need to stree the underlying field is $F$, we also write
+$\McL_{A}^{F}$ and $\McR_{A}^{F}$. We assume $A$ to be a finite dimensional
+central simple $F$-algebra.
+\begin{lemma}
+  \label{lem:centralizer-mul-left-le}
+  The centralizer of $\McL_{A}$ in $\End_{F}A$ is smaller than or equal to
+  $\McR_{A}$:
+  \[
+    C_{\End_{F}A}\left(\McL_{A}\right) \le \McR_{A}.
+  \]
+  \leanok \lean{centralizer_mulLeft_le_of_isCentralSimple}
+\end{lemma}
 
+\begin{proof}
+  Indeed, let $x \in C_{\End_{F}A}\left(\McL_{A}\right)$. Recall
+  from~\cref{con:self-tensor-opp-iso-end} that
+  $e : A\otimes_{F}A^{\opp}\cong \End_{F}A$ as $F$-algebras. Then $e^{-1}(x)$ is
+  in
+  $C_{A\otimes_{F}A^{\opp}}\left(\im\left(A\to A\otimes_{F}A^{\opp}\right)\right)$
+  (for $e$ sends $a\otimes 1$ to the $F$-linear map $(a\cdot\bullet)$). Since
+  $C_{A\otimes_{F}A^{\opp}}\left(\im\left(A\to A\otimes_{F}A^{\opp}\right)\right) = Z(A)\otimes_{F}A^{\opp}=F\otimes_{F}A^{\opp}=\im\left(A^{\opp}\to A\otimes_{F}A^{\opp}\right)$,
+  we find some $y\in A^{\opp}$ such that $1 \otimes y = e^{-1}(x)$. Therefore
+  $e\left(1\otimes y\right) = x$; but $e\left(1\otimes y\right)$ is in
+  $\McR_{A}$ for it is the linear map $(\bullet\cdot y)$.
+\end{proof}
+
+\begin{remark}\label{rem:mul-left-center-linear}
+  For any $F$-algebra $A$, every element in $C_{\End_{F}A}\left(\McL_{A}\right)$
+  is in fact $Z(A)$-linear. Let $x\in C_{\End_{F}A}\left(\McL_{A}\right)$,
+  $z\in Z(A)$ and $a \in A$, we have $x(z\cdot a) = z\cdot x(a)$ because $x$
+  commutes with the linear map $\left(z\cdot\bullet\right)$.
+\end{remark}
+
+\begin{remark}
+  $A$ is a $Z(A)$-algebra whose algebra structure is given by
+  $Z(A)\hookrightarrow A$. By~\cref{lem:center-simple-ring}, $Z(A)$ is a field.
+  $A$ is finite dimensional as a $Z(A)$-module because of the tower $A/Z(A)/F$.
+\end{remark}
+
+ \begin{lemma}
+   As $F$-algebras, we have $\McR_{A}\cong A^{\mop}$. \leanok
+   \lean{Module.End.rightMulEquiv}
+ \end{lemma}
+ \begin{proof}
+   We prove the map $A \to \McR_{A}$ is bijective. It is injective because if
+   $\left(\bullet \cdot a\right) = \left(\bullet\cdot b\right)$, then
+   $a = 1 \cdot a = 1 \cdot b = b$. The map is surjective by the definition of
+   $\McR_{A}$.
+ \end{proof}
+ \begin{lemma}\label{lem:centralizer-mul-left-eq-mul-right}
+   Let $B$ be any simple $F$-algebra ({\em not\/} necessarily central). The
+   centralizer of $\McL_{B}$ in $\End_{F}A$ is equal to $\McR_{B}$. \leanok
+   \lean{centralizer_mulLeft}
+ \end{lemma}
+ \begin{proof}
+   It is straightforward to show
+   $\McR_{B}^{F}\le C_{\End_{F}A}\left(\McL_{B}^{F}\right)$. So we only need to
+   prove $C_{\End_{F}A}\left(\McL_{B}^{F}\right)\le \McR_{B}^{F}$.
+   By~\cref{lem:centralizer-mul-left-le}, since $B$ is a central simple finite
+   dimensional $Z(B)$-algebra, we have that
+   \[
+     C_{\End_{Z(B)}B}\left(\McL_{B}^{Z(B)}\right) \le \McR_{B}^{Z(B)}.
+   \]
+   Suppose $f\in\End_{F}B$ is in $C_{\End_{F}B}B$, by
+   ~\cref{rem:mul-left-center-linear}, $f$ is $Z(B)$-linear as well. Then $f$ is
+   in $\McR_{B}^{Z(B)}$; that is $f$ is equal to $\left(\bullet\cdot b\right)$
+   for some $b \in B$ as $Z(B)$-linear maps. Then $f$ is also equal to
+   $\left(\bullet\cdot b\right)$ as $F$-linear maps.
+ \end{proof}
+
+ \begin{construction}
+
+ \end{construction}
+ 
 %%% Local Variables:
 %%% mode: LaTeX
 %%% TeX-master: "../print"

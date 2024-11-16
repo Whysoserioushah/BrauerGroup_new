@@ -1,36 +1,52 @@
 \chapter{Morita Equivalence}\label{sec:morita}
 
-This chapter intertwine with \cref{sec:wed-artin}: \cref{sec:stacks-074e} depends on \cref{sec:wed-artin-proof}; while \cref{sec:wed-artin-unique} depends on \cref{sec:stacks-074e}.
+This chapter intertwine with \cref{sec:wed-artin}: \cref{sec:stacks-074e}
+depends on \cref{sec:wed-artin-proof}; while \cref{sec:wed-artin-unique} depends
+on \cref{sec:stacks-074e}.
 
 \section{Construction of the equivalence}\label{sec:morita-construction}
 
-Let $R$ be a ring and $0 \ne n\in \mathbb{N}$. In this chapter, we prove that the category $R$-modules and the category of $\Mat_{n}(R)$-modules are equivalent. Then we use the equivalence to prove several useful lemmas.
+Let $R$ be a ring and $0 \ne n\in \mathbb{N}$. In this chapter, we prove that
+the category $R$-modules and the category of $\Mat_{n}(R)$-modules are
+equivalent. Then we use the equivalence to prove several useful lemmas.
 
 \begin{construction}\label{con:morita-eqv-functor0}
-  \leanok
-  \lean{matrix_smul_vec_def}
-  If $M$ is an $R$-module, we have a natural $\Mat_{n}(R)$-module structure on $\widehat{M}:=M^{n}$ given by $(m_{ij})\cdot (v_{k})=\sum_{j}m_{ij}\cdot v_{j}$.
-  If $f : M \to N$ is an $R$-linear map, then $\widehat{f} : M^{n}\to N^{n}$ given by $(v_{i}) \mapsto (f(v_{i}))$ is a $\Mat_{n}(R)$-linear map. Thus we have a well-defined functor $\MOD_{R} \Longrightarrow \MOD_{\Mat_{n}(R)}$.
+  \leanok \lean{matrix_smul_vec_def} If $M$ is an $R$-module, we have a natural
+  $\Mat_{n}(R)$-module structure on $\widehat{M}:=M^{n}$ given by
+  $(m_{ij})\cdot (v_{k})=\sum_{j}m_{ij}\cdot v_{j}$. If $f : M \to N$ is an
+  $R$-linear map, then $\widehat{f} : M^{n}\to N^{n}$ given by
+  $(v_{i}) \mapsto (f(v_{i}))$ is a $\Mat_{n}(R)$-linear map. Thus we have a
+  well-defined functor $\MOD_{R} \Longrightarrow \MOD_{\Mat_{n}(R)}$.
 \end{construction}
 
 \begin{remark}
-Note that all modules are assumed to be left modules; when we need to consider right $R$-modules, we will consider left $R^{\opp}$-modules instead. We use $\delta_{ij}$ to denote the matrix whose $(i,j)$-th entry is $1$ and $0$ elsewhere. $\delta_{ij}$ forms a basis for matrices.
+  Note that all modules are assumed to be left modules; when we need to consider
+  right $R$-modules, we will consider left $R^{\opp}$-modules instead. We use
+  $\delta_{ij}$ to denote the matrix whose $(i,j)$-th entry is $1$ and $0$
+  elsewhere. $\delta_{ij}$ forms a basis for matrices.
 \end{remark}
 
 \begin{construction}\label{con:morita-eqv-functor1}
-  \leanok
-  \lean{fromModuleCatOverMatrix.smul_α_coe}
-  If $M$ is a $\Mat_{n}(R)$-module, then $\widetilde{M} := \{\delta_{ij}\cdot m | m \in M\} \subseteq M$ is an $R$-module whose $R$-action is given by $r \cdot (\delta_{ij}\cdot m) := (r\cdot \delta_{ij})\cdot m$. More over if $f : M \to N$ is a $\Mat_{n}(R)$-linear map, $\widetilde{f} : \widetilde{M} \to \widetilde{N}$ given by the restriction of $f$ is $R$-linear. Hence, we have a functor $\MOD_{\Mat_{n}(R)}\Longrightarrow \MOD_{R}$.
+  \leanok \lean{fromModuleCatOverMatrix.smul_α_coe} If $M$ is a
+  $\Mat_{n}(R)$-module, then
+  $\widetilde{M} := \{\delta_{ij}\cdot m | m \in M\} \subseteq M$ is an
+  $R$-module whose $R$-action is given by
+  $r \cdot (\delta_{ij}\cdot m) := (r\cdot \delta_{ij})\cdot m$. More over if
+  $f : M \to N$ is a $\Mat_{n}(R)$-linear map,
+  $\widetilde{f} : \widetilde{M} \to \widetilde{N}$ given by the restriction of
+  $f$ is $R$-linear. Hence, we have a functor
+  $\MOD_{\Mat_{n}(R)}\Longrightarrow \MOD_{R}$.
 \end{construction}
 
 \begin{theorem}[Morita Equivalence]\label{thm:morita}
-  The functors constructed in \cref{con:morita-eqv-functor0} and \cref{con:morita-eqv-functor1} form an equivalence of category.
-  \leanok
+  The functors constructed in \cref{con:morita-eqv-functor0} and
+  \cref{con:morita-eqv-functor1} form an equivalence of category. \leanok
   \lean{moritaEquivalentToMatrix}
 \end{theorem}
 
 \begin{proof}
-  Let $M$ be an $R$-module, then the unit $\widetilde{\widehat{M}} \cong M$ is given by
+  Let $M$ be an $R$-module, then the unit $\widetilde{\widehat{M}} \cong M$ is
+  given by
   \[
     \begin{aligned}
       x \mapsto \sum_{j} x_{j} \\
@@ -38,7 +54,9 @@ Note that all modules are assumed to be left modules; when we need to consider r
     \end{aligned}
   \]
 
-  Let $M$ be an $\Mat_{n}(R)$-module, then the counit $\widehat{\widetilde{M}}\cong M$ is given by $m \mapsto (\delta_{i0}\cdot m)$. This map is both injective and surjective.
+  Let $M$ be an $\Mat_{n}(R)$-module, then the counit
+  $\widehat{\widetilde{M}}\cong M$ is given by $m \mapsto (\delta_{i0}\cdot m)$.
+  This map is both injective and surjective.
 \end{proof}
 
 \section{Stacks 074E}\label{sec:stacks-074e}
@@ -46,59 +64,96 @@ Note that all modules are assumed to be left modules; when we need to consider r
 Let $A$ be a finite dimensional simple $k$-algebra.
 
 \begin{lemma}\label{lem:isomorphic-simple-mod}
-  Let $M$ and $N$ be simple $A$-modules, then $M$ and $N$ are isomorphic as $A$-modules.
-  \leanok
-  \lean{linearEquiv_of_isSimpleModule_over_simple_ring}
+  Let $M$ and $N$ be simple $A$-modules, then $M$ and $N$ are isomorphic as
+  $A$-modules. \leanok \lean{linearEquiv_of_isSimpleModule_over_simple_ring}
 \end{lemma}
 
 \begin{proof}
-  By~\cref{thm:wed-artin-algebra}, there exists non-zero $n\in\mathbb N$, $k$-division algebra $D$ such that $A\cong \Mat_{n}(D)$ as $k$-algebras. Then by~\cref{thm:morita}, we have equivalence of category $e : \MOD_{A}\cong\MOD_{D}$. Since simple module is a categorical notion (it can be defined in terms monomorphisms), $e(M)$ and $e(N)$ are simple $D$-modules. Since $D$ is a division ring, $e(M)$ and $e(N)$ are isomorphic as $D$-modules, therefore $M$ and $N$ are isomorphic as $A$-modules.
+  By~\cref{thm:wed-artin-algebra}, there exists non-zero $n\in\mathbb N$,
+  $k$-division algebra $D$ such that $A\cong \Mat_{n}(D)$ as $k$-algebras. Then
+  by~\cref{thm:morita}, we have equivalence of category
+  $e : \MOD_{A}\cong\MOD_{D}$. Since simple module is a categorical notion (it
+  can be defined in terms monomorphisms), $e(M)$ and $e(N)$ are simple
+  $D$-modules. Since $D$ is a division ring, $e(M)$ and $e(N)$ are isomorphic as
+  $D$-modules, therefore $M$ and $N$ are isomorphic as $A$-modules.
 \end{proof}
 
 \begin{lemma}\label{lem:direct-sum-simple-mod}
-  Let $M$ be an $A$-module, there exists a simple $A$-module $S$ such that $M$ is a direct sum of copies of $S$, i.e. $M \cong \bigoplus_{i \in \iota} S$ for some indexing set $\iota$.
-  \leanok
+  Let $M$ be an $A$-module, there exists a simple $A$-module $S$ such that $M$
+  is a direct sum of copies of $S$, i.e. $M \cong \bigoplus_{i \in \iota} S$ for
+  some indexing set $\iota$. \leanok
   \lean{directSum_simple_module_over_simple_ring}
 \end{lemma}
 
 \begin{proof}
-  By~\cref{thm:wed-artin-algebra}, there exists non-zero $n\in\mathbb N$, $k$-division algebra $D$ such that $A\cong \Mat_{n}(D)$ as $k$-algebras. Then by~\cref{thm:morita}, we have equivalence of category $e : \MOD_{A}\cong\MOD_{D}$. Since simple module is a categorical notion (it can be defined in terms monomorphisms), $e^{-1}(D)$ is a simple module over $A$. Since $e(M)$ is a free module over $D$, we can write $e(M)$ as $\bigoplus_{i\in \iota} D$ for some indexing set $\iota$. By precomposing the unit of $e$, we get an isomorphism $M \cong e^{-1}\left(\bigoplus_{i\in\iota} D\right)$. We only need to prove $e^{-1}\left(\bigoplus_{i\in\iota} D\right)\cong\bigoplus_{i\in\iota}e^{-1}\left(D\right)$. This is because direct sum is the categorical coproduct.
+  By~\cref{thm:wed-artin-algebra}, there exists non-zero $n\in\mathbb N$,
+  $k$-division algebra $D$ such that $A\cong \Mat_{n}(D)$ as $k$-algebras. Then
+  by~\cref{thm:morita}, we have equivalence of category
+  $e : \MOD_{A}\cong\MOD_{D}$. Since simple module is a categorical notion (it
+  can be defined in terms monomorphisms), $e^{-1}(D)$ is a simple module over
+  $A$. Since $e(M)$ is a free module over $D$, we can write $e(M)$ as
+  $\bigoplus_{i\in \iota} D$ for some indexing set $\iota$. By precomposing the
+  unit of $e$, we get an isomorphism
+  $M \cong e^{-1}\left(\bigoplus_{i\in\iota} D\right)$. We only need to prove
+  $e^{-1}\left(\bigoplus_{i\in\iota} D\right)\cong\bigoplus_{i\in\iota}e^{-1}\left(D\right)$.
+  This is because direct sum is the categorical coproduct.
 \end{proof}
 
 \begin{remark}
-  Note that by~\cref{lem:isomorphic-simple-mod}, any two simple $A$-module are isomorphic, hence for any $A$-module $M$ and {\em any} simple $A$-module $S$, we can write $M$ as a direct sum of copies of $S$.
+  Note that by~\cref{lem:isomorphic-simple-mod}, any two simple $A$-module are
+  isomorphic, hence for any $A$-module $M$ and {\em any} simple $A$-module $S$,
+  we can write $M$ as a direct sum of copies of $S$.
 \end{remark}
 
 \begin{lemma}\label{lem:iso-of-dim-eq}
-  Let $M$ and $N$ be two finite $A$-module with compatible $k$-action. Then $M$ and $N$ are isomorphic as $A$-module if and only if $\dim_{k} M$ and $\dim_{k} N$ are equal.
-  \leanok
+  Let $M$ and $N$ be two finite $A$-module with compatible $k$-action. Then $M$
+  and $N$ are isomorphic as $A$-module if and only if $\dim_{k} M$ and
+  $\dim_{k} N$ are equal. \leanok
   \lean{linearEquiv_iff_finrank_eq_over_simple_ring}
 \end{lemma}
 
 \begin{proof}
-  The forward direction is trivial as an $A$-linear isomorphism is a $k$-linear isomorphism as well. Conversely, suppose $\dim_{k}M = \dim_{k}N$. By~\cref{lem:direct-sum-simple-mod}, there exists a simple $A$-module $S$ such that $M \cong \bigoplus_{i\in\iota} S$ and $N \cong \bigoplus_{i\in\iota'} S$ as $A$-modules.
-  Without loss of generality $S \ne 0$, for otherwise we have $M \cong N$ anyway. If either of $\iota$ or $\iota'$ is empty, then $\dim_{k}M = \dim_{k} N = 0$ implying that $M = N = 0$, we again have $M \cong N$. Thus, we assume both $\iota$ and $\iota'$ are non-empty. By pulling back the $A$-module structure on $S$ to a $k$-module structure along $k \hookrightarrow A$, $M, N, S, \bigoplus_{i\in\iota} S, \bigoplus_{i\in\iota'} S$ are all finite dimensional $k$-vector spaces. Hence $\iota$ and $\iota'$ are finite. The equality $\dim_{k}M=\dim_{k}N$ tells us that $\iota \cong \iota'$ as set, hence $M \cong \bigoplus_{i\in\iota}S\cong\bigoplus_{i\in\iota'}S\cong N$ as required.
+  The forward direction is trivial as an $A$-linear isomorphism is a $k$-linear
+  isomorphism as well. Conversely, suppose $\dim_{k}M = \dim_{k}N$.
+  By~\cref{lem:direct-sum-simple-mod}, there exists a simple $A$-module $S$ such
+  that $M \cong \bigoplus_{i\in\iota} S$ and $N \cong \bigoplus_{i\in\iota'} S$
+  as $A$-modules. Without loss of generality $S \ne 0$, for otherwise we have
+  $M \cong N$ anyway. If either of $\iota$ or $\iota'$ is empty, then
+  $\dim_{k}M = \dim_{k} N = 0$ implying that $M = N = 0$, we again have
+  $M \cong N$. Thus, we assume both $\iota$ and $\iota'$ are non-empty. By
+  pulling back the $A$-module structure on $S$ to a $k$-module structure along
+  $k \hookrightarrow A$,
+  $M, N, S, \bigoplus_{i\in\iota} S, \bigoplus_{i\in\iota'} S$ are all finite
+  dimensional $k$-vector spaces. Hence $\iota$ and $\iota'$ are finite. The
+  equality $\dim_{k}M=\dim_{k}N$ tells us that $\iota \cong \iota'$ as set,
+  hence $M \cong \bigoplus_{i\in\iota}S\cong\bigoplus_{i\in\iota'}S\cong N$ as
+  required.
 \end{proof}
 
-Let $A \cong \Mat_{n}(D)$ as $k$-algebras for some $k$-division algebra and $n\ne0$.
+Let $A \cong \Mat_{n}(D)$ as $k$-algebras for some $k$-division algebra and
+$n\ne0$.
 
 \begin{lemma}\label{lem:exists-simple-mod}
-  $D^{n}$ is a simple $A$-module where the module structure is given by pulling back the $\Mat_{n}(D)$-module structure of $D^{n}$.
-  \leanok
+  $D^{n}$ is a simple $A$-module where the module structure is given by pulling
+  back the $\Mat_{n}(D)$-module structure of $D^{n}$. \leanok
   \lean{simple_mod_of_wedderburn}
 \end{lemma}
 \begin{proof}
-  By~\cref{thm:morita}, we have $\MOD_{A}\cong\MOD_{D}\cong\MOD_{\Mat_{n}(D)}$. Since $D$ is a simple $D$-module, $D^{n}$ is a simple $\Mat_{n}(D)$ module and consequently, a simple $A$-module.
+  By~\cref{thm:morita}, we have $\MOD_{A}\cong\MOD_{D}\cong\MOD_{\Mat_{n}(D)}$.
+  Since $D$ is a simple $D$-module, $D^{n}$ is a simple $\Mat_{n}(D)$ module and
+  consequently, a simple $A$-module.
 \end{proof}
 
 \begin{remark}
-Note that any $A$-linear endomorphism of $D^{n}$ is $\Mat_{n}(D)$-linear, and vice versa. Thus we have $\End_{A}\left(D^{n}\right)\cong \End_{\Mat_{n}(D)}\left(D^{n}\right)$ as $k$-algebras.
+  Note that any $A$-linear endomorphism of $D^{n}$ is $\Mat_{n}(D)$-linear, and
+  vice versa. Thus we have
+  $\End_{A}\left(D^{n}\right)\cong \End_{\Mat_{n}(D)}\left(D^{n}\right)$ as
+  $k$-algebras.
 \end{remark}
 
 \begin{lemma}\label{lem:end-vec-iso}
   $\End_{A}\left(D^{n}\right)$ is isomorphic to $D^{\opp}$ as $k$-algebras.
-  \leanok
-  \lean{end_simple_mod_of_wedderburn}
+  \leanok \lean{end_simple_mod_of_wedderburn}
 \end{lemma}
 
 \begin{proof}
@@ -107,41 +162,49 @@ Note that any $A$-linear endomorphism of $D^{n}$ is $\Mat_{n}(D)$-linear, and vi
     \begin{aligned}
       \End_{A}\left(D^{n}\right) &\cong \End_{\Mat_{n}(D)}\left(D^{n}\right) & \\
                                  &\cong \End_{D}D & \text{by~\cref{thm:morita},}~\MOD_{D}\cong\MOD_{\Mat_{n}D}\\
-      &\cong D^{\opp}
+                                 &\cong D^{\opp}
     \end{aligned}
   \]
 \end{proof}
 
 \begin{lemma}\label{lem:end-simple-iso}
-  Let $M$ be a simple $A$-module, then $\End_{A} M\cong D^{\opp}$ as $k$-algebras.
-  \leanok
-  \lean{end_simple_mod_of_wedderburn'}
+  Let $M$ be a simple $A$-module, then $\End_{A} M\cong D^{\opp}$ as
+  $k$-algebras. \leanok \lean{end_simple_mod_of_wedderburn'}
 \end{lemma}
 \begin{proof}
-  By~\cref{thm:morita}, $D^{n}$ is simple as $A$-module; hence by~\cref{lem:isomorphic-simple-mod}, $D^{n}$ and $M$ are isomorphic as $A$-module. \Cref{lem:end-vec-iso} gives the desired result.
+  By~\cref{thm:morita}, $D^{n}$ is simple as $A$-module; hence
+  by~\cref{lem:isomorphic-simple-mod}, $D^{n}$ and $M$ are isomorphic as
+  $A$-module. \Cref{lem:end-vec-iso} gives the desired result.
 \end{proof}
 
 \begin{remark}
-  In particular, if $M$ is a simple $A$-module, then $\End_{A}M$ is a simple $k$-algbera.
+  In particular, if $M$ is a simple $A$-module, then $\End_{A}M$ is a simple
+  $k$-algbera.
 \end{remark}
 
 \begin{lemma}
   Let $M$ be a simple $A$-module, then $\End_{A}M$ has finite $k$-dimension.
-  \leanok
-  \lean{end_simple_mod_finite}
+  \leanok \lean{end_simple_mod_finite}
 \end{lemma}
 \begin{proof}
-  By~\cref{thm:wed}, such $D$ and $n$ always exists. Hence we only need to show $D^{\opp}$ has finite $k$-dimension. Since $\dim_{k}A=\dim_{k}\Mat_{n}(D)$ are both finite, we conclude $D^{\opp}$ is finite as a $k$-vector space by pulling back the finiteness along $D \hookrightarrow \Mat_{n}(D)$.
+  By~\cref{thm:wed}, such $D$ and $n$ always exists. Hence we only need to show
+  $D^{\opp}$ has finite $k$-dimension. Since $\dim_{k}A=\dim_{k}\Mat_{n}(D)$ are
+  both finite, we conclude $D^{\opp}$ is finite as a $k$-vector space by pulling
+  back the finiteness along $D \hookrightarrow \Mat_{n}(D)$.
 \end{proof}
 
 \begin{remark}
-Note that for all $A$-module $M$, $\End_{\End_{A}M}M$ is a $k$-algebra as well, with $k \hookrightarrow \End_{\End_{A}M}M$ given by $a \mapsto (x \mapsto a\cdot x)$. Thus, we always have a $k$-algebra homomorphism $A \to \End_{\End_{A}M}M$ given by the $A$-action on $M$. When $A$ is a simple ring, this map is injective.
+  Note that for all $A$-module $M$, $\End_{\End_{A}M}M$ is a $k$-algebra as
+  well, with $k \hookrightarrow \End_{\End_{A}M}M$ given by
+  $a \mapsto (x \mapsto a\cdot x)$. Thus, we always have a $k$-algebra
+  homomorphism $A \to \End_{\End_{A}M}M$ given by the $A$-action on $M$. When
+  $A$ is a simple ring, this map is injective.
 \end{remark}
 
 \begin{definition}[Balanced Module]\label{def:balanced-mod}
-  \leanok
-  \lean{IsBalanced}
-  For any ring $A$ and $A$-module $M$, we say $M$ is a balanced $A$-module, if the $A$-linear map $A \to \End_{\End_{A}M}M$ is surjective.
+  \leanok \lean{IsBalanced} For any ring $A$ and $A$-module $M$, we say $M$ is a
+  balanced $A$-module, if the $A$-linear map $A \to \End_{\End_{A}M}M$ is
+  surjective.
 \end{definition}
 
 \begin{remark}
@@ -149,28 +212,36 @@ Note that for all $A$-module $M$, $\End_{\End_{A}M}M$ is a $k$-algebra as well, 
 \end{remark}
 
 \begin{lemma}\label{lem:balanced-self}
-  For any ring $A$, $A$ is balanced as $A$-module.
-  \leanok
+  For any ring $A$, $A$ is balanced as $A$-module. \leanok
 \end{lemma}
 \begin{proof}
-  If $f \in \End_{\End_{A}M}A$, then the image of $f(1)$ under $A \to\End_{\End_{A}}A$ is $f$ again.
+  If $f \in \End_{\End_{A}M}A$, then the image of $f(1)$ under
+  $A \to\End_{\End_{A}}A$ is $f$ again.
 \end{proof}
 
 We assume again that $A$ is a finite dimensional simple $k$-algebra.
 \begin{lemma}
-  Any simple $A$-module is balanced.
-  \leanok
-  \lean{isBalanced_of_simpleMod}
+  Any simple $A$-module is balanced. \leanok \lean{isBalanced_of_simpleMod}
 \end{lemma}
 \begin{proof}
-  Indeed, if $M$ is a simple $A$-module, then $A \cong \bigoplus_{i\in\iota} M$ for some indexing set $\iota$ by~\cref{lem:direct-sum-simple-mod}. Since $A$ is balanced, $\bigoplus_{i\in\iota}M$ is balanced. Let $g \in \End_{\End_{A}M}M$, we can define a corresponding $G \in \End_{\End_{\bigoplus_{i}M}}\left(\bigoplus_{i}M\right)$ by sending $(v_{i})$ to $(g(v_{i}))$. Since $\bigoplus_{i}M$ is balanced, we know that for some $a\in A$, $G$ is the image of $a$ under $A \to \End_{\End_{\bigoplus_{i}M}}\left(\bigoplus_{i}M\right)$. Then the image of $a$ under $A \to \End_{\End_{A}M}M$ is $g$.
+  Indeed, if $M$ is a simple $A$-module, then $A \cong \bigoplus_{i\in\iota} M$
+  for some indexing set $\iota$ by~\cref{lem:direct-sum-simple-mod}. Since $A$
+  is balanced, $\bigoplus_{i\in\iota}M$ is balanced. Let
+  $g \in \End_{\End_{A}M}M$, we can define a corresponding
+  $G \in \End_{\End_{\bigoplus_{i}M}}\left(\bigoplus_{i}M\right)$ by sending
+  $(v_{i})$ to $(g(v_{i}))$. Since $\bigoplus_{i}M$ is balanced, we know that
+  for some $a\in A$, $G$ is the image of $a$ under
+  $A \to \End_{\End_{\bigoplus_{i}M}}\left(\bigoplus_{i}M\right)$. Then the
+  image of $a$ under $A \to \End_{\End_{A}M}M$ is $g$.
 \end{proof}
 
 \begin{lemma}\label{lem:iso-end-end}
-  For any simple $A$-module $M$, we have $A \cong \End_{\End_{A}M}M$ as $k$-algebras.
+  For any simple $A$-module $M$, we have $A \cong \End_{\End_{A}M}M$ as
+  $k$-algebras.
 \end{lemma}
 \begin{proof}
-  The canonical map $A \to \End_{\End_{A}M}M$ is both injective and surjective, as $M$ is a balanced $A$-module and $A$ is a simple ring.
+  The canonical map $A \to \End_{\End_{A}M}M$ is both injective and surjective,
+  as $M$ is a balanced $A$-module and $A$ is a simple ring.
 \end{proof}
 
 %%% Local Variables:

@@ -6,65 +6,147 @@ In section, we collect some lemmas that does not really belong to anywhere.
 \subsection{Tensor Product}
 
 \begin{lemma}\label{lem:expand-tensor-in-basis}
-  Let $M$ and $N$ be $R$-modules such that $\mathcal{C}_{i\in\iota}$ is a basis for $N$, then every elements of $x \in M \otimes_{R} N$ can be uniquely written as $\sum_{i\in\iota}m_{i}\otimes \mathcal{C}_{i}$ where only finitely many $m_{i}$'s are non-zero
+  Let $M$ and $N$ be $R$-modules such that $\mathcal{C}_{i\in\iota}$ is a basis
+  for $N$, then every elements of $x \in M \otimes_{R} N$ can be uniquely
+  written as $\sum_{i\in\iota}m_{i}\otimes \mathcal{C}_{i}$ where only finitely
+  many $m_{i}$'s are non-zero
 \end{lemma}
 
 \begin{proof}
-  Given the basis $\mathcal{C}$, we have $R$-linear isomorphism $N \cong\bigoplus_{i\in\iota}R$, hence $M\otimes_{R}N \cong \bigoplus_{i\in\iota}(M\otimes_{R}R)\cong\bigoplus_{i\in\iota}M$ as $R$-modules.
+  Given the basis $\mathcal{C}$, we have $R$-linear isomorphism
+  $N \cong\bigoplus_{i\in\iota}R$, hence
+  $M\otimes_{R}N \cong \bigoplus_{i\in\iota}(M\otimes_{R}R)\cong\bigoplus_{i\in\iota}M$
+  as $R$-modules.
 \end{proof}
 By switching $M$ and $N$, the symmetric statement goes without saying.
 
 % \noindent\rule{\textwidth}{0.2pt}
 
 \begin{lemma}
-
-  Let $K$ be a field, $M$ and $N$ be flat $K$-modules. Suppose $p \subseteq M$ and $q \subseteq N$ are $K$-submodules, then $(p \otimes_{K} N) \sqcap (M \otimes_{K} q) = p \otimes_{K} q$ as $K$-submodules.
+  \label{lem:submodule-tensor-submodule}
+  Let $K$ be a field, $M$ and $N$ be flat $K$-modules. Suppose $p \subseteq M$
+  and $q \subseteq N$ are $K$-submodules, then
+  $(p \otimes_{K} N) \sqcap (M \otimes_{K} q) = p \otimes_{K} q$ as
+  $K$-submodules.
 \end{lemma}
 
 \begin{proof}
-  The hard direction is to show $(p \otimes_{R} N) \sqcap (M \otimes_{R} q) \le p \otimes_{R} q$. Consider the following diagram:
+  The hard direction is to show
+  $(p \otimes_{R} N) \sqcap (M \otimes_{R} q) \le p \otimes_{R} q$. Consider the
+  following diagram:
   \begin{center}
     \begin{tikzcd}
       p \otimes_{K} q \ar[r, "u"] \ar[d, "\alpha"] & M \otimes_{K} q \ar[r, "v"] \ar[d, "\beta"] & {}^{M}/_{p} \otimes_{K} q \ar[d, "\gamma"] \\
-      p \otimes_{K} N \ar[r, "u'"] & M \otimes_{K} N \ar[r, "v'"] & ^{M}/_{p} \otimes_{K} N
+      p \otimes_{K} N \ar[r, "u'"] & M \otimes_{K} N \ar[r, "v'"] & ^{M}/_{p}
+      \otimes_{K} N
     \end{tikzcd}
   \end{center}
-  Since $^{M}/_{p}$ is flat, $\gamma$ is injective.
-  Let $z \in (p \otimes_{R} N) \sqcap (M \otimes_{R} q) = \im \beta \sqcap \im u'$. By abusing notation, replace $z$ with some elements of $M \otimes_{K} q$ and continue with $\beta(z)\in\im \beta \sqcap \im u'$. Since $v'(\beta(z))=\gamma(v(z))$ and that $\beta(z)\in \im u'$, we conclude that $\gamma(v(z))=0$, that is $z\in\ker v=\im u$. We abuse notation again, let $z \in p \otimes_{K} q$, we need to show $\beta(u(z))\in\im \beta \sqcap \im u'$, but $\beta\circ u=u'\circ\alpha$, we finish the proof.
+  Since $^{M}/_{p}$ is flat, $\gamma$ is injective. Let
+  $z \in (p \otimes_{R} N) \sqcap (M \otimes_{R} q) = \im \beta \sqcap \im u'$.
+  By abusing notation, replace $z$ with some elements of $M \otimes_{K} q$ and
+  continue with $\beta(z)\in\im \beta \sqcap \im u'$. Since
+  $v'(\beta(z))=\gamma(v(z))$ and that $\beta(z)\in \im u'$, we conclude that
+  $\gamma(v(z))=0$, that is $z\in\ker v=\im u$. We abuse notation again, let
+  $z \in p \otimes_{K} q$, we need to show
+  $\beta(u(z))\in\im \beta \sqcap \im u'$, but $\beta\circ u=u'\circ\alpha$, we
+  finish the proof.
 \end{proof}
 
 \subsection{Centralizer and Center}
-Let $R$ be a commutative ring and $A$, $B$ be two $R$-algebras. We denote centralizer of $S\subseteq A$ by $C_{A}S$ and centre of $A$ by $Z(A)$.
+Let $R$ be a commutative ring and $A$, $B$ be two $R$-algebras. We denote
+centralizer of $S\subseteq A$ by $C_{A}S$ and centre of $A$ by $Z(A)$.
 
-\begin{lemma}
-  Let $S, T$ be two subalgebras of $A$, then $C_{A}(S\sqcup T)=C_{A}(S)\sqcap C_{A}(T)$.
-  \leanok
+\begin{lemma}\label{lem:sup-centralizer}
+  Let $S, T$ be two subalgebras of $A$, then
+  $C_{A}(S\sqcup T)=C_{A}(S)\sqcap C_{A}(T)$. \leanok
   \lean{Subalgebra.centralizer_sup}
 \end{lemma}
-This lemma can be generalized to centralizers of arbitrary supremum of subalgebras.
+This lemma can be generalized to centralizers of arbitrary supremum of
+subalgebras.
 
 \begin{lemma}
-  If we assume $B$ is free as $R$-module, then $C_{A\otimes_{R}B}\left(\im\left(A\to A\otimes_{R}B\right)\right)$ is $Z(A) \otimes_{R} B$
+  If we assume $B$ is free as $R$-module, then for any $R$-subalgebra $S$, we
+  have that $C_{A\otimes_{R}B}\left(\im\left(S\to A\otimes_{R}B\right)\right)$
+  is $C_{A}(S) \otimes_{R} B$
 \end{lemma}
 A symmetric statement goes without saying.
 \begin{proof}
-  Let $w\in C_{A\otimes_{R}B}\left(\im\left(A\to A\otimes_{R}B\right)\right)$. Since $B$ is free, we choose an arbitrary basis $\mathcal{B}$; by~\cref{lem:expand-tensor-in-basis}, we write $w = \sum_{i}m_{i}\otimes_{K}\mathcal{B}_{i}$. It is sufficient to show that $m_{i}\in Z(A)$ for all $i$. Let $a \in A$, we need to show that $m_{i}\cdot a = a \cdot m_{i}$. Since $w$ is in the centralizer, $w \cdot (a\otimes 1) = (a\otimes 1)\cdot w$. Hence we have $\sum_{i}(a\cdot m_{i})\otimes\mathcal{B}_{i}=\sum_{i}(m_{i}\cdot a)\otimes\mathcal{B}_{i}$. By the uniqueness of~\cref{lem:expand-tensor-in-basis}, we conclude $a\cdot m_{i}=m_{i}\cdot a$.
+  Let $w\in C_{A\otimes_{R}B}\left(\im\left(S\to A\otimes_{R}B\right)\right)$.
+  Since $B$ is free, we choose an arbitrary basis $\mathcal{B}$;
+  by~\cref{lem:expand-tensor-in-basis}, we write
+  $w = \sum_{i}m_{i}\otimes_{K}\mathcal{B}_{i}$. It is sufficient to show that
+  $m_{i}\in C_{A}(S)$ for all $i$. Let $a \in S$, we need to show that
+  $m_{i}\cdot a = a \cdot m_{i}$. Since $w$ is in the centralizer,
+  $w \cdot (a\otimes 1) = (a\otimes 1)\cdot w$. Hence we have
+  $\sum_{i}(a\cdot m_{i})\otimes\mathcal{B}_{i}=\sum_{i}(m_{i}\cdot a)\otimes\mathcal{B}_{i}$.
+  By the uniqueness of~\cref{lem:expand-tensor-in-basis}, we conclude
+  $a\cdot m_{i}=m_{i}\cdot a$.
 \end{proof}
 
 \begin{remark}
-  Since $\im\left(R\otimes_{R}B\to A\otimes_{R}B\right)=\im\left(A\to A\otimes_{R}B\right)$, we conclude its centralizer in $A\otimes_{R}B$ is $Z(A)\otimes_{R}B$ as well.
+  A useful special case is when $S=A$, then since $C_{A}(A)=Z(A)$, we have
+  $C_{A\otimes_{R}B}\left(\im\left(A\to A\otimes_{R} B\right)\right)$ is equal
+  to $Z(A)\otimes_{R} B$. Since
+  $\im\left(R\otimes_{R}B\to A\otimes_{R}B\right)=\im\left(A\to A\otimes_{R}B\right)$,
+  we conclude its centralizer in $A\otimes_{R}B$ is $Z(A)\otimes_{R}B$.
 \end{remark}
 
-\begin{lemma}
-  \label{lem:center-tensor}
-  Assume $R$ is a field. The centre of $A\otimes_{R} B$ is $Z\left(A\right)\otimes_{R}Z\left(B\right)$.
-  \leanok
-  \lean{IsCentralSimple.center_tensorProduct}
-\end{lemma}
+\begin{corollary}\label{cor:centralizer-tensor-centralizer}
+  Assume $R$ is a field. Let $S$ and $T$ be $R$-subalgebras of $A$ and $B$
+  respectively. Then $C_{A\otimes_{R}B}\left(S\otimes_{R}T\right)$ is equal to
+  $C_{A}(S)\otimes_{R}C_{B}(T)$ \leanok \lean{centralizer_tensor_centralizer}
+\end{corollary}
 \begin{proof}
- From previous lemmas, we know that $Z\left(A\otimes_{R}B\right)$ is equal to $Z\left(A\right)\otimes_{R}B \sqcap A\otimes_{R}Z\left(B\right)$ which is $Z\left(A\right)\otimes_{R}Z\left(B\right)$
+  From~\cref{lem:submodule-tensor-submodule}, $C_{A}(S)\otimes_{R}C_{B}(T)$ is
+  equal to
+  $\left(C_{A}(S)\otimes_{R} B\right)\sqcap \left(A\otimes_{R}C_{B}(T)\right)$.
+  The left hand side $C_{A}(S)\otimes_{R} B$ is equal to
+  $C_{A\otimes_{R}B}\left(\im\left(S\to A\otimes_{R}B\right)\right)$ and the
+  right hand side is equal to
+  $C_{A\otimes_{R}B}\left(\im\left(T\to A\otimes_{R}B\right)\right)$. Hence
+  by~\cref{lem:sup-centralizer}, their intersection is equal to
+  \[C_{A\otimes_{R}B}\left(\im\left(S\to A\otimes_{R} B\right)\sqcup \im\left(T\to A\otimes_{R}B\right)\right)\]
+  This is precisely $C_{A\otimes_{R}B}\left(S\otimes_{R}T\right)$.
 \end{proof}
 
+\begin{corollary}
+  \label{cor:center-tensor-center}
+  Assume $R$ is a field. The centre of $A\otimes_{R} B$ is
+  $Z\left(A\right)\otimes_{R}Z\left(B\right)$. \leanok
+  \lean{IsCentralSimple.center_tensorProduct}
+\end{corollary}
+\begin{proof}
+  Special case of~\cref{cor:centralizer-tensor-centralizer}.
+\end{proof}
+
+\subsection{Some isomorphisms}
+
+\begin{construction}
+  \label{con:self-tensor-opp-iso-end}
+  Let $R$ be a commutative ring and $A$ a central simple $R$-algebra. Then we
+  have isomorphism $A\otimes_{R}A^{\opp} \cong \End_{R}A$ as $R$-algerbas given
+  by $a\otimes 1 \mapsto (a\cdot\bullet)$ and
+  $1\otimes a \mapsto (\bullet\cdot a)$.
+  By~\cref{cor:alghom-bijective-of-dim-eq}, this is an isomorphism.
+\end{construction}
+
+\begin{construction}
+  \label{con:end-vec-iso-matrix}
+  Let $A$ be an $R$-algebra and $M$ an $A$-module. We have isomorphism
+  $\End_{A}\left(M^{n}\right)\cong \Mat_{n}\left(\End_{A}M\right)$ as
+  $R$-algebras. For any $f \in \End_{A}\left(M^{n}\right)$, we define a matrix
+  $M$ whose $(i,j)$-th entry is
+  \[
+    x \mapsto f\left(0,\dots,x,\dots,0\right)_{i},
+  \]
+  where $x$ is at the $j$-th position. On the other hand, if
+  $M \in \Mat_{n}\left(\End_{A}M\right)$, we define an $A$-linear map
+  $f : M^{n}\to M^{n}$ by
+  \[
+    v \mapsto \left(\sum_{j}M_{ij}v_{j}\right)_{i}.
+  \]
+  \leanok \lean{endVecAlgEquivMatrixEnd}
+\end{construction}
 %%% Local Variables:
 %%% mode: LaTeX
 %%% TeX-master: "../print"
