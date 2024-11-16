@@ -812,7 +812,6 @@ lemma IsBalanced.congr {M N : Type v} [AddCommGroup M] [AddCommGroup N] [Module 
   · apply IsBalanced.congr_aux; exact l
   · apply IsBalanced.congr_aux; exact l.symm
 
-
 lemma isBalanced_of_simpleMod (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
     [Module k M] [IsScalarTower k A M] : IsBalanced A M := by
   classical

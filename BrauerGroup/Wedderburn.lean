@@ -596,7 +596,7 @@ lemma Wedderburn_Artin_algebra_version
     rw [show Function.update (0 : Fin n → I) i (r • x) = r • Function.update (0 : Fin n → I) i x
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
-    exact congr_arg e $ by ext; simp
+    exact congr_arg e $ by ext; simp [Pi.single]
   · ext x : 1
     simp only [LinearMap.coe_mk, AddHom.coe_mk, MulOpposite.unop_zero, LinearMap.zero_apply]
     rw [show (0 : I) = Function.update (0 : Fin n → I) i (r • x) j
@@ -607,7 +607,7 @@ lemma Wedderburn_Artin_algebra_version
     rw [show Function.update (0 : Fin n → I) i (r • x) = r • Function.update (0 : Fin n → I) i x
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
-    exact congr_arg e $ by ext; simp
+    exact congr_arg e $ by ext; simp [Pi.single]
 
 omit [FiniteDimensional K B] in
 theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]

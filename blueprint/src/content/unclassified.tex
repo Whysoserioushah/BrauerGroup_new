@@ -64,10 +64,12 @@ centralizer of $S\subseteq A$ by $C_{A}S$ and centre of $A$ by $Z(A)$.
 This lemma can be generalized to centralizers of arbitrary supremum of
 subalgebras.
 
-\begin{lemma}
+\begin{lemma}\label{lem:centralizer-inclusion-tensor}
   If we assume $B$ is free as $R$-module, then for any $R$-subalgebra $S$, we
   have that $C_{A\otimes_{R}B}\left(\im\left(S\to A\otimes_{R}B\right)\right)$
   is $C_{A}(S) \otimes_{R} B$
+  \leanok
+  \lean{centralizer_inclusionRight}
 \end{lemma}
 A symmetric statement goes without saying.
 \begin{proof}

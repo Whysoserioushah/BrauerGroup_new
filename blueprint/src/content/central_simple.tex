@@ -41,6 +41,9 @@ in~\cref{sec:unclassified}.
   $\pi: R \to {}^{R}/_{I}$, either $\pi$ is injective implying that $I = \{0\}$
   or that ${}^{R}/_{I}$ is the trivial ring implying that $I = R$.
 \end{proof}
+\begin{remark}
+  If $A$ is a simple $R$-algebra, ``ring homomorphism'' in \cref{lem:simple-ring-iff} can be replaced with $R$-algebra homomorphism.
+\end{remark}
 
 \begin{corollary}\label{cor:alghom-bijective-of-dim-eq}
   Assume $R$ is a field. Let $A, B$ be finite dimensional $R$-algebras where $A$
@@ -145,6 +148,26 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
   have $x\in Z\left(L\right)\otimes Z\left(D\right)=Z\left(L\right)$. Without
   loss of generality, we can assume that $x = l \otimes d$ is a pure tensor,
   then $l \in Z\left(L\right)$ and $d \in K$. Therefore $x = d\cdot l \in L$.
+\end{proof}
+
+\begin{theorem}\label{thm:tensor-simple-implies-simple}
+  If $A\otimes_{K} B$ is a simple ring, then $A$ and $B$ are both simple.
+\end{theorem}
+\begin{proof}
+  By symmetry, we only prove that $A$ is simple.
+  If $A$ or $B$ is the trivial ring then $A\otimes_{K} B$ is the trivial ring, a contradiction. Thus we assume both $A$ and $B$ are non-trivial. Suppose $A$ is not simple, by~\cref{lem:simple-ring-iff}, there exists a non-trivial $K$-algebra $A'$ and a $K$-algebra homomorphism $f : A \to A'$ such that $\ker f \not= \{0\}$. Let $F : A \otimes_{K} B\to A'\otimes_{K} B$ be the base change of $f$, then since $A\otimes_{K} B$ is simple and $A'\otimes B$ is non-trivial ($A'$ is non-trivial and $B$ is faithfully flat because $B$ is free), we conclude that $F$ is injective. Then we have that
+  \begin{center}
+    \begin{tikzcd}
+      0 \arrow{r}{0} & A \otimes_{K} B \arrow{r}{F} & A'\otimes_K B
+    \end{tikzcd}
+  \end{center}
+  is exact. Since $B$ is faithfully flat as a $K$-module, tensorig with $B$ reflects exact sequences, therefore
+  \begin{center}
+    \begin{tikzcd}
+      0 \arrow{r}{0} & A \arrow{r}{f} & A'
+    \end{tikzcd}
+  \end{center}
+  is exact as well. This is contradiction since $f$ is not injective.
 \end{proof}
 
 %%% Local Variables:
