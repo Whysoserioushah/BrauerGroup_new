@@ -899,13 +899,14 @@ def isoDagger (m : ℕ) [NeZero m] :
   commutes' := by
     intro f
     ext i j x
-    simp only [endPowEquivMatrix, RingEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe,
-      RingEquiv.coe_mk, Equiv.coe_fn_mk, LinearMap.coe_mk, Module.algebraMap_end_apply,
-      Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_ite, smul_zero, AddHom.coe_mk,
-      Matrix.algebraMap_matrix_apply]
+    simp only [endPowEquivMatrix, endVecAlgEquivMatrixEnd, endVecRingEquivMatrixEnd,
+      RingEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe, AlgEquiv.coe_ringEquiv,
+      AlgEquiv.coe_mk, RingEquiv.coe_mk, Equiv.coe_fn_mk, Pi.smul_apply,
+      LinearMap.coe_mk, AddHom.coe_mk, Matrix.algebraMap_matrix_apply]
     split_ifs with h
-    · rfl
-    · rfl
+    · simp only [h, algebraMap_end_apply, Pi.smul_apply, Pi.single_eq_same]
+    · simp only [algebraMap_end_apply, Pi.smul_apply, Pi.single_eq_of_ne h, smul_zero,
+      LinearMap.zero_apply]
 
 def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C :=
 AlgEquiv.ofRingEquiv (f := mopEquivEnd C) <| by
