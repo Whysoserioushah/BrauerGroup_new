@@ -125,11 +125,10 @@ A symmetric statement goes without saying.
 
 \begin{construction}
   \label{con:self-tensor-opp-iso-end}
-  Let $R$ be a commutative ring and $A$ a central simple $R$-algebra. Then we
-  have isomorphism $A\otimes_{R}A^{\opp} \cong \End_{R}A$ as $R$-algerbas given
+  Let $R$ be a commutative ring and $A$ an $R$-algebra. Then we
+  have an $R$-algebra homomorphism $A\otimes_{R}A^{\opp} \cong \End_{R}A$ given
   by $a\otimes 1 \mapsto (a\cdot\bullet)$ and
-  $1\otimes a \mapsto (\bullet\cdot a)$.
-  By~\cref{cor:alghom-bijective-of-dim-eq}, this is an isomorphism.
+  $1\otimes a \mapsto (\bullet\cdot a)$. When $R$ is a field and $A$ is a finite dimensional central simple algebra, this morphism is an isomorphism by~\cref{cor:alghom-bijective-of-dim-eq}.
 \end{construction}
 
 \begin{construction}
@@ -149,6 +148,32 @@ A symmetric statement goes without saying.
   \]
   \leanok \lean{endVecAlgEquivMatrixEnd}
 \end{construction}
+
+\begin{construction}
+  \label{con:matrix-matrix}
+  Let $A$ be an $R$-algebra. Then $\Mat_{m}\left(\Mat_{n}(A)\right) \cong \Mat_{mn}(A)$.
+  The trick is to think $\Mat_{m}A$ as $\{0,\dots,m-1\} \times \{0,\dots,m-1\} \to A$. Since the indexing set $\{0,\dots,mn-1\}$ bijects with $\left(\{0,\dots,m-1\}\times\{0,\dots,n-1\}\right)$, the isomorphism is just function currying, function uncurrying, precomposing and postcomposing bijections.
+  \leanok
+  \lean{Matrix.comp}
+\end{construction}
+
+\begin{construction}
+  \label{con:matrix-tensor-matrix}
+  Let $A, B$ be $R$-algebras. Then $\Mat_{mn}\left(A\otimes_{R}B\right)\cong\Mat_{m}(A)\otimes_{R}\Mat_{n}B$ as $K$-algebras. We first construct $R$-algebra isomorphism $A \otimes_{R}\Mat_{n}(R) \cong \Mat_{n}(A)$:
+  \[
+    \begin{aligned}
+      & a \otimes 1 \mapsto \diag{a}~\text{and}~ 1\otimes (m_{ij}) \mapsto (m_{ij})\\
+      & \sum_{i,j} m_{ij}\otimes \delta_{ij}\mapsfrom (m_{ij}),
+    \end{aligned}
+  \]
+  where $\diag$ is the diagonal matrix and $\delta_{ij}$ the matrix whose only non-zero entry is at $(i,j)$-th and is equal to $1$.
+  Thus $\Mat_{m}(A)\otimes_{R}\Mat_{n}(B)\cong \left(A\otimes_{R}B\right)\otimes_{R} \left(\Mat_{m}(R)\otimes_{R} \Mat_{n}(R)\right)$ as $R$-algebra.
+  The Kronecker product gives us an $R$-algebra map $\Mat_{m}(R)\otimes_{R}\Mat_{n}(R) \to \Mat_{mn}(R)$. We want this map to be an isomorphism. By~\cref{lem:simple-ring-iff}, we only need to prove it to be surjective: for all $\delta_{ij} \in \Mat_{mn}(R)$, we interpret $\Mat_{mn}(R)$ as a function $\{0,\dots,m-1\}\times\{0,\dots,n-1\}\to R$, then $\delta_{ij}$ is the image of $\delta_{ab}\otimes \delta_{cd} \in \Mat_{m}(R)\otimes_{R}\Mat_{n}(R)$ where $i = (a, c)$ and $j = (b,d)$. Combine everything together, we see $\Mat_{mn}\left(A\otimes_{R}B\right)$ is isomorphic to $\Mat_{mn}\left(A\otimes_{R} B\right)$ as $R$-algebras.
+  \leanok
+
+  \lean{algebras}
+\end{construction}
+
 %%% Local Variables:
 %%% mode: LaTeX
 %%% TeX-master: "../print"

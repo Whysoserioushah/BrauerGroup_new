@@ -1,6 +1,70 @@
 \chapter{Brauer Group}\label{cha:brauer-group}
 
 \section{Construction of Brauer Group}
+Let $K$ be a field. We denote the class of finite dimensional central simple $K$-algebras as $\CSA_{K}$. When $K$ is clear, we drop the subscript.
+
+\begin{remark}
+  By~\cref{lem:tensor-central} and~\cref{thm:tensor-csa}, $\CSA$ is closed under tensor product, that is if $A, B\in\CSA$, we have $A\otimes_{K} B\in\CSA$ as well.
+\end{remark}
+
+\begin{definition}[Brauer Equivalence]
+  For any two $A, B\in\CSA$, we say $A$ and $B$ are Brauer equivalent, when there exists $m, n \in \mathbb{N}_{\ge0}$ such that $\Mat_{m}(A)\cong \Mat_{n}B$ as $K$-algebras. We denote this relation as $A\sim_{\Br_{K}} B$, when $K$ is clear, we drop the subscript.
+\end{definition}
+
+\begin{lemma}
+  $\sim_{\Br}$ is reflexive.
+  \leanok
+  \lean{IsBrauerEquivalent.refl}
+\end{lemma}
+\begin{proof}
+  Indeed, $A \cong \Mat_{1}(A)$ as $K$-algerbas.
+\end{proof}
+
+\begin{lemma}
+  $\sim_{\Br}$ is symmetric.
+  \leanok
+  \lean{IsBrauerEquivalent.symm}
+\end{lemma}
+\begin{proof}
+  Indeed, just exchange $m$ and $n$.
+\end{proof}
+
+\begin{lemma}
+  $\sim_{\Br}$ is transitive.
+  \leanok
+  \lean{IsBrauerEquivalent.trans}
+\end{lemma}
+\begin{proof}
+  Let $A\sim_{\Br}B$ and $B\sim_{\Br}C$; that is for some $m,n,p, q\in\mathbb{N}_{\ge0}$ we have $\Mat_{n}(A)\cong\Mat_{m}(B)$ and $\Mat_{p}(B)\cong \Mat_{q}(C)$ as $K$-algebras. Hence, from~\cref{con:matrix-matrix}, we have the following:
+  \[
+    \begin{aligned}
+      \Mat_{np}(A)&\cong \Mat_{p}\left(\Mat_{n}(A)\right)\cong\Mat_{p}\left(\Mat_{m}(B)\right)\\
+                  &\cong\Mat_{mp}(B)\cong\Mat_{m}\left(\Mat_{p}(B)\right)\\
+      &\cong\Mat_{m}\left(\Mat_{q}(C)\right)\cong\Mat_{mq}(C).
+    \end{aligned}
+  \]
+  In another word, $A\sim_{\Br}C$.
+\end{proof}
+
+Hence $\sim_{\Br}$ is really an equivalence relation, we denote the quotient ${}^{\CSA}/_{\sim_{\Br}}$ as $\Br(K)$.
+
+\begin{lemma}\label{lem:br-mul-wd}
+  $(\bullet\otimes_{K}\bullet):\CSA\times\CSA \to \CSA$ descends to a function on $\Br(K)$.
+  \leanok
+  \lean{BrauerGroup.eqv_tensor_eqv}
+\end{lemma}
+\begin{proof}
+  We need to prove that for all $A, B, C, D \in \CSA$ such that $A\sim_{\Br} B$ and $C\sim_{\Br}D$, $A\otimes_{R}C \sim_{\Br} D\otimes_{R}D$ as well.
+  Suppose $\Mat_{m}(A)\cong \Mat_{n}(B)$ as $K$-algebras and $\Mat_{p}(C)\cong\Mat_{q}(D)$, by~\cref{con:matrix-tensor-matrix}, we have
+  \[
+    \begin{aligned}
+      \Mat_{mp}\left(A\otimes_{R} C\right)&\cong \Mat_{m}(A)\otimes_{R}\Mat_{p}(C) \\
+                                          &\cong \Mat_{n}(B)\otimes_{R}\Mat_{q}(D)\\
+      &\cong \Mat_{nq}\left(B\otimes_{R}D\right).
+    \end{aligned}
+  \]
+
+\end{proof}
 
 \section{Base Change}
 
