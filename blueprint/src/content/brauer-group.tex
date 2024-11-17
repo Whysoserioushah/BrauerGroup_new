@@ -11,6 +11,10 @@ Let $K$ be a field. We denote the class of finite dimensional central simple $K$
   For any two $A, B\in\CSA$, we say $A$ and $B$ are Brauer equivalent, when there exists $m, n \in \mathbb{N}_{\ge0}$ such that $\Mat_{m}(A)\cong \Mat_{n}B$ as $K$-algebras. We denote this relation as $A\sim_{\Br_{K}} B$, when $K$ is clear, we drop the subscript.
 \end{definition}
 
+\begin{remark}
+  Isomorphic $K$-algebras are Brauer equivalent.
+\end{remark}
+
 \begin{lemma}
   $\sim_{\Br}$ is reflexive.
   \leanok
@@ -66,9 +70,60 @@ Hence $\sim_{\Br}$ is really an equivalence relation, we denote the quotient ${}
 
 \end{proof}
 
-\section{Base Change}
+\begin{construction}[Brauer Group]\label{con:br}
+  $\Br(K)$ forms a group under $[A]_{\sim_{\Br}}\cdot[B]_{\sim_{\Br}}=[A\otimes_{K}B]_{\sim_{\Br}}$ with neutral element $[K]_{\sim_{\Br}}$ where $A, B\in\CSA$ and $[A]_{\sim_{Br}}^{-1}=[A^{\opp}]_{\sim_{\Br}}$. We need to prove the following properties:
+  \begin{enumerate}
+    \item associativity: for all $A, B, C\in\CSA$, $[A]_{\sim_{\Br}}\cdot\left([B]_{\sim_{\Br}}\cdot[C]_{\sim_{\Br}}\right)=\left([A]_{\sim_{\Br}}\cdot[B]_{\sim_{\Br}}\right)\cdot [C]_{\sim_{\Br}}$ because $A\ox_{R}\left(B\ox_{R}C\right)\cong \left(A\ox_{R}B\right)\ox_{R}C$ as $K$-algebras.
+    \item neutral element: for all $A\in \CSA$, $[K]_{\sim_{\Br}}\cdot[A]_{\sim_{\Br}}=[A]_{\sim_{\Br}}=[A]_{\sim_{\Br}}\cdot [K]_{\sim_{\Br}}$. Since $[K]_{\sim_{\Br}}\cdot[A]_{\sim_{\Br}}=[K\ox_{K} A]_{\sim_{\Br}}$, in~\cref{con:matrix-tensor-matrix}, we see that $\Mat_{n}(A)\cong A\ox_{K}\Mat_{n}(K)$, by~\cref{lem:br-mul-wd}, $A\ox_{K}\Mat_{n}(K)$ is Brauer equivalent to $A\ox_{K} K$ since $K\sim_{\Br}\Mat_{n}(K)$.
+    \item cancellation: for all $A \in \CSA$, we need $[A]_{\sim_{\Br}}\cdot[A^{\opp}]_{\sim_{\Br}}$, that is we want $A\ox_{K}A^{\opp}\sim_{\Br} K$. By~\cref{con:self-tensor-opp-iso-end}, we have $A\ox_{K}A^{\opp}\cong \End_{K}A$ which is isomorphic to $\Mat_{\dim_{K}A}(K)$ as $K$-algebras.
+  \end{enumerate}
+  \leanok
+  \lean{BrauerGroup.Bruaer_Group}
+\end{construction}
 
-\section{Good Representative Lemma}
+\begin{theorem}
+  If $K$ is algebraically closed, $\Br(K)$ is trivial; in particular $\Mat_{n}(\mathbb{C})$ is trivial.
+\end{theorem}
+\begin{proof}
+  We need to show that every $A\in\CSA$ is isomorphic to $\Mat_{n}(K)$ for some $K$ when $K$ is algebraically closed. Indeed, by~\cref{thm:wed-artin-algebra}, $A \cong \Mat_{n}(D)$ for some division algebra $D$ and $n\in\nat_{\ge0}$. Since $K$ is algebraically closed and $D$ is an integral domain and finite dimensional, the structure morphism $\rho: K\to D$ is a isomorphism; therefore $A\cong \Mat_{n}(K)$.
+\end{proof}
+
+\section{Base Change}\label{con:br-base-change}
+In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-basechange} that if $A\in\CSA_{K}$ then $E\otimes_{K}A\in\CSA_{E}$; therefore we have a set-theoretic function $\CSA_{K}\to\CSA_{E}$. In this section we prove that this descends to a group homomorphism $\Br(K)\to\Br(E)$. For brevity, if $A\in \CSA_{K}$, we dentoe $E\ox_{K}A$ as $A_{E}$ when this causes no confusion.
+\begin{construction}
+  We will construct a series of isomorphisms (either over $K$ or $E$) to arrive at the conclusion that $A\sim_{\Br_{K}}B$ implies $A_{E}\sim_{\Br_{E}}B_{E}$. Assume $m,n\in\nat_{\ge0}$ are such that $\Mat_{m}(A)\cong\Mat_{n}(B)$ are $K$-algebras. Then we do the following calculation: as $E$-algebras
+  \[
+    \begin{aligned}
+      \Mat_{m}\left(A_{E}\right)
+      &\cong A_{E}\otimes_{E}\Mat_{m}(E) &\text{see~\cref{con:matrix-tensor-matrix}}\\
+      &\cong A_{E}\otimes_{E}\left(E\ox_{K} \Mat_{m}(K)\right) & \text{see}~\dagger\\
+      &\cong E \ox_{K}\left(A\ox_{K}\Mat_{m}(K)\right) &\text{see}~\ddagger\\
+      &\cong E\ox_{K}\Mat_{m}(A) &\text{see~\cref{con:matrix-tensor-matrix} and}~\dagger\!\!\dagger \\
+      \Mat_{n}\left(B_{E}\right) &\cong E\ox_{K}\Mat_{n}(B) &\text{same as the case of}~A\\
+      Mat_{m}\left(A_{E}\right)&\cong \Mat_{n}\left(B_{E}\right) &\text{see}~\dagger\!\!\dagger
+    \end{aligned}.
+  \]
+
+   \noindent$\dagger$: Wee need to check $\Mat_{m}(E)\cong E\otimes_{K}\Mat_{m}K$ as $E$-algebras since~\cref{con:matrix-tensor-matrix} only gives a $K$-algebra isomorphism. If $e \in E$, then its image in $E\ox_{K}\Mat_{m}(K)$ is $e\otimes 1$ and its image in $\Mat_{m}(E)$ is $\diag(e)$ which under the $K$-algebra isomorphism is mapped to $\sum_{ij}\diag(e)_{ij}\cdot \delta_{ij}=e\ox1$.
+
+   \noindent$\ddagger$: This is defined by combining two $E$-algebra homomorphisms
+   \[
+     A_{E}\to A_{E}\ox_{K}\Mat_{m}(K)\to E\ox_{K}\left(A\ox_{K}\Mat_{m}(K)\right)\]
+     and
+     \[
+       E\ox_{K}\Mat_{m}(K)\to \left(E\ox_{K}\Mat_{m}(K)\right)\ox_{K}A \to E\ox_{K}(A\ox_{K}\Mat_{m}(K)).
+    \]
+   Since $\left(E\ox_{K}A\right)\ox_{E}\left(E\ox_{K}\Mat_{m}(K)\right)$ is a simple ring, this morphism is automatically injective. It is surjective as well: let $x\in E\ox_{K}\left(A\ox_{K}\Mat_{m}(K)\right)$, without loss of generality, assume $x=e\ox (a\ox\delta_{ij})$ for some $e\in E$, $a\in A$. Then precisely $\left(e\ox a\right)\ox\left(1\ox\delta_{ij}\right)$ is mapped to $x$.
+
+   \noindent$\dagger\!\dagger$: a $K$-algebra isomorphism $A\cong B$ gives an $E$-algebra isomorphism $E\ox_{K}A \cong E\ox_{K} B$.
+
+   Thus we have a well defined function $\Br(K)\to\Br(E)$. We now check that this is a group homomorphism. $[K]_{\sim_{\Br_{K}}}$ is mapped to $[E\ox_{K}K]_{\sim_{\Br_{E}}}$ but $E\ox_{K}K\cong E$ as $E$-algebra. For $A, B\in\CSA_{K}$, we have that $[AB]_{\sim_{\Br_{K}}}$ is mapped to $\left(A\ox_{K}B\right)_{E}\cong A_{E}\ox_{E} B_{E}$ as $E$-algebras; hence $[AB]_{\sim_{\Br_{K}}}$ and $[A]_{\sim_{\Br_{K}}}\cdot[B]_{\sim_{\Br_{K}}}$ have the same image under base change.
+   \leanok
+   \lean{BrauerGroupHom.BaseChange}
+ \end{construction}
+
+
+ \section{Good Representative Lemma}
 
 \section{The Second Galois Cohomology}
 

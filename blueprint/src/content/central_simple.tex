@@ -5,8 +5,14 @@ in~\cref{sec:unclassified}.
 
 \begin{definition}[Simple Ring] A ring $R$ is simple if the only
   two-sided-ideals of $R$ are ${0}$ and $R$. An algebra is simple if it is
-  simple as a ring. \leanok \lean{IsSimpleRing}
+  simple as a ring.
+  \leanok
+  \lean{IsSimpleRing}
 \end{definition}
+
+\begin{remark}
+  Division rings are simple.
+\end{remark}
 
 \begin{lemma}
   \label{lem:center-simple-ring}
@@ -21,8 +27,14 @@ in~\cref{sec:unclassified}.
 
 \begin{definition}[Central Algebras]
   Let $R$ be a ring and $A$ an $R$-algebra, we say $A$ is central if and only if
-  the centre of $A$ is $R$ \leanok \lean{Algebra.IsCentral}
+  the centre of $A$ is $R$
+  \leanok
+  \lean{Algebra.IsCentral}
 \end{definition}
+
+\begin{remark}
+  Every commutative ring is a central algebra over itself.
+\end{remark}
 
 \begin{remark}
   Simpleness is invariant under ring isomorphism and centrality is invariant
@@ -68,7 +80,9 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
 \begin{lemma}
   \label{lem:tensor-central}
   If $A$ and $B$ are central $K$-algebras, $A\otimes_{K}B$ is a central
-  $K$-algebra as well. \leanok \lean{IsCentralSimple.TensorProduct.isCentral}
+  $K$-algebra as well.
+  \leanok
+  \lean{IsCentralSimple.TensorProduct.isCentral}
 \end{lemma}
 \begin{proof}
   Assume $A$ and $B$ are central algebras, then
@@ -142,7 +156,7 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
   $\left\langle f\left(f^{-1}I\right)\right\rangle = A \otimes_{K} B$.
 \end{proof}
 
-\begin{corollary}\label{lem:cas-basechange}
+\begin{corollary}\label{cor:csa-basechange}
   Central simple algebras are stable under base change. That is, if $L/K$ is a
   field extension and $D$ is a central simple algebra over $K$, then
   $L\otimes_{K} D$ is central simple over $L$. \leanok

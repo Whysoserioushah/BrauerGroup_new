@@ -96,7 +96,9 @@ A symmetric statement goes without saying.
 \begin{corollary}\label{cor:centralizer-tensor-centralizer}
   Assume $R$ is a field. Let $S$ and $T$ be $R$-subalgebras of $A$ and $B$
   respectively. Then $C_{A\otimes_{R}B}\left(S\otimes_{R}T\right)$ is equal to
-  $C_{A}(S)\otimes_{R}C_{B}(T)$ \leanok \lean{centralizer_tensor_centralizer}
+  $C_{A}(S)\otimes_{R}C_{B}(T)$
+  \leanok
+  \lean{centralizer_tensor_centralizer}
 \end{corollary}
 \begin{proof}
   From~\cref{lem:submodule-tensor-submodule}, $C_{A}(S)\otimes_{R}C_{B}(T)$ is
@@ -146,7 +148,8 @@ A symmetric statement goes without saying.
   \[
     v \mapsto \left(\sum_{j}M_{ij}v_{j}\right)_{i}.
   \]
-  \leanok \lean{endVecAlgEquivMatrixEnd}
+  \leanok
+  \lean{endVecAlgEquivMatrixEnd}
 \end{construction}
 
 \begin{construction}
@@ -170,8 +173,7 @@ A symmetric statement goes without saying.
   Thus $\Mat_{m}(A)\otimes_{R}\Mat_{n}(B)\cong \left(A\otimes_{R}B\right)\otimes_{R} \left(\Mat_{m}(R)\otimes_{R} \Mat_{n}(R)\right)$ as $R$-algebra.
   The Kronecker product gives us an $R$-algebra map $\Mat_{m}(R)\otimes_{R}\Mat_{n}(R) \to \Mat_{mn}(R)$. We want this map to be an isomorphism. By~\cref{lem:simple-ring-iff}, we only need to prove it to be surjective: for all $\delta_{ij} \in \Mat_{mn}(R)$, we interpret $\Mat_{mn}(R)$ as a function $\{0,\dots,m-1\}\times\{0,\dots,n-1\}\to R$, then $\delta_{ij}$ is the image of $\delta_{ab}\otimes \delta_{cd} \in \Mat_{m}(R)\otimes_{R}\Mat_{n}(R)$ where $i = (a, c)$ and $j = (b,d)$. Combine everything together, we see $\Mat_{mn}\left(A\otimes_{R}B\right)$ is isomorphic to $\Mat_{mn}\left(A\otimes_{R} B\right)$ as $R$-algebras.
   \leanok
-
-  \lean{algebras}
+  \lean{BrauerGroup.matrix_eqv, BrauerGroup.kroneckerMatrixTensor'}
 \end{construction}
 
 %%% Local Variables:

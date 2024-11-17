@@ -7,12 +7,16 @@ finite $K$-dimensional and $B$ is simple. Let $M$ be a simple $A$-module.
   For any $K$-algebra homomorphism $f : B \to A$, we give $M$ a
   $B \otimes_{K}\End_{A}M$-module structure by defining $(b\otimes l)\cdot m$ to
   be $f(b)\cdot l(m)$. To emphasis $f$, we denote $M$ with the
-  $B\otimes_{K}\End_{A}M$-module structure by $M^{f}$. \leanok \lean{IsMod}
+  $B\otimes_{K}\End_{A}M$-module structure by $M^{f}$.
+  \leanok
+  \lean{IsMod}
 \end{construction}
 
 \begin{lemma}
   Let $f : B \to A$ be a $K$-algebra homomorphism, $M^{f}$ is finitely generated
-  as a $B\otimes_{K}\End_{A}M$-module. \leanok \lean{module_inst_findim}
+  as a $B\otimes_{K}\End_{A}M$-module.
+  \leanok
+  \lean{module_inst_findim}
 \end{lemma}
 \begin{proof}
   Since $M$ is a finite $A$-module and $A$ a finite dimensional $K$-vector
@@ -34,7 +38,9 @@ finite $K$-dimensional and $B$ is simple. Let $M$ be a simple $A$-module.
 \begin{lemma}
   \label{lem:iso-fg}
   Let $f,g : B \to A$ be two $K$-algebra homomorphisms. Then $M^{f}$ and $M^{g}$
-  are isomorphic as $B\otimes_{K}\End_{A}M$-module. \leanok \lean{iso_fg}
+  are isomorphic as $B\otimes_{K}\End_{A}M$-module.
+  \leanok
+  \lean{iso_fg}
 \end{lemma}
 
 \begin{proof}
@@ -46,7 +52,9 @@ finite $K$-dimensional and $B$ is simple. Let $M$ be a simple $A$-module.
 \begin{theorem}[Skolem-Noether]\label{thm:skolem-noether}
   Let $f, g : B \to A$ be two $K$-algebra homomorphism. Then $f$ and $g$ differ
   only by a conjugation. That is there exists a unit $x \in A^{\times}$ such
-  that $g = x f x^{-1}$. \leanok \lean{SkolemNoether'}
+  that $g = x f x^{-1}$.
+  \leanok
+  \lean{SkolemNoether'}
 \end{theorem}
 
 \begin{proof}

@@ -11,7 +11,9 @@ the category $R$-modules and the category of $\Mat_{n}(R)$-modules are
 equivalent. Then we use the equivalence to prove several useful lemmas.
 
 \begin{construction}\label{con:morita-eqv-functor0}
-  \leanok \lean{matrix_smul_vec_def} If $M$ is an $R$-module, we have a natural
+  \leanok
+  \lean{matrix_smul_vec_def}
+  If $M$ is an $R$-module, we have a natural
   $\Mat_{n}(R)$-module structure on $\widehat{M}:=M^{n}$ given by
   $(m_{ij})\cdot (v_{k})=\sum_{j}m_{ij}\cdot v_{j}$. If $f : M \to N$ is an
   $R$-linear map, then $\widehat{f} : M^{n}\to N^{n}$ given by
@@ -27,7 +29,8 @@ equivalent. Then we use the equivalence to prove several useful lemmas.
 \end{remark}
 
 \begin{construction}\label{con:morita-eqv-functor1}
-  \leanok \lean{fromModuleCatOverMatrix.smul_α_coe} If $M$ is a
+  \leanok
+  \lean{fromModuleCatOverMatrix.smul_α_coe} If $M$ is a
   $\Mat_{n}(R)$-module, then
   $\widetilde{M} := \{\delta_{ij}\cdot m | m \in M\} \subseteq M$ is an
   $R$-module whose $R$-action is given by
@@ -65,7 +68,9 @@ Let $A$ be a finite dimensional simple $k$-algebra.
 
 \begin{lemma}\label{lem:isomorphic-simple-mod}
   Let $M$ and $N$ be simple $A$-modules, then $M$ and $N$ are isomorphic as
-  $A$-modules. \leanok \lean{linearEquiv_of_isSimpleModule_over_simple_ring}
+  $A$-modules.
+  \leanok
+  \lean{linearEquiv_of_isSimpleModule_over_simple_ring}
 \end{lemma}
 
 \begin{proof}
@@ -153,7 +158,8 @@ $n\ne0$.
 
 \begin{lemma}\label{lem:end-vec-iso}
   $\End_{A}\left(D^{n}\right)$ is isomorphic to $D^{\opp}$ as $k$-algebras.
-  \leanok \lean{end_simple_mod_of_wedderburn}
+  \leanok
+  \lean{end_simple_mod_of_wedderburn}
 \end{lemma}
 
 \begin{proof}
@@ -169,7 +175,9 @@ $n\ne0$.
 
 \begin{lemma}\label{lem:end-simple-iso}
   Let $M$ be a simple $A$-module, then $\End_{A} M\cong D^{\opp}$ as
-  $k$-algebras. \leanok \lean{end_simple_mod_of_wedderburn'}
+  $k$-algebras.
+  \leanok
+  \lean{end_simple_mod_of_wedderburn'}
 \end{lemma}
 \begin{proof}
   By~\cref{thm:morita}, $D^{n}$ is simple as $A$-module; hence
@@ -184,7 +192,8 @@ $n\ne0$.
 
 \begin{lemma}
   Let $M$ be a simple $A$-module, then $\End_{A}M$ has finite $k$-dimension.
-  \leanok \lean{end_simple_mod_finite}
+  \leanok
+  \lean{end_simple_mod_finite}
 \end{lemma}
 \begin{proof}
   By~\cref{thm:wed}, such $D$ and $n$ always exists. Hence we only need to show
@@ -202,7 +211,9 @@ $n\ne0$.
 \end{remark}
 
 \begin{definition}[Balanced Module]\label{def:balanced-mod}
-  \leanok \lean{IsBalanced} For any ring $A$ and $A$-module $M$, we say $M$ is a
+  \leanok
+  \lean{IsBalanced}
+  For any ring $A$ and $A$-module $M$, we say $M$ is a
   balanced $A$-module, if the $A$-linear map $A \to \End_{\End_{A}M}M$ is
   surjective.
 \end{definition}
@@ -221,7 +232,9 @@ $n\ne0$.
 
 We assume again that $A$ is a finite dimensional simple $k$-algebra.
 \begin{lemma}
-  Any simple $A$-module is balanced. \leanok \lean{isBalanced_of_simpleMod}
+  Any simple $A$-module is balanced.
+  \leanok
+  \lean{isBalanced_of_simpleMod}
 \end{lemma}
 \begin{proof}
   Indeed, if $M$ is a simple $A$-module, then $A \cong \bigoplus_{i\in\iota} M$

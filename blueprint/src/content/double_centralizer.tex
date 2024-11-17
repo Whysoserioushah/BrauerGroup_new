@@ -15,7 +15,8 @@ central simple $F$-algebra.
   \[
     C_{\End_{F}A}\left(\McL_{A}\right) \le \McR_{A}.
   \]
-  \leanok \lean{centralizer_mulLeft_le_of_isCentralSimple}
+  \leanok
+  \lean{centralizer_mulLeft_le_of_isCentralSimple}
 \end{lemma}
 
 \begin{proof}
@@ -81,14 +82,17 @@ central simple $F$-algebra.
    $F$-subalgebra of $B$ as well. We have the obvious $F$-algebra isomorphism
    $S \cong xSx^{-1}$ given by $s\mapsto xsx^{-1}$ and $x^{-1}tx\mapsfrom t$.
    Therefore $\dim_{F}S=\dim_{F}xSx^{-1}$ and $S$ is a simple ring if and only
-   if $xSx^{-1}$ is a simple ring. \leanok \lean{Subalgebra.conj}
+   if $xSx^{-1}$ is a simple ring.
+   \leanok
+   \lean{Subalgebra.conj}
  \end{construction}
 
  \begin{lemma}
    \label{lem:centralizer-conj}
    Let $B$ be any $F$-algebra, $x \in B^{\times}$ and $S\subseteq B$ be an
    $F$-subalgebra of $B$, then $C_{B}(xSx^{-1})=x\left(C_{B}(S)\right)x^{-1}$.
-   \leanok \lean{Subalgebra.conj_centralizer}
+   \leanok
+   \lean{Subalgebra.conj_centralizer}
  \end{lemma}
  \begin{proof}
    If $a \in C_{B}\left(xSx^{-1}\right)$, then $x^{-1}ax$ is in $C_{B}(S)$.
@@ -144,7 +148,9 @@ central simple $F$-algebra.
 
  \begin{lemma}\label{lem:simple-centralizer}
    Let $S\subseteq A$ be a simple $F$-subalgebra, then
-   $C_{A}(S)$ is simple as well. \leanok \lean{centralizer_isSimple}
+   $C_{A}(S)$ is simple as well.
+   \leanok
+   \lean{centralizer_isSimple}
  \end{lemma}
 
  \begin{proof}
