@@ -131,7 +131,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    If $A\in\CSA$, then $A\sim_{\Br}K\ox_{K}A$.
  \end{proof}
 
- \begin{lemma}
+ \begin{lemma}\label{lem:br-base-change-self}
    Consider the tower of field extension $E/F/K$,
    \[
      \Br_{K}^{E} = \Br_{E}^{F}\circ\Br_{K}^{E}.
@@ -144,13 +144,13 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    \lean{BrauerGroupHom.baseChange_idem}
  \end{proof}
 
- \begin{corollary}
+ \begin{corollary}\label{lem:br-base-change-tower}
    $\Br$ forms a functor from category of field to category of abelian groups.
    \leanok
    \lean{BrauerGroupHom.Br}
  \end{corollary}
  \begin{proof}
-   This is exact previous two lemmas packed into categorical language.
+   This is the categorical version of~\cref{lem:br-base-change-self} and~\cref{lem:br-base-change-tower}.
  \end{proof}
 
  \begin{definition}[Relative Brauer Group]
