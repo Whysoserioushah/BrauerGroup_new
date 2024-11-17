@@ -88,9 +88,10 @@ Hence $\sim_{\Br}$ is really an equivalence relation, we denote the quotient ${}
   We need to show that every $A\in\CSA$ is isomorphic to $\Mat_{n}(K)$ for some $K$ when $K$ is algebraically closed. Indeed, by~\cref{thm:wed-artin-algebra}, $A \cong \Mat_{n}(D)$ for some division algebra $D$ and $n\in\nat_{\ge0}$. Since $K$ is algebraically closed and $D$ is an integral domain and finite dimensional, the structure morphism $\rho: K\to D$ is a isomorphism; therefore $A\cong \Mat_{n}(K)$.
 \end{proof}
 
-\section{Base Change}\label{con:br-base-change}
+\section{Base Change}
 In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-basechange} that if $A\in\CSA_{K}$ then $E\otimes_{K}A\in\CSA_{E}$; therefore we have a set-theoretic function $\CSA_{K}\to\CSA_{E}$. In this section we prove that this descends to a group homomorphism $\Br(K)\to\Br(E)$. For brevity, if $A\in \CSA_{K}$, we dentoe $E\ox_{K}A$ as $A_{E}$ when this causes no confusion.
 \begin{construction}
+  \label{con:br-base-change}
   We will construct a series of isomorphisms (either over $K$ or $E$) to arrive at the conclusion that $A\sim_{\Br_{K}}B$ implies $A_{E}\sim_{\Br_{E}}B_{E}$. Assume $m,n\in\nat_{\ge0}$ are such that $\Mat_{m}(A)\cong\Mat_{n}(B)$ are $K$-algebras. Then we do the following calculation: as $E$-algebras
   \[
     \begin{aligned}
@@ -121,7 +122,40 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    \leanok
    \lean{BrauerGroupHom.BaseChange}
  \end{construction}
+ Denote the base change morphism in~\cref{con:br-base-change} as $\Br_{K}^{E}$.
+ \begin{lemma}
+   $\Br_{K}^{K}$ is identity.
+   \leanok
+ \end{lemma}
+ \begin{proof}
+   If $A\in\CSA$, then $A\sim_{\Br}K\ox_{K}A$.
+ \end{proof}
 
+ \begin{lemma}
+   Consider the tower of field extension $E/F/K$,
+   \[
+     \Br_{K}^{E} = \Br_{E}^{F}\circ\Br_{K}^{E}.
+   \]
+ \end{lemma}
+
+ \begin{proof}
+   If $A\in\CSA_{K}$, then $E\ox_{F}\left(F\ox_{K}A\right)$ is isomorphic to $E \ox_{F} A$ as $E$-algebras.
+   \leanok
+   \lean{BrauerGroupHom.baseChange_idem}
+ \end{proof}
+
+ \begin{corollary}
+   $\Br$ forms a functor from category of field to category of abelian groups.
+   \leanok
+   \lean{BrauerGroupHom.Br}
+ \end{corollary}
+ \begin{proof}
+   This is the two previous lemma packed into categorical lanaguage.
+ \end{proof}
+
+ \begin{definition}[Relative Brauer Group]
+   Let $E/K$ be a field extension, we define the relative Brauer group $\Br(E/K)$ to be the kernel of the base change morphism $\Br_{K}^{E}$.
+ \end{definition}
 
  \section{Good Representative Lemma}
 
