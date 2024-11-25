@@ -209,7 +209,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    Let $A\in\csa_{F}$ splitted by $K$. There exists a $B\in\csa_{F}$ such that
    \begin{itemize}
      \item $[A]_{\sim_{\br}}[B]_{\sim_{\br}}=1$
-     \item there exists $F$-algebra map $\iota : K\hookrightarrow B$
+     \item there exists $F$-algebra map $K\hookrightarrow B$
      \item ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
    \end{itemize}
    \leanok
@@ -236,6 +236,56 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    By~\cref{lem:dim-centralizer}, $\dim_{F}B\cdot \dim_{F}\iota(A) = \dim_{F}B\cdot\dim_{F}A = \dim_{F}\End_{F}\left(K^{n}\right) = {\left(\dim_{F}\left(K^{n}\right)\right)}^{2}={\left(\dim_{F}K\cdot \dim_{K}\left(K^{n}\right)\right)}^{2}=n^{2}\cdot{\left(\dim_{F}K\right)}^{2}$. On the other hand, since $K\ox_{F}A\cong\mat_{n}K$, we have $\dim_{F}K\ox_{F}A=\dim_{F}K\cdot\dim_{F}A=\dim_{F}\mat_{n}K=\dim_{F}K\dim_{K}\mat_{n}K=n^{2}\dim_{F}K$. Since $\dim_{F}K\ne 0$ , we conclude $\dim_{F}A=n^{2}$. Since $n\ne 0$ and $\dim_{F}(B)\cdot \dim_{F}(A)=n^{2}\dim_{F}(B)=n^{2}{\left(\dim_{F}K\right)}^{2}$, we get the desired result.
 
  \end{proof}
+
+ \begin{corollary}\label{cor:good-rep}
+   Let $A\in\csa_{F}$ splitted by $K$. There exists a $B \in \csa_{F}$ such that
+   \begin{itemize}
+     \item $[B]_{\sim_{\br}}=[A]_{\sim_{\br}}$
+     \item there exists an $F$-algebra map $K\hookrightarrow B$
+     \item  ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
+  \end{itemize}
+ \end{corollary}
+
+ \begin{proof}
+   Let $B$ and $\iota : K \hookrightarrow B$ be as in~\cref{lem:good-rep-inv}. Consider $B^{\opp}$ and $K \hookrightarrow B \to B^{\opp}$. This works.
+ \end{proof}
+
+ \begin{theorem}\label{thm:good-rep-iff-split}
+   Let $A\in\csa_{F}$. $K$ splits $A$ if and only if there exists a $B\in\csa_{F}$ such that
+   \begin{itemize}
+     \item $[B]_{\sim_{\br}}=[A]_{\sim_{\br}}$
+     \item there exists an $F$-algebra map $K \hookrightarrow B$
+     \item ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
+   \end{itemize}
+   \leanok
+   \lean{isSplit_iff_dimension}
+ \end{theorem}
+ \begin{proof}
+   The ``if'' direction is~\cref{cor:good-rep}. For the ``only if'' direction, let $B \in\csa_{F}$ and $\iota : K \hookrightarrow B$ be given. We give $B$ a $K$-module structure by right multiplication, that is for any $a \in K$ and $b \in B$, we define $a \cdot b := b \cdot \iota(a)$.
+   Since $B$ is a finite dimensional $F$-vector space and $K/F$ is a finite dimensional field extension, $B$ is a finite dimensional $K$-vector space as well. Since $[B]_{\sim_{\br}}=[A]_{\sim_{\br}}$, it is sufficient to show that $K$ splits $B$.
+   We define an $F$-bilinear map $\mu : K \to B \to \End_{K}B$ by $(c, a) \mapsto (c \cdot a \cdot \bullet)$ which induce an $F$-linear map $\mu' : K \ox_{F} B \to \End_{K}B$. Since for any $r, c\in K$ and $a \in B$, we have $\mu'\left(r \cdot c\ox a\right)(a') = a a' \iota(rc)=aa'\iota(c)\iota(r)=r\cdot \mu'(c\ox a)$, that is $\mu'$ is $K$-linear as well. Note that \[\mu'(1)=\mu'(1\ox 1) = (1\cdot 1\cdot \bullet) = 1\] and that
+   \[
+     \begin{aligned}
+       \mu'(c\ox a \cdot c'\ox a')(a'') &= \mu'(cc'\ox aa')(a'') \\
+                                        &= cc' \cdot aa' \cdot a'' \\
+                                        &= aa' a'' \iota(c c') \\
+                                        &= a(a' a'' \iota(c'))\iota(c) \\
+                                        &=\mu'(c \ox a)(a' a'' \iota(c'))\\
+                                        &=\mu'(c\ox a)\left(\mu'(c'\ox a')(a'')\right) \\
+                                        &= \left(\mu'(c\ox a)\circ\mu'(c'\ox a')\right)(a'')
+     \end{aligned},
+     \]
+     that is, $\mu'$ is an $K$-algebra map.
+
+   If we can show that $\mu'$ is a bijection, we will prove the result for $K\ox_{F} B \cong \End_{K} B \cong \mat_{\dim_{K} B}K$ as $K$-algebras. By~\cref{cor:alghom-bijective-of-dim-eq}, it is sufficient to show $\dim_{K}K\ox_{F}B = \dim_{K}\End_{K}B$. Let $n$ denote $\dim_{F}K$. Since, $\dim_{F}K\dim_{K}K\ox_{F}B =\dim_{F}K\ox_{F}B=\dim_{F}K \dim_{F}B$. we have $\dim_{K}K\ox_{F}B = \dim_{F}B = {\left(\dim_{F}K\right)}^{2}$. On the other hand, since ${\left(\dim_{F}K\right)}^{2}=\dim_{F} B = \dim_{F}K\dim_{K}B$, we have $\dim_{K} B = \dim_{F}K$; thus $\dim_{K}\End_{K} B = {\left(\dim_{K}B\right)}^{2}={\left(\dim_{F}K\right)}^{2}$ and the result is proved.
+ \end{proof}
+
+ In light of~\cref{thm:good-rep-iff-split}, we isolate the following useful definition:
+ \begin{definition}[good representation]\label{def:good-rep}
+   For any $X \in \br(F)$, a good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $\iota : K \hookrightarrow A$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$.
+   \leanok
+   \lean{GoodRep}
+ \end{definition}
 
 \section{The Second Galois Cohomology}
 
