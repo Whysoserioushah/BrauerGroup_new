@@ -177,15 +177,32 @@ central simple $F$-algebra.
    $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$ as $F$-algebras. Hence $\dim_{F}\left(C_{A}(S)\otimes_{F}\End_{F}S\right)=\dim_{F}\left(A\otimes_{F}\McR_{S}\right)$ where the left hand side is $\dim_{F}C_{A}(S)\cdot \dim_{F}\End_{F}S$ and the right hand side is $\dim_{F}A\cdot\dim_{F}\McR_{S}$. Since $\dim_{F}\End_{F}S=\dim_{F}S^{2}$ and $\dim_{F}\McR_{S}=\dim S$ (by~\cref{lem:mul-right-iso-opp}), we proved this lemma.
  \end{proof}
 
+\begin{corollary}
+  \label{cor:self-tensor-centralizer}
+  Let $S \subseteq A$ be a central simple $F$-subalgebra,
+  \[
+    A \cong B \ox_{F} C_{A}(B).
+  \]
+  \leanok
+  \lean{writeAsTensorProduct}
+\end{corollary}
+
+\begin{proof}
+  By~\cref{lem:simple-centralizer}, $C_{A}(B)$ is simple and by~\cref{thm:tensor-csa}, $B \ox_{F} C_{A}(B)$ is simple. Hence the map $B \ox_{F} C_{A}(B) \to A$ induced by $B \hookrightarrow A$ and $C_{A}(B) \hookrightarrow A$ is injective. By~\cref{cor:alghom-bijective-of-dim-eq}, we only need to show $\dim_{F}B\ox_{F}C_{A}(B) =\dim_{F}A$ which is precisely~\cref{lem:dim-centralizer}.
+\end{proof}
+
  \begin{theorem}[Double Centralizer]\label{thm:double-centralizer}
    Let $S\subseteq A$ be a simple $F$-subalgebra, we have
    \[
      C_{A}\left(C_{A}(S)\right) = S.
    \]
+   \leanok
+   \lean{double_centralizer}
  \end{theorem}
  \begin{proof}
   It is straightforward that $S \le C_{A}\left(C_{A}(S)\right)$. By~\cref{lem:simple-centralizer}, $C_{A}(S)$ is simple, hence $\dim_{F}C_{A}\left(C_{A}(S)\right)\cdot \dim_{F}C_{A}(S)=\dim_{F}A=\dim_{F}C_{A}(S)\cdot \dim_{F}S$ (by applying~\cref{lem:dim-centralizer} twice), i.e. $\dim_{F}C_{A}\left(C_{A}(S)\right) = \dim_{F}S$. This equality of dimension gives us the desired result.
- \end{proof}
+\end{proof}
+
  
 %%% Local Variables:
 %%% mode: LaTeX

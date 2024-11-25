@@ -82,10 +82,24 @@ Hence $\sim_{\Br}$ is really an equivalence relation, we denote the quotient ${}
 \end{construction}
 
 \begin{theorem}
-  If $K$ is algebraically closed, $\Br(K)$ is trivial; in particular $\Mat_{n}(\mathbb{C})$ is trivial.
+  \label{thm:br-triv-alg-closed}
+  If $K$ is algebraically closed, $\Br(K)$ is trivial; in particular $\br_{n}(\mathbb{C})$ is trivial.
+  \leanok
+  \lean{BrauerGroup.Alg_closed_eq_one}
 \end{theorem}
 \begin{proof}
   We need to show that every $A\in\CSA$ is isomorphic to $\Mat_{n}(K)$ for some $K$ when $K$ is algebraically closed. Indeed, by~\cref{thm:wed-artin-algebra}, $A \cong \Mat_{n}(D)$ for some division algebra $D$ and $n\in\nat_{\ge0}$. Since $K$ is algebraically closed and $D$ is an integral domain and finite dimensional, the structure morphism $\rho: K\to D$ is a isomorphism; therefore $A\cong \Mat_{n}(K)$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:common-div-alg}
+  \leanok
+  \lean{IsBrauerEquivalent.exists_common_division_algebra}
+  Let $A, B \in \csa_{K}$. There exists a division $K$-algebra $D$ and non-zero $m,n\in\mathbb{N}$ such that $A\cong\mat_{m}(D)$ and $B\cong\mat_{n}(D)$ as $K$-algebras.
+\end{lemma}
+
+\begin{proof}
+  By~\cref{thm:wed-artin-algebra}, we can find division algebras $S_{A}, S_{B}$ and non-zero $m, n\in\mathbb{N}$ such that $A\cong\mat_{n}\left(S_{A}\right)$ and $B\cong\mat_{m}\left(S_{B}\right)$ as $K$-algebras. Hence $B\sim_{\br}A\sim_{\br}\mat_{n}\left(S_{A}\right)\sim_{\br}S_{A}$, in another word, for some non-zero $a, a'\in\mathbb{N}$, we have $\mat_{a}(B)\cong\mat_{a'}\left(S_{A}\right)$ as $K$-algebras. Hence, by~\cref{thm:wed-artin-uniq}, we have that $S_{A}\cong S_{B}$ as $K$-algebras and the lemma is proved.
 \end{proof}
 
 \section{Base Change}
@@ -163,17 +177,65 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
 
  \begin{definition}[Splitting Field]
    For any field extension $E/K$ and any $K$-algebra $A$, we say $E$ is a splitting field of $A$ if and only if $E\ox_{K}A \cong \mat_{n}(E)$ as $E$-algebras for some non-zero $n$. We also say $E$ splits $A$ or $A$ is splited by $E$
+   \leanok
+   \lean{isSplit}
  \end{definition}
 
- \begin{theorem}
+  \begin{theorem}
+   \label{thm:split-iff-mem-relative}
    Let $E/K$ be a field extension and $A\in\csa_{K}$, $E$ splits $A$ if and only if $[A]_{\sim_{\br}}\in\br(E/K)$.
+   \leanok
+   \lean{BrauerGroup.split_iff}
  \end{theorem}
 
  \begin{proof}
-   The ``only if'' part is by definition. For the other direction, we know by definition that $\mat_{m}(E\ox_{K}A)\cong\mat_{n}(K)$ as $E$-algebras for some non-zero $m, n$.
+   The ``only if'' part is by definition. For the other direction, we know by definition that $\mat_{n}(E\ox_{K}A)\cong\mat_{m}(E)$ as $E$-algebras for some non-zero $m, n$. By~\cref{thm:wed-artin-algebra}, we find some division algebra $D$ and non-zero natural number $p$ such that $E\ox_{K}A\cong \mat_{p}(D)$ as $E$-algebras. Thus $\mat_{pm}(E)\cong\mat_{pn}\left(E\ox_{K}A\right)\cong\mat_{p^{2}n}(D)$ as $E$-algebras. By~\cref{thm:wed-artin-uniq}, we conclude that $E\cong D$ as $E$-algebras. Hence $E\ox_{K}A\cong \mat_{p}(E)$, in another word, $E$ splits $A$.
  \end{proof}
 
+ \begin{remark}
+   In light of~\cref{lem:br-base-change-tower}, if $K$ is algebraic closed then $K$ splits any $K$-algebra $A$. Indeed, $K$ splits $A$ if and only if $[A]_{\sim\br}$ but $[A]_{\sim\br}$ is equal to $1$.
+ \end{remark}
+
+ \begin{remark}
+   If two $\csa_{K}$ are Brauer equivalent, in another word, $A \sim_{\br_{K}} B$, then $E$ splits $A$ if and only if $E$ splits $B$. Indeed, if $A$ and $B$ are equivalent, then $[A]_{\sim\br} \in \br(E/K)$ if and only if $[B]_{\sim\br}\in\br(E/K)$.
+ \end{remark}
+
+
  \section{Good Representative Lemma}
+ In this section, let $K/F$ be a finite dimensional field extension.
+
+ \begin{lemma}
+   \label{lem:good-rep-inv}
+   Let $A\in\csa_{F}$ splitted by $K$. There exists a $B\in\csa_{F}$ such that
+   \begin{itemize}
+     \item $[A]_{\sim_{\br}}[B]_{\sim_{\br}}=1$
+     \item there exists $F$-algebra map $\iota : K\hookrightarrow B$
+     \item ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
+   \end{itemize}
+   \leanok
+   \lean{exists_embedding_of_isSplit}
+ \end{lemma}
+
+ \begin{proof}
+   Since $K$ splits $A$, we find a non-zero natural number $n$ such that $K\ox_{F}A\cong\mat_{n}K\cong\End_{K}\left(K^{n}\right)$ as $K$-algebras.
+   We define an $F$-algebra map $\iota: A\to\End_{F}\left(K^{n}\right)$ by
+   \begin{center}
+     \begin{tikzcd}
+       A \arrow{r} & K \ox_{F} A \arrow{r}{\cong} & \End_K\left(K^n\right) \arrow{r}{|_{F}} & \End_F\left(K^n\right)
+     \end{tikzcd},
+   \end{center}
+   where $|_{F}$ is restriction of scalars. Since $A$ is simple, $\iota$ is injective, therefore $A \cong \iota(A)$ as $F$-algebras. Define $B$ as $C_{\End_{F}\left(K^{n}\right)}(\iota(A))$, the centralizer of the range of $\iota$ in $\End_{F}\left(K^{n}\right)$.
+   We construct an embedding $K \hookrightarrow B$ by $r \mapsto (r \cdot \bullet)$
+
+   $B$ is a central $F$-algebra: if $x \in Z(B)$, then $x \in \iota(A)$ because by~\cref{thm:double-centralizer}, it is sufficient to prove that $x$ is in $C_{\End_{F}\left(K^{n}\right)}\left(B\right)$ which follows from the fact that $x \in Z(B)$. In fact, $x \in Z(\iota(A))$: suppose $a \in A$, we need to check $x \cdot \iota(a) = \iota(a)\cdot x$, this is the case because $B$ is defined as the centralizer of $\iota(A)$. Since $\iota(A) \cong A$ as $F$-algebras, $\iota(A)$ is $F$-central, hence $x \in F$.
+
+   $B$ is a simple ring: by~\cref{lem:simple-centralizer}, it is sufficient to prove that $\iota(A)$ is a simple ring which comes from $A \cong \iota(A)$ as $F$-algebras.
+
+   By~\cref{cor:self-tensor-centralizer}, we have $F$-algebra isomorphism $\End_{F}\left(K^{n}\right)\cong \iota(A)\ox_{F}B \cong A \ox_{F}B$. Since $\End_{F}\left(K^{n}\right)\cong\mat_{\dim_{F}\left(K^{n}\right)}\left(F\right)$ as $F$-algebras, we see that $[A]_{\sim_{\br}}$ and $[B]_{\sim_{\br}}$ are inverses.
+
+   By~\cref{lem:dim-centralizer}, $\dim_{F}B\cdot \dim_{F}\iota(A) = \dim_{F}B\cdot\dim_{F}A = \dim_{F}\End_{F}\left(K^{n}\right) = {\left(\dim_{F}\left(K^{n}\right)\right)}^{2}={\left(\dim_{F}K\cdot \dim_{K}\left(K^{n}\right)\right)}^{2}=n^{2}\cdot{\left(\dim_{F}K\right)}^{2}$. On the other hand, since $K\ox_{F}A\cong\mat_{n}K$, we have $\dim_{F}K\ox_{F}A=\dim_{F}K\cdot\dim_{F}A=\dim_{F}\mat_{n}K=\dim_{F}K\dim_{K}\mat_{n}K=n^{2}\dim_{F}K$. Since $\dim_{F}K\ne 0$ , we conclude $\dim_{F}A=n^{2}$. Since $n\ne 0$ and $\dim_{F}(B)\cdot \dim_{F}(A)=n^{2}\dim_{F}(B)=n^{2}{\left(\dim_{F}K\right)}^{2}$, we get the desired result.
+
+ \end{proof}
 
 \section{The Second Galois Cohomology}
 

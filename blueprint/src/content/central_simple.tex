@@ -67,11 +67,12 @@ in~\cref{sec:unclassified}.
 \begin{corollary}\label{cor:alghom-bijective-of-dim-eq}
   Assume $R$ is a field. Let $A, B$ be finite dimensional $R$-algebras where $A$
   is simple as well. Then any $R$-algebra homomorphism $f:A\to B$ is bijective
-  if $\dim_{R}A=\dim_{R}B$. \leanok
+  if $\dim_{R}A=\dim_{R}B$. 
+  \leanok
   \lean{bijective_of_dim_eq_of_isCentralSimple}
 \end{corollary}
 \begin{proof}
-  By~\cref{lem:simple-ring-iff}, $f$ is injective. Then
+  By~\cref{lem:simple-ring-iff}, $f$is injective. Then
   $\dim_{K}\im f = \dim_{K} B - \dim_{K}\ker f = \dim_{K}B$ meaning that $f$ is
   surjective.
 \end{proof}
@@ -86,14 +87,15 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
 \end{lemma}
 \begin{proof}
   Assume $A$ and $B$ are central algebras, then
-  by~\cref{cor:center-tensor-tensor}
+  by~\cref{cor:center-tensor-center}
   $Z\left(A\otimes_{R}B\right)=Z\left(A\right)\otimes_{R}Z\left(B\right)=R\otimes_{R}R=R$.
 \end{proof}
 
 \begin{theorem}
   \label{thm:tensor-csa}
   If $A$ is a simple $K$-algebra and $B$ is a central simple $K$-algebra,
-  $A\otimes_{K}B$ is a central simple $K$-algebra as well. \leanok
+  $A\otimes_{K}B$ is a central simple $K$-algebra as well. 
+  \leanok
   \lean{IsCentralSimple.TensorProduct.simple}
 \end{theorem}
 \begin{proof}
