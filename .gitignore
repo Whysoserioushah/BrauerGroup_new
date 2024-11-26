@@ -21,3 +21,4 @@ blueprint/src/_region_.prv/*
 /blueprint/src/_region_.tex
 .DS_Store
 /blueprint/src/content/_region_.tex
+/blueprint/src/*.pdf

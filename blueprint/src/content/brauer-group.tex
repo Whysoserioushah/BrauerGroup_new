@@ -309,7 +309,7 @@ We observe the following easy result about good representations. Let $X \in \br(
   Because $K$ is a simple ring, $\iota_{A}$ is injective therefore $\iota_{A}(A)\cong K$.
 \end{proof}
 
-\begin{lemma}
+\begin{lemma}\label{lem:centralizer-range-good-rep}
   $C_{A}\left(\iota_{A}(A)\right) = \iota_{A}(A)$.
   \leanok
   \lean{GoodRep.centralizerιRange}
@@ -323,7 +323,89 @@ We observe the following easy result about good representations. Let $X \in \br(
   \leanok
   \lean{GoodRep.dim_eq'}
 \end{construction}
+
 \section{The Second Galois Cohomology}
+
+In this section, we construct a group isomorphism between $\br(K/F) \cong \HH^{2}\left(\gal(K/F), K^{\star}\right)$ where $K/F$ is a finite dimensional Galois extension. To keep alignment of the Brauer group, let us use the multiplicative notation for group cohomology. Recall:
+
+\begin{definition}[the Second Group Cohomology]
+  Let $G$ be a group and $M$ an abelian group (written multiplicatively) with a $G$-action.
+
+  A function $f : G \times G \to M$ is a {\em 2-cocycle\/} if for all $g,h,j\in G$,
+  \[
+    f(gh, j)f(g, h) = \left(g\cdot f(h, j)\right) f(g, hj).
+  \]
+
+  A function $f : G\times G \to M$ is a {\em 2-coboundary\/} if there exists an $x : G \to M$ such that for all $g, h \in G$
+  \[
+    \frac{g\cdot x(h)}{x(gh)} x(g) = f(g, h).
+  \]
+  The second group cohomology $\hh^{2}\left(G, M\right)$ is defined to be the quotient group of 2-cocycles modulo 2-coboundaries.
+  \leanok
+  \lean{groupCohomology.H2, groupCohomology.IsMulTwoCoboundary, groupCohomology.IsMulTwoCocycle}
+\end{definition}
+
+In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ is a good representation of $X$. We use $\rho, \sigma, \tau$ to denote elements of $\gal(K/F)$. To improve typographic aesthetics of our proofs, we sometimes use subscript to mean function application.
+
+
+\subsection{From $\br(K/F)$ to $\hh^{2}\left(\gal(K/F),K^{\star}\right)$}
+
+\begin{definition}[Conjugation Factor]
+  \label{def:conj-factor}
+  With respect to $A$, a conjugation factor of $\sigma$ is a unit $x_{\sigma} \in A^{\star}$ such that for all $c \in K$,
+  \[
+    x_{\sigma} \iota_{A}(c)x_{\sigma}^{-1} = \iota_{A}(\sigma(c)).
+  \]
+
+  A conjugation sequence is a sequence $x:\gal(K/F) \to A^{\star}$ such that for all $\sigma\in\gal(K/F)$, $x_{\sigma}$ is a conjugation factor of $\sigma$. When we want to stress $A$, we say $A$-conjugation factor and $A$-conjugation sequence.
+  \leanok
+  \lean{GoodRep.conjFactor}
+\end{definition}
+
+\begin{remark}\label{rem:conj-factor-alternative-eq}
+  When $x_{\sigma}$ is a conjugation factor of $\sigma$, the equalities $x_{\sigma}\iota_{A}(c) = x_{\sigma}\iota_{A}(\sigma(c))$ and $\iota_{A}(c)x_{\sigma}^{-1}=x_{\sigma}^{-1}\iota_{A}(\sigma(c))$ are also useful.
+\end{remark}
+
+\begin{construction}
+  $A$ has a conjugation sequence:
+  let $\sigma \in \gal(K/F)$, we have two $F$-algebra homomorphisms $K \to A$ given by $\iota_{A}$ and $\iota_{A}\circ \sigma$. Applying~\cref{thm:skolem-noether} to $\iota_{A}$ and $\iota_{A}\circ \sigma$ gives us the desired conjugation factor.
+  \leanok
+  \lean{GoodRep.aribitaryConjFactor}
+\end{construction}
+
+\begin{construction}
+  If $x$ is a conjugation factor of $\sigma$ and $y$ of $\tau$, then $xy$ is a conjugation factor of $\sigma\tau$. For any $c \in K$
+  \[
+    \iota_{A}(\sigma(\tau(c))) = x\iota_{A}(\tau(c))x^{-1} = xy\iota_{A}(c)y^{-1}x^{-1}=\left(xy\right)\iota_{A}{\left(xy\right)}^{-1}.
+  \]
+  \leanok
+  \lean{GoodRep.mul'}
+\end{construction}
+
+\begin{lemma}[Twisting Conjugation Factors]
+  If $x$ and $y$ are two conjugation factors of $\sigma$, then there exists a unique $c \in K$ such that $x = y\iota_{A}(c)$.
+  \leanok
+  \lean{GoodRep.conjFactor_rel, GoodRep.conjFactorTwistCoeff}
+\end{lemma}
+
+\begin{proof}
+  The uniqueness is clear: suppose $x = y\iota_{A}(c)=y\iota_{A}(c')$, then $c = c'$ because $x, y$ are units and $\iota_{A}$ is injective. We first observe that $y^{-1}x\in C_{A}(\iota(A))$: for any $z \in K$, $y^{-1}x\iota_{A}(z)=y^{-1}\iota_{A}(\sigma(z))x=\iota_{A}(z)y^{-1}x$ (by~\cref{rem:conj-factor-alternative-eq}). By~\cref{lem:centralizer-range-good-rep}, $y^{-1}x\in \iota(A)$, that is for some $z \in K$, we have that $y^{-1}x = \iota_{A}(z)$ and the claim is proved.
+\end{proof}
+
+We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when $\sigma$ is clear from context, we often omit the superscript. With this notation, $x = y\iota_{A}(\twist_{x,y})$.
+
+\begin{remark}
+  $\twist(x, x)$ is equal to $1$ by uniqueness.
+\end{remark}
+
+\begin{remark}
+  In fact, $\twist(x, y)$ is in $K^{\star}$ and $\twist(x, y)^{-1}=\twist(y, x)$.
+\end{remark}
+
+\begin{lemma}
+  If $x$ and $y$ are conjugation factors for $\sigma$, $x=\iota_{A}(\sigma(\twist_{x, y}))y$.
+\end{lemma}
+
 
 %%% Local Variables:
 %%% mode: LaTeX
