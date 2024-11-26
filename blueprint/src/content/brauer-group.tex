@@ -281,12 +281,48 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
  \end{proof}
 
  In light of~\cref{thm:good-rep-iff-split}, we isolate the following useful definition:
- \begin{definition}[good representation]\label{def:good-rep}
-   For any $X \in \br(F)$, a good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $\iota : K \hookrightarrow A$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$.
+ \begin{definition}[Good Representation]\label{def:good-rep}
+   For any $X \in \br(F)$, a good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $K \hookrightarrow A$ which we often denote as $\iota$ or $\iota_{A}$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$.
    \leanok
    \lean{GoodRep}
  \end{definition}
 
+ \begin{corollary}
+   \label{cor:mem-relative-br-iff-good-rep}
+   For any $X\in\br(F)$, $X\in\br(K/F)$ if and only if $X$ admits a good representation.
+   \leanok
+   \lean{mem_relativeBrGroup_iff_exists_goodRep}
+ \end{corollary}
+ \begin{proof}
+   Rephrase of~\cref{thm:good-rep-iff-split} and~\cref{thm:split-iff-mem-relative}.
+ \end{proof}
+
+We observe the following easy result about good representations. Let $X \in \br(F)$ and $A$ be a good representation of $X$.
+
+\begin{lemma}
+  The range $\iota_{A}(A)$ is a simple ring.
+  \leanok
+  \lean{GoodRep.ιRange}
+\end{lemma}
+
+\begin{proof}
+  Because $K$ is a simple ring, $\iota_{A}$ is injective therefore $\iota_{A}(A)\cong K$.
+\end{proof}
+
+\begin{lemma}
+  $C_{A}\left(\iota_{A}(A)\right) = \iota_{A}(A)$.
+  \leanok
+  \lean{GoodRep.centralizerιRange}
+\end{lemma}
+\begin{proof}
+  In the language of~\cref{sec:subfield}, $\iota_{A}(A)$ is a subfield of $A$, hence by~\cref{lem:tfae-subfield}, we only need to show $\dim_{F}A = {\left(\dim_{F}\iota_{A}(A)\right)}^{2}$. But $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$ and $\iota(A)\cong K$.
+\end{proof}
+
+\begin{construction}
+  We give $A$ a $K$-module structure by {\em left} multiplication, that is for any $c \in K$ and $a \in A$, we define $c\cdot a$ to be $\iota_{A}(c)a$. Then $A$ is a finite dimensional $K$-vector space and $\dim_{K}A=\dim_{F}K$: indeed $\dim_{F}K\cdot\dim_{K}A = \dim_{F}K\cdot \dim_{F}K = \dim_{F}A$.
+  \leanok
+  \lean{GoodRep.dim_eq'}
+\end{construction}
 \section{The Second Galois Cohomology}
 
 %%% Local Variables:

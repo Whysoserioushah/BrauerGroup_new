@@ -2,7 +2,7 @@ import BrauerGroup.Subfield.Basic
 
 universe u
 
-instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : Subalgebra K A)
+lemma comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : Subalgebra K A)
   (hL : ∀ (x y : L), x * y = y * x) :
     L ≤ Subalgebra.centralizer K (A := A) L := by
   intro l hl
@@ -23,7 +23,7 @@ instance comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L 
 section cors_of_DC
 
 variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensional K D]
-    [Algebra.IsCentral K D] [IsSimpleRing D]
+    [Algebra.IsCentral K D]
 
 theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     Module.finrank K D = Module.finrank K k *

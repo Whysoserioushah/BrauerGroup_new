@@ -1,5 +1,7 @@
 \chapter{Central Simple Algebras}\label{sec:csa}
 
+\section{Basic Theory}
+
 In this chapter we define central simple algebras. We used some results
 in~\cref{sec:unclassified}.
 
@@ -191,6 +193,52 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
     \end{tikzcd}
   \end{center}
   is exact as well. This is contradiction since $f$ is not injective.
+\end{proof}
+
+\section{Subfields of Central Simple Algebras}\label{sec:subfield}
+
+\begin{definition}[Subfield]
+  For any field $K$ and $K$-algebra $A$, a subfield $B \subseteq A$ is a commutative $K$-subalgebra of $A$ that is closed under inverse for any non-zero member.
+  \leanok
+  \lean{SubField}
+\end{definition}
+
+\begin{remark}
+  Subfields inherit a natural ordering from subalgebras.
+\end{remark}
+
+Let $K$ be any field and $D$ a finite dimensional central division $K$-algebra and $A$ a finite dimensional central simple algebra of $A$.
+\begin{lemma}\label{lem:dim-maximal-subfield}
+  Let $k$ be a maximal subfield of $D$,
+  \[
+    \dim_{K}D = {\left(\dim_{K}k\right)}^{2}.
+  \]
+  \leanok
+  \lean{dim_max_subfield}
+\end{lemma}
+
+\begin{proof}
+  By~\cref{lem:dim-centralizer}, we have that $\dim_{K} D = \dim_{K}C_{D}(k)\cdot \dim_{K}k$. Hence it is sufficient to show that $C_{D}(k) = k$. By the commutativity of $k$, we have that $k \le C_{D}(k)$. Suppose $k \ne C_{D}(k)$: let $a \in C_{D}(k)$ that is not in $k$. We see that $L := k(a)$ is another subalgebra of $D$ that is strictly larger than $k$; a contradiction. Therefore $k = C_{D}(k)$ and the theorem is proved.
+\end{proof}
+
+\begin{lemma}\label{lem:tfae-subfield}
+  Suppose $L$ is a subfield of $A$, the following are equivalent:
+  \begin{enumerate}
+    \item $L$ = $C_{A}(L)$
+    \item $\dim_{K}A = {\left(\dim_{K}L\right)}^{2}$
+    \item for any commutative $K$-subalgebra $L' \subseteq A$, $L \subseteq L'$ implies $L = L'$
+  \end{enumerate}
+  \leanok
+  \lean{cor_two_1to2, cor_two_2to3, cor_two_3to1}
+\end{lemma}
+\begin{proof}
+  We prove the following:
+  \begin{itemize}
+    \item ``1. implies 2.'': this is~\cref{lem:dim-centralizer}.
+    \item ``2. implies 1.'': Since $L$ is commutative, we always have $L \subseteq C_{A}(L)$. Hence we only need to show $\dim_{K}L = \dim_{K}C_{A}(L)$. This is because by~\cref{lem:dim-centralizer}, we have that $\dim_{K}A = \dim_{K}L\cdot \dim_{K}C_{A}(L)$ and by 2. we have $\dim_{K}L\cdot \dim_{K}C_{A}(L)= \dim_{K}L\cdot \dim_{K}L$.
+    \item ``2. implies 3.'': Since 2. implies 1., we assume $L = C_{A}(L)$, therefore all we need is to prove $L' \subseteq C_{A}(L)$. Let $x \in L'$ and $y \in L \subseteq L'$, we need to show $xy = yx$ which is commutativity of $L'$.
+    \item ``3. implies 1.'': By commutativity of $L$, we always have $L \subseteq C_{A}(L)$. For the other direction, suppose $C_{A}(L)\not\subseteq L$, then there exists some $a \in C_{A}(L)$ but not in $L$. Consider $L' = L(a)$, by 3., we have $L' = L$ which is a contradiction.
+  \end{itemize}
 \end{proof}
 
 %%% Local Variables:

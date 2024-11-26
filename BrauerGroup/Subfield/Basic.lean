@@ -11,17 +11,17 @@ open BigOperators TensorProduct MulOpposite
 section def_and_lemmas
 
 @[ext]
-structure SubField (K A : Type u) [Field K] [Semiring A] [Algebra K A] extends Subalgebra K A where
+structure SubField (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] extends Subalgebra K A where
   mul_comm : ∀ (x y : A), x ∈ carrier → y ∈ carrier → x * y = y * x
   inverse : ∀ (x : A), x ∈ carrier → x ≠ 0 → ∃(y : A), (y ∈ carrier ∧ x * y = 1)
 
 /-- Reinterpret SubFields as `Subalgebras` -/
 add_decl_doc SubField.toSubalgebra
 
-instance (K A : Type u) [Field K] [Semiring A] [Algebra K A] : LE (SubField K A) where
+instance (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] : LE (SubField K A) where
   le := fun L1 L2 ↦ L1.1 ≤ L2.1
 
-def IsMaximalSubfield (K A : Type u) [Field K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
+def IsMaximalSubfield (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
   := ∀ (B : SubField K A), L ≤ B → B = L
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempty (SubField K A) :=
