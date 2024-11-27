@@ -203,7 +203,7 @@ lemma conjFactorTwistCoeff_spec' (x y : A.conjFactor σ) :
 def conjFactorCompCoeff (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) : K :=
     σ <| τ <| conjFactorTwistCoeff (mul' x y) z
 
-@[simp]
+@[simps]
 def conjFactorCompCoeffAsUnit
     (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) : Kˣ where
   val := conjFactorCompCoeff x y z
@@ -218,12 +218,17 @@ lemma conjFactorCompCoeff_spec
     (x.1 * y.1 : A) = A.ι (conjFactorCompCoeff x y z) * z.1 :=
   conjFactorTwistCoeff_spec' (mul' x y) z
 
+lemma conjFactorCompCoeff_spec'_ (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+    A.ι (conjFactorCompCoeffAsUnit x y z)⁻¹ * (x.1 * y.1 : A) = z.1 := by
+  rw [conjFactorCompCoeff_spec (z := z), ← _root_.mul_assoc, ← map_mul]
+  simp only [conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
+  rw [inv_mul_cancel₀, map_one, _root_.one_mul]
+  exact Units.ne_zero (conjFactorCompCoeffAsUnit x y z)
+
 lemma conjFactorCompCoeff_spec' (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
     A.ι (σ <| τ <| conjFactorTwistCoeff z (mul' x y)) * (x.1 * y.1 : A) = z.1 := by
-  rw [conjFactorCompCoeff_spec (z := z), ← _root_.mul_assoc, ← map_mul]
-  have := conjFactorCompCoeffAsUnit x y z |>.inv_val
-  erw [this]
-  simp
+  convert conjFactorCompCoeff_spec'_ x y z using 3
+  norm_cast
 
 lemma conjFactorCompCoeff_spec'' (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
     A.ι (conjFactorCompCoeff x y z) = x.1 * y.1 * z.1⁻¹ := by

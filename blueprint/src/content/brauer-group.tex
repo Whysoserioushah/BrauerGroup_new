@@ -382,7 +382,7 @@ In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ 
   \lean{GoodRep.mul'}
 \end{construction}
 
-\begin{lemma}[Twisting Conjugation Factors]
+\begin{lemma}[Twisting Conjugation Factors]\label{lem:twist-spec1}
   If $x$ and $y$ are two conjugation factors of $\sigma$, then there exists a unique $c \in K$ such that $x = y\iota_{A}(c)$.
   \leanok
   \lean{GoodRep.conjFactor_rel, GoodRep.conjFactorTwistCoeff}
@@ -402,10 +402,74 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
   In fact, $\twist(x, y)$ is in $K^{\star}$ and $\twist(x, y)^{-1}=\twist(y, x)$.
 \end{remark}
 
-\begin{lemma}
-  If $x$ and $y$ are conjugation factors for $\sigma$, $x=\iota_{A}(\sigma(\twist_{x, y}))y$.
-\end{lemma}
+\begin{remark}
+  Since $\gal(K/F)$ acts on $K^{\star}$, for $x\in K^{\star}$,we feel free to write $\sigma\cdot x$ when it feels more readable than $\sigma(x)$, for example when there are nested brackets.
+\end{remark}
 
+\begin{lemma}\label{lem:twist-spec2}
+  If $x$ and $y$ are conjugation factors for $\sigma$, $x=\iota_{A}(\sigma(\twist_{x, y}))y$.
+  \leanok
+  \lean{GoodRep.conjFactorTwistCoeff_spec'}
+\end{lemma}
+\begin{proof}
+  \[
+    \begin{aligned}
+      x &= x \iota_{A}\left(\twist_{x,y}\right) x^{-1} x \iota_{A}(\twist_{y,x}) \\
+        &= \iota_{A}\left(\sigma\cdot\twist_{x,y}\right)x\iota_{A}\left(
+          \twist_{y,x}\right)\\
+      &=\iota_{A}\left(\sigma\cdot \twist_{x,y}\right)y
+    \end{aligned}.
+  \]
+\end{proof}
+
+\begin{construction}[Comparing Conjugation Factors]\label{con:compare-conj-factors}
+  Let $x$ be a conjugation factor for $\sigma$, $y$ for $\tau$ and $z$ for $\sigma\tau$. Since $xy$ is a also a conjugation factor, we define the comparison coefficient to be $\comp^{\sigma, \tau}_{x,y,z}:=\sigma\left(\tau\left(\twist_{xy, z}\right)\right)$. We often omit superscript when the context is clear. Note that $\comp_{x,y,z}$ is a unit in $K$ with inverse $\sigma\left(\tau\left(\twist_{z, xy}\right)\right)$. By~\cref{lem:twist-spec1} and~\cref{lem:twist-spec2}, we have the following useful equalities
+  \[
+    \begin{aligned}
+      xy &= \iota_{A}\left(\comp_{x,y,z}\right)z \\
+      \iota_{A}\left(\comp_{x,y,z}^{-1}\right)xy &= z \\
+      \iota_{A}\left(\comp_{x,y,z}\right) &= xyz^{-1}\\
+      \iota_{A}\left(\comp_{x,y,z}^{-1}\right) &= zy^{-1}x^{-1}\\
+      \dots &=\dots
+    \end{aligned}.
+  \]
+  %If we have a conjugation sequence $x : \gal(K/F)\to A^{\star}$, instead of $\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}^{\sigma,\tau}$, we simply write $\comp_{\sigma,\tau}^{x}$.
+  \leanok
+  \lean{GoodRep.conjFactorCompCoeff}
+\end{construction}
+
+\begin{lemma}
+  Let $x : \gal(K/F) \to A^{\star}$ be a conjugation sequence. We have
+  \[
+    \comp_{x_{\rho}, x_{\sigma}, x_{\rho\sigma}}\,\comp_{x_{\rho\sigma},x_{\tau},x_{\rho\sigma\tau}} =
+    \rho\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)\,\comp_{x_{\rho}, x_{\sigma\tau}, x_{\rho\sigma\tau}}.
+  \]
+  \leanok
+  \lean{GoodRep.conjFactorCompCoeff_comp_comp}
+\end{lemma}
+\begin{proof}
+  It is sufficient to make the following calculations:
+  \begin{align}
+   x_{\rho}\,x_{\sigma}x_{\tau} &= \iota_{A}\left(\comp_{x_{\rho},x_{\sigma},x_{\rho\sigma}}\right) \, \iota_{A}\left(\comp_{x_{\rho\sigma}, x_{\tau}, x_{\rho\sigma\tau}}\right)\, x_{\rho\sigma\tau}\label{eq:1}\\
+   x_{\rho}\left(x_{\sigma}x_{\tau}\right) &= \iota_{A}\left(\rho\cdot\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)\,\iota_{A}\left(\comp_{x_{\rho},x_{\sigma\tau},x_{\rho\sigma\tau}}\right) x_{\rho\sigma\tau} \label{eq:2}
+ \end{align}
+ Then since $x_{\rho\sigma\tau}$ is invertible and $\iota_{A}$ is injective, we proved the desired result.
+
+ \Cref{eq:1} is because: by the first equality in~\cref{con:compare-conj-factors} (twice)
+ \[
+   x_{\rho}x_{\sigma}x_{tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma}, x_{\rho\sigma}}\right)x_{\rho\sigma}x_{\tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma},x_{\rho\sigma}}\right)\iota_{A}\left(\comp_{x_{\rho\sigma},x_{\tau},x_{\rho\sigma\tau}}\right)x_{\rho\sigma\tau}.
+ \]
+ \Cref{eq:2} is because: by~\cref{def:conj-factor}, we have
+ \[\iota_{A}\left(\rho\cdot\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\rho}=x_{\rho}\iota_{A}\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right),\]
+ therefore by~\cref{con:br-base-change}
+ \[
+   \begin{aligned}
+     x_{\rho}\left(x_{\sigma}x_{\tau}\right) &= x_{\rho}\iota_{A}\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\sigma\tau} \\
+                                             &= \iota_{A}\left(\rho\cdot \comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\rho}x_{\sigma\tau}\\
+     &= \iota_{A}\left(\rho\cdot\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)\,\iota_{A}\left(\comp_{x_{\rho},x_{\sigma\tau},x_{\rho\sigma\tau}}\right)x_{\rho\sigma\tau}
+   \end{aligned}.
+ \]
+\end{proof}
 
 %%% Local Variables:
 %%% mode: LaTeX
