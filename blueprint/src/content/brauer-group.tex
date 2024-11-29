@@ -282,10 +282,12 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
 
  In light of~\cref{thm:good-rep-iff-split}, we isolate the following useful definition:
  \begin{definition}[Good Representation]\label{def:good-rep}
-   For any $X \in \br(F)$, a good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $K \hookrightarrow A$ which we often denote as $\iota$ or $\iota_{A}$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$.
+   For any $X \in \br(F)$, a $K$-good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $K \hookrightarrow A$ which we often denote as $\iota$ or $\iota_{A}$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$.
    \leanok
    \lean{GoodRep}
  \end{definition}
+
+ When $K$ is clear from context, we will simply say good representation instead of $K$-good representation
 
  \begin{corollary}
    \label{cor:mem-relative-br-iff-good-rep}
@@ -297,6 +299,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    Rephrase of~\cref{thm:good-rep-iff-split} and~\cref{thm:split-iff-mem-relative}.
  \end{proof}
 
+\subsection{Basic Properties}
 We observe the following easy result about good representations. Let $X \in \br(F)$ and $A$ be a good representation of $X$.
 
 \begin{lemma}
@@ -318,7 +321,7 @@ We observe the following easy result about good representations. Let $X \in \br(
   In the language of~\cref{sec:subfield}, $\iota_{A}(A)$ is a subfield of $A$, hence by~\cref{lem:tfae-subfield}, we only need to show $\dim_{F}A = {\left(\dim_{F}\iota_{A}(A)\right)}^{2}$. But $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$ and $\iota(A)\cong K$.
 \end{proof}
 
-\begin{construction}
+\begin{construction}\label{con:good-rep-mod}
   We give $A$ a $K$-module structure by {\em left} multiplication, that is for any $c \in K$ and $a \in A$, we define $c\cdot a$ to be $\iota_{A}(c)a$. Then $A$ is a finite dimensional $K$-vector space and $\dim_{K}A=\dim_{F}K$: indeed $\dim_{F}K\cdot\dim_{K}A = \dim_{F}K\cdot \dim_{F}K = \dim_{F}A$.
   \leanok
   \lean{GoodRep.dim_eq'}
@@ -340,36 +343,8 @@ We observe the following easy result about good representations. Let $X \in \br(
   Therefore $m = n$ and $A \cong \mat_{m}D =\mat_{n}D\cong B$.
 \end{proof}
 
-\section{The Second Galois Cohomology}
-
-In this section, we construct a group isomorphism between $\br(K/F) \cong \HH^{2}\left(\gal(K/F), K^{\star}\right)$ where $K/F$ is a finite dimensional Galois extension. To keep alignment of the Brauer group, let us use the multiplicative notation for group cohomology. Recall:
-
-\begin{definition}[the Second Group Cohomology]
-  \label{def:second-group-coh}
-  Let $G$ be a group and $M$ an abelian group (written multiplicatively) with a $G$-action.
-
-  A function $f : G \times G \to M$ is a {\em 2-cocycle\/} if for all $g,h,j\in G$,
-  \[
-    f(gh, j)f(g, h) = \left(g\cdot f(h, j)\right) f(g, hj).
-  \]
-  We denote the subgroup of 2-cocycles as $\mathcal{Z}^{2}(G, M)$.
-
-  A function $f : G\times G \to M$ is a {\em 2-coboundary\/} if there exists an $x : G \to M$ such that for all $g, h \in G$
-  \[
-    \frac{g\cdot x(h)}{x(gh)} x(g) = f(g, h).
-  \]
-  We denote the subgroup of 2-coboundaries as $\mathcal{B}^{2}(G, M)$.
-
-  The second group cohomology $\hh^{2}\left(G, M\right)$ is defined to be the quotient group of 2-cocycles modulo 2-coboundaries $^{\mathcal{Z}^{2}(G, M)}/_{\mathcal{B}^{2}(G, M)}$. If $s, t \in \mathcal{Z}^{2}(G, M)$, we say $s$ and $t$ are cohomologous if their equivalence class $[s], [t] \in \HH^{2}(G, M)$ are the same; in another word $st^{-1}\in\mathcal{B}^{2}(G, M)$.
-  \leanok
-  \lean{groupCohomology.H2, groupCohomology.IsMulTwoCoboundary, groupCohomology.IsMulTwoCocycle}
-\end{definition}
-
-In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ is a good representation of $X$. We use $\rho, \sigma, \tau$ to denote elements of $\gal(K/F)$. To improve typographic aesthetics of our proofs, we sometimes use subscript to mean function application.
-
-
-\subsection{From $\br(K/F)$ to $\hh^{2}\left(\gal(K/F),K^{\star}\right)$}
-
+\subsection{Conjugation Factors and Conjugation Sequences}
+In this section, let $K/F$ be a field extension, $X \in \br(F)$ and $A$ be a $K$-good representation of $X$.
 \begin{remark}
   Since $\gal(K/F)$ acts on $K^{\star}$, for $x\in K^{\star}$,we feel free to write $\sigma\cdot x$ when it feels more readable than $\sigma(x)$, for example when there are nested brackets.
 \end{remark}
@@ -406,6 +381,67 @@ In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ 
   \leanok
   \lean{GoodRep.mul'}
 \end{construction}
+
+\begin{theorem}
+  If $x$ is an $A$-conjugation sequence, then $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is an $K$-linearly independent set. When $K/F$ is finite dimensional and Galois, $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is a $K$-basis for $A$.
+  \leanok
+  \lean{GoodRep.conjFactor_linearIndependent, GoodRep.conjFactorBasis}
+\end{theorem}
+
+\begin{proof}
+  Suppose $\{x_{\sigma}\}$ is linearly dependent. Let $J \subseteq \gal(K/F)$ be such that $\{x_{\sigma}|\sigma\in J\}$ is a maximally linearly independent subset.
+  Then $J \ne \gal(K/F)$, let $\sigma \in\gal(K/F)$ be an arbitrary automorphism that is not in $J$. Since $\{x_{\tau}|\tau\in J\}$ is maximally linearly independent, $\sigma \in \left\langle x_{\tau}|\tau\in J\right\rangle$. Hence, by~\cref{con:good-rep-mod} we have
+  \[
+    x_\sigma = \sum_{\tau\in J}\lambda_{\tau}\cdot x_{\tau} = \sum_{\tau\in J}\iota_{A}\left(\lambda_{\tau}\right)x_{\tau},
+  \]
+  for some $\lambda_{\tau}\in K$.
+  For each $c \in K$, we have the following equality
+  \[
+    \begin{aligned}
+      \iota_{A}\left(\sigma \cdot c\right) x_{\sigma}
+      &= x_{\sigma} \iota_{A}(c) &\text{by~\cref{def:conj-factor}}\\
+      &= \sum_{\tau\in J}\lambda_{\tau}\cdot x_{\tau}\iota_{A}(c) & \\
+      &= \sum_{\tau\in J}\lambda_{\tau}\cdot \iota_{A}\left(\tau\cdot c\right)x_{\tau} &\text{by~\cref{def:conj-factor} again}\\
+      &=\sum_{\tau\in J}\iota_{A}\left(\lambda_{\tau}\tau(c)\right)x_{\tau};\\
+      \iota_{A}\left(\sigma\cdot c\right)x_{\sigma}
+      &= \sum_{\tau\in J}\iota_{A}\left(\lambda_{\tau}\right) x_{\tau}\iota_{A}(c)\\
+      &= \sum_{\tau\in J}\iota_{A}\left(\sigma(c)\lambda_{\tau}\right)x_{\tau}.
+    \end{aligned}
+  \]
+  Since $\{x_{\tau}|\tau\in J\}$ is linearly independent, we have that for each $\tau \in J$, $\lambda_{\tau}\tau(c) = \sigma(c)\lambda_{\tau}$. Note that $J$ is not empty, for otherwise $x_{\sigma}=\sum_{\tau\in\emptyset}\lambda_{\tau}\cdot x_{\tau}=0$ but $x_{\sigma}$ is invertible. Hence $\sigma$ is in $J$ after all; contradiction.
+
+  If $K/F$ is finite dimensional and Galois, then $\dim_{F}K$ is equal to the cardinality of $\gal(K/F)$, then by the linear independence of $\{x_{\sigma}|\sigma\in\gal(K/F)\}$, we conclude that it is indeed a $K$-basis for $A$.
+\end{proof}
+
+\section{The Second Galois Cohomology}
+
+In this section, we construct a group isomorphism between $\br(K/F) \cong \HH^{2}\left(\gal(K/F), K^{\star}\right)$ where $K/F$ is a finite dimensional Galois extension. To keep alignment of the Brauer group, let us use the multiplicative notation for group cohomology. Recall:
+
+\begin{definition}[the Second Group Cohomology]
+  \label{def:second-group-coh}
+  Let $G$ be a group and $M$ an abelian group (written multiplicatively) with a $G$-action.
+
+  A function $f : G \times G \to M$ is a {\em 2-cocycle\/} if for all $g,h,j\in G$,
+  \[
+    f(gh, j)f(g, h) = \left(g\cdot f(h, j)\right) f(g, hj).
+  \]
+  We denote the subgroup of 2-cocycles as $\mathcal{Z}^{2}(G, M)$.
+
+  A function $f : G\times G \to M$ is a {\em 2-coboundary\/} if there exists an $x : G \to M$ such that for all $g, h \in G$
+  \[
+    \frac{g\cdot x(h)}{x(gh)} x(g) = f(g, h).
+  \]
+  We denote the subgroup of 2-coboundaries as $\mathcal{B}^{2}(G, M)$.
+
+  The second group cohomology $\hh^{2}\left(G, M\right)$ is defined to be the quotient group of 2-cocycles modulo 2-coboundaries $^{\mathcal{Z}^{2}(G, M)}/_{\mathcal{B}^{2}(G, M)}$. If $s, t \in \mathcal{Z}^{2}(G, M)$, we say $s$ and $t$ are cohomologous if their equivalence class $[s], [t] \in \HH^{2}(G, M)$ are the same; in another word $st^{-1}\in\mathcal{B}^{2}(G, M)$.
+  \leanok
+  \lean{groupCohomology.H2, groupCohomology.IsMulTwoCoboundary, groupCohomology.IsMulTwoCocycle}
+\end{definition}
+
+In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ is a good representation of $X$. We use $\rho, \sigma, \tau$ to denote elements of $\gal(K/F)$. To improve typographic aesthetics of our proofs, we sometimes use subscript to mean function application.
+
+
+\subsection{From $\br(K/F)$ to $\hh^{2}\left(\gal(K/F),K^{\star}\right)$}
 
 \begin{lemma}[Twisting Conjugation Factors]\label{lem:twist-spec1}
   If $x$ and $y$ are two conjugation factors of $\sigma$, then there exists a unique $c \in K$ such that $x = y\iota_{A}(c)$.
