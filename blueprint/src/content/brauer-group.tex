@@ -324,23 +324,43 @@ We observe the following easy result about good representations. Let $X \in \br(
   \lean{GoodRep.dim_eq'}
 \end{construction}
 
+\begin{lemma}\label{lem:good-rep-iso}
+  If $A$ and $B$ are two good representations of $X$, then $A \cong B$ as $F$-algebras.
+  \leanok
+  \lean{GoodRep.exists_iso}
+\end{lemma}
+\begin{proof}
+  By~\cref{lem:common-div-alg}, we find a division $F$-algebra $D$ and non-zero natural numbers $m, n$ such that $A \cong \mat_{m}(D)$ and $B \cong \mat_{n}(D)$ as $F$-algebras. Therefore
+  \[
+    \begin{aligned}
+      {\left(\dim_{F}K\right)}^{2} &= \dim_{F}A &= m^{2}\dim_{F}D \\
+      &= \dim_{F}B &= n^{2}\dim_{F}D.
+    \end{aligned}
+  \]
+  Therefore $m = n$ and $A \cong \mat_{m}D =\mat_{n}D\cong B$.
+\end{proof}
+
 \section{The Second Galois Cohomology}
 
 In this section, we construct a group isomorphism between $\br(K/F) \cong \HH^{2}\left(\gal(K/F), K^{\star}\right)$ where $K/F$ is a finite dimensional Galois extension. To keep alignment of the Brauer group, let us use the multiplicative notation for group cohomology. Recall:
 
 \begin{definition}[the Second Group Cohomology]
+  \label{def:second-group-coh}
   Let $G$ be a group and $M$ an abelian group (written multiplicatively) with a $G$-action.
 
   A function $f : G \times G \to M$ is a {\em 2-cocycle\/} if for all $g,h,j\in G$,
   \[
     f(gh, j)f(g, h) = \left(g\cdot f(h, j)\right) f(g, hj).
   \]
+  We denote the subgroup of 2-cocycles as $\mathcal{Z}^{2}(G, M)$.
 
   A function $f : G\times G \to M$ is a {\em 2-coboundary\/} if there exists an $x : G \to M$ such that for all $g, h \in G$
   \[
     \frac{g\cdot x(h)}{x(gh)} x(g) = f(g, h).
   \]
-  The second group cohomology $\hh^{2}\left(G, M\right)$ is defined to be the quotient group of 2-cocycles modulo 2-coboundaries.
+  We denote the subgroup of 2-coboundaries as $\mathcal{B}^{2}(G, M)$.
+
+  The second group cohomology $\hh^{2}\left(G, M\right)$ is defined to be the quotient group of 2-cocycles modulo 2-coboundaries $^{\mathcal{Z}^{2}(G, M)}/_{\mathcal{B}^{2}(G, M)}$. If $s, t \in \mathcal{Z}^{2}(G, M)$, we say $s$ and $t$ are cohomologous if their equivalence class $[s], [t] \in \HH^{2}(G, M)$ are the same; in another word $st^{-1}\in\mathcal{B}^{2}(G, M)$.
   \leanok
   \lean{groupCohomology.H2, groupCohomology.IsMulTwoCoboundary, groupCohomology.IsMulTwoCocycle}
 \end{definition}
@@ -350,11 +370,16 @@ In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ 
 
 \subsection{From $\br(K/F)$ to $\hh^{2}\left(\gal(K/F),K^{\star}\right)$}
 
+\begin{remark}
+  Since $\gal(K/F)$ acts on $K^{\star}$, for $x\in K^{\star}$,we feel free to write $\sigma\cdot x$ when it feels more readable than $\sigma(x)$, for example when there are nested brackets.
+\end{remark}
+
+
 \begin{definition}[Conjugation Factor]
   \label{def:conj-factor}
   With respect to $A$, a conjugation factor of $\sigma$ is a unit $x_{\sigma} \in A^{\star}$ such that for all $c \in K$,
   \[
-    x_{\sigma} \iota_{A}(c)x_{\sigma}^{-1} = \iota_{A}(\sigma(c)).
+    x_{\sigma} \iota_{A}(c)x_{\sigma}^{-1} = \iota_{A}(\sigma \cdot c).
   \]
 
   A conjugation sequence is a sequence $x:\gal(K/F) \to A^{\star}$ such that for all $\sigma\in\gal(K/F)$, $x_{\sigma}$ is a conjugation factor of $\sigma$. When we want to stress $A$, we say $A$-conjugation factor and $A$-conjugation sequence.
@@ -366,7 +391,7 @@ In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ 
   When $x_{\sigma}$ is a conjugation factor of $\sigma$, the equalities $x_{\sigma}\iota_{A}(c) = x_{\sigma}\iota_{A}(\sigma(c))$ and $\iota_{A}(c)x_{\sigma}^{-1}=x_{\sigma}^{-1}\iota_{A}(\sigma(c))$ are also useful.
 \end{remark}
 
-\begin{construction}
+\begin{construction}\label{con:exists-conj-seq}
   $A$ has a conjugation sequence:
   let $\sigma \in \gal(K/F)$, we have two $F$-algebra homomorphisms $K \to A$ given by $\iota_{A}$ and $\iota_{A}\circ \sigma$. Applying~\cref{thm:skolem-noether} to $\iota_{A}$ and $\iota_{A}\circ \sigma$ gives us the desired conjugation factor.
   \leanok
@@ -376,7 +401,7 @@ In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ 
 \begin{construction}
   If $x$ is a conjugation factor of $\sigma$ and $y$ of $\tau$, then $xy$ is a conjugation factor of $\sigma\tau$. For any $c \in K$
   \[
-    \iota_{A}(\sigma(\tau(c))) = x\iota_{A}(\tau(c))x^{-1} = xy\iota_{A}(c)y^{-1}x^{-1}=\left(xy\right)\iota_{A}{\left(xy\right)}^{-1}.
+    \iota_{A}(\sigma \cdot\tau(c)) = x\iota_{A}(\tau\cdot c)x^{-1} = xy\iota_{A}(c)y^{-1}x^{-1}=\left(xy\right)\iota_{A}{\left(xy\right)}^{-1}.
   \]
   \leanok
   \lean{GoodRep.mul'}
@@ -400,10 +425,6 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
 
 \begin{remark}
   In fact, $\twist(x, y)$ is in $K^{\star}$ and $\twist(x, y)^{-1}=\twist(y, x)$.
-\end{remark}
-
-\begin{remark}
-  Since $\gal(K/F)$ acts on $K^{\star}$, for $x\in K^{\star}$,we feel free to write $\sigma\cdot x$ when it feels more readable than $\sigma(x)$, for example when there are nested brackets.
 \end{remark}
 
 \begin{lemma}\label{lem:twist-spec2}
@@ -438,7 +459,7 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
   \lean{GoodRep.conjFactorCompCoeff}
 \end{construction}
 
-\begin{lemma}
+\begin{lemma}\label{lem:compare-conj-factor-spec}
   Let $x : \gal(K/F) \to A^{\star}$ be a conjugation sequence. We have
   \[
     \comp_{x_{\rho}, x_{\sigma}, x_{\rho\sigma}}\,\comp_{x_{\rho\sigma},x_{\tau},x_{\rho\sigma\tau}} =
@@ -457,7 +478,7 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
 
  \Cref{eq:1} is because: by the first equality in~\cref{con:compare-conj-factors} (twice)
  \[
-   x_{\rho}x_{\sigma}x_{tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma}, x_{\rho\sigma}}\right)x_{\rho\sigma}x_{\tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma},x_{\rho\sigma}}\right)\iota_{A}\left(\comp_{x_{\rho\sigma},x_{\tau},x_{\rho\sigma\tau}}\right)x_{\rho\sigma\tau}.
+   x_{\rho}x_{\sigma}x_{\tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma}, x_{\rho\sigma}}\right)x_{\rho\sigma}x_{\tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma},x_{\rho\sigma}}\right)\iota_{A}\left(\comp_{x_{\rho\sigma},x_{\tau},x_{\rho\sigma\tau}}\right)x_{\rho\sigma\tau}.
  \]
  \Cref{eq:2} is because: by~\cref{def:conj-factor}, we have
  \[\iota_{A}\left(\rho\cdot\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\rho}=x_{\rho}\iota_{A}\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right),\]
@@ -470,6 +491,145 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
    \end{aligned}.
  \]
 \end{proof}
+
+\begin{construction}[from good representation to 2-cocycle]
+  \label{con:good-rep-to-2-cocycles}
+  Let $x$ be an $A$-conjugation sequence. We associate with $x$ a function $\mathcal{B}^{2}(x) : \gal(K/F)\times\gal(K/F)\to K^{\star}$ defined by
+  \[
+    (\sigma,\tau)\mapsto \comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}.
+  \]
+  We will write $\mathcal{B}^{2}(x)$ as $\mathcal{B}^{2}_{A, x}$, $\mathcal{B}^{2}_{A}(x)$ or $\mathcal{B}^{2}_{x}$ as well.
+  \leanok
+  \lean{GoodRep.toTwoCocycles}
+\end{construction}
+
+\begin{lemma}
+  For any $A$-conjugation sequence $x$, $\mathcal{B}^{2}_{x} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, that is $\mathcal{B}_{x}$ is indeed a 2-cocycle.
+  \leanok
+  \lean{GoodRep.isTwoCocyles}
+\end{lemma}
+
+\begin{proof}
+  We need to prove
+  \[
+    \mathcal{B}_{x}(\rho\sigma, \tau)\, \mathcal{B}_{x}(\rho,\sigma) = \rho\left(\mathcal{B}_{x}(\sigma, \tau)\right)\, \mathcal{B}_{x}(\rho, \sigma\tau).
+  \]
+  But this is exactly~\cref{lem:compare-conj-factor-spec}.
+\end{proof}
+
+For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequence $x$, we have constructed a 2-cocycle $\mathcal{B}^{2}_{A}(x)$. But to obtain a well-defined function from $\br(K/F)$ to $\HH^{2}\left(\gal(K/F), K^{\star}\right)$, we need to verify that for any other good representation $B$ of $X$ and $B$-conjugation sequence $y$, $\mathcal{B}^{2}_{A}(x)$ and $\mathcal{B}^{2}_{B}(y)$ are cohomologous. Let us fix another good representation $B$ of $X \in \br(K/F)$ and a $B$-conjugation sequence $y$.
+
+\begin{construction}\label{con:good-rep-iso-coeff}
+  By~\cref{lem:good-rep-iso}, $A$ and $B$ are isomorphic as $F$-algebras, we use $e_{A,B}$ to denote an arbitrary $F$-algebra isomorphism between $A$ and $B$. When there is no confusion, we write $e$ instead of $e_{A, B}$ Since $e \circ \iota_{A}$ and $\iota_{B}$ are two $F$-algebra homomorphism from $K$ to $B$, by~\cref{thm:skolem-noether}, there exists some $u \in B^{\star}$ such that for all $r \in K$, we have $\iota_{B}(r) = ue\left(\iota_{A}(r)\right)u^{-1}$ (or equivalently, $u^{-1}\iota_{B}(r)u = e\left(\iota_{A}(r)\right)$). When there is confusion, we write $u_{A, B}$ instead of $u$.
+\end{construction}
+
+\begin{lemma}\label{lem:iso-conj-coeff-spec2}
+  For any $c \in K$, $\sigma\in\gal(K/F)$ and $A$-conjugation factor $x$ of $\sigma$, we have
+  \[
+    \iota_{B}\left(\sigma\cdot c\right) = ue(x)u^{-1}\,\iota_{B}(c)\,ue\left(x^{-1}\right)u^{-1}.
+  \]
+  \leanok
+  \lean{GoodRep.isoConjCoeff_spec''}
+\end{lemma}
+\begin{proof}
+  From~\cref{def:conj-factor}, we have $e\left(\iota_{A}(\sigma \cdot c)\right) = e\left(x\iota_{A}(c)x^{-1}\right)$. Substituting it in~\cref{con:good-rep-iso-coeff}, we get
+  \[
+    \begin{aligned}
+      \iota_{B}(\sigma \cdot c) &= ue\left(x\iota_{A}(c)x^{-1}\right)u^{-1}\\
+                                &= ue(x)e\left(\iota_{A}(c)\right)e\left(x^{-1}\right)u^{-1}\\
+      &= ue(x)u^{-1}\iota_{B}(c)ue\left(x^{-1}\right)u^{-1}.
+    \end{aligned}
+  \]
+\end{proof}
+
+\begin{construction}
+  \label{con:push-forward-conj-factor}
+  If $x$ is an $A$-conjugation factor for $\sigma$, we can obtain a $B$-conjugation factor for $\sigma$ by defining $B_{\star}x := ue(x)u^{-1}$ with inverse $ue\left(x^{-1}\right)u^{-1}$. We use~\cref{lem:iso-conj-coeff-spec2} to check that $B_{\star}x$ is indeed a conjugation factor for $\sigma$. If $y$ is a $B$-conjugation factor for $\sigma$, another useful constant is $v := \sigma\left(\twist_{y, B_{\star}x}\right)$. We have
+  \[
+    \begin{aligned}
+    y &= \iota_{B}\left(v\right)\, B_{\star}x \\
+      \iota_{B}\left(v\right) &= u e\left(\iota_{A}\left(v\right)\right)u^{-1}\\
+      v^{-1} &= \sigma\left(\twist_{B_{\star}x, y}\right)
+    \end{aligned}.
+  \]
+  We also write $v_{x,y}$ or even $v^{A,B}_{x, y}$ when we stress the importance of good representation $A$ and $B$ and their conjugation factor $x$ and $y$.
+\end{construction}
+
+\begin{lemma}\label{lem:compare-to-2-cocycle-aux}
+  Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence.
+  We have
+  \[
+    \comp_{y_{\sigma}, y_{\tau}, y_{\sigma\tau}} v_{x_{\sigma\tau},y_{\sigma\tau}} = v_{x_{\sigma},y_{\sigma}} \sigma\left(v_{x_{\tau},y_{\tau}}\right) \comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}.
+  \]
+  \leanok
+  \lean{GoodRep.compare_conjFactorCompCoeff}
+\end{lemma}
+\begin{proof}
+  By~\cref{con:compare-conj-factors}, we have $y_{\sigma}y_{\tau} = \iota_{B}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)y_{\sigma\tau}$.
+  By repeated application of~\cref{con:push-forward-conj-factor} and~\cref{con:good-rep-iso-coeff}, we have
+  \[
+    \begin{aligned}
+      y_{\sigma\tau}&= u\,e\left(\iota_{A}\left(v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)\,u^{-1}\\
+      y_{\sigma}y_{\tau} &= u\,e\left(\iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\right)x_{\sigma}\iota_{A}\left(v_{x_{\tau},y_{\tau}}\right)x_{\tau}\right)\,u^{-1}\\
+                    &= \iota_{B}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)y_{\sigma\tau}\\
+                    &= \iota_{B}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)u\,e\left(\iota_{A}\left(v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)\,u^{-1}\\
+                    &= u\,e\left(\iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)\right)\,u^{-1}\,\,\,ue\left(\iota_{A}\left(v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)\,u^{-1}\\
+      &= ue\left(\iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)u^{-1}.
+    \end{aligned}
+  \]
+  Hence
+  \[
+    \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\right)x_{\sigma}\iota_{A}\left(v_{x_{\tau},y_{\tau}}\right)x_{\tau} = \iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}.
+  \]
+  We also have by~\cref{def:conj-factor}
+  \[
+    x_{\sigma} \iota_{A}\left(v_{x_{\tau},y_{\tau}}\right) x_{\tau} =
+    \iota_{A}\left(\sigma\cdot v_{x_{\tau}y_{\tau}}\right) x_{\sigma}x_{\tau}.
+  \]
+  Hence
+  \[
+    \begin{aligned}    \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\right)x_{\sigma}\iota_{A}\left(v_{x_{\tau},y_{\tau}}\right)x_{\tau} &=
+                                                                                                                                      \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\, \sigma\left(v_{x_{\tau},y_{\tau}}\right)\right) x_{\sigma}x_{\tau} \\
+      &= \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\sigma\left(v_{x_{\tau},y_{\tau}}\right)\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\sigma\tau}\\
+      &= \iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}.
+    \end{aligned}
+  \]
+  Cancelling $x_{\sigma\tau}$ and by injectivity of $\iota_{A}$, the result is proved.
+\end{proof}
+
+\begin{lemma}\label{lem:compare-to-2-cocylce}
+  Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence. We have
+  \[
+    \mathcal{B}^{2}_{B,y}(\sigma,\tau) v_{x_{\sigma\tau},y_{\sigma\tau}} =
+    v_{x_{\sigma},y_{\sigma}} \sigma\left(v_{x_{\tau},y_{\tau}}\right) \mathcal{B}^{2}_{A,y}(\sigma,\tau).
+  \]
+  \leanok
+  \lean{GoodRep.compare_toTwoCocycles}
+\end{lemma}
+
+\begin{proof}
+  If we unfold~\cref{con:good-rep-to-2-cocycles}, we discover the lemma is saying exactly~\cref{lem:compare-to-2-cocycle-aux}.
+\end{proof}
+
+We finally arrive at our main conclusion for this section.
+\begin{corollary}\label{cor:to-2-cocylce-wd}
+  Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence. $\mathcal{B}^{2}_{A,x}$ and $\mathcal{B}^{2}_{B,y}$ are 2-cohomologous.
+  \leanok
+  \lean{GoodRep.compare_toTwoCocycles'}
+\end{corollary}
+\begin{proof}
+  By~\cref{def:second-group-coh}, we need to find a function $f : \gal(K/F)\to K^{\star}$ such that for all $\sigma, \tau\in\gal(K/F)$,
+  \[
+    \frac{\sigma\left(f(\tau)\right)}{f\left(\sigma\tau\right)}f(\sigma)=\frac{\mathcal{B}^{2}_{B,y}}{\mathcal{B}^{2}_{A,x}}.
+  \]
+  Let $f(\rho) := v_{x_{\rho},y_{\rho}}$, by~\cref{lem:compare-to-2-cocylce} we see the equality holds.
+\end{proof}
+
+\begin{construction}[from $\br(K/F)$ to $\HH^{2}\left(\gal(K/F), K^{\star}\right)$]
+  Let $X \in \br(K/F)$, by~\cref{cor:mem-relative-br-iff-good-rep}, $X$ admits a good representation $A$; by~\cref{con:exists-conj-seq}, $A$ admits a conjugation sequence $x$. We associate with $X$ an element $\HH^{2}(X) := \left[\mathcal{B}^{2}_{A,x}\right]$in $\HH^{2}\left(\gal(K/F),K^{\star}\right)$. By~\cref{cor:to-2-cocylce-wd}, for any other good representation $B$ and $B$-conjugation sequence $y$, we have $\left[\mathcal{B}^{2}_{A,x}\right]=\left[\mathcal{B}^{2}_{B,y}\right]$, hence we have a well-defined function $\HH^{2} : \br(K/F) \to \HH^{2}\left(\gal(K/F),K^{\star}\right)$.
+\end{construction}
+
+\subsection{From $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$}
 
 %%% Local Variables:
 %%% mode: LaTeX

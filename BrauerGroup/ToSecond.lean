@@ -419,8 +419,8 @@ def pushConjFactorCoeff (x : A.conjFactor σ) (y : B.conjFactor σ) : K :=
 σ (conjFactorTwistCoeff y (A.pushConjFactor B x))
 
 lemma pushConjFactorCoeff_spec (x : A.conjFactor σ) (y : B.conjFactor σ)  :
-    y.1 = B.ι (A.pushConjFactorCoeff B x y) * (A.pushConjFactor B x).1 := by
-  simpa using conjFactorTwistCoeff_spec' y (A.pushConjFactor B x)
+    y.1 = B.ι (A.pushConjFactorCoeff B x y) * (A.pushConjFactor B x).1 :=
+  conjFactorTwistCoeff_spec' y (A.pushConjFactor B x)
 
 lemma pushConjFactorCoeff_spec' (x : A.conjFactor σ) (y : B.conjFactor σ) :
     B.ι (A.pushConjFactorCoeff B x y) =
