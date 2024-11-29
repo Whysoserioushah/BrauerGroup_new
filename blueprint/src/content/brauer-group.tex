@@ -625,8 +625,11 @@ We finally arrive at our main conclusion for this section.
   Let $f(\rho) := v_{x_{\rho},y_{\rho}}$, by~\cref{lem:compare-to-2-cocylce} we see the equality holds.
 \end{proof}
 
-\begin{construction}[from $\br(K/F)$ to $\HH^{2}\left(\gal(K/F), K^{\star}\right)$]
+\begin{construction}[from $\br(K/F)$ to $\HH^{2}\left(\gal(K/F), K^{\star}\right)$]\label{con:br-to-snd-coh}
   Let $X \in \br(K/F)$, by~\cref{cor:mem-relative-br-iff-good-rep}, $X$ admits a good representation $A$; by~\cref{con:exists-conj-seq}, $A$ admits a conjugation sequence $x$. We associate with $X$ an element $\HH^{2}(X) := \left[\mathcal{B}^{2}_{A,x}\right]$in $\HH^{2}\left(\gal(K/F),K^{\star}\right)$. By~\cref{cor:to-2-cocylce-wd}, for any other good representation $B$ and $B$-conjugation sequence $y$, we have $\left[\mathcal{B}^{2}_{A,x}\right]=\left[\mathcal{B}^{2}_{B,y}\right]$, hence we have a well-defined function $\HH^{2} : \br(K/F) \to \HH^{2}\left(\gal(K/F),K^{\star}\right)$.
+  \leanok
+  \lean{RelativeBrGroup.toSnd}
+  \lean{RelativeBrGroup.toSnd_wd}
 \end{construction}
 
 \subsection{From $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$}
