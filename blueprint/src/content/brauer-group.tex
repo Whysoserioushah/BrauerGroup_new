@@ -678,7 +678,7 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
     c = \sum_{\sigma\in\gal(K/F)}\Delta_{\sigma, c(\sigma)},
     \]
     it is often, if not always, sufficient to consider the special cases of $\Delta_{\sigma, c}$ and extend the result linearly.
-  For multiplications, we define the result of multiplying $\Delta_{\sigma, c},\Delta_{\tau, d} \cross_{\mathfrak{a}}$ to be $\Delta_{\sigma\tau, c\sigma(d)\, \mathfrak{a}(c,d)}$. For any $r \in F$ and $\Delta_{\sigma, c} \in \cross_{\mathfrak{a}}$, we define $r \cdot \Delta_{\sigma, c}$ to be $\Delta_{\sigma, r\cdot c}$.
+  For multiplications, we define the result of multiplying $\Delta_{\sigma, c},\Delta_{\tau, d} \cross_{\mathfrak{a}}$ to be $\Delta_{\sigma\tau, c\sigma(d)\, \mathfrak{a}(\sigma,\tau)}$. For any $r \in F$ and $\Delta_{\sigma, c} \in \cross_{\mathfrak{a}}$, we define $r \cdot \Delta_{\sigma, c}$ to be $\Delta_{\sigma, r\cdot c}$.
   \leanok
   \lean{GoodRep.crossProductMul, crossProductSMul, GoodRep.CrossProduct.addCommGroup}
 \end{construction}
@@ -688,31 +688,38 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
 \end{remark}
 
 \begin{lemma}
-  The cross product $\cross_{\mathfrak{a}}$ is a ring with the multiplicative unit $\Delta_{\mathsf{id}, \mathfrak{a}(1, 1)}$. The $F$-action on $\cross_{\mathfrak{a}}$ defined by $r \cdot \Delta_{\sigma, c} := \Delta_{\sigma, r\cdot c}$ makes it an $F$-algebra.
+  The cross product $\cross_{\mathfrak{a}}$ is a ring with the multiplicative unit $\Delta_{\mathsf{id}, \mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}}$. The $F$-action on $\cross_{\mathfrak{a}}$ defined by $r \cdot \Delta_{\sigma, c} := \Delta_{\sigma, r\cdot c}$ makes it an $F$-algebra.
   \leanok
   \lean{GoodRep.CrossProduct.algebra}
 \end{lemma}
 \begin{proof}
   We verify the axioms of rings on elements of the form $\Delta_{\sigma, c}$. Let $\sigma,\tau,\rho\in\gal(K/F)$ and $a,b,c\in K$.
   \begin{itemize}
-    \item Associativity of multiplication. We need to check that $\Delta_{\sigma,a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right) = \left(\Delta_{\sigma,a}\Delta_{\tau,b}\right)\Delta_{\rho,c}\right)$:
+    \item Associativity of multiplication. We need to check that $\Delta_{\sigma,a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right) = \left(\Delta_{\sigma,a}\Delta_{\tau,b}\right)\Delta_{\rho,c}$:
           \[
           \begin{aligned}
             \Delta_{\sigma, a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right)
-            &= \Delta_{\sigma,a}\Delta_{\tau\rho,b\tau(c) \mathfrak{a}(b,c)}\\
-            &= \Delta_{\sigma\tau\rho,a\sigma(b)\sigma(\tau(c)) \sigma(\mathfrak{a}(b, c))};\\
+            &= \Delta_{\sigma,a}\Delta_{\tau\rho,b\tau(c) \mathfrak{a}(\sigma,\tau)}\\
+            &= \Delta_{\sigma\tau\rho,a\sigma(b)\sigma(\tau(c)) \sigma(\mathfrak{a}(\sigma, \tau))};\\
             %
             \left(\Delta_{\sigma,a}\Delta_{\tau,b}\right)\Delta_{\rho,c}
-            &= \Delta_{\sigma\tau,a\sigma(b)\mathfrak{a}(a,b)}\Delta_{\rho,c}\\
-            &= \Delta_{\sigma\tau\rho,a\sigma(b)\mathfrak{a}(a, b)\sigma(\tau(c))\mathfrak{a}(\sigma\tau, \rho)}.
+            &= \Delta_{\sigma\tau,a\sigma(b)\mathfrak{a}(\sigma,\tau)}\Delta_{\rho,c}\\
+            &= \Delta_{\sigma\tau\rho,a\sigma(b)\mathfrak{a}(\sigma, \tau)\sigma(\tau(c))\mathfrak{a}(\sigma\tau, \rho)}.
           \end{aligned}
           \]
           Hence it is sufficient to check
           \[
-          \sigma(\tau(c))\sigma(\mathfrak{a}(b,c)) =
-          \mathfrak{a}(a,b)\sigma(\tau(c))\mathfrak{a}(\sigma\tau, \rho).
+          \sigma(\tau(c))\sigma(\mathfrak{a}(\sigma,\tau)) =
+          \mathfrak{a}(\sigma,\tau)\sigma(\tau(c))\mathfrak{a}(\sigma\tau, \rho).
           \]
           This is the 2-cocycle condition in~\cref{def:second-group-coh} (modulo commutativity of $K$).
+    \item multiplicative unit: we need to check $\Delta_{\sigma, a}\Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})} = \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id},\mathsf{id})}\Delta_{\sigma, a} = \Delta_{\sigma, a}$.
+          \[
+          \begin{aligned}
+            \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})}\Delta_{\sigma, a}
+            &= \Delta_{\sigma, \mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}a\mathfrak{a}(\mathsf{id},\sigma)}\\
+          \end{aligned}
+          \]
   \end{itemize}
 \end{proof}
 
