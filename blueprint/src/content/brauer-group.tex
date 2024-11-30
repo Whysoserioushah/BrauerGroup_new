@@ -702,7 +702,7 @@ We finally arrive at our main conclusion for this section.
 Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2-cocycle. In this section, we construct the {\em cross product\/} associated with $\mathfrak{a}$ which we prove to be $F$-central simple. Finally, we show that if $\mathfrak{a}, \mathfrak{b}\in\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ are cohomologous, the cross products associated with $a$ and $b$ are Brauer equivalent.
 
 \begin{construction}[Cross product]\label{con:cross-product}
-  Denote $\cross_{\mathfrak{a}}$ to $\gal(K/F) \to K$, i.e. functions from $\gal(K/F)$ to $K$. Notationally, elements of $\cross_{\mathfrak{a}}$ are sequences in $K$ indexed by $\gal(K/F)$; we denote $\Delta_{\sigma, c}$ to be the sequence with value $c$ at $\sigma$-th index and zero elsewhere. We give $\cross_{\mathfrak{a}}$ the usual zero, addition, negation, that is, we give $\cross_{\mathfrak{a}}$ the normal additive abelian group structure. Since for each $c \in \cross_{\mathfrak{a}}$,
+  Denote $\cross_{\mathfrak{a}}$ to be $\gal(K/F) \to K$, i.e. functions from $\gal(K/F)$ to $K$. Notationally, elements of $\cross_{\mathfrak{a}}$ are sequences in $K$ indexed by $\gal(K/F)$; we denote $\Delta_{\sigma, c}$ to be the sequence with value $c$ at $\sigma$-th index and zero elsewhere. We give $\cross_{\mathfrak{a}}$ the usual zero, addition, negation, that is, we give $\cross_{\mathfrak{a}}$ the normal additive abelian group structure. Since for each $c \in \cross_{\mathfrak{a}}$,
   \[
     c = \sum_{\sigma\in\gal(K/F)}\Delta_{\sigma, c(\sigma)},
     \]
@@ -755,9 +755,49 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
             &=\Delta_{\sigma, a}
           \end{aligned}
           \]
-    \item distributivity: ...
+    \item distributivity: We need to check left-distributivity $\Delta_{\sigma, a}\left(\Delta_{\tau, b} + \Delta_{\rho, c}\right) = \Delta_{\sigma,a}\Delta_{\tau,b} + \Delta_{\sigma, a}\Delta_{\rho, c}$ and right distributivity $\left(\Delta_{\tau,b} + \Delta_{\rho,c}\right)\Delta_{\sigma,a} = \Delta_{\tau,b}\Delta_{\sigma,a} + \Delta_{\rho,c}\Delta_{\sigma,a}$. This is precisely what ``extend linearly'' means.
+    \item $F$-algebra: We need to check for all $r \in F$, $\left(r\cdot \Delta_{\id,\mfa(\id,\id)^{-1}}\right)\Delta_{\sigma,c} = \Delta_{\sigma,c}\left(r\cdot\Delta_{\id,\mfa(\id,\id)^{-1}}\right)$. By~\cref{lem:2-cocycle-one-one}
+          \[
+          \begin{aligned}
+            \left(r\cdot \Delta_{\id,\mfa(\id,\id)^{-1}}\right)\Delta_{\sigma,c}
+            &= \Delta_{\id,r\cdot\mfa(\id,\id)^{-1}}\Delta_{\sigma,c}\\
+            &= \Delta_{\sigma,\left(r\cdot\mfa(\id,\id)^{-1}\right)c\mfa(\id,\sigma)} \\
+            &=\Delta_{\sigma,\left(r\cdot\mfa(\id,\id)^{-1}\right)c\mfa(\id,\id)} \\
+            &= \Delta_{\sigma, r\cdot c}\\
+            %
+            \Delta_{\sigma,c}\left(r\cdot\Delta_{\id,\mfa(\id,\id)^{-1}}\right)
+            &= \Delta_{\sigma,c}\Delta_{\id,r\cdot \mfa(\id,\id)^{-1}} \\
+            &= \Delta_{\sigma,c\sigma\left(r\cdot\mfa(\id,\id)^{-1}\right)\mfa(\sigma,\id)}\\
+            &=\Delta_{\sigma,c\left(r\cdot\sigma\left(\mfa(\id,\id)^{-1}\right)\right)\mfa(\id,\id)^{-1}}\\
+            &= \Delta_{\sigma, c\left(r\cdot 1\right)}\\
+            &=\Delta_{\sigma,r\cdot c}.
+          \end{aligned}
+          \]
   \end{itemize}
 \end{proof}
+
+From now on, we feel free to write $1 \in \cross_{\mfa}$ instead of $\Delta_{\id,\mfa(\id,\id)^{-1}}$. Then the algebra map $F \hookrightarrow \cross_{\mfa}$ is the map $r \mapsto r \cdot 1$.
+
+\begin{construction}[$K$-embedding]\label{con:cross-product-iota}
+  The map $\iota_{\cross_{\mfa}}: K \to \cross_{\mfa}$ defined by
+  \[
+    b \mapsto \Delta_{\id, b\mfa(\id,\id)^{-1}}
+  \]
+  is an $F$-algebra map.
+  Checking that $\iota_{\cross_{\mfa}}$ preserves $1$, multiplication and addition uses nothing but axioms of ring.
+  For any $r \in F$, we need to check $\iota_{\corss_{\mfa}}(r) = r \cdot 1$. Indeed $\iota_{\cross_{\mfa}}(r) = \Delta_{\id, r\cdot \mfa(\id,\id)^{-1}}$ and $r\cdot 1 = r \cdot \Delta_{\id,\mfa(\id,\id)^{-1}} =\Delta_{\id,r\cdot\mfa(\id,\id)^{-1}}$.
+  When the context is clear, we also write $\iota_{\mfa}$ instead of $\iota_{\cross_{\mfa}}$.
+
+  We note the following useful equality: for any $b \in K$
+
+  \[
+    \iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\sigma, bc},
+  \]
+  indeed:
+  $\iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\id,b \mfa(\id,\id)^{-1}}\Delta_{\sigma, c} = \Delta_{\sigma, b\mfa(\id,\id)^{-1}c\mfa(\id,\sigma)} = \Delta_{\sigma,b\mfa(\id,\id)^{-1}c\mfa(\id,\id)}$ by~\cref{lem:2-cocycle-one-one}.
+  \leanok
+  \lean{GoodRep.CrossProduct.ι,GoodRep.CrossProduct.identity_double_cross'}
+\end{construction}
 
 %%% Local Variables:
 %%% mode: LaTeX

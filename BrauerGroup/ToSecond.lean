@@ -1140,6 +1140,15 @@ lemma identity_double_cross (b : K) :
   rw [a_one_left ha]
   simp
 
+lemma identity_double_cross' (b c : K) :
+    ι ha b * ⟨Pi.single σ c⟩ = ⟨Pi.single σ (b*c)⟩ := by
+  ext α
+  simp only [mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
+    crossProductMul_single_single, AlgEquiv.one_apply]
+  rw [_root_.one_mul]
+  congr 1
+  rw [a_one_left ha]
+  field_simp
 
 @[simps]
 def Units.ofLeftRightInverse (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) (h' : c * a = 1) : Gˣ where
