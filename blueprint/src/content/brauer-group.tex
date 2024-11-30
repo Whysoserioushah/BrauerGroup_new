@@ -438,6 +438,35 @@ In this section, we construct a group isomorphism between $\br(K/F) \cong \HH^{2
   \lean{groupCohomology.H2, groupCohomology.IsMulTwoCoboundary, groupCohomology.IsMulTwoCocycle}
 \end{definition}
 
+\begin{lemma}\label{lem:2-cocycle-one-one}
+  If $f \in \mathcal{B}^{2}(G, M)$ is a 2-cocycle and $x\in G$, we have
+  \[
+    \begin{aligned}
+    f(1, x) &= f(1, 1) \\
+    f(x, 1) &= x\cdot f(1, 1).
+    \end{aligned}
+  \]
+\end{lemma}
+\begin{proof}
+  Indeed:
+  \[
+    \begin{aligned}
+      f(1\cdot 1, x)f(1, 1) &= (1\cdot f(1,x))f(1, 1\cdot x)  \\
+      f(1, x)f(1, 1) &= f(1, x) f(1,x) \\
+      f(1, x) &= f(1,1)
+    \end{aligned}
+  \] and
+  \[
+    \begin{aligned}
+      f(x\cdot 1, 1)f(x, 1) &= (x\cdot f(1, 1))f(x, 1\cdot 1)\\
+      f(x, 1)f(x, 1) &= (x\cdot f(1, 1))f(x, 1)\\
+      f(x, 1) &= x \cdot f(1, 1).
+    \end{aligned}
+  \]
+  \leanok
+  \lean{GoodRep.CrossProduct.a_one_left, GoodRep.CrossProduct.a_one_right}
+\end{proof}
+
 In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ is a good representation of $X$. We use $\rho, \sigma, \tau$ to denote elements of $\gal(K/F)$. To improve typographic aesthetics of our proofs, we sometimes use subscript to mean function application.
 
 
@@ -678,7 +707,7 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
     c = \sum_{\sigma\in\gal(K/F)}\Delta_{\sigma, c(\sigma)},
     \]
     it is often, if not always, sufficient to consider the special cases of $\Delta_{\sigma, c}$ and extend the result linearly.
-  For multiplications, we define the result of multiplying $\Delta_{\sigma, c},\Delta_{\tau, d} \cross_{\mathfrak{a}}$ to be $\Delta_{\sigma\tau, c\sigma(d)\, \mathfrak{a}(\sigma,\tau)}$. For any $r \in F$ and $\Delta_{\sigma, c} \in \cross_{\mathfrak{a}}$, we define $r \cdot \Delta_{\sigma, c}$ to be $\Delta_{\sigma, r\cdot c}$.
+  For multiplications, we define the result of multiplying $\Delta_{\sigma, c},\Delta_{\tau, d} \cross_{\mathfrak{a}}$ to be $\Delta_{\sigma\tau, c\sigma(d)\, \mathfrak{a}(\sigma,\tau)}$. Immediately, if either $c$ or $d$ is $0$, the result of multiplication is also zero. That is, for all $c \in \cross_{\mfa}$, we have $c\cdot 0=0\cdot c =0$. For any $r \in F$ and $\Delta_{\sigma, c} \in \cross_{\mathfrak{a}}$, we define $r \cdot \Delta_{\sigma, c}$ to be $\Delta_{\sigma, r\cdot c}$.
   \leanok
   \lean{GoodRep.crossProductMul, crossProductSMul, GoodRep.CrossProduct.addCommGroup}
 \end{construction}
@@ -695,7 +724,7 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
 \begin{proof}
   We verify the axioms of rings on elements of the form $\Delta_{\sigma, c}$. Let $\sigma,\tau,\rho\in\gal(K/F)$ and $a,b,c\in K$.
   \begin{itemize}
-    \item Associativity of multiplication. We need to check that $\Delta_{\sigma,a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right) = \left(\Delta_{\sigma,a}\Delta_{\tau,b}\right)\Delta_{\rho,c}$:
+    \item associativity of multiplication. We need to check that $\Delta_{\sigma,a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right) = \left(\Delta_{\sigma,a}\Delta_{\tau,b}\right)\Delta_{\rho,c}$:
           \[
           \begin{aligned}
             \Delta_{\sigma, a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right)
@@ -713,13 +742,20 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
           \mathfrak{a}(\sigma,\tau)\sigma(\tau(c))\mathfrak{a}(\sigma\tau, \rho).
           \]
           This is the 2-cocycle condition in~\cref{def:second-group-coh} (modulo commutativity of $K$).
-    \item multiplicative unit: we need to check $\Delta_{\sigma, a}\Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})} = \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id},\mathsf{id})}\Delta_{\sigma, a} = \Delta_{\sigma, a}$.
+    \item multiplicative unit: we need to check $\Delta_{\sigma, a}\Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})} = \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id},\mathsf{id})}\Delta_{\sigma, a} = \Delta_{\sigma, a}$. By multiple applications of~\cref{lem:2-cocycle-one-one}
           \[
           \begin{aligned}
-            \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})}\Delta_{\sigma, a}
+            \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}}\Delta_{\sigma, a}
             &= \Delta_{\sigma, \mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}a\mathfrak{a}(\mathsf{id},\sigma)}\\
+            &= \Delta_{\sigma, \mathfrak{a}(\mathsf{id}, \mathsf{id}) a\mathfrak{a}(\mathsf{id},\mathsf{id})}\\
+            &= \Delta_{\sigma, a} \\
+            \Delta_{\sigma, a}\Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id},\mathsf{id})^{-1}}
+            &= \Delta_{\sigma, a\sigma(\mathfrak{a}(\id,\id))^{-1}\mathfrak{a}(\sigma,\id)}\\
+            &=\Delta_{\sigma, a\sigma(\mfa(\id,\id))^{-1}\sigma(\mfa(\id, id))}\\
+            &=\Delta_{\sigma, a}
           \end{aligned}
           \]
+    \item distributivity: ...
   \end{itemize}
 \end{proof}
 
