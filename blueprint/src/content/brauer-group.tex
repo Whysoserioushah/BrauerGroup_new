@@ -709,7 +709,7 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
     it is often, if not always, sufficient to consider the special cases of $\Delta_{\sigma, c}$ and extend the result linearly.
   For multiplications, we define the result of multiplying $\Delta_{\sigma, c},\Delta_{\tau, d} \cross_{\mathfrak{a}}$ to be $\Delta_{\sigma\tau, c\sigma(d)\, \mathfrak{a}(\sigma,\tau)}$. Immediately, if either $c$ or $d$ is $0$, the result of multiplication is also zero. That is, for all $c \in \cross_{\mfa}$, we have $c\cdot 0=0\cdot c =0$. For any $r \in F$ and $\Delta_{\sigma, c} \in \cross_{\mathfrak{a}}$, we define $r \cdot \Delta_{\sigma, c}$ to be $\Delta_{\sigma, r\cdot c}$.
   \leanok
-  \lean{GoodRep.crossProductMul, crossProductSMul, GoodRep.CrossProduct.addCommGroup}
+  \lean{GoodRep.crossProductMul, GoodRep.crossProductSMul, GoodRep.CrossProduct.addCommGroup}
 \end{construction}
 
 \begin{remark}
@@ -786,17 +786,18 @@ From now on, we feel free to write $1 \in \cross_{\mfa}$ instead of $\Delta_{\id
   is an $F$-algebra map.
   Checking that $\iota_{\cross_{\mfa}}$ preserves $1$, multiplication and addition uses nothing but axioms of ring.
   For any $r \in F$, we need to check $\iota_{\cross_{\mfa}}(r) = r \cdot 1$. Indeed $\iota_{\cross_{\mfa}}(r) = \Delta_{\id, r\cdot \mfa(\id,\id)^{-1}}$ and $r\cdot 1 = r \cdot \Delta_{\id,\mfa(\id,\id)^{-1}} =\Delta_{\id,r\cdot\mfa(\id,\id)^{-1}}$.
-  When the context is clear, we also write $\iota_{\mfa}$ instead of $\iota_{\cross_{\mfa}}$.
+  When the context is clear, we also write $\iota_{\mfa}$ instead of $\iota_{\cross_{\mfa}}$. We give $\cross_{\mfa}$ a $K$-module structure by left-multiplication, that is for any $b \in K$ and $c\in\cross_{\mfa}$, we define $b\cdot c := \iota_{\mfa}(b)c$.
+
 
   We note the following useful equality: for any $b \in K$
 
   \[
-    \iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\sigma, bc},
+    b\cdot \Delta_{\sigma,c} = \iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\sigma, bc},
   \]
   indeed:
-  $\iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\id,b \mfa(\id,\id)^{-1}}\Delta_{\sigma, c} = \Delta_{\sigma, b\mfa(\id,\id)^{-1}c\mfa(\id,\sigma)} = \Delta_{\sigma,b\mfa(\id,\id)^{-1}c\mfa(\id,\id)} = \Delta_{\sigma, bc}$ by~\cref{lem:2-cocycle-one-one}.
-  \leanok
-  \lean{GoodRep.CrossProduct.ι,GoodRep.CrossProduct.identity_double_cross'}
+  $\iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\id,b \mfa(\id,\id)^{-1}}\Delta_{\sigma, c} = \Delta_{\sigma, b\mfa(\id,\id)^{-1}c\mfa(\id,\sigma)} = \Delta_{\sigma,b\mfa(\id,\id)^{-1}c\mfa(\id,\id)} = \Delta_{\sigma, bc}$ by~\cref{lem:2-cocycle-one-one}. In another word, for any $b \in F$ and $c \in \cross_{\mfa}$, the $K$-action of $b$ on $c$ and the $F$-action of $b$ on $c$ agree.
+
+   \leanok \lean{GoodRep.CrossProduct.ι,GoodRep.CrossProduct.identity_double_cross'}
 \end{construction}
 
 %%% Local Variables:
