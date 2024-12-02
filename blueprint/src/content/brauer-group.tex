@@ -798,7 +798,176 @@ From now on, we feel free to write $1 \in \cross_{\mfa}$ instead of $\Delta_{\id
   $\iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\id,b \mfa(\id,\id)^{-1}}\Delta_{\sigma, c} = \Delta_{\sigma, b\mfa(\id,\id)^{-1}c\mfa(\id,\sigma)} = \Delta_{\sigma,b\mfa(\id,\id)^{-1}c\mfa(\id,\id)} = \Delta_{\sigma, bc}$ by~\cref{lem:2-cocycle-one-one}. In another word, for any $b \in F$ and $c \in \cross_{\mfa}$, the $K$-action of $b$ on $c$ and the $F$-action of $b$ on $c$ agree.
 
    \leanok \lean{GoodRep.CrossProduct.ι,GoodRep.CrossProduct.identity_double_cross'}
-\end{construction}
+ \end{construction}
+
+ \begin{lemma}
+   \label{lem:cross-product-delta-invertible}
+   For every $\sigma \in \gal(K/F)$, $\Delta_{\sigma,1}$ is invertible.
+   \leanok
+   \lean{GoodRep.CrossProduct.x_}
+ \end{lemma}
+
+ \begin{proof}
+   It is sufficient to prove that $\Delta_{\sigma, 1}$ has a left inverse and right inverse.
+   The left inverse of $\Delta_{\sigma, 1}$ is
+   \[
+     \Delta_{\sigma^{-1}, \mfa\left(\sigma^{-1},\sigma\right)^{-1}\mfa(\id,\id)^{-1}}.
+   \]
+   Indeed, for any $a \in K$, we have
+   \[
+     \Delta_{\sigma^{-1}, a}\,\Delta_{\sigma, 1} = \Delta_{\id, a\mfa\left(\sigma^{-1},\sigma\right)},
+   \]
+   hence substitute $a = \mfa\left(\sigma^{-1},\sigma\right)^{-1}\mfa(\id,\id)^{-1}$, we see the right hand side is $\Delta_{
+     \id,\mfa(\id,\id)^{-1}}$ which is precisely $1 \in \cross_{\mfa}$. The right inverse is
+   \[
+     \Delta_{\sigma^{-1}, \sigma^{-1}\left(\mfa\left(\sigma,\sigma^{-1}\right)^{-1} \mfa(\id,\id)^{-1}\right)}.
+   \]
+   Indeed, for any $a \in K$, we have
+   \[
+     \Delta_{\sigma,1}\,\Delta_{\sigma^{-1},a} = \Delta_{\id, \sigma(a)\mfa\left(\sigma,\sigma^{-1}\right)},
+   \]
+   hence substitude $a = \sigma^{-1}\left(\mfa\left(\sigma,\sigma^{-1}\right)^{-1}\mfa(\id,\id)^{-1}\right)$, the right hand side is again $\Delta_{\id,\mfa(\id,\id)^{-1}}$ which is precisely $1 \in \cross_{a}$.
+ \end{proof}
+ \begin{lemma}\label{lem:cross-product-basis-conj}
+   For any $c \in K$, we have
+   \[
+     \Delta_{\sigma,1}\,\iota_{\mfa}(c) = \iota_{\mfa}(\sigma\cdot c)\Delta_{\sigma, 1} = \Delta_{\sigma,\sigma\cdot c}
+   \]
+   and consequently,
+   \[
+     \Delta_{\sigma,1}\,\iota_{\mfa}(c)\,\Delta_{\sigma, 1}^{-1} = \iota_{\mfa}(\sigma \cdot c).
+   \]
+   \leanok
+   \lean{GoodRep.CrossProduct.x__conj}
+ \end{lemma}
+
+ \begin{proof}
+   We calculate
+   \[
+     \begin{aligned}
+       \Delta_{\sigma,1}\iota_{\mfa}(c)
+       &= \Delta_{\sigma,1}\,\Delta_{\id,c\mfa(\id,\id)^{-1}}\\
+       &= \Delta_{\sigma, \sigma(c\mfa(\id,\id)^{-1})\mfa(\sigma,1)}\\
+       &= \Delta_{\sigma,\sigma(c)\sigma(\mfa(\id,\id))^{-1}\sigma(\mfa(\id,\id))}\\
+       &= \Delta_{\sigma,\sigma(c)}.
+     \end{aligned}
+   \]
+ \end{proof}
+
+
+ \begin{lemma}\label{lem:cross-product-basis-mul}
+   We have $\Delta_{\sigma,1}\,\Delta_{\tau,1} = \iota_{\mfa}(\mfa(\sigma,\tau))\Delta_{\sigma\tau,1} = \mfa(\sigma,\tau)\cdot\Delta_{\sigma\tau,1}$
+   Consequently we have for any $c, d \in K$,
+   \[
+     \Delta_{\sigma, c}\Delta_{\tau,d} = \left(c \sigma(d)\mfa(\sigma,\tau)\right) \cdot \Delta_{\sigma\tau, 1}.
+   \]
+   \leanok
+   \lean{GoodRep.CrossProduct.x__mul,GoodRep.CrossProduct.mul_single_in_xAsBasis}
+ \end{lemma}
+ \begin{proof}
+   The first equality is in~\cref{con:cross-product-iota}.
+   For the second equality, by~\cref{lem:cross-product-basis-conj}, we have
+   \[
+     \begin{aligned}
+       \Delta_{\sigma,c}\Delta_{\sigma,d}
+       &= \left(c\cdot\Delta_{\sigma, 1}\right)\left(d\cdot\Delta_{\tau,1}\right) \\
+       &= \iota_{\mfa}(c)\left(\Delta_{\sigma, 1}\iota_{\mfa}(d)\right)\Delta_{\tau, 1} \\
+       &= \iota_{\mfa}\Delta_{\sigma, \sigma \cdot d}\Delta_{\tau, 1}\\
+       &= c \cdot \sigma(d) \cdot \Delta_{\sigma, 1}\Delta_{\tau, 1} \\
+       &= c \cdot \sigma(d)\cdot\mfa(\sigma,\tau)\cdot\Delta_{\sigma\tau,1}.\\
+     \end{aligned}
+   \]
+ \end{proof}
+
+
+ \begin{lemma}
+   \label{lem:cross-product-basis}
+   The set $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ forms a $K$-basis for $\cross_{\mfa}$.
+   \leanok
+   \lean{GoodRep.CrossProduct.x_AsBasis}
+ \end{lemma}
+ \begin{proof}
+   Suppose some linear combination $\sum_{\sigma}\lambda_{\sigma}\cdot\Delta_{\sigma, 1}$ is $0$ for some $\lambda_{\sigma}$'s in $K$. We have, by the equality in~\cref{con:cross-product-iota}
+   \[
+       \sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot\Delta_{\sigma,1}
+       = \sum_{\sigma\in\gal(K/F)}\Delta_{\sigma,\lambda_{\sigma}} = 0.\\
+     \]
+     Thus, for any $\tau \in \gal(K/F)$, we have
+     \[
+\left(\sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot \Delta_{\sigma,1}\right)(\tau) = 0 = \lambda_{\tau},
+\]
+which proves linear independence. The fact that $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ spans $\cross_{\mfa}$ is easy to see because every $\Delta_{\tau, a} = a \cdot \Delta_{\tau, 1}$ is certainly in the span.
+\end{proof}
+
+\begin{corollary}
+  \label{cor:dim-cross-product}
+  When $K/F$ is a finite dimensional Galois extension, the $K$-dimension of $\cross_{\mfa}$ is $\dim_{F}K$ and the $F$-dimension of $\cross_{\mfa}$ is ${\left(\dim_{F}K\right)}^{2}$.
+  \leanok
+  \lean{GoodRep.CrossProduct.dim_eq_square}
+\end{corollary}
+
+We will assume $K/F$ is a finite dimensional Galois extension.
+
+\begin{theorem}[Centrality]
+  $\cross_{\mfa}$ is a central $F$-algebra.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_central}
+\end{theorem}
+
+\begin{proof}
+  Let $z \in \cross_{\mfa}$ that is in the centre. We want to prove that $z$ is in $F$. We write $z$ as $\sum_{\sigma}\lambda_{\sigma}\cdot\Delta_{\sigma,1}$. We see that, for any $\tau \in \gal(K/F)$, we have
+  \[
+    z = \sum_{\sigma\in\gal(K/F)} \lambda_{\tau^{-1}\sigma\tau}\cdot\Delta_{\tau^{-1}\sigma\tau,1}.
+  \]
+  Therefore for any $d \in K$ and $\tau\in\gal(K/F)$, by~\cref{lem:cross-product-basis-mul} and~\cref{lem:cross-product-basis-conj}, we have
+  \[
+    \begin{aligned}
+      z\, \Delta_{\tau,d}
+      &= \sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot\Delta_{\sigma, 1}\Delta_{\tau,d}\\
+      &= \sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot\sigma(d)\cdot \mfa(\sigma,\tau) \cdot \Delta_{\sigma\tau, 1}\\
+      &= \sum_{\sigma\in\gal(K/F)}\left(\lambda_{\sigma}\sigma(d)\mfa(\sigma,\tau)\right)\cdot \Delta_{\sigma\tau,1}\\
+      %
+      %
+      %
+      \Delta_{\tau,d}\, z
+      &= \sum_{\sigma\in\gal(K/F)}\Delta_{\tau,d}\left(\lambda_{\tau^{-1}\sigma\tau}\cdot \Delta_{\tau^{-1}\sigma\tau, 1}\right)\\
+      &= \sum_{\sigma\in\gal(K/F)}\Delta_{\tau,d}\iota_{\mfa}\left(\lambda_{\tau^{-1}\sigma\tau}\right)\Delta_{\tau^{-1}\sigma\tau, 1} \\
+      &=\sum_{\sigma\in\gal(K/F)} d \cdot \Delta_{\tau, 1}\iota_{\mfa}\left(\lambda_{\tau^{-1}\sigma, \tau}\right)\Delta_{\tau^{-1}\sigma\tau, 1}\\
+      &=\sum_{\sigma\in\gal(K/F)} d \cdot \Delta_{\tau, \tau\cdot \lambda_{\tau^{-1}\sigma\tau}}\Delta_{\tau^{-1}\sigma\tau, 1}\\
+      &=\sum_{\sigma\in\gal(K/F)} d\cdot \tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\cdot \Delta_{\tau,1}\Delta_{\tau^{-1}\sigma\tau, 1}\\
+      &= \sum_{\sigma\in\gal(K/F)}d\cdot \tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\cdot \mfa\left(\tau,\tau^{-1}\sigma\tau\right)\cdot \Delta_{\sigma\tau, 1}\\
+      &= \sum_{\sigma\in\gal(K/F)}\left(d\tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\mfa\left(\tau,\tau^{-1}\sigma\tau\right)\right) \cdot \Delta_{\sigma\tau,1}.
+    \end{aligned}
+  \]
+  By~\cref{lem:cross-product-basis}, for any $\sigma,\tau\in\gal(K/F)$ and $d\in K$, we have that
+  \begin{equation}
+    \label{eq:cross-product-central-eqn}
+    \lambda_{\sigma}\sigma(d)\mfa(\sigma,\tau) = d\tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\mfa\left(\tau,\tau^{-1}\sigma\tau\right).
+  \end{equation}
+  In particular, with $d = 1$, we have
+  \[
+    \lambda_{\sigma}\mfa(\sigma,\tau) = \tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\mfa\left(\tau,\tau^{-1}\sigma\tau\right),
+  \]
+  we substitute back into~\cref{eq:cross-product-central-eqn} and get
+  \[
+    \lambda_{\sigma}\sigma(d)\mfa(\sigma,\tau) = d\lambda_{\sigma}\mfa(\sigma,\tau).
+  \]
+  With $\tau = \id$, we have
+  \[
+    \lambda_{\sigma}\sigma(d)\mfa(\sigma,\id)=d\lambda_{\sigma}\mfa(\sigma,\id),
+  \]
+  Hence for all $d \in K$ with $\lambda_{\sigma} \ne 0$, we have $\sigma(d) = d$. We immediately deduce that for all $\sigma \ne \id$, $\lambda_{\sigma} = 0$ by contraposition. Thus $z = \lambda_{\id}\Delta_{\id, 1} = \Delta_{\id,\lambda_{\id}} = \iota_{\mfa}\left(\lambda_{\id}\mfa(\id,\id)\right) = \left(\lambda_{id}\mfa(\id,\id)\right) \cdot 1$. Consequently, to prove $z$ is in $F$, it is sufficient to prove that $\lambda_{\id}\mfa(\id,\id)$ is in $F$. Since $K/F$ is finite dimensional and Galois, we only need to prove that $\lambda_{\id}\mfa(\id,\id)$ is fixed by every $\tau\in\gal(K/F)$.Indeed, with $d = 1$ and $\sigma = \id$ in~\cref{eq:cross-product-central-eqn}, we have
+  \[
+    \begin{aligned}
+      \lambda_{\id}\mfa(\id,\tau) &= \tau\left(\lambda_{\id}\right)\mfa(\tau,\id)\\
+      &= \lambda_{\id}\mfa(\id,\id) \\ &= \tau\left(\lambda_{\id}\right)\tau\left(\mfa(\id,\id)\right)\\
+      &= \tau\left(\lambda_{\id}\mfa(\id,\id)\right).
+    \end{aligned}
+  \]
+
+\end{proof}
+
+
 
 %%% Local Variables:
 %%% mode: LaTeX
