@@ -282,7 +282,8 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
 
  In light of~\cref{thm:good-rep-iff-split}, we isolate the following useful definition:
  \begin{definition}[Good Representation]\label{def:good-rep}
-   For any $X \in \br(F)$, a $K$-good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $K \hookrightarrow A$ which we often denote as $\iota$ or $\iota_{A}$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$.
+   For any $X \in \br(F)$, a $K$-good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $K \hookrightarrow A$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$. We often denote the $F$-algebra map $K \hookrightarrow A$ as $\iota$ or $\iota_{A}$.
+
    \leanok
    \lean{GoodRep}
  \end{definition}
@@ -322,7 +323,7 @@ We observe the following easy result about good representations. Let $X \in \br(
 \end{proof}
 
 \begin{construction}\label{con:good-rep-mod}
-  We give $A$ a $K$-module structure by {\em left} multiplication, that is for any $c \in K$ and $a \in A$, we define $c\cdot a$ to be $\iota_{A}(c)a$. Then $A$ is a finite dimensional $K$-vector space and $\dim_{K}A=\dim_{F}K$: indeed $\dim_{F}K\cdot\dim_{K}A = \dim_{F}K\cdot \dim_{F}K = \dim_{F}A$.
+  We give $A$ a $K$-module structure by {\em left\/} multiplication, that is for any $c \in K$ and $a \in A$, we define $c\cdot a$ to be $\iota_{A}(c)a$. Note that if $c \in F$ then $\iota_{A}(c)a = c \cdot a$, in another word, the $K$-action and the $F$-action on $A$ are compatible. Then $A$ is a finite dimensional $K$-vector space and $\dim_{K}A=\dim_{F}K$: indeed $\dim_{F}K\cdot\dim_{K}A = \dim_{F}K\cdot \dim_{F}K = \dim_{F}A$.
   \leanok
   \lean{GoodRep.dim_eq'}
 \end{construction}
@@ -1077,13 +1078,15 @@ In this section we assume $K/F$ is a finite dimensional field extension. Let $I 
 
 For every 2-cocycle $\mfa$, we have defined the cross product $\cross_{\mfa}$ and proved that it is indeed a finite dimensional central simple $F$-algebra in~\cref{thm:cross-product-csa}; that is we have a function from $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ to $\csa_{F}$. If we want a function from $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$, we need to show that if $\mfa$ and $\mfb$ are cohomologous, $\cross_{\mfa}$ and $\cross_{\mfb}$ are Brauer equivalent. We state it as a theorem:
 
-\begin{theorem}
+\begin{theorem}\label{thm:snd-coh-to-relative-br}
   If $K/F$ is a finite dimensional and Galois field extension,
   the function $\cross : \HH^{2}\left(\gal(K/F), K^{\star}\right) \to \br(K/F)$ defined by
   \[
     \mfa \mapsto \left[\cross_{\mfa}\right]_{\sim_{\br}}
   \]
   is well-defined.
+  \leanok
+  \lean{RelativeBrGroup.fromSnd, RelativeBrGroup.fromSnd_wd}
 \end{theorem}
 
 \begin{proof}

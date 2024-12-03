@@ -2075,25 +2075,10 @@ lemma toSnd_fromSnd :
   field_simp
   simp only [AlgEquiv.mul_apply, y_]
   change _ = A.conjFactorCompCoeff (y_ σ) (y_ τ) (y_ (σ * τ))
-  have := x__mul ha σ τ
-  simp only at this
-  apply_fun CrossProduct.val at this
-  simp only [mul_val, x__val, crossProductMul_single_single, map_one, _root_.mul_one,
-    _root_.one_mul, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgEquiv.one_apply,
-    Pi.single_inj] at this
   apply_fun A.ι using RingHom.injective _
   rw [conjFactorCompCoeff_spec'']
-  simp only [x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀, Units.val_ofLeftRightInverse,
-    mul_inv_rev, AlgEquiv.mul_apply, Units.val_inv_ofLeftRightInverse]
-  apply val_injective
-  erw [mul_val, mul_val, ι_apply_val]
-  simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, crossProductMul_single_single, map_one,
-    _root_.mul_one, _root_.one_mul, _root_.mul_assoc, mul_inv_cancel_left, mul_inv_cancel,
-    AlgEquiv.mul_apply, map_mul, map_inv₀, Pi.single_inj, mul_eq_mul_left_iff, Units.ne_zero,
-    or_false]
-  erw [AlgEquiv.apply_symm_apply, AlgEquiv.apply_symm_apply,
-    AlgEquiv.apply_symm_apply, AlgEquiv.apply_symm_apply]
-  field_simp
+  simp only [x__mul ha σ τ, Units.mul_inv_cancel_right]
+  rfl
 
 set_option maxHeartbeats 500000 in
 lemma fromSnd_toSnd :

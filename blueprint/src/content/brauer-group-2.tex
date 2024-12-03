@@ -1,18 +1,105 @@
 \subsection{$\HH^{2} \circ \cross$ and $\cross \circ \HH^{2}$}
 
-For a finite dimensional Galois extension of field $K/F$, we have constructed two functions $\HH^{2}$ and $\cross$ between the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ and the relative Brauer group $\br(K/F)$. In this section, we prove that they are mutual inverse to one another, that is the following diagram commutes:
-\begin{center}
+For a finite dimensional Galois extension of field $K/F$, we have constructed two functions $\HH^{2}$ and $\cross$ between the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ and the relative Brauer group $\br(K/F)$. In this section, we prove that they are mutual inverse to one another,
+
+\begin{lemma}\label{lem:relative-br-snd-inverse-1}
+  The composition of $\cross$ and $\HH^{2}$ is the identity:
+  \begin{center}
+    \begin{tikzcd}
+      \displaystyle \HH^2\left(\gal(K/F), K^\star\right) \arrow{r}{\cross} \arrow[bend right = 15, swap]{rr}{\id} &
+      \br(K/F) \arrow{r}{\HH^2} & \displaystyle \HH^2\left(\gal(K/F), K^\star\right).
+    \end{tikzcd}
+  \end{center}
+  \leanok
+  \lean{RelativeBrGroup.toSnd_fromSnd}
+\end{lemma}
+\begin{proof}
+  Let $\mfa$ be any 2-cocycle, by~\cref{lem:cross-product-basis-conj}, we notice that $x : \sigma \mapsto \Delta_{\sigma, 1}$ is a conjugation sequence for $\cross_{\mfa}$. Hence by~\cref{con:good-rep-to-2-cocycles}, ~\cref{cor:to-2-cocylce-wd} and~\cref{thm:snd-coh-to-relative-br}, we evaluate the composition at $\mfa$ as:
+  \begin{center}
+    \begin{tikzcd}
+      {[\mfa]} \arrow[mapsto]{r} & {\left[\cross_\mfa\right]_{\sim_{\br}}} \arrow[mapsto]{r}& {\left[(\sigma,\tau)\mapsto\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right]}
+    \end{tikzcd}.
+  \end{center}
+  That is, we need to show that $\mfa$ and $(\sigma, \tau) \mapsto \comp_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}$ are 2-cohomologous. In fact, they are equal.
+  By\cref{con:compare-conj-factors}~, we have that $\iota_{\cross_{\mfa}}\left(\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right) = \Delta_{\sigma, 1}\Delta_{\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot \Delta_{\sigma\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot 1 = \Delta_{\id,\mfa(\sigma,\tau)}$ which is precisely $\iota_{\cross_{\mfa}}(\mfa(\sigma,\tau))$.
+\end{proof}
+
+\begin{lemma}\label{lem:relative-br-snd-inverse-2}
+  The composition of $\HH^{2}$ and $\cross$ is the identity:
+  \begin{center}
+    \begin{tikzcd}
+      \br(K/F) \arrow{r}{\HH^2} \arrow[bend right = 15, swap]{rr}{\id} &
+      \HH^2\left(\gal(K/F), K^\star\right) \arrow{r}{\cross} &
+      \br(K/F)
+    \end{tikzcd}.
+  \end{center}
+  \leanok
+  \lean{RelativeBrGroup.fromSnd_toSnd}
+\end{lemma}
+\begin{proof}
+  Let $X \in \br(K/F)$, $A$ be an arbitrary good representation of $X$ and $x$ be an arbitrary $A$-conjugation sequence which exists by~\cref{cor:mem-relative-br-iff-good-rep} and~\cref{con:exists-conj-seq}. By~\cref{def:good-rep}, $X = \left[A\right]_{\sim_{\br}}$.
+  Hence by~\cref{cor:to-2-cocylce-wd} and~\cref{thm:snd-coh-to-relative-br}, we evaluate the composition at $X$ as:
+  \begin{center}
+    \begin{tikzcd}
+      {[A]_{\sim_{\br}}} \arrow[mapsto]{r} &
+      {\left[\mathcal{B}^2_x\right]} \arrow[mapsto]{r} &
+      {\left[\cross_{\mathcal{B}^2_x}\right]}
+    \end{tikzcd}.
+  \end{center}
+  Hence we need to prove that $A$ and $\cross_{\mathcal{B}^{2}_{x}}$ are Brauer equivalent. We will show that they are isomorphic as $F$-algebras. since $\{x_{\sigma}|\sigma\in\gal(K/F)\}$ is a $K$-basis for $A$ and $\{\Delta_{\sigma, 1}|\sigma \in \gal(K/F)\}$ is a $K$-basis for $\cross_{\mathcal{B}^{2}_{x}}$, they are certainly isomorphic as $K$-modules. Let $\phi : \cross_{\mathcal{B}^{2}_{x}} \cong A$ be the $K$-linear isomorphism defined by $\Delta_{\sigma, 1} \mapsto x_{\sigma}$, since the $K$-action on $A$ and the $F$-action on $A$ are compatible (\cref{con:good-rep-mod}), $\phi$ is also an $F$-linear isomorphism. Like in~\cref{thm:snd-coh-to-relative-br}, we check that $\phi(1) = 1$ and $\phi(xy)=\phi(x)\phi(y)$ for all $x,y \in A$:
+  \begin{enumerate}
+    \item preservation of one: by~\cref{con:compare-conj-factors}, we have
+          \[
+          \begin{aligned}
+            \phi(1)
+            &= \phi\left(\Delta_{\id,\mathcal{B}^{2}_{x}(\id,\id)^{-1}}\right) \\
+            &= \mathcal{B}^{2}_{x}(\id,\id)^{-1} \phi\left(\Delta_{\id, 1}\right) \\
+            &= \mathcal{B}^{2}_{x}(\id,\id)^{-1} x_{\id} \\
+            &= \comp_{x_{\id},x_{\id},x_{\id}}^{-1} x_{\id} \\
+            &= \comp_{x_{\id},x_{\id},x_{\id}} x_{\id} x_{\id} x_{\id}^{-1} \\
+            &= x_{\id} x_{\id}^{-1} \\
+            &= 1.
+          \end{aligned}
+          \]
+    \item preservation of multiplication: let $\sigma,\tau\in\gal(K/F)$ and $c,d \in K$, by~\cref{con:compare-conj-factors} and~\cref{def:conj-factor}, we have
+          \[
+          \begin{aligned}
+            \phi\left(\Delta_{\sigma,c}\Delta_{\tau,d}\right)
+            &= \phi\left(\Delta_{\sigma\tau, c\sigma(d)\mathcal{B}^{2}_{x}(\sigma,\tau)}\right) \\
+            &= c\sigma(d)\mathcal{B}^{2}_{x}(\sigma,\tau) \,\cdot\, \phi\left(\Delta_{\sigma\tau, 1}\right) \\
+            &= c\sigma(d)\mathcal{B}^{2}_{x}(\sigma,\tau) \,\cdot\, x_{\sigma\tau} \\
+            &= c\sigma(d)\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}} \,\cdot\, x_{\sigma\tau} \\
+            &= c\sigma(d)\,\cdot\, \iota_{A}\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\sigma\tau} \\
+            &= c\sigma(d) \,\cdot\, x_{\sigma}x_{\tau}\\
+            %%%%
+            %%%%
+            \phi\left(\Delta_{\sigma,c}\right)\phi\left(\Delta_{\tau,d}\right)
+            &=\left(c \cdot \phi\left(\Delta_{\sigma, 1}\right)\right)
+              \left(d \cdot \phi\left(\Delta_{\tau, 1}\right)\right) \\
+            &= \left(c \cdot x_{\sigma}\right) \left(d \cdot x_{\tau}\right)\\
+            &= c \,\cdot\, x_{\sigma}\iota_{A}(d) x_{\tau} \\
+            &= c\sigma_{d} \,\cdot\, x_{\sigma}x_{\tau}.
+          \end{aligned}
+          \]
+  \end{enumerate}
+\end{proof}
+
+\begin{corollary}
+  For a finite dimensional and Galois extension of field $K/F$, the relative Brauer group $K/F$ bijects to the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ by the following commutative diagram
+  \begin{center}
   \begin{tikzcd}
     \br(K/F) \arrow{r}{\HH^2} \ar[equal]{d} & \HH^2\left(\gal(K/F), K^\star\right) \arrow[equal]{d} \\
 
     \br(K/ F) & \HH^2\left(\gal(K/F), K^{\star}\right) \arrow{l}{\cross}
   \end{tikzcd}.
 \end{center}
+\leanok
+\lean{RelativeBrGroup.equivSnd}
+\end{corollary}
 
-\begin{lemma}
-  \leanok
-  \lean{RelativeBrGroup.toSnd_fromSnd}
-\end{lemma}
+\begin{proof}
+  Exactly~\cref{lem:relative-br-snd-inverse-1} and~\cref{lem:relative-br-snd-inverse-2}.
+\end{proof}
 
 %%% Local Variables:
 %%% mode: LaTeX
