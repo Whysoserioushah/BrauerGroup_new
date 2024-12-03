@@ -132,14 +132,14 @@ In previous sections, when $K/F$ is a finite dimensional Galois extension, we ha
 \begin{corollary}
   The function $\HH^{2}:\br(K/F) \to \HH^{2}\left(\gal(K/F), K^{\star}\right)$ preserves one, that is $\HH^{2}(1) = 1$.
   \leanok
-  \lean{toSndAddMonoidHom}
+  \lean{RelativeBrGroup.toSndAddMonoidHom}
 \end{corollary}
 \begin{proof}
   Apply $\cross$ then use~\cref{lem:relative-br-snd-inverse-2} and~\cref{thm:map_one}.
 \end{proof}
 
 \subsubsection{$\cross_{\mfa\mfb}\sim_{\br}\cross_{\mfa}\otimes_{F}\cross_{\mfb}$}
-The argument in this section is more complicated, because, unlike before, the left hand side and the right hand side are not isomorphic as $F$-algebras --- left hand side has $F$-dimension $\left(\dim_{F}K\right)$ while the right hand side has $F$-dimension $\left(\dim_{F}K\right)^{4}$. Let $\mfa$ and $\mfb$ be two 2-cocycles in $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, we denote $\mfc$ to be the 2-cocycle $\mfa \mfb$.
+The argument in this section is more complicated, because, unlike before, the left hand side and the right hand side are not isomorphic as $F$-algebras --- left hand side has $F$-dimension $\left(\dim_{F}K\right)$ while the right hand side has $F$-dimension $\left(\dim_{F}K\right)^{4}$. Let $\mfa$ and $\mfb$ be two 2-cocycles in $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, we denote $\mfc$ to be the 2-cocycle $\mfa \mfb$. Intuitively, $\cross_{\mfa} \ox_{F} \cross_{\mfb}$ is too ``big'', to address this issue we introduce a quotient module.
 
 \begin{construction}[$M$]
   Consider the quotient module
@@ -184,8 +184,54 @@ which is in $\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \c
 \[
   c \cdot [a \ox b] = \left[\sum_{\sigma\in\gal(K/F)}\Delta^{\mfa}_{\sigma, c(\sigma)}a \ox \Delta^{\mfb}_{\sigma, 1}b\right].
 \]
+In particular, if $c$ is of the form $k \cdot \Delta^{\mfc}_{\tau, 1}$, then $\left(k\cdot \Delta^{\mfc}_{\tau, 1}\right)\cdot [a \ox b]$ is equal to $\left[\left(k\cdot \Delta^{\mfa}_{\tau,1}\right)a \ox \Delta^{\mfb}_{\tau, 1} b\right]$ because $\Delta_{\tau, 1}^{\mfc}(\sigma) = 0$ for all $\sigma \ne \tau$. Two of the module axioms need more than $F$-bilinearity:
+\begin{itemize}
+  \item $c = 1$: note that $c = 1 = \mfb(\id,\id)^{-1}\mfa(\id,\id)^{-1}\,\cdot\,\Delta^{\mfc}_{\id, 1}$, hence
+        \[
+        \begin{aligned}
+          1 \cdot [a\ox b]
+          &= [\mfb(\id,\id)^{-1}\mfa(\id,\id)^{-1}\Delta^{\mfa}_{\id,1}a \ox \Delta^{\mfb}_{\id, 1}b] \\
+          &= [\Delta^{\mfa}_{\id,\mfa(\id,\id)^{-1}}a \ox \Delta^{\mfb}_{\id,\mfb(\id,\id)^{-1}}b] \\
+          &= [a\ox b].
+        \end{aligned}
+        \]
+  \item $c_{1}c_{2}\cdot [a \ox b] = c_{1}\cdot c_{2}\cdot [a\ox b]$: assume $c_{1} = k_{1}\cdot\Delta^{\mfc}_{\tau_{1}, 1}$ and $c_{2}=k_{2}\cdot\Delta^{\mfc}_{\tau_{2},1}$. Then $c_{1}c_{2} = k_{1}\tau_{1}\left(k_{2}\right)\cdot \Delta^{\mfc}_{\tau_{1}\tau_{2},\mfc(\tau_{1},\tau_{2})} = k_{1}\tau_{1}\left(k_{2}\right)\mfa(\tau_{1},\tau_{2})\mfb(\tau_{1},\tau_{2})\cdot \Delta^{\mfc}_{\tau_{1}\tau_{2},1}$.
+        Therefore, the left hand side is equal to
+        \[
+        \begin{aligned}
+          & \left[\left(k_{1}\tau_{1}(k_{2})\mfa(\tau_{1},\tau_{2})\mfb(\tau_{1},\tau_{2})\cdot \Delta^{\mfa}_{\tau_{1}\tau_{2}, 1}\right)a \ox \Delta^{\mfb}_{\tau_{1}\tau_{2},1}b\right] \\
+          =& \left[
+             k_{1}\tau_{1}(k_{2})\mfa(\tau_{1},\tau_{2})\cdot \Delta^{\mfa}_{\tau_{1}\tau_{2},1} a \ox \mfb(\tau_{1},\tau_{2})\Delta^{\mfb}_{\tau_{1}\tau_{2}, 1}b
+             \right]\\
+          =& \left[
+             \Delta^{\mfa}_{\tau_{1},k_{1}}\Delta^{\mfa}_{\tau_{2},k_{2}} a \ox
+             \Delta^{\mfb}_{\tau_{1},1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right];
+        \end{aligned}
+        \]
+        and the right hand side is also equal to
+        \[
+        \begin{aligned}
+        &\left(k_{1}\cdot \Delta^{\mfc}_{\tau_{1}, 1}\right)
+        \left[
+        k_{2}\cdot\Delta^{\mfa}_{\tau_{2},1}a \ox \Delta^{\mfb}_{\tau_{2}, 1} b
+          \right] \\
+          =& \left[
+             \left(k_{1}\cdot \Delta^{\mfa}_{\tau_{1}, 1}\right)\left(k_{2}\cdot\Delta^{\mfa}_{\tau_{2}, 1}\right)a \ox
+             \Delta^{\mfb}_{\tau_{1},1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right]\\
+          =&\left[
+           k_{1}\tau_{1}(k_{2})\cdot \Delta^{\mfa}_{\tau_{1}\tau_{2},\mfa(\tau_{1},\tau_{2})}a \ox \Delta^{\mfb}_{\tau_{1}, 1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right]\\
+          =&\left[
+             \left(k_{1}\cdot \Delta^{\mfa}_{\tau_{1}, 1}\right)\left(k_{2}\cdot\Delta^{\mfa}_{\tau_{2}, 1}\right)a \ox
+             \Delta^{\mfb}_{\tau_{1},1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right].
+          \end{aligned}
+        \]
+\end{itemize}
 
-
+Expanding everything out and checking on the basic elements, we see that for any $x \in \left(\cross_{\mfa}\ox_{F}\cross_{\mfb}\right)^{\opp}$, $y \in \cross_{\mfc}$ and $z \in M$, $x \cdot y \cdot z = y \cdot x \cdot z$. In another word, we gave $M$ a $\left(\cross_{\mfc}, \cross_{\mfa} \ox_{F} \cross_{\mfb}\right)$-bimodule structure.
   \leanok
   \lean{map_mul_proof.M, map_mul_proof.Aox_FB_op_tmul_smul_mk_tmul, map_mul_proof.C_smul_calc}
 \end{construction}

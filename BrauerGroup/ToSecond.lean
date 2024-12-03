@@ -1352,6 +1352,15 @@ lemma mul_single_in_xAsBasis (c d : K) (σ τ : K ≃ₐ[F] K) :
     IsUnit.inv_mul_cancel_right]
   field_simp
 
+lemma x_AsBasis_conj' (c : K) : x_AsBasis ha σ * ι ha c = (σ c) • (x_AsBasis ha σ) := by
+  have := x__conj' ha σ c
+  convert this using 1 <;>
+  simp [x_, smul_def]
+
+lemma x_AsBasis_conj'' (c : K) : x_AsBasis ha σ * ι ha c = (ι ha <| σ c) * (x_AsBasis ha σ) :=
+  x_AsBasis_conj' ha σ c
+
+
 lemma dim_eq_square [IsGalois F K] : Module.finrank F (CrossProduct ha) =
     (Module.finrank F K)^2 := by
   have eq1 : Module.finrank F (CrossProduct ha) = Module.finrank F K *
