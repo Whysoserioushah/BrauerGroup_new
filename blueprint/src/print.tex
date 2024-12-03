@@ -12,6 +12,9 @@
 
 \documentclass[a4paper]{report}
 
+% \setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
 \usepackage{geometry}
 
 \usepackage{expl3}
@@ -37,10 +40,17 @@ citecolor=blue]{hyperref}
 
 \begin{document}
 \maketitle
-
 \tableofcontents
 
-\paragraph{} We apologise for the organisation of the report --- earlier chapters often use results from later chapter. For our defence, we try to categorise all the results by topics and, since this is a formalisation project, we can guarantee the readers that there is no circular reasoning.
+
+\section*{Preface}
+\addcontentsline{toc}{section}{Preface}
+In this exposition, we describe a excruciatingly detailed proof of the following theorem:
+\begin{theorem*}
+  For a finite dimensional and Galois field extension $K/F$, the relative Brauer group $\br(K/F)$ is isomorphic to the second group cohomology $\HH^{2}\left(\gal(K/F),K^{\star}\right)$.
+\end{theorem*}
+
+\paragraph{} The reason for the detailed-ness is because we are aiming to formalise the proof described in the following chapters; therefore the more details, the better. We apologise for the unconventional organisation in advance --- earlier chapters sometimes use results from later chapter. For our defence, we try to categorise all the results by topics and, since this is a formalisation project, we can guarantee the readers that there is no circular reasoning.
 
 \input{content}
 

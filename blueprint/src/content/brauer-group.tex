@@ -382,7 +382,7 @@ In this section, let $K/F$ be a field extension, $X \in \br(F)$ and $A$ be a $K$
   \lean{GoodRep.mul'}
 \end{construction}
 
-\begin{theorem}
+\begin{theorem}\label{thm:conj-seq-basis}
   If $x$ is an $A$-conjugation sequence, then $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is an $K$-linearly independent set. When $K/F$ is finite dimensional and Galois, $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is a $K$-basis for $A$.
   \leanok
   \lean{GoodRep.conjFactor_linearIndependent, GoodRep.conjFactorBasis}
@@ -390,25 +390,25 @@ In this section, let $K/F$ be a field extension, $X \in \br(F)$ and $A$ be a $K$
 
 \begin{proof}
   Suppose $\{x_{\sigma}\}$ is linearly dependent. Let $J \subseteq \gal(K/F)$ be such that $\{x_{\sigma}|\sigma\in J\}$ is a maximally linearly independent subset.
-  Then $J \ne \gal(K/F)$, let $\sigma \in\gal(K/F)$ be an arbitrary automorphism that is not in $J$. Since $\{x_{\tau}|\tau\in J\}$ is maximally linearly independent, $\sigma \in \left\langle x_{\tau}|\tau\in J\right\rangle$. Hence, by~\cref{con:good-rep-mod} we have
+  Then $J \ne \gal(K/F)$, let $\sigma \in\gal(K/F)$ be an arbitrary automorphism that is not in $J$. Since $\{x_{\tau}|\tau\in J\}$ is maximally linearly independent, $x_\sigma \in \left\langle x_{\tau}|\tau\in J\right\rangle$. Hence, by~\cref{con:good-rep-mod} we have
   \[
-    x_\sigma = \sum_{\tau\in J}\lambda_{\tau}\cdot x_{\tau} = \sum_{\tau\in J}\iota_{A}\left(\lambda_{\tau}\right)x_{\tau},
+    x_\sigma = \sum_{\tau\in J'}\lambda_{\tau}\cdot x_{\tau} = \sum_{\tau\in J'}\iota_{A}\left(\lambda_{\tau}\right)x_{\tau},
   \]
-  for some $\lambda_{\tau}\in K$.
+  for some non-zero $\lambda_{\tau}\in K$ and $J' \subseteq J$.
   For each $c \in K$, we have the following equality
   \[
     \begin{aligned}
       \iota_{A}\left(\sigma \cdot c\right) x_{\sigma}
       &= x_{\sigma} \iota_{A}(c) &\text{by~\cref{def:conj-factor}}\\
-      &= \sum_{\tau\in J}\lambda_{\tau}\cdot x_{\tau}\iota_{A}(c) & \\
-      &= \sum_{\tau\in J}\lambda_{\tau}\cdot \iota_{A}\left(\tau\cdot c\right)x_{\tau} &\text{by~\cref{def:conj-factor} again}\\
-      &=\sum_{\tau\in J}\iota_{A}\left(\lambda_{\tau}\tau(c)\right)x_{\tau};\\
+      &= \sum_{\tau\in J'}\lambda_{\tau}\cdot x_{\tau}\iota_{A}(c) & \\
+      &= \sum_{\tau\in J'}\lambda_{\tau}\cdot \iota_{A}\left(\tau\cdot c\right)x_{\tau} &\text{by~\cref{def:conj-factor} again}\\
+      &=\sum_{\tau\in J'}\iota_{A}\left(\lambda_{\tau}\tau(c)\right)x_{\tau};\\
       \iota_{A}\left(\sigma\cdot c\right)x_{\sigma}
-      &= \sum_{\tau\in J}\iota_{A}\left(\lambda_{\tau}\right) x_{\tau}\iota_{A}(c)\\
-      &= \sum_{\tau\in J}\iota_{A}\left(\sigma(c)\lambda_{\tau}\right)x_{\tau}.
+      &= \sum_{\tau\in J'}\iota_{A}\left(\lambda_{\tau}\right) x_{\tau}\iota_{A}(c)\\
+      &= \sum_{\tau\in J'}\iota_{A}\left(\sigma(c)\lambda_{\tau}\right)x_{\tau}.
     \end{aligned}
   \]
-  Since $\{x_{\tau}|\tau\in J\}$ is linearly independent, we have that for each $\tau \in J$, $\lambda_{\tau}\tau(c) = \sigma(c)\lambda_{\tau}$. Note that $J$ is not empty, for otherwise $x_{\sigma}=\sum_{\tau\in\emptyset}\lambda_{\tau}\cdot x_{\tau}=0$ but $x_{\sigma}$ is invertible. Hence $\sigma$ is in $J$ after all; contradiction.
+  Since $\{x_{\tau}|\tau\in J'\}$ is linearly independent, we have that for each $\tau \in J'$, $\lambda_{\tau}\tau(c) = \sigma(c)\lambda_{\tau} = \lambda_{\tau}\sigma(c)$. Note that $J'$ is not empty, for otherwise $x_{\sigma}=\sum_{\tau\in\emptyset}\lambda_{\tau}\cdot x_{\tau}=0$ but $x_{\sigma}$ is invertible. Since for any $\tau\in J'$, $\lambda_{\tau}$ is not zero, we have that for all $c \in K$, $\sigma(c) = \tau(c)$, i.e. $\sigma = \tau$. Hence $\sigma$ is in $J' \subseteq J$ after all; contradiction.
 
   If $K/F$ is finite dimensional and Galois, then $\dim_{F}K$ is equal to the cardinality of $\gal(K/F)$, then by the linear independence of $\{x_{\sigma}|\sigma\in\gal(K/F)\}$, we conclude that it is indeed a $K$-basis for $A$.
 \end{proof}
@@ -697,7 +697,7 @@ We finally arrive at our main conclusion for this section.
   \lean{RelativeBrGroup.toSnd_wd}
 \end{construction}
 
-\subsection{From $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$}
+\subsection{Cross Product}
 
 Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2-cocycle. In this section, we construct the {\em cross product\/} associated with $\mathfrak{a}$ which we prove to be $F$-central simple. Finally, we show that if $\mathfrak{a}, \mathfrak{b}\in\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ are cohomologous, the cross products associated with $a$ and $b$ are Brauer equivalent.
 
@@ -906,9 +906,13 @@ which proves linear independence. The fact that $\{\Delta_{\sigma, 1}|\sigma\in\
   \lean{GoodRep.CrossProduct.dim_eq_square}
 \end{corollary}
 
+Now we see that cross product, like a good representation, is a $K$-module and $F$-algebra with a $K$-embedding and correct $F$-dimension. In the next sections, we prove that $\cross_{a}$ is in fact a central simple $F$-algebra.
+
+\subsubsection{Central Algebra}
+
 We will assume $K/F$ is a finite dimensional Galois extension.
 
-\begin{theorem}[Centrality]
+\begin{theorem}[Centrality]\label{thm:cross-product-central}
   $\cross_{\mfa}$ is a central $F$-algebra.
   \leanok
   \lean{GoodRep.CrossProduct.is_central}
@@ -966,6 +970,110 @@ We will assume $K/F$ is a finite dimensional Galois extension.
   \]
 
 \end{proof}
+
+
+\subsubsection{Simple Ring}
+In this section we assume $K/F$ is a finite dimensional field extension. Let $I \subseteq \cross_{\mfa}$ be a two sided ideal, we aim to show that either $I = \{0\}$ or $I = \cross_{\mfa}$. In this section, we use $\pi$ to denote the canonical ring homomorphism $\cross_{\mfa}\to{}^{\cross_{\mfa}}/_{I}$. We restrict $\pi$ to $\pi|_{\im\left(\iota_{\mfa}\right)} : \im\left(\iota_{\mfa}\right) \to {}^{\cross_{\mfa}}/_{I}$ and denote the range of $\pi|_{\im\left(\iota_{\mfa}\right)}$ to be $\Pi$.
+
+\begin{construction}\label{con:cross-product-simple-ring-mod}
+  The quotient ring ${}^{\cross_{\mfa}}/_{I}$ is a $\Pi$-module defined by $\pi\left(\iota_{\mfa}(a)\right)\cdot \pi(y) := \pi(a \cdot y)$. We first check that the $\Pi$-action is well-defined:
+  \begin{itemize}
+    \item Independence of $a$: Let $a, b \in K$ be such that $\pi\left(\iota_{\mfa}(a)\right) = \pi\left(\iota_{\mfa}(b)\right)$, that is, $\iota_{\mfa}(a-b)\in I$. Since $I$ is a two sided ideal, $a\cdot y - b \cdot y = (a - b)\cdot y = \iota_{\mfa}(a - b) y$ is also in $I$. This proves $\pi(a\cdot y) = \pi(b\cdot y)$.
+    \item Independence of $y$: Let $y_{1},y_{2}\in\cross_{\mfa}$ be such that $y_{1}-y_{2}\in I$, then for any $a \in K$, $a \cdot y_{1} - a \cdot y_{2} = \iota_{\mfa}(a)\left(y_{1}-y_{2}\right)$ is in $I$ because $I$ is a two sided ideal. This proves $\pi\left(\iota_{\mfa}(a)\right)\cdot \pi(y_{1}) = \pi\left(\iota_{\mfa}(a)\right)\cdot \pi(y_{2})$.
+  \end{itemize}
+  Then we check the axioms of module:
+  \begin{itemize}
+    \item Let $y \in \cross_{\mfa}$, we check that $1 \cdot \pi(y) = \pi(y)$ and $0 \cdot \pi(y) = 0$. This is because $\Pi\ni 1 = \pi\left(\iota_{\mfa}(1)\right)$ and $\Pi\ni 0=\pi\left(\iota_{\mfa}(0)\right)$. Let $a \in K$, $\pi\left(\iota_{\mfa}(a)\right)\cdot 0 = 0$ because $0 \in {}^{\cross_{\mfa}}/_{I}$ is equal to $\pi(0)$.
+    \item Let $a, b \in K$ and $x, y \in \cross_{\mfa}$, we check $\left(\pi\left(\iota_{\mfa}(a)\right) + \pi\left(\iota_{\mfa}(b)\right)\right)\cdot \pi(x) = \pi\left(\iota_{\mfa}(a)\right)\cdot\pi(x) + \pi\left(\iota_{\mfa}(b)\right)\cdot \pi(x)$ and $\pi\left(\iota_{\mfa}(a)\right)\cdot(\pi(x)+\pi(y)) = \pi\left(\iota_{\mfa}(a)\right)\cdot\pi(x) + \pi\left(\iota_{\mfa}(a)\right)\cdot\pi(y)$. These are true because $\pi$ preserves addition. Similarly $\pi\left(\iota_{\mfa}(a)\right)\cdot \pi\left(\iota_{\mfa}(b)\right) \cdot \pi(x) = \pi\left(\iota_{\mfa}(ab)\right)\cdot \pi(x)$ because $\pi$ preserves multiplication as well.
+  \end{itemize}
+
+  Hence ${}^{\cross_{\mfa}}/_{I}$ is also a $K$-module by pulling back the $\Pi$-module structure along $K \to \Pi$ given by $a \mapsto \pi\left(\iota_{\mfa}(a)\right)$. Note that $\pi$ is a $K$-linear map between $\cross_{\mfa}$ and ${}^{\cross_{\mfa}}/_{I}$ by this construction.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple_proofs.smul_def_quot, GoodRep.CrossProduct.is_simple_proofs.K_smul_quot}
+\end{construction}
+
+\begin{lemma}\label{lem:cross-product-quotient-basis}
+  If $I \ne \cross_{\mfa}$, the set $\{\pi\left(\Delta_{\sigma, 1}\right)|\sigma\in\gal(K/F)\}$ forms a $K$-basis for ${}^{\cross_{\mfa}}/_{I}$.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple_proofs.basis}
+\end{lemma}
+\begin{proof}
+  It is easy to see that the set spans ${}^{\cross_{\mfa}}/_{I}$ because $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ spans $\cross_{\mfa}$ (\cref{lem:cross-product-basis}). For linear-independence, the idea is the same as in the proof of~\cref{thm:conj-seq-basis}. We repeat the argument here.
+
+  Suppose that $\{\pi\left(\Delta_{sigma, 1}\right)|\sigma\in\gal(K/F)\}$ is linearly dependent. Let $J \subseteq \gal(K/F)$ be such that $\{\pi\left(\Delta_{\sigma, 1}\right)|\sigma\in J\}$ is the maximally linearly independent set. Let $\sigma$ be an arbitrary automorphism that is not in $J$. Therefore, we have $\pi\left(\Delta_{\sigma, 1}\right) \in \left\langle \pi\left(\Delta_{\tau, 1}\right) | \tau\in J \right\rangle$. Hence we have, by~\cref{con:cross-product-simple-ring-mod} and~\cref{con:cross-product-iota}
+  \[
+    \pi\left(\Delta_{\sigma,1}\right) = \sum_{\tau\in J'}\lambda_{\tau}\cdot\pi\left(\Delta_{\tau, 1}\right) = \sum_{\tau\in J'}\pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\right)\pi\left(\Delta_{\tau, 1}\right) = \sum_{\tau\in J'}\pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\Delta_{\tau,1}\right) =\sum_{\tau\in J'}\pi\left(\lambda_{\tau}\cdot \Delta_{\tau, 1}\right).
+  \]
+  for some non-zero $\lambda_{\tau} \in K$ and some $J' \subseteq J$.
+  Hence, for any $c \in K$, we have
+  \[
+    \begin{aligned}
+      \pi\left(\iota_{\mfa}\left(\sigma \cdot c\right)\right) \pi\left(\Delta_{\sigma, 1}\right)
+      &= \pi\left(\Delta_{\sigma, 1}\right)\pi\left(\iota_{\mfa}(c)\right) &\text{by~\cref{lem:cross-product-basis-conj}} \\
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\right)
+        \pi\left(\Delta_{\tau, 1}\right)
+        \pi\left(\iota_{\mfa}(c)\right)\\
+      &= \sum_{\tau\in J}
+        \pi\left(
+        \iota_{\mfa}\left(\lambda_{\tau}\right)\Delta_{\tau, 1} \iota_{\mfa} c
+        \right) \\
+      &= \sum_{\tau\in J}
+        \pi\left(
+        \iota_{\mfa}\left(\lambda_{\tau}\right)\iota_{\mfa}(\tau\cdot c)\Delta_{\tau, 1}
+        \right) & \text{by~\cref{lem:cross-product-basis-conj} again}\\
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}\left(\lambda_{\tau}\tau(c)\right)\right)
+        \pi\left(\Delta_{\tau,1}\right)\\
+      &= \sum_{\tau\in J}
+        \left(\lambda_{\tau}\tau(c)\right)\cdot \pi\left(\Delta_{\tau, 1}\right)\\
+        %%%%
+        %%%%
+      \pi\left(\iota_{\mfa}\left(\sigma \cdot c\right)\right) \pi\left(\Delta_{\sigma, 1}\right)
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}(\sigma\cdot c)\right)
+        \pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\right)
+        \pi\left(\Delta_{\tau, 1}\right) \\
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}\left(\sigma(c)\lambda_{\tau}\right)\right)
+        \pi\left(\Delta_{\tau, 1}\right) \\
+      &= \sum_{\tau\in J}
+        \left(\sigma(c)\lambda_{\tau}\right)\cdot \pi\left(\Delta_{\tau, 1}\right).
+    \end{aligned}
+  \]
+  Since, $\{\pi\left(\Delta_{\tau, 1}\right) | \tau \in J\}$ is linearly independent, for all $c \in K$ and $\tau\in J$, we have that $\lambda_{\tau}\tau(c) = \sigma(c)\lambda_{\tau}$. Note that $J' \ne \emptyset$, otherwise, $\pi\left(\Delta_{\sigma, 1}\right) = 0$ implying that $\Delta_{\sigma, 1} \in I$ which by~\cref{lem:cross-product-delta-invertible} is invertible but $I$ does not equal to $\cross_{\mfa}$. Hence for each $\tau \in J'$, we have that for all $c \in K$, since $\lambda_{\tau}$ is not zero, $\sigma(c) = \tau(c)$, i.e. $\sigma = \tau$. Therefore, $\sigma$ is in $J' \subseteq J$ after all.
+\end{proof}
+
+\begin{corollary}\label{cor:cross-product-quot-iso}
+  If $I \ne \cross_{\mfa}$, the quotient ring ${}^{\cross_{\mfa}}/_{I}$ is isomorphic to $\cross_{\mfa}$ as $K$-modules. In particular $\pi$ is a $K$-linear isomorphism between $\cross_{\mfa}$ and the quotient ring ${}^{\cross_{\mfa}}/_{I}$.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple_proofs.π₁}
+\end{corollary}
+
+\begin{proof}
+  Indeed, by~\cref{lem:cross-product-basis}, $\{\Delta_{\sigma, 1}|\sigma \in \gal(K/F)\}$ is a $K$-basis for $\cross_{\mfa}$; and by~\cref{lem:cross-product-quotient-basis}, $\{\pi\left(\Delta_{\sigma, 1}\right) | \sigma\in\gal(K/F)\}$ is a $K$-basis for ${}^{\cross_{\mfa}}/_{I}$. The two sets obviously biject. Hence we can define a $K$-linear isomorphism by $\Delta_{\sigma, 1} \mapsto \pi\left(\Delta_{\sigma, 1}\right)$. This isomorphism is equal to $\pi$ everywhere.
+\end{proof}
+
+\begin{corollary}[Simple Ring]\label{cor:cross-product-simple}
+  $\cross_{\mfa}$ is a simple ring.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple}
+\end{corollary}
+
+\begin{proof}
+  For any two-sided-ideal $I$ that is not equal to $\cross_{\mfa}$, by~\cref{cor:cross-product-quot-iso}, $\pi : cross_{\mfa} \to {}^{\cross_{\mfa}}/_{I}$ is a $K$-linear isomorphism, therefore $I$ is equal to $0$.
+\end{proof}
+
+\begin{theorem}\label{thm:cross-product-csa}
+  Let $K/F$ be a finite dimensional and Galois field extension and $\mfa$ be a 2-cocycle in $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, $\cross_{a}$ is a finite dimensional central simple $F$-algebra.
+  \leanok
+  \lean{GoodRep.CrossProduct.asCSA}
+\end{theorem}
+\begin{proof}
+  \Cref{thm:cross-product-central}, \cref{lem:cross-product-basis} and \cref{cor:cross-product-simple}.
+\end{proof}
+
+\subsection{From $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$}
 
 
 
