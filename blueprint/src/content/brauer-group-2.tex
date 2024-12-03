@@ -101,6 +101,96 @@ For a finite dimensional Galois extension of field $K/F$, we have constructed tw
   Exactly~\cref{lem:relative-br-snd-inverse-1} and~\cref{lem:relative-br-snd-inverse-2}.
 \end{proof}
 
+\subsection{Group Homomorphism}
+
+In previous sections, when $K/F$ is a finite dimensional Galois extension, we have set up a bijection between the relative Brauer group $\br(K/F)$ and the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$. But both functions $\HH^{2}$ and $\cross$ are only set-theoretical function. In this section, we aim to upgrade them to group homomorphisms. Technically, we only need to prove either one of them preserves multiplication; we provide a proof that $\HH^{2}$ preserves one anyway because we found the proof to be entertaining.
+
+\subsubsection{$\cross_{1} = 1$ and $\HH^{2}(1) = 1$}
+
+\begin{theorem}
+  \label{thm:map_one}
+  The function $\cross:\HH^{2}\left(\gal(K/F), K^{\star}\right) \to \br(K/F)$ preserves one, that is $\cross_{}$
+ \leanok
+  \lean{map_one_proof.fromSnd_zero}
+\end{theorem}
+
+\begin{proof}
+  Since $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ is a $K$-basis for $\cross_{1}$ where $1 \in \mathcal{B}^{2}\left(\gal(K/F),K^{\star}\right)$ is the constant function $1$ (\cref{lem:cross-product-basis}), we construct a $K$-linear map $\phi : \cross_{1} \to \End_{F} K$ by $\Delta_{\sigma, 1} \mapsto \sigma$; note that $\phi$ is $F$-linear as well. In fact, $\phi$ is also an $F$-algebra homomorphism:
+  \begin{enumerate}
+    \item $\phi(1) = 1$: indeed $\phi\left(\Delta_{\id,1}\right) = \id$.
+    \item $\phi(xy) = \phi(x)\phi(y)$: indeed, let $\sigma,\tau\in\gal(K/F)$ and $c,d\in K$, we need to check that $\phi\left(\Delta_{\sigma,c}\Delta_{\tau,d}\right) = \phi\left(\Delta_{\sigma,c}\right)\phi\left(\Delta_{\tau,d}\right)$. The left hand side is equal to
+          \[\phi\left(\Delta_{\sigma\tau,c\sigma(d)}\right) = \phi\left(c\sigma(d)\,\cdot\, \Delta_{\sigma\tau,1}\right) = c\sigma(d)\,\cdot\, \sigma\tau;\]
+          and the right hand side is equal to
+          \[
+        \phi\left(c\cdot \Delta_{\sigma,1}\right)\phi\left(d\cdot \Delta_{\tau, 1}\right) = (c \cdot \sigma) (d \cdot \tau).
+          \]
+          For any $x \in K$, applying left hand side to $x$ will result in $c\sigma(d)\sigma(\tau(x))$ while right hand side will result in $c\sigma(d\tau(x))$, hence both sides are equal.
+  \end{enumerate}
+  Hence, $\phi$ is an $F$-algebra isomorphism by~\cref{cor:alghom-bijective-of-dim-eq}; that is we have $\cross_{1} \cong \End_{F}K \cong\mat_{\dim_{F}K}(F)$. We conclude that $\cross_{1}$ is Brauer equivalent to $F$ and consequently $\HH^{2}(1) = 1$.
+\end{proof}
+
+
+\begin{corollary}
+  The function $\HH^{2}:\br(K/F) \to \HH^{2}\left(\gal(K/F), K^{\star}\right)$ preserves one, that is $\HH^{2}(1) = 1$.
+  \leanok
+  \lean{toSndAddMonoidHom}
+\end{corollary}
+\begin{proof}
+  Apply $\cross$ then use~\cref{lem:relative-br-snd-inverse-2} and~\cref{thm:map_one}.
+\end{proof}
+
+\subsubsection{$\cross_{\mfa\mfb}\sim_{\br}\cross_{\mfa}\otimes_{F}\cross_{\mfb}$}
+The argument in this section is more complicated, because, unlike before, the left hand side and the right hand side are not isomorphic as $F$-algebras --- left hand side has $F$-dimension $\left(\dim_{F}K\right)$ while the right hand side has $F$-dimension $\left(\dim_{F}K\right)^{4}$. Let $\mfa$ and $\mfb$ be two 2-cocycles in $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, we denote $\mfc$ to be the 2-cocycle $\mfa \mfb$.
+
+\begin{construction}[$M$]
+  Consider the quotient module
+  \[M := {}^{\cross_{\mfa}\ox_{F}\cross_{\mfb}}/_{\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle}.\]
+  For any $a' \in \cross_{\mfa}$ and $b' \in \cross_{\mfb}$, we can define an $F$-linear map $M \to M$ by descending the $F$-linear map
+$\cross_{\mfa}\ox_{F}\cross_{\mfb} \to \cross_{\mfa}\ox \cross_{\mfb}$
+  \[
+      a\ox b \mapsto aa' \ox bb';
+    \]
+    we need to check that for all $k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb}$, the image of $(k\cdot a)\ox b - a\ox(k\cdot b)$ is in $\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle$:
+    the image is $(k\,\cdot\, aa')\ox b - a\ox(k\,\cdot\, bb')$ which is in the generating set with $k \in K, aa' \in\cross_{\mfa}, $ and $bb'\in\cross_{\mfb}$.
+  This map is in fact $F$-linear in both $a'$ and $b'$, hence we have an $F$-bilinear map $\cross_{\mfa}\ox\cross_{\mfb} \to M \to M$.
+  This gives $M$ a $\left(\cross_{\mfa}\ox_{F}\cross_{\mfb}\right)^{\opp}$-module structure given by
+  \[
+    (a' \ox b') \cdot [a\ox b] = aa' \ox bb'
+  \]
+  for any $a,a' \in \cross_{\mfa}$ and $b, b' \in\cross_{\mfb}$. All of the module axioms in this case follows from $F$-bilinearity.
+
+
+  For any $c \in \cross_{\mfc}$, we can define another $F$-linear map $M \to M$ by descending the $F$-linear map $\cross_{\mfa}\ox_{F}\cross_{\mfb} \to \cross_{\mfa}\ox \cross_{\mfb}$
+  \[
+      a \ox b \mapsto \sum_{\sigma\in\gal(K/F)} \Delta^{\mfa}_{\sigma,c(\sigma)}a \, \ox \, \Delta^{\mfb}_{\sigma, 1}b;
+    \]
+    we need check that for all $k \in K, a \in\cross_{\mfa}, b \in \cross_{\mfb}$, the image of $(k\cdot a)\ox b - a \ox (k\cdot b)$ is in
+    $\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle$: by~\cref{lem:cross-product-basis-conj} the image is
+    \[
+\begin{aligned}
+      & \sum_{\sigma\in\gal(K/F)}
+      \Delta^{\mfa}_{\sigma, c(\sigma)}(k \cdot a) \,\ox\, \Delta^{\mfb}_{\sigma, 1}b
+      -
+        \Delta^{\mfa}_{\sigma, c(\sigma)}a \,\ox\, \Delta^{\mfb}_{\sigma, 1}(k \cdot b) \\
+  = & \sum_{\sigma\in\gal(K/F)}
+      \Delta^{\mfa}_{\sigma,c(\sigma)}\iota_{\mfa}(k)a \,\ox\, \Delta^{\mfb}_{\sigma,1}b
+      -
+      \Delta^{\mfa}_{\sigma,c(\sigma)} \,\ox\, \Delta^{\mfb}_{\sigma, 1}\iota_{\mfb}(k)b \\
+  =& \sum_{\sigma\in\gal(K/F)}
+     \sigma(k)\cdot\Delta^{\mfa}_{\sigma, c(\sigma)}a \,\ox\, \Delta^{\mfb}_{\sigma, 1}b
+     - \Delta^{\mfa}_{\sigma, c(\sigma)} \,\ox\, \sigma(k)\cdot\Delta^{\mfb}_{\sigma,1}b,
+  \end{aligned}
+\]
+which is in $\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle$ because for each $\sigma \in \gal(K/F)$, the summand is in the generating set with $\sigma(k) \in K, \Delta^{\mfa}_{\sigma, c(\sigma)}a \in \cross_{\mfa}$ and $\Delta^{\mfb}_{\sigma, 1}b \in \cross_{\mfb}$. This map is in fact $F$-linear in $c$, therefore we have an $F$-bilinear map $\cross_{\mfc}\to M \to M$. (In the above calculation ``$\ox$'' symbol has low precedence.) This gives $M$ a $\cross_{\mfc}$-module structure given by
+\[
+  c \cdot [a \ox b] = \left[\sum_{\sigma\in\gal(K/F)}\Delta^{\mfa}_{\sigma, c(\sigma)}a \ox \Delta^{\mfb}_{\sigma, 1}b\right].
+\]
+
+
+  \leanok
+  \lean{map_mul_proof.M, map_mul_proof.Aox_FB_op_tmul_smul_mk_tmul, map_mul_proof.C_smul_calc}
+\end{construction}
+
 %%% Local Variables:
 %%% mode: LaTeX
 %%% TeX-master: "../print"
