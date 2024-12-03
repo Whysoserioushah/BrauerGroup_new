@@ -702,7 +702,7 @@ We finally arrive at our main conclusion for this section.
 Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2-cocycle. In this section, we construct the {\em cross product\/} associated with $\mathfrak{a}$ which we prove to be $F$-central simple. Finally, we show that if $\mathfrak{a}, \mathfrak{b}\in\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ are cohomologous, the cross products associated with $a$ and $b$ are Brauer equivalent.
 
 \begin{construction}[Cross product]\label{con:cross-product}
-  Denote $\cross_{\mathfrak{a}}$ to be $\gal(K/F) \to K$, i.e. functions from $\gal(K/F)$ to $K$. Notationally, elements of $\cross_{\mathfrak{a}}$ are sequences in $K$ indexed by $\gal(K/F)$; we denote $\Delta_{\sigma, c}$ to be the sequence with value $c$ at $\sigma$-th index and zero elsewhere. We give $\cross_{\mathfrak{a}}$ the usual zero, addition, negation, that is, we give $\cross_{\mathfrak{a}}$ the normal additive abelian group structure. Since for each $c \in \cross_{\mathfrak{a}}$,
+  Denote $\cross_{\mathfrak{a}}$ to be $\gal(K/F) \to K$, i.e. functions from $\gal(K/F)$ to $K$. Notationally, elements of $\cross_{\mathfrak{a}}$ are sequences in $K$ indexed by $\gal(K/F)$; we denote $\Delta^{\mfa}_{\sigma, c}$ to be the sequence with value $c$ at $\sigma$-th index and zero elsewhere. When $\mfa$ is clear from context, we will omit the superscript. We give $\cross_{\mathfrak{a}}$ the usual zero, addition, negation, that is, we give $\cross_{\mathfrak{a}}$ the normal additive abelian group structure. Since for each $c \in \cross_{\mathfrak{a}}$,
   \[
     c = \sum_{\sigma\in\gal(K/F)}\Delta_{\sigma, c(\sigma)},
     \]
@@ -1074,6 +1074,133 @@ In this section we assume $K/F$ is a finite dimensional field extension. Let $I 
 \end{proof}
 
 \subsection{From $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$}
+
+For every 2-cocycle $\mfa$, we have defined the cross product $\cross_{\mfa}$ and proved that it is indeed a finite dimensional central simple $F$-algebra in~\cref{thm:cross-product-csa}; that is we have a function from $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ to $\csa_{F}$. If we want a function from $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$, we need to show that if $\mfa$ and $\mfb$ are cohomologous, $\cross_{\mfa}$ and $\cross_{\mfb}$ are Brauer equivalent. We state it as a theorem:
+
+\begin{theorem}
+  If $K/F$ is a finite dimensional and Galois field extension,
+  the function $\cross : \HH^{2}\left(\gal(K/F), K^{\star}\right) \to \br(K/F)$ defined by
+  \[
+    \mfa \mapsto \left[\cross_{\mfa}\right]_{\sim_{\br}}
+  \]
+  is well-defined.
+\end{theorem}
+
+\begin{proof}
+  Let $\mfa$ and $\mfb$ be two cohomologous 2-cocycles. By~\cref{def:second-group-coh}, for some $\mfc: \gal(K/F) \to K^{\star}$, for all $\sigma, \tau\in\gal(K/F)$, we have
+    \begin{equation}
+      \label{eq:cross-product-cohomologous}
+    \frac{\sigma(\mfc(\tau))}{\mfc(\sigma\tau)}\mfc(\sigma) = \frac{\mfa(\sigma, \tau)}{\mfb(\sigma, \tau)}.
+    \end{equation}
+    Let us denote $\mathsf{A}$ to be the $K$-basis $\{\Delta^{\mfa}_{\sigma, 1} | \sigma\in\gal(K/F)\}$ for $\cross_{\mfa}$ and $\mathsf{B}$ to be the $K$-basis $\{\mfc(\sigma)\cdot \Delta^{\mfb}_{\sigma, 1}|\sigma\in\gal(K/F)\}$ for $\cross_{\mfb}$. We immediately have a $K$-linear isomorphism $\phi : \cross_{\mfa}\cong \cross_{\mfb}$ by mapping $\mathsf{A}$ to $\mathsf{B}$. Since the $K$-action on $\cross_{a}$ and $\cross_{b}$ agrees with the $F$-action on them (\cref{con:cross-product-iota}), $\phi$ is also an $F$-linear isomorphism. We check that $\phi(1) = 1$ and $\phi(xy) = \phi(x)\phi(y)$ for all $x, y \in \cross_{\mfa}$:
+    \begin{enumerate}
+      \item preservation of one: with $\sigma = \tau =\id$ in \cref{eq:cross-product-cohomologous}, we have $\mfc(\id) = \mfa(\id,\id)\mfb(\id,\id)^{-1}$, thus
+  \[
+    \begin{aligned}
+      \phi(1)
+      &= \phi\left(\Delta^{\mfa}_{\id,\mfa(\id,\id)^{-1}}\right)\\
+      &= \phi\left(
+        \mfa(\id,\id)^{-1}\cdot \Delta^{\mfa}_{\id, 1}
+        \right) \\
+      &= \mfa(\id,\id)^{-1}\cdot \mfc(\id) \cdot \Delta^{\mfb}_{\id, 1} \\
+      &= \mfa(\id,\id)^{-1}\cdot \mfc(\id)\cdot \mfb(\id,\id) \cdot \mfb(\id,\id)^{-1}\cdot \Delta^{\mfb}_{\id, 1} \\
+      &= \left(
+        \mfa(\id,\id)^{-1}\mfc(\id)\mfb(\id,\id)
+        \right)\cdot
+        \left(
+        \mfb(\id,\id)^{-1}\cdot \Delta_{\id, 1}
+        \right) \\
+      &= \left(\mfa(\id,\id)^{-1}\mfa(\id,\id)\right)\cdot \Delta_{\id,\mfb(\id,\id)^{-1}} \\
+      &= \Delta_{\id,\mfb(\id,\id)^{-1}}.
+    \end{aligned}
+  \]
+      \item preservation of multiplication:
+            let $\sigma,\tau\in\gal(K/F)$ and $a, b \in K$, we need to prove that $\phi\left(\Delta^{\mfa}_{\sigma, a}\Delta^{\mfa}_{\tau, b}\right) = \phi\left(\Delta^{\mfa}_{\sigma, a}\right)\phi\left(\Delta^{\mfb}_{\tau, b}\right)$.
+            From~\cref{eq:cross-product-cohomologous}, we see that
+            \[
+            \sigma(\mfc(\tau))\mfc(\sigma)\mfb(\sigma,\tau) = \mfc(\sigma\tau)\mfa(\sigma,\tau).\]
+            Hence, by~\cref{lem:cross-product-basis-mul} and~\cref{lem:cross-product-basis-conj}, we have
+            \[
+            \begin{aligned}
+              \phi\left(\Delta^{\mfa}_{\sigma, a}\Delta^{\mfa}_{\tau, b}\right)
+              &= \phi\left(
+                \Delta^{\mfa}_{\sigma\tau, a \sigma(b) \mfa(\sigma,\tau)}
+                \right)\\
+              &= \phi\left(
+                % \left(
+                a\sigma(b) \mfa(\sigma,\tau) \,
+                % \right)
+                \cdot \,
+                \Delta^{\mfa}_{\sigma\tau, 1}
+                \right)\\
+              &=
+                % \left(
+                a \sigma(b) \mfa(\sigma,\tau)
+                % \right)
+                \, \cdot \,
+                \phi\left(\Delta^{\mfa}_{\sigma\tau, 1}\right) \\
+              &=
+                % \left(
+                a \sigma(b) \mfa(\sigma,\tau) \mfc(\sigma\tau)
+                % \right)
+                \, \cdot \,
+                \Delta^{\mfb}_{\sigma\tau, 1}.\\
+              &=
+                % \left(
+                a\sigma(b)\sigma(\mfc(\tau))\mfc(\sigma)\mfb(\sigma,\tau)
+                % \right)
+                \, \cdot \,
+                \Delta^{\mfb}_{\sigma\tau, 1}\\
+              &=
+                % \left(
+                \mfc(\sigma) \sigma(\mfc(\tau))
+                % \right)
+                \,\cdot\,
+                \Delta^{\mfb}_{\sigma\tau,a\sigma(b)\mfb(\sigma\tau)}\\
+              &=
+                % \left(
+                \mfc(\sigma)\sigma(\mfc(\tau))
+                % \right)
+                \, \cdot \,
+                % \left(
+                \Delta^{\mfb}_{\sigma, a}\Delta^{\mfb}_{\tau, b}
+                % \right)
+              \\
+              %
+              %
+              %
+              \phi\left(\Delta^{\mfa}_{\sigma, a}\right)\phi\left(\Delta^{\mfa}_{\tau, b}\right)
+              &= \phi\left(a \cdot \Delta^{\mfa}_{\sigma, 1}\right) \phi\left(b\cdot \Delta^{\mfa}_{\tau, 1}\right) \\
+              &= \left(a \cdot \phi\left(\Delta^{\mfa}_{\sigma, 1}\right)\right)
+                \left(b \cdot \phi\left(\Delta^{\mfa}_{\tau, 1}\right)\right) \\
+              &= \left(
+                a\mfc(\sigma)
+                \, \cdot \,
+                \Delta^{\mfb}_{\sigma, 1}
+                \right)
+                \left(
+                b \mfc(\tau)
+                \, \cdot \,
+                \Delta^{\mfb}_{\tau, 1}
+                \right)\\
+              &= a\mfc(\sigma) \, \cdot \,
+                \left(\Delta^{\mfb}_{\sigma, 1}
+                \iota_{\mfb}(b\mfc(\tau))\right) \,
+                \Delta^{\mfb}_{\tau, 1} \\
+              &=
+                a\mfc(\sigma) \, \cdot \,
+                \Delta^{\mfb}_{\sigma, \sigma(b\mfc(\tau))}\,
+                \Delta^{\mfb}_{\tau, 1} \\
+              &= a\mfc(\sigma)\sigma(b)\sigma(\mfc(\tau)) \, \cdot \,
+                \Delta^{\mfb}_{\sigma, 1}\Delta_{\tau, 1}^{\mfb}\\
+              &= a\mfc(\sigma)\sigma(b)\sigma(\mfc(\tau))\mfb(\sigma,\tau) \, \cdot \, \Delta^{\mfb}_{\sigma\tau, 1}\\
+              &= \mfc(\sigma)\sigma(\mfc(\tau)) \, \cdot \, \Delta^{\mfb}_{\sigma\tau, a\sigma(b)\mfb(\sigma,\tau)}\\
+              &= \mfc(\sigma)\sigma(\mfc(\tau)) \, \cdot \, \Delta^{\mfb}_{\sigma, a}\Delta^{\mfb}_{\tau, b}.
+            \end{aligned}
+            \]
+    \end{enumerate}
+    Hence $\phi$ is actually an $F$-algebra isomorphism between $\cross_{\mfa}$ and $\cross_{\mfb}$ and isomorphic central simple $F$-algebras are certainly Brauer equivalent.
+  \end{proof}
 
 
 

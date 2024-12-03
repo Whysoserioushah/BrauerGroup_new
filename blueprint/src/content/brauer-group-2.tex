@@ -1,0 +1,20 @@
+\subsection{$\HH^{2} \circ \cross$ and $\cross \circ \HH^{2}$}
+
+For a finite dimensional Galois extension of field $K/F$, we have constructed two functions $\HH^{2}$ and $\cross$ between the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ and the relative Brauer group $\br(K/F)$. In this section, we prove that they are mutual inverse to one another, that is the following diagram commutes:
+\begin{center}
+  \begin{tikzcd}
+    \br(K/F) \arrow{r}{\HH^2} \ar[equal]{d} & \HH^2\left(\gal(K/F), K^\star\right) \arrow[equal]{d} \\
+
+    \br(K/ F) & \HH^2\left(\gal(K/F), K^{\star}\right) \arrow{l}{\cross}
+  \end{tikzcd}.
+\end{center}
+
+\begin{lemma}
+  \leanok
+  \lean{RelativeBrGroup.toSnd_fromSnd}
+\end{lemma}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:
