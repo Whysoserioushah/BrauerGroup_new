@@ -17,6 +17,7 @@ central simple $F$-algebra.
   \]
   \leanok
   \lean{centralizer_mulLeft_le_of_isCentralSimple}
+  \uses{con:self-tensor-opp-iso-end}
 \end{lemma}
 
 \begin{proof}
@@ -57,8 +58,10 @@ central simple $F$-algebra.
  \end{proof}
  \begin{lemma}\label{lem:centralizer-mul-left-eq-mul-right}
    Let $B$ be any simple $F$-algebra ({\em not\/} necessarily central). The
-   centralizer of $\McL_{B}$ in $\End_{F}B$ is equal to $\McR_{B}$. \leanok
+   centralizer of $\McL_{B}$ in $\End_{F}B$ is equal to $\McR_{B}$.
+   \leanok
    \lean{centralizer_mulLeft}
+   \uses{lem:centralizer-mul-left-le, rem:mul-left-center-linear}
  \end{lemma}
  \begin{proof}
    It is straightforward to show
@@ -69,8 +72,7 @@ central simple $F$-algebra.
    \[
      C_{\End_{Z(B)}B}\left(\McL_{B}^{Z(B)}\right) \le \McR_{B}^{Z(B)}.
    \]
-   Suppose $f\in\End_{F}B$ is in $C_{\End_{F}B}B$, by
-   ~\cref{rem:mul-left-center-linear}, $f$ is $Z(B)$-linear as well. Then $f$ is
+   Suppose $f\in\End_{F}B$ is in $C_{\End_{F}B}B$, by~\cref{rem:mul-left-center-linear}, $f$ is $Z(B)$-linear as well. Then $f$ is
    in $\McR_{B}^{Z(B)}$; that is $f$ is equal to $\left(\bullet\cdot b\right)$
    for some $b \in B$ as $Z(B)$-linear maps. Then $f$ is also equal to
    $\left(\bullet\cdot b\right)$ as $F$-linear maps.
@@ -108,7 +110,9 @@ central simple $F$-algebra.
 
  \begin{lemma}\label{lem:tensor-mul-right-simple}
    Let $S\subseteq A$ be a simple $F$-subalgebra, then
-   $A \otimes_{F} \McR_{S}$ is a simple ring. \leanok
+   $A \otimes_{F} \McR_{S}$ is a simple ring.
+   \leanok
+   \uses{thm:tensor-csa, lem:mul-right-iso-opp}
  \end{lemma}
 
  \begin{proof}
@@ -121,8 +125,10 @@ central simple $F$-algebra.
    Let $S\subseteq A$ be a simple $F$-subalgebra, then there
    exists an $x\in \left(A\otimes_{F}\End_{F}S\right)^{\times}$ such that
    $C_{A}(S)\otimes_{F}\End_{F}S$ is isomorphic to
-   $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$ as $F$-algebras. \leanok
+   $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$ as $F$-algebras.
+   \leanok
    \lean{centralizer_isSimple.aux.step1}
+   \uses{lem:tensor-central,thm:tensor-csa, thm:skolem-noether, lem:centralizer-conj, lem:centralizer-inclusion-tensor,lem:centralizer-mul-left-eq-mul-right}
  \end{lemma}
 
  \begin{proof}
@@ -151,6 +157,7 @@ central simple $F$-algebra.
    $C_{A}(S)$ is simple as well.
    \leanok
    \lean{centralizer_isSimple}
+   \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:tensor-mul-right-simple, thm:tensor-simple-implies-simple}
  \end{lemma}
 
  \begin{proof}
@@ -170,6 +177,7 @@ central simple $F$-algebra.
    \]
    \leanok
    \lean{dim_centralizer}
+   \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:mul-right-iso-opp}
  \end{lemma}
  \begin{proof}
    By~\cref{lem:centralizer-tensor-end-eq-conj-tensor-mul-right},
@@ -185,6 +193,7 @@ central simple $F$-algebra.
   \]
   \leanok
   \lean{writeAsTensorProduct}
+  \uses{lem:simple-centralizer, thm:tensor-csa, cor:alghom-bijective-of-dim-eq, lem:dim-centralizer}
 \end{corollary}
 
 \begin{proof}
@@ -198,6 +207,7 @@ central simple $F$-algebra.
    \]
    \leanok
    \lean{double_centralizer}
+   \uses{lem:simple-centralizer, lem:dim-centralizer}
  \end{theorem}
  \begin{proof}
   It is straightforward that $S \le C_{A}\left(C_{A}(S)\right)$. By~\cref{lem:simple-centralizer}, $C_{A}(S)$ is simple, hence $\dim_{F}C_{A}\left(C_{A}(S)\right)\cdot \dim_{F}C_{A}(S)=\dim_{F}A=\dim_{F}C_{A}(S)\cdot \dim_{F}S$ (by applying~\cref{lem:dim-centralizer} twice), i.e. $\dim_{F}C_{A}\left(C_{A}(S)\right) = \dim_{F}S$. This equality of dimension gives us the desired result.

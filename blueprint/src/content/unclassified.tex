@@ -70,6 +70,7 @@ subalgebras.
   is $C_{A}(S) \otimes_{R} B$
   \leanok
   \lean{centralizer_inclusionRight}
+  \uses{lem:expand-tensor-in-basis}
 \end{lemma}
 A symmetric statement goes without saying.
 \begin{proof}
@@ -99,6 +100,7 @@ A symmetric statement goes without saying.
   $C_{A}(S)\otimes_{R}C_{B}(T)$
   \leanok
   \lean{centralizer_tensor_centralizer}
+  \uses{lem:submodule-tensor-submodule}
 \end{corollary}
 \begin{proof}
   From~\cref{lem:submodule-tensor-submodule}, $C_{A}(S)\otimes_{R}C_{B}(T)$ is
@@ -119,6 +121,7 @@ A symmetric statement goes without saying.
   $Z\left(A\right)\otimes_{R}Z\left(B\right)$. 
   \leanok
   \lean{IsCentralSimple.center_tensorProduct}
+  \uses{cor:centralizer-tensor-centralizer}
 \end{corollary}
 \begin{proof}
   Special case of~\cref{cor:centralizer-tensor-centralizer}.
@@ -175,6 +178,7 @@ A symmetric statement goes without saying.
   The Kronecker product gives us an $R$-algebra map $\Mat_{m}(R)\otimes_{R}\Mat_{n}(R) \to \Mat_{mn}(R)$. We want this map to be an isomorphism. By~\cref{lem:simple-ring-iff}, we only need to prove it to be surjective: for all $\delta_{ij} \in \Mat_{mn}(R)$, we interpret $\Mat_{mn}(R)$ as a function $\{0,\dots,m-1\}\times\{0,\dots,n-1\}\to R$, then $\delta_{ij}$ is the image of $\delta_{ab}\otimes \delta_{cd} \in \Mat_{m}(R)\otimes_{R}\Mat_{n}(R)$ where $i = (a, c)$ and $j = (b,d)$. Combine everything together, we see $\Mat_{mn}\left(A\otimes_{R}B\right)$ is isomorphic to $\Mat_{mn}\left(A\otimes_{R} B\right)$ as $R$-algebras.
   \leanok
   \lean{BrauerGroup.matrix_eqv, BrauerGroup.kroneckerMatrixTensor'}
+  \uses{lem:simple-ring-iff}
 \end{construction}
 
 %%% Local Variables:

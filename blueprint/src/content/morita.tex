@@ -43,8 +43,10 @@ equivalent. Then we use the equivalence to prove several useful lemmas.
 
 \begin{theorem}[Morita Equivalence]\label{thm:morita}
   The functors constructed in \cref{con:morita-eqv-functor0} and
-  \cref{con:morita-eqv-functor1} form an equivalence of category. \leanok
+  \cref{con:morita-eqv-functor1} form an equivalence of category.
+  \leanok
   \lean{moritaEquivalentToMatrix}
+  \uses{con:morita-eqv-functor0, con:morita-eqv-functor1}
 \end{theorem}
 
 \begin{proof}
@@ -71,6 +73,7 @@ Let $A$ be a finite dimensional simple $k$-algebra.
   $A$-modules.
   \leanok
   \lean{linearEquiv_of_isSimpleModule_over_simple_ring}
+  \uses{thm:wed-artin-algebra, thm:morita}
 \end{lemma}
 
 \begin{proof}
@@ -88,6 +91,7 @@ Let $A$ be a finite dimensional simple $k$-algebra.
   is a direct sum of copies of $S$, i.e. $M \cong \bigoplus_{i \in \iota} S$ for
   some indexing set $\iota$. \leanok
   \lean{directSum_simple_module_over_simple_ring}
+  \uses{thm:wed-artin-algebra, thm:morita, lem:direct-sum-simple-mod2}
 \end{lemma}
 
 \begin{proof}
@@ -96,7 +100,7 @@ Let $A$ be a finite dimensional simple $k$-algebra.
   by~\cref{thm:morita}, we have equivalence of category
   $e : \MOD_{A}\cong\MOD_{D}$. Since simple module is a categorical notion (it
   can be defined in terms monomorphisms), $e^{-1}(D)$ is a simple module over
-  $A$. Sin\label{lem:direct-sum-simple-mod2}ce $e(M)$ is a free module over $D$, we can write $e(M)$ as
+  $A$. Since\label{lem:direct-sum-simple-mod2} $e(M)$ is a free module over $D$, we can write $e(M)$ as
   $\bigoplus_{i\in \iota} D$ for some indexing set $\iota$. By precomposing the
   unit of $e$, we get an isomorphism
   $M \cong e^{-1}\left(\bigoplus_{i\in\iota} D\right)$. We only need to prove
@@ -115,6 +119,7 @@ Let $A$ be a finite dimensional simple $k$-algebra.
   and $N$ are isomorphic as $A$-module if and only if $\dim_{k} M$ and
   $\dim_{k} N$ are equal. \leanok
   \lean{linearEquiv_iff_finrank_eq_over_simple_ring}
+  \uses{lem:direct-sum-simple-mod}
 \end{lemma}
 
 \begin{proof}
@@ -140,8 +145,10 @@ $n\ne0$.
 
 \begin{lemma}\label{lem:exists-simple-mod}
   $D^{n}$ is a simple $A$-module where the module structure is given by pulling
-  back the $\Mat_{n}(D)$-module structure of $D^{n}$. \leanok
+  back the $\Mat_{n}(D)$-module structure of $D^{n}$.
+  \leanok
   \lean{simple_mod_of_wedderburn}
+  \uses{thm:morita}
 \end{lemma}
 \begin{proof}
   By~\cref{thm:morita}, we have $\MOD_{A}\cong\MOD_{D}\cong\MOD_{\Mat_{n}(D)}$.
@@ -160,6 +167,7 @@ $n\ne0$.
   $\End_{A}\left(D^{n}\right)$ is isomorphic to $D^{\opp}$ as $k$-algebras.
   \leanok
   \lean{end_simple_mod_of_wedderburn}
+  \uses{thm:morita}
 \end{lemma}
 
 \begin{proof}
@@ -178,6 +186,7 @@ $n\ne0$.
   $k$-algebras.
   \leanok
   \lean{end_simple_mod_of_wedderburn'}
+  \uses{thm:morita, lem:isomorphic-simple-mod, lem:end-vec-iso}
 \end{lemma}
 \begin{proof}
   By~\cref{thm:morita}, $D^{n}$ is simple as $A$-module; hence
@@ -194,6 +203,7 @@ $n\ne0$.
   Let $M$ be a simple $A$-module, then $\End_{A}M$ has finite $k$-dimension.
   \leanok
   \lean{end_simple_mod_finite}
+  \uses{thm:wed}
 \end{lemma}
 \begin{proof}
   By~\cref{thm:wed}, such $D$ and $n$ always exists. Hence we only need to show
@@ -235,6 +245,7 @@ We assume again that $A$ is a finite dimensional simple $k$-algebra.
   Any simple $A$-module is balanced.
   \leanok
   \lean{isBalanced_of_simpleMod}
+  \uses{lem:direct-sum-simple-mod}
 \end{lemma}
 \begin{proof}
   Indeed, if $M$ is a simple $A$-module, then $A \cong \bigoplus_{i\in\iota} M$

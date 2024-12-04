@@ -12,6 +12,7 @@ For a finite dimensional Galois extension of field $K/F$, we have constructed tw
   \end{center}
   \leanok
   \lean{RelativeBrGroup.toSnd_fromSnd}
+  \uses{lem:cross-product-basis-conj,con:good-rep-to-2-cocycles,cor:to-2-cocycle-wd, thm:snd-coh-to-relative-br, con:compare-conj-factors}
 \end{lemma}
 \begin{proof}
   Let $\mfa$ be any 2-cocycle, by~\cref{lem:cross-product-basis-conj}, we notice that $x : \sigma \mapsto \Delta_{\sigma, 1}$ is a conjugation sequence for $\cross_{\mfa}$. Hence by~\cref{con:good-rep-to-2-cocycles}, ~\cref{cor:to-2-cocylce-wd} and~\cref{thm:snd-coh-to-relative-br}, we evaluate the composition at $\mfa$ as:
@@ -21,7 +22,7 @@ For a finite dimensional Galois extension of field $K/F$, we have constructed tw
     \end{tikzcd}.
   \end{center}
   That is, we need to show that $\mfa$ and $(\sigma, \tau) \mapsto \comp_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}$ are 2-cohomologous. In fact, they are equal.
-  By~\cref{con:compare-conj-factors}~, we have that $\iota_{\cross_{\mfa}}\left(\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right) = \Delta_{\sigma, 1}\Delta_{\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot \Delta_{\sigma\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot 1 = \Delta_{\id,\mfa(\sigma,\tau)}$ which is precisely $\iota_{\cross_{\mfa}}(\mfa(\sigma,\tau))$.
+  By~\cref{con:compare-conj-factors}, we have that $\iota_{\cross_{\mfa}}\left(\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right) = \Delta_{\sigma, 1}\Delta_{\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot \Delta_{\sigma\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot 1 = \Delta_{\id,\mfa(\sigma,\tau)}$ which is precisely $\iota_{\cross_{\mfa}}(\mfa(\sigma,\tau))$.
 \end{proof}
 
 \begin{lemma}\label{lem:relative-br-snd-inverse-2}
@@ -35,6 +36,7 @@ For a finite dimensional Galois extension of field $K/F$, we have constructed tw
   \end{center}
   \leanok
   \lean{RelativeBrGroup.fromSnd_toSnd}
+  \uses{cor:mem-relative-br-iff-good-rep, con:exists-conj-seq, def:good-rep, cor:to-2-cocycle-wd, thm:snd-coh-to-relative-br, con:good-rep-mod, con:compare-conj-factors, def:conj-factor}
 \end{lemma}
 \begin{proof}
   Let $X \in \br(K/F)$, $A$ be an arbitrary good representation of $X$ and $x$ be an arbitrary $A$-conjugation sequence which exists by~\cref{cor:mem-relative-br-iff-good-rep} and~\cref{con:exists-conj-seq}. By~\cref{def:good-rep}, $X = \left[A\right]_{\sim_{\br}}$.
@@ -94,6 +96,7 @@ For a finite dimensional Galois extension of field $K/F$, we have constructed tw
 \end{center}
 \leanok
 \lean{RelativeBrGroup.equivSnd}
+\uses{lem:relative-br-snd-inverse-1,lem:relative-br-snd-inverse-2}
 \end{corollary}
 
 \begin{proof}
@@ -110,7 +113,8 @@ In previous sections, when $K/F$ is a finite dimensional Galois extension, we ha
   \label{thm:map_one}
   The function $\cross:\HH^{2}\left(\gal(K/F), K^{\star}\right) \to \br(K/F)$ preserves one, that is $\cross_{}$
  \leanok
-  \lean{map_one_proof.fromSnd_zero}
+ \lean{map_one_proof.fromSnd_zero}
+ \uses{lem:cross-product-basis, cor:alghom-bijective-of-dim-eq}
 \end{theorem}
 
 \begin{proof}
@@ -133,6 +137,7 @@ In previous sections, when $K/F$ is a finite dimensional Galois extension, we ha
   The function $\HH^{2}:\br(K/F) \to \HH^{2}\left(\gal(K/F), K^{\star}\right)$ preserves one, that is $\HH^{2}(1) = 1$.
   \leanok
   \lean{RelativeBrGroup.toSndAddMonoidHom}
+  \uses{lem:relative-br-snd-inverse-2,thm:map_one}
 \end{corollary}
 \begin{proof}
   Apply $\cross$ then use~\cref{lem:relative-br-snd-inverse-2} and~\cref{thm:map_one}.
@@ -234,6 +239,7 @@ In particular, if $c$ is of the form $k \cdot \Delta^{\mfc}_{\tau, 1}$, then $\l
 Expanding everything out and checking on the basic elements, we see that for any $x \in \left(\cross_{\mfa}\ox_{F}\cross_{\mfb}\right)^{\opp}$, $y \in \cross_{\mfc}$ and $z \in M$, $x \cdot y \cdot z = y \cdot x \cdot z$. In another word, we gave $M$ a $\left(\cross_{\mfc}, \cross_{\mfa} \ox_{F} \cross_{\mfb}\right)$-bimodule structure.
   \leanok
   \lean{map_mul_proof.M, map_mul_proof.Aox_FB_op_tmul_smul_mk_tmul, map_mul_proof.C_smul_calc}
+  \uses{lem:cross-product-basis-conj}
 \end{construction}
 
 
@@ -251,6 +257,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   The $F$-dimension of $M$ is equal to ${\left(\dim_{F}K\right)}^{3}$, consequently $M$ is a finitely generated $\cross_{\mfc}$-module.
   \leanok
   \lean{map_mul_proof.M_F_dim}
+  \uses{lem:M-iso-tensor-over-K, lem:cross-product-basis}
 \end{corollary}
 \begin{proof}
   By~\cref{lem:M-iso-tensor-over-K}, the dimension of $M$ is equal to $\dim_{F}\cross_{\mfa}\ox_{K}\cross_{\mfb} = \dim_{K}\cross_{\mfa}\ox_{K}\cross_{\mfb}\dim_{F}K$. By~\cref{lem:cross-product-basis}, $\dim_{K}\cross_{\mfa} = \dim_{K}\cross_{\mfb} = \dim_{F}K$.
@@ -275,12 +282,16 @@ Expanding everything out and checking on the basic elements, we see that for any
   as $F$-algebras.
   \leanok
   \lean{map_mul_proof.exists_simple_module_directSum,map_mul_proof.isoDagger, map_mul_proof.mopEquivEnd', map_mul_proof.C_iso}
+  \uses{lem:direct-sum-simple-mod, con:self-tensor-opp-iso-end, con:end-vec-iso-matrix}
 \end{construction}
 
 \begin{corollary}\label{cor:dim-eq-1}
   \[
     \left(\dim_{F}K\right)^{2} = |J|^{2}\dim_{F}\End_{\cross_{\mfc}}S.
   \]
+  \leanok
+  \lean{map_mul_proof.dim_endCSM}
+  \uses{con:cross-product-mul-iso}
 \end{corollary}
 \begin{proof}
   They are both equal to $\dim_{F}\cross_{\mfc}$ by~\cref{con:cross-product-mul-iso}.
@@ -292,6 +303,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   \]
   \leanok
   \lean{map_mul_proof.SM_F_dim}
+  \uses{con:cross-product-mul-iso}
 \end{corollary}
 \begin{proof}
   They are all equal to $\dim_{F}\cross_{\mfc} = \dim_{F}S^{|J|}$ by~\cref{con:cross-product-mul-iso}.
@@ -302,6 +314,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   % Consequently there also exists an $F$-linear isomorphism between $M$ and $S^{|J|\dim_{F}K}$ and $F$-algebra isomorphism between $\End_{\cross_{\mfc}}M$ and $\End_{\cross_{\mfc}}\left(S^{|J|\dim_{F}K}\right)\cong\mat_{|J|\dim_{F}K}\left(S\right)$.
   \leanok
   \lean{map_mul_proof.M_iso_pow}
+  \uses{lem:iso-of-dim-eq, cor:dim-finite-M, cor:dim-eq-2}
 \end{lemma}
 
 \begin{proof}
@@ -312,6 +325,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   As $F$-vector spaces, $M \cong S^{|J|\dim_{F}K}$.
   \leanok
   \lean{map_mul_proof.M_iso_pow'}
+  \uses{lem:M-iso-simple-pow}
 \end{corollary}
 \begin{proof}
   Restricting scalars on the $\cross_{\mfc}$-linear isomorphism in~\cref{lem:M-iso-simple-pow}
@@ -321,6 +335,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   As $F$-algebras, $\End_{\cross_{\mfc}}M \cong \mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S)$.
   \leanok
   \lean{map_mul_proof.endCMIso'}
+  \uses{cor:M-iso-simple-pow, con:end-vec-iso-matrix}
 \end{corollary}
 \begin{proof}
   From~\cref{cor:M-iso-simple-pow}, we have $\End_{\cross_{\mfc}}M\cong \End_{\cross_{\mfc}}\left(S^{|J|\dim_{F}K}\right)$. By~\cref{con:end-vec-iso-matrix}, they are isomorphic to $\mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S)$.
@@ -330,6 +345,9 @@ Expanding everything out and checking on the basic elements, we see that for any
   \[
     \dim_{F}\End_{\cross_{\mfc}}M = {\left(\dim_{F}K\right)}^{4}.
   \]
+  \leanok
+  \lean{map_mul_proof.dim_endCM}
+  \uses{cor:dim-eq-1}
 \end{corollary}
 
 \begin{proof}
@@ -350,6 +368,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   The cross product $\cross_{\mfc}$ and the tensor product $\cross_{\mfa}\ox_{F}\cross_{\mfb}$ are Brauer equivalent.
   \leanok
   \lean{map_mul_proof.isBrauerEquivalent}
+  \uses{cor:dim-eq-3, cor:alghom-bijective-of-dim-eq, cor:end-M-iso-mat, con:cross-product-mul-iso}
 \end{theorem}
 
 \begin{proof}
@@ -365,6 +384,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   For a finite dimensional Galois field extension $K/F$, the relative Brauer group $\br(K/F)$ is isomorphic to the second group cohomology $\HH^{2}\left(\gal(K/F),K^{\star}\right)$.
   \leanok
   \lean{RelativeBrGroup.isoSnd}
+  \uses{cor:relative-br-2nd-coh-bij, thm:cross-mul}
 \end{corollary}
 \begin{proof}
   In~\cref{cor:relative-br-2nd-coh-bij}, we have seen that $\HH^{2}$ and $\cross$ form a bijection, thus it is sufficient to check either one of them preserves multiplication. The function $\cross: \HH^{2}\left(\gal(K/F), K^{\star}\right)$ preserves multiplication: let $[\mfa], [\mfb]$ be two elements in $\HH^{2}\left(\gal(K/F), K^{\star}\right)$, by~\cref{thm:cross-mul}$, \cross(\mfa\mfb)$ is indeed Brauer equivalent to $\cross(\mfa)\ox_{F}\cross(\mfb)$ that is
@@ -373,16 +393,7 @@ Expanding everything out and checking on the basic elements, we see that for any
   \]
 \end{proof}
 
-% \begin{lemma}
-%   There exists an $n \in \mathbb{N}$ such that $M \cong S^{n}$ as $\cross_{\mfc}$-module.
-%   \leanok
-%   \lean{map_mul_proof.M_directSum}
-% \end{lemma}
 
-% \begin{proof}
-%   By~\cref{lem:direct-sum-simple-mod} and~\cref{lem:direct-sum-simple-mod2}, there exists an indexing set $J'$ such that $M \cong \bigoplus_{i\in J'}S$ as $\cross_{\mfc}$-modules and consequently isomorphic as $F$-vector spaces. Since $M$ is finite $F$-dimensional, $J'$ must be finite. Hence $n := |J'|$ works.
-
-% \end{proof}
 
 %%% Local Variables:
 %%% mode: LaTeX

@@ -52,6 +52,7 @@ the notations $n$, $x_{i}$ and $y_{i}$
   \leanok
   \lean{Wedderburn_Artin.aux.equivIdeal}
   \uses{lemma:min-ideal-simple-ring}
+  \uses{lemma:min-ideal-simple-ring}
 \end{theorem}
 
 \begin{proof}
@@ -75,7 +76,8 @@ the notations $n$, $x_{i}$ and $y_{i}$
   as $A$-module.
   \label{thm:wed-artin-ideal}
   \leanok
-  \lean{Wedderburn_Artin_ideal_version} \uses{thm:wed}
+  \lean{Wedderburn_Artin_ideal_version}
+  \uses{thm:wed}
 \end{theorem}
 
 \begin{proof}
@@ -89,6 +91,7 @@ the notations $n$, $x_{i}$ and $y_{i}$
   that $B \cong \Mat_{n}(S)$.
   \leanok
   \lean{Wedderburn_Artin_algebra_version}
+  \uses{thm:wed-artin-ideal, con:end-vec-iso-matrix}
 \end{theorem}
 
 \begin{proof}
@@ -115,6 +118,7 @@ section, we prove that the division algebra $S$ is essentially unique.
   non-zero natural numbers and $D, D'$ are $k$-division algebra, then $n = n'$
   and $D \cong D'$ as $k$-algebras.\label{thm:wed-artin-unique} \leanok
   \lean{Wedderburn_Artin_uniqueness₀}
+  \uses{lem:end-simple-iso}
 \end{theorem}
 
 \begin{proof}
