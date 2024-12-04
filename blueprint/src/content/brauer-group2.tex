@@ -21,7 +21,7 @@ For a finite dimensional Galois extension of field $K/F$, we have constructed tw
     \end{tikzcd}.
   \end{center}
   That is, we need to show that $\mfa$ and $(\sigma, \tau) \mapsto \comp_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}$ are 2-cohomologous. In fact, they are equal.
-  By\cref{con:compare-conj-factors}~, we have that $\iota_{\cross_{\mfa}}\left(\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right) = \Delta_{\sigma, 1}\Delta_{\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot \Delta_{\sigma\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot 1 = \Delta_{\id,\mfa(\sigma,\tau)}$ which is precisely $\iota_{\cross_{\mfa}}(\mfa(\sigma,\tau))$.
+  By~\cref{con:compare-conj-factors}~, we have that $\iota_{\cross_{\mfa}}\left(\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right) = \Delta_{\sigma, 1}\Delta_{\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot \Delta_{\sigma\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot 1 = \Delta_{\id,\mfa(\sigma,\tau)}$ which is precisely $\iota_{\cross_{\mfa}}(\mfa(\sigma,\tau))$.
 \end{proof}
 
 \begin{lemma}\label{lem:relative-br-snd-inverse-2}
@@ -84,7 +84,7 @@ For a finite dimensional Galois extension of field $K/F$, we have constructed tw
   \end{enumerate}
 \end{proof}
 
-\begin{corollary}
+\begin{corollary}\label{cor:relative-br-2nd-coh-bij}
   For a finite dimensional and Galois extension of field $K/F$, the relative Brauer group $K/F$ bijects to the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ by the following commutative diagram
   \begin{center}
   \begin{tikzcd}
@@ -235,6 +235,154 @@ Expanding everything out and checking on the basic elements, we see that for any
   \leanok
   \lean{map_mul_proof.M, map_mul_proof.Aox_FB_op_tmul_smul_mk_tmul, map_mul_proof.C_smul_calc}
 \end{construction}
+
+
+\begin{lemma}\label{lem:M-iso-tensor-over-K}
+  $M$ is isomorphic to $\cross_{\mfa}\ox_{K}\cross_{\mfb}$ as $F$-modules.
+  \leanok
+  \lean{map_mul_proof.Aox_KBEquivM}
+\end{lemma}
+\begin{proof}
+  The map $M \to \cross_{\mfa}\ox_{K}\cross_{\mfb}$ is obtained by descending the obvious $F$-linear map $\cross_{\mfa}\ox_{F}\cross_{\mfb}\to\cross_{\mfa}\ox_{K}\cross_{\mfb}$.
+  By universal property of tensor product, there is an additive group homomorphism $\cross_{\mfa}\ox_{K}\cross_{\mfb} \to M$ given by $a \ox b \mapsto [a\ox b]$, this map is in fact $F$-linear. The two maps are inverse to each other.
+\end{proof}
+
+\begin{corollary}\label{cor:dim-finite-M}
+  The $F$-dimension of $M$ is equal to ${\left(\dim_{F}K\right)}^{3}$, consequently $M$ is a finitely generated $\cross_{\mfc}$-module.
+  \leanok
+  \lean{map_mul_proof.M_F_dim}
+\end{corollary}
+\begin{proof}
+  By~\cref{lem:M-iso-tensor-over-K}, the dimension of $M$ is equal to $\dim_{F}\cross_{\mfa}\ox_{K}\cross_{\mfb} = \dim_{K}\cross_{\mfa}\ox_{K}\cross_{\mfb}\dim_{F}K$. By~\cref{lem:cross-product-basis}, $\dim_{K}\cross_{\mfa} = \dim_{K}\cross_{\mfb} = \dim_{F}K$.
+\end{proof}
+
+\begin{construction}\label{con:cross-product-mul-iso}
+  By~\cref{lem:direct-sum-simple-mod}, there exists some simple $\cross_{\mfc}$-module $S$ such that $\cross_{\mfc}$ is isomorphic to $\bigoplus_{i\in J}S$ as $\cross_{\mfc}$-module for some indexing set $J$. If we give $S$ the $F$-module structure by pulling back the $\cross_{\mfc}$-module structure, by restricting scalars $\cross_{\mfc}$ is isomorphic to $\bigoplus_{i\in J} S$ as $F$-module as well. Since $\cross_{\mfc}$ is a finite dimensional $F$-vector space, $J$ must be finite as well. Note that $S$ must be a finite dimensional $F$-vector space, because $S$ is finitely generated as $\cross_{\mfc}$-module and $\cross_{\mfc}$ has finite $F$-dimension.
+  The indexing set $J$ must be nonempty, otherwise $\cross_{\mfc}$ being isomorphic to $\bigoplus_{\emptyset} S$ is a trivial ring; but simple rings are non-trivial. Since $J$ is finite, direct sum over $J$ and direct product over $J$ agree.
+  Recall~\cref{con:self-tensor-opp-iso-end} and~\cref{con:end-vec-iso-matrix}, for all non-zero $m \in\mathbb{N}$, we have
+  \[
+    \End_{\cross_{\mfc}}\left(S^{m}\right) \cong \mat_{m}\left(\End_{\cross_{\mfc}}S\right)
+  \]
+  as $F$-algebras, hence
+  \[
+    \cross_{\mfc}^{\opp} \cong \End_{\cross_{\mfc}}\cross_{\mfc}\cong \End_{\cross_{\mfc}}S^{|J|} \cong \mat_{|J|}\left(\End_{\cross_{\mfc}}S\right)
+  \]
+  as $F$-algebras.
+  Finally
+  \[
+    \cross_{\mfc}\cong \mat_{|J|}\left(\End_{\cross_{\mfc}}\left(S\right)^{\opp}\right)
+  \]
+  as $F$-algebras.
+  \leanok
+  \lean{map_mul_proof.exists_simple_module_directSum,map_mul_proof.isoDagger, map_mul_proof.mopEquivEnd', map_mul_proof.C_iso}
+\end{construction}
+
+\begin{corollary}\label{cor:dim-eq-1}
+  \[
+    \left(\dim_{F}K\right)^{2} = |J|^{2}\dim_{F}\End_{\cross_{\mfc}}S.
+  \]
+\end{corollary}
+\begin{proof}
+  They are both equal to $\dim_{F}\cross_{\mfc}$ by~\cref{con:cross-product-mul-iso}.
+\end{proof}
+
+\begin{corollary}\label{cor:dim-eq-2}
+  \[
+    |J|\dim_{F}S = \left(\dim_{F}K\right)^{2}
+  \]
+  \leanok
+  \lean{map_mul_proof.SM_F_dim}
+\end{corollary}
+\begin{proof}
+  They are all equal to $\dim_{F}\cross_{\mfc} = \dim_{F}S^{|J|}$ by~\cref{con:cross-product-mul-iso}.
+\end{proof}
+
+\begin{lemma}\label{lem:M-iso-simple-pow}
+  There exists a $\cross_{\mfc}$-linear isomorphism between $M$ and $S^{|J|\dim_{F}K}$.
+  % Consequently there also exists an $F$-linear isomorphism between $M$ and $S^{|J|\dim_{F}K}$ and $F$-algebra isomorphism between $\End_{\cross_{\mfc}}M$ and $\End_{\cross_{\mfc}}\left(S^{|J|\dim_{F}K}\right)\cong\mat_{|J|\dim_{F}K}\left(S\right)$.
+  \leanok
+  \lean{map_mul_proof.M_iso_pow}
+\end{lemma}
+
+\begin{proof}
+  By~\cref{lem:iso-of-dim-eq}, we only need to show that $\dim_{F}M = \dim_{F}S^{|J|\dim_{F}K}$. We already have $\dim_{F}M = \left(\dim_{F}K\right)^{3}$ by~\cref{cor:dim-finite-M}. We also have $\dim_{F}S^{|J|\dim_{F}K} = |J|\dim_{F}K\dim_{F}S = \dim_{F}K \left(|J|\dim_{F}S\right) = \dim_{F}K\left(\dim_{F}K\right)^{2}$ by~\cref{cor:dim-eq-2}.
+\end{proof}
+
+\begin{corollary}\label{cor:M-iso-simple-pow}
+  As $F$-vector spaces, $M \cong S^{|J|\dim_{F}K}$.
+  \leanok
+  \lean{map_mul_proof.M_iso_pow'}
+\end{corollary}
+\begin{proof}
+  Restricting scalars on the $\cross_{\mfc}$-linear isomorphism in~\cref{lem:M-iso-simple-pow}
+\end{proof}
+
+\begin{corollary}\label{cor:end-M-iso-mat}
+  As $F$-algebras, $\End_{\cross_{\mfc}}M \cong \mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S)$.
+  \leanok
+  \lean{map_mul_proof.endCMIso'}
+\end{corollary}
+\begin{proof}
+  From~\cref{cor:M-iso-simple-pow}, we have $\End_{\cross_{\mfc}}M\cong \End_{\cross_{\mfc}}\left(S^{|J|\dim_{F}K}\right)$. By~\cref{con:end-vec-iso-matrix}, they are isomorphic to $\mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S)$.
+\end{proof}
+
+\begin{corollary}\label{cor:dim-eq-3}
+  \[
+    \dim_{F}\End_{\cross_{\mfc}}M = {\left(\dim_{F}K\right)}^{4}.
+  \]
+\end{corollary}
+
+\begin{proof}
+  \[
+    \begin{aligned}
+      \dim_{F}\End_{\cross_{\mfc}M}
+      &= \dim_{F}\mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S) \\
+      &= \dim_{F}\left(\End_{\cross_{\mfc}}S\ox_{F}\mat_{|J|\dim_{F}K}(F)\right)\\
+      &= |J|^{2}\left(\dim_{F}K\right)^{2}\dim_{F}\End_{\cross_{\mfc}}S\\
+      &= \left(\dim_{F}K\right)^{2}\left(|J|^{2}\dim_{F}\End_{\cross_{\mfc}}S\right) \\
+      &= \left(\dim_{F}K\right)^{2}\left(\dim_{F}K\right)^{2},
+    \end{aligned}
+  \]
+  where the last equality is by~\cref{cor:dim-eq-1}.
+\end{proof}
+
+\begin{theorem}\label{thm:cross-mul}
+  The cross product $\cross_{\mfc}$ and the tensor product $\cross_{\mfa}\ox_{F}\cross_{\mfb}$ are Brauer equivalent.
+  \leanok
+  \lean{map_mul_proof.isBrauerEquivalent}
+\end{theorem}
+
+\begin{proof}
+  We define an $F$-algebra homomorphism $\phi : \left(\cross_{\mfa}\ox_{F}\cross_{\mfb}\right)^{\opp} \to \End_{\cross_{\mfc}}M$ by
+  $x \mapsto (x \cdot \bullet)$. By~\cref{cor:dim-eq-3}, both sides has $F$-dimension $\left(\dim_{F}K\right)^{4}$, therefore, $\phi$ is an $F$-algebra isomorphism by~\cref{cor:alghom-bijective-of-dim-eq}. Hence we have another $F$-algebra isomorphism by composing the isomorphism in~\cref{cor:end-M-iso-mat}:
+  \[
+    \phi^{\opp}:\cross_{\mfa}\ox_{F}\cross_{\mfb}\cong \left(\End_{\cross_{\mfc}}M\right)^{\opp}\cong \mat_{|J|\dim_{F}K}\left(\left(\End_{\cross_{\mfc}}S\right)^{\opp}\right).
+  \]
+  In the meantime, by~\cref{con:cross-product-mul-iso}, we have $\cross_{\mfc}\cong\mat_{|J|}\left(\left(\End_{\cross_{\mfc}}S\right)\opp\right)$; hence $\mat_{\dim_{F}K}\left(\cross_{\mfc}\right)$ is isomorphic to $\cross_{\mfa}\ox_{F}\cross_{\mfb}$.
+\end{proof}
+
+\begin{corollary}[group isomorphism]
+  For a finite dimensional Galois field extension $K/F$, the relative Brauer group $\br(K/F)$ is isomorphic to the second group cohomology $\HH^{2}\left(\gal(K/F),K^{\star}\right)$.
+  \leanok
+  \lean{RelativeBrGroup.isoSnd}
+\end{corollary}
+\begin{proof}
+  In~\cref{cor:relative-br-2nd-coh-bij}, we have seen that $\HH^{2}$ and $\cross$ form a bijection, thus it is sufficient to check either one of them preserves multiplication. The function $\cross: \HH^{2}\left(\gal(K/F), K^{\star}\right)$ preserves multiplication: let $[\mfa], [\mfb]$ be two elements in $\HH^{2}\left(\gal(K/F), K^{\star}\right)$, by~\cref{thm:cross-mul}$, \cross(\mfa\mfb)$ is indeed Brauer equivalent to $\cross(\mfa)\ox_{F}\cross(\mfb)$ that is
+  \[
+    \left[\cross_{\mfa}\right]_{\sim_{\br}}\left[\cross_{\mfb}\right]_{\sim_{\br}} = \left[\cross_{\mfa\mfb}\right].
+  \]
+\end{proof}
+
+% \begin{lemma}
+%   There exists an $n \in \mathbb{N}$ such that $M \cong S^{n}$ as $\cross_{\mfc}$-module.
+%   \leanok
+%   \lean{map_mul_proof.M_directSum}
+% \end{lemma}
+
+% \begin{proof}
+%   By~\cref{lem:direct-sum-simple-mod} and~\cref{lem:direct-sum-simple-mod2}, there exists an indexing set $J'$ such that $M \cong \bigoplus_{i\in J'}S$ as $\cross_{\mfc}$-modules and consequently isomorphic as $F$-vector spaces. Since $M$ is finite $F$-dimensional, $J'$ must be finite. Hence $n := |J'|$ works.
+
+% \end{proof}
 
 %%% Local Variables:
 %%% mode: LaTeX
