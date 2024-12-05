@@ -26,8 +26,35 @@ theorem rank_1_D_iso_R [Algebra ℝ D] : Module.finrank ℝ D = 1 →
 
 lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K]:
     Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
-  --Zulip
-  sorry
+  let CC := AlgebraicClosure K
+  letI : Algebra ℝ CC := AlgebraicClosure.instAlgebra K
+  haveI : IsAlgClosure ℝ CC := ⟨inferInstance, Algebra.IsAlgebraic.trans (L := K)⟩
+  haveI : IsAlgClosure ℝ ℂ := ⟨inferInstance, inferInstance⟩
+  let e : ℂ ≃ₐ[ℝ] CC := IsAlgClosure.equiv ℝ _ _
+  have dim_eq1 : Module.finrank ℝ CC = 2 := by
+    rw [← Complex.finrank_real_complex, e.toLinearEquiv.finrank_eq]
+  have dim_eq2 : Module.finrank ℝ K * Module.finrank K CC = 2 := by
+    rw [Module.finrank_mul_finrank, dim_eq1]
+  haveI : Module.Finite ℝ CC := by
+    have := e.toLinearEquiv.finrank_eq
+    simp only [Complex.finrank_real_complex] at this
+    exact FiniteDimensional.of_finrank_eq_succ this.symm
+  haveI : Module.Finite K CC := Module.Finite.right ℝ K CC
+  have dim_eq3 : Module.finrank ℝ K = 1 ∨ Module.finrank ℝ K = 2 := by
+    have ineq1 : 0 < Module.finrank ℝ K := Module.finrank_pos
+    have ineq2 : 0 < Module.finrank K CC := Module.finrank_pos
+    have : Module.finrank ℝ K ∈ Nat.divisors 2 := by
+      simpa using ⟨Module.finrank K CC, dim_eq2.symm⟩
+    rw [show Nat.divisors 2 = {1, 2} from rfl] at this
+    simpa using this
+  rcases dim_eq3 with ⟨h1⟩ | ⟨h2⟩
+  · left
+    exact Nonempty.intro <| AlgEquiv.symm <| AlgEquiv.ofBijective (Algebra.ofId _ _)
+      (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by simp [h1])
+  · right
+    exact Nonempty.intro <| AlgEquiv.ofBijective
+      (e.symm.toAlgHom.comp <| Algebra.ofId K CC |>.restrictScalars ℝ)
+      (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by simp [h2])
 
 lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : Module.finrank ℝ K = 2) :
     Nonempty (K ≃ₐ[ℝ] ℂ) := by

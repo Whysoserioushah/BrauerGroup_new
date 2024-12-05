@@ -18,3 +18,5 @@ blueprint/src/_region_.prv/*
 
 *.el
 /blueprint/src/_region_.tex
+
+.history/*
