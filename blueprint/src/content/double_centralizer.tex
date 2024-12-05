@@ -17,7 +17,7 @@ central simple $F$-algebra.
   \]
   \leanok
   \lean{centralizer_mulLeft_le_of_isCentralSimple}
-  \uses{con:self-tensor-opp-iso-end}
+  % \uses{con:self-tensor-opp-iso-end}
 \end{lemma}
 
 \begin{proof}
@@ -61,7 +61,7 @@ central simple $F$-algebra.
    centralizer of $\McL_{B}$ in $\End_{F}B$ is equal to $\McR_{B}$.
    \leanok
    \lean{centralizer_mulLeft}
-   \uses{lem:centralizer-mul-left-le, rem:mul-left-center-linear}
+   % \uses{lem:centralizer-mul-left-le, rem:mul-left-center-linear}
  \end{lemma}
  \begin{proof}
    It is straightforward to show
@@ -112,7 +112,7 @@ central simple $F$-algebra.
    Let $S\subseteq A$ be a simple $F$-subalgebra, then
    $A \otimes_{F} \McR_{S}$ is a simple ring.
    \leanok
-   \uses{thm:tensor-csa, lem:mul-right-iso-opp}
+   % \uses{thm:tensor-csa, lem:mul-right-iso-opp}
  \end{lemma}
 
  \begin{proof}
@@ -128,7 +128,7 @@ central simple $F$-algebra.
    $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$ as $F$-algebras.
    \leanok
    \lean{centralizer_isSimple.aux.step1}
-   \uses{lem:tensor-central,thm:tensor-csa, thm:skolem-noether, lem:centralizer-conj, lem:centralizer-inclusion-tensor,lem:centralizer-mul-left-eq-mul-right}
+   % \uses{lem:tensor-central,thm:tensor-csa, thm:skolem-noether, lem:centralizer-conj, lem:centralizer-inclusion-tensor,lem:centralizer-mul-left-eq-mul-right}
  \end{lemma}
 
  \begin{proof}
@@ -157,7 +157,7 @@ central simple $F$-algebra.
    $C_{A}(S)$ is simple as well.
    \leanok
    \lean{centralizer_isSimple}
-   \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:tensor-mul-right-simple, thm:tensor-simple-implies-simple}
+   % \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:tensor-mul-right-simple, thm:tensor-simple-implies-simple}
  \end{lemma}
 
  \begin{proof}
@@ -177,7 +177,7 @@ central simple $F$-algebra.
    \]
    \leanok
    \lean{dim_centralizer}
-   \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:mul-right-iso-opp}
+   % \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:mul-right-iso-opp}
  \end{lemma}
  \begin{proof}
    By~\cref{lem:centralizer-tensor-end-eq-conj-tensor-mul-right},
@@ -193,7 +193,7 @@ central simple $F$-algebra.
   \]
   \leanok
   \lean{writeAsTensorProduct}
-  \uses{lem:simple-centralizer, thm:tensor-csa, cor:alghom-bijective-of-dim-eq, lem:dim-centralizer}
+  % \uses{lem:simple-centralizer, thm:tensor-csa, cor:alghom-bijective-of-dim-eq, lem:dim-centralizer}
 \end{corollary}
 
 \begin{proof}
@@ -207,7 +207,7 @@ central simple $F$-algebra.
    \]
    \leanok
    \lean{double_centralizer}
-   \uses{lem:simple-centralizer, lem:dim-centralizer}
+   % \uses{lem:simple-centralizer, lem:dim-centralizer}
  \end{theorem}
  \begin{proof}
   It is straightforward that $S \le C_{A}\left(C_{A}(S)\right)$. By~\cref{lem:simple-centralizer}, $C_{A}(S)$ is simple, hence $\dim_{F}C_{A}\left(C_{A}(S)\right)\cdot \dim_{F}C_{A}(S)=\dim_{F}A=\dim_{F}C_{A}(S)\cdot \dim_{F}S$ (by applying~\cref{lem:dim-centralizer} twice), i.e. $\dim_{F}C_{A}\left(C_{A}(S)\right) = \dim_{F}S$. This equality of dimension gives us the desired result.

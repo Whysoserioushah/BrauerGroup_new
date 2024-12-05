@@ -72,7 +72,7 @@ in~\cref{sec:unclassified}.
   if $\dim_{R}A=\dim_{R}B$. 
   \leanok
   \lean{bijective_of_dim_eq_of_isCentralSimple}
-  \uses{lem:simple-ring-iff}
+  % \uses{lem:simple-ring-iff}
 \end{corollary}
 \begin{proof}
   By~\cref{lem:simple-ring-iff}, $f$is injective. Then
@@ -87,7 +87,7 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
   $K$-algebra as well.
   \leanok
   \lean{IsCentralSimple.TensorProduct.isCentral}
-  \uses{cor:center-tensor-center}
+  % \uses{cor:center-tensor-center}
 \end{lemma}
 \begin{proof}
   Assume $A$ and $B$ are central algebras, then
@@ -101,7 +101,7 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
   $A\otimes_{K}B$ is a central simple $K$-algebra as well. 
   \leanok
   \lean{IsCentralSimple.TensorProduct.simple}
-  \uses{lem:tensor-central, lem:expand-tensor-in-basis}
+  % \uses{lem:tensor-central, lem:expand-tensor-in-basis}
 \end{theorem}
 \begin{proof}
   By~\cref{lem:tensor-central}, we need to prove $A\otimes_{K}B$ is a simple
@@ -168,7 +168,7 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
   field extension and $D$ is a central simple algebra over $K$, then
   $L\otimes_{K} D$ is central simple over $L$. \leanok
   \lean{IsCentralSimple.baseChange}
-  \uses{thm:tensor-csa, cor:center-tensor-center}
+  % \uses{thm:tensor-csa, cor:center-tensor-center}
 \end{corollary}
 
 \begin{proof}
@@ -183,7 +183,7 @@ Let $K$ be a field and $A, B$ be $K$-algebras.
   If $A\otimes_{K} B$ is a simple ring, then $A$ and $B$ are both simple.
   \leanok
   \lean{IsCentralSimple.TensorProduct.simple}
-  \uses{lem:simple-ring-iff}
+  % \uses{lem:simple-ring-iff}
 \end{theorem}
 \begin{proof}
   By symmetry, we only prove that $A$ is simple.
@@ -222,7 +222,7 @@ Let $K$ be any field and $D$ a finite dimensional central division $K$-algebra a
   \]
   \leanok
   \lean{dim_max_subfield}
-  \uses{lem:dim-centralizer}
+  % \uses{lem:dim-centralizer}
 \end{lemma}
 
 \begin{proof}
@@ -238,7 +238,7 @@ Let $K$ be any field and $D$ a finite dimensional central division $K$-algebra a
   \end{enumerate}
   \leanok
   \lean{cor_two_1to2, cor_two_2to3, cor_two_3to1}
-  \uses{lem:dim-centralizer}
+  % \uses{lem:dim-centralizer}
 \end{lemma}
 \begin{proof}
   We prove the following:

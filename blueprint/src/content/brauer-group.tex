@@ -144,7 +144,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    \uses{con:matrix-tensor-matrix}
  \end{construction}
  Denote the base change morphism in~\cref{con:br-base-change} as $\Br_{K}^{E}$.
- \begin{lemma}
+ \begin{lemma}\label{lem:br-base-change-self}
    $\Br_{K}^{K}$ is identity.
    \leanok
  \end{lemma}
@@ -152,7 +152,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    If $A\in\CSA$, then $A\sim_{\Br}K\ox_{K}A$.
  \end{proof}
 
- \begin{lemma}\label{lem:br-base-change-self}
+ \begin{lemma}\label{lem:br-base-change-tower}
    Consider the tower of field extension $E/F/K$,
    \[
      \Br_{K}^{E} = \Br_{E}^{F}\circ\Br_{K}^{E}.
@@ -165,11 +165,11 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    \lean{BrauerGroupHom.baseChange_idem}
  \end{proof}
 
- \begin{corollary}\label{lem:br-base-change-tower}
+ \begin{corollary}
    $\Br$ forms a functor from category of field to category of abelian groups.
    \leanok
    \lean{BrauerGroupHom.Br}
-   \uses{lem:br-base-change-self,lem:br-base-change-tower}
+   \uses{lem:br-base-change-self, lem:br-base-change-tower}
  \end{corollary}
  \begin{proof}
    This is the categorical version of~\cref{lem:br-base-change-self} and~\cref{lem:br-base-change-tower}.
@@ -197,7 +197,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    Let $E/K$ be a field extension and $A\in\csa_{K}$, $E$ splits $A$ if and only if $[A]_{\sim_{\br}}\in\br(E/K)$.
    \leanok
    \lean{BrauerGroup.split_iff}
-   \uses{thm:wed-artin-algebra,wed-artin-uniq}
+   \uses{thm:wed-artin-algebra,thm:wed-artin-uniq}
  \end{theorem}
 
  \begin{proof}
@@ -226,7 +226,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    \end{itemize}
    \leanok
    \lean{exists_embedding_of_isSplit}
-   \uses{thm:double-centralizer, lem:simple-centralizer, cor:self-tensor-centralizer, lem:dim-centralizer}
+   % \uses{thm:double-centralizer, lem:simple-centralizer, cor:self-tensor-centralizer, lem:dim-centralizer}
  \end{lemma}
 \begin{proof}
    Since $K$ splits $A$, we find a non-zero natural number $n$ such that $K\ox_{F}A\cong\mat_{n}K\cong\End_{K}\left(K^{n}\right)$ as $K$-algebras.
@@ -256,7 +256,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
      \item there exists an $F$-algebra map $K\hookrightarrow B$
      \item  ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
    \end{itemize}
-   \uses{lem:good-rep-inv}
+   % \uses{lem:good-rep-inv}
  \end{corollary}
 
  \begin{proof}
@@ -272,7 +272,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    \end{itemize}
    \leanok
    \lean{isSplit_iff_dimension}
-   \uses{cor:good-rep, cor:alghom-bijective-of-dim-eq}
+   % \uses{cor:good-rep, cor:alghom-bijective-of-dim-eq}
  \end{theorem}
  \begin{proof}
    The ``if'' direction is~\cref{cor:good-rep}. For the ``only if'' direction, let $B \in\csa_{F}$ and $\iota : K \hookrightarrow B$ be given. We give $B$ a $K$-module structure by right multiplication, that is for any $a \in K$ and $b \in B$, we define $a \cdot b := b \cdot \iota(a)$.
@@ -309,7 +309,7 @@ In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-ba
    For any $X\in\br(F)$, $X\in\br(K/F)$ if and only if $X$ admits a good representation.
    \leanok
    \lean{mem_relativeBrGroup_iff_exists_goodRep}
-   \uses{thm:good-rep-iff-split, thm:split-iff-mem-relative}
+   % \uses{thm:good-rep-iff-split, thm:split-iff-mem-relative}
  \end{corollary}
  \begin{proof}
    Rephrase of~\cref{thm:good-rep-iff-split} and~\cref{thm:split-iff-mem-relative}.
@@ -332,7 +332,7 @@ We observe the following easy result about good representations. Let $X \in \br(
   $C_{A}\left(\iota_{A}(A)\right) = \iota_{A}(A)$.
   \leanok
   \lean{GoodRep.centralizerιRange}
-  \uses{lem:tfae-subfield}
+  % \uses{lem:tfae-subfield}
 \end{lemma}
 \begin{proof}
   In the language of~\cref{sec:subfield}, $\iota_{A}(A)$ is a subfield of $A$, hence by~\cref{lem:tfae-subfield}, we only need to show $\dim_{F}A = {\left(\dim_{F}\iota_{A}(A)\right)}^{2}$. But $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$ and $\iota(A)\cong K$.
@@ -348,7 +348,7 @@ We observe the following easy result about good representations. Let $X \in \br(
   If $A$ and $B$ are two good representations of $X$, then $A \cong B$ as $F$-algebras.
   \leanok
   \lean{GoodRep.exists_iso}
-  \uses{lem:common-div-alg}
+  % \uses{lem:common-div-alg}
 \end{lemma}
 \begin{proof}
   By~\cref{lem:common-div-alg}, we find a division $F$-algebra $D$ and non-zero natural numbers $m, n$ such that $A \cong \mat_{m}(D)$ and $B \cong \mat_{n}(D)$ as $F$-algebras. Therefore
@@ -389,7 +389,7 @@ In this section, let $K/F$ be a field extension, $X \in \br(F)$ and $A$ be a $K$
   let $\sigma \in \gal(K/F)$, we have two $F$-algebra homomorphisms $K \to A$ given by $\iota_{A}$ and $\iota_{A}\circ \sigma$. Applying~\cref{thm:skolem-noether} to $\iota_{A}$ and $\iota_{A}\circ \sigma$ gives us the desired conjugation factor.
   \leanok
   \lean{GoodRep.aribitaryConjFactor}
-  \uses{thm:skolem-noether}
+  % \uses{thm:skolem-noether}
 \end{construction}
 
 \begin{construction}
@@ -405,7 +405,7 @@ In this section, let $K/F$ be a field extension, $X \in \br(F)$ and $A$ be a $K$
   If $x$ is an $A$-conjugation sequence, then $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is an $K$-linearly independent set. When $K/F$ is finite dimensional and Galois, $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is a $K$-basis for $A$.
   \leanok
   \lean{GoodRep.conjFactor_linearIndependent, GoodRep.conjFactorBasis}
-  \uses{con:good-rep-mod, def:conj-factor}
+  % \uses{con:good-rep-mod, def:conj-factor}
 \end{theorem}
 
 \begin{proof}
@@ -496,7 +496,7 @@ In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ 
   If $x$ and $y$ are two conjugation factors of $\sigma$, then there exists a unique $c \in K$ such that $x = y\iota_{A}(c)$.
   \leanok
   \lean{GoodRep.conjFactor_rel, GoodRep.conjFactorTwistCoeff}
-  \uses{rem:conk-factor-alternative-eq}
+  % \uses{rem:conj-factor-alternative-eq, lem:centralizer-range-good-rep}
 \end{lemma}
 
 \begin{proof}
@@ -543,7 +543,7 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
   %If we have a conjugation sequence $x : \gal(K/F)\to A^{\star}$, instead of $\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}^{\sigma,\tau}$, we simply write $\comp_{\sigma,\tau}^{x}$.
   \leanok
   \lean{GoodRep.conjFactorCompCoeff}
-  \uses{lem:twist-spec1, lem:twist-spec2}
+  % \uses{lem:twist-spec1, lem:twist-spec2}
 \end{construction}
 
 \begin{lemma}\label{lem:compare-conj-factor-spec}
@@ -554,7 +554,7 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
   \]
   \leanok
   \lean{GoodRep.conjFactorCompCoeff_comp_comp}
-  \uses{con:compare-conj-factors, def:conj-factor, con:br-base-change}
+  % \uses{con:compare-conj-factors, def:conj-factor, con:br-base-change}
 \end{lemma}
 \begin{proof}
   It is sufficient to make the following calculations:
@@ -595,7 +595,7 @@ We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when 
   For any $A$-conjugation sequence $x$, $\mathcal{B}^{2}_{x} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, that is $\mathcal{B}_{x}$ is indeed a 2-cocycle.
   \leanok
   \lean{GoodRep.isTwoCocyles}
-  \uses{lem:compare-conj-factor-spec}
+  % \uses{lem:compare-conj-factor-spec}
 \end{lemma}
 
 \begin{proof}
@@ -610,7 +610,7 @@ For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequ
 
 \begin{construction}\label{con:good-rep-iso-coeff}
   By~\cref{lem:good-rep-iso}, $A$ and $B$ are isomorphic as $F$-algebras, we use $e_{A,B}$ to denote an arbitrary $F$-algebra isomorphism between $A$ and $B$. When there is no confusion, we write $e$ instead of $e_{A, B}$ Since $e \circ \iota_{A}$ and $\iota_{B}$ are two $F$-algebra homomorphism from $K$ to $B$, by~\cref{thm:skolem-noether}, there exists some $u \in B^{\star}$ such that for all $r \in K$, we have $\iota_{B}(r) = ue\left(\iota_{A}(r)\right)u^{-1}$ (or equivalently, $u^{-1}\iota_{B}(r)u = e\left(\iota_{A}(r)\right)$). When there is confusion, we write $u_{A, B}$ instead of $u$.
-  \uses{lem:good-rep-iso}
+  % \uses{lem:good-rep-iso}
 \end{construction}
 
 \begin{lemma}\label{lem:iso-conj-coeff-spec2}
@@ -620,7 +620,7 @@ For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequ
   \]
   \leanok
   \lean{GoodRep.isoConjCoeff_spec''}
-  \uses{def:conj-factor, con:good-rep-iso-coeff}
+  % \uses{def:conj-factor, con:good-rep-iso-coeff}
 \end{lemma}
 \begin{proof}
   From~\cref{def:conj-factor}, we have $e\left(\iota_{A}(\sigma \cdot c)\right) = e\left(x\iota_{A}(c)x^{-1}\right)$. Substituting it in~\cref{con:good-rep-iso-coeff}, we get
@@ -644,7 +644,7 @@ For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequ
     \end{aligned}.
   \]
   We also write $v_{x,y}$ or even $v^{A,B}_{x, y}$ when we stress the importance of good representation $A$ and $B$ and their conjugation factor $x$ and $y$.
-  \uses{lem:iso-conj-coeff-spec2}
+  % \uses{lem:iso-conj-coeff-spec2}
 \end{construction}
 
 \begin{lemma}\label{lem:compare-to-2-cocycle-aux}
@@ -655,7 +655,7 @@ For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequ
   \]
   \leanok
   \lean{GoodRep.compare_conjFactorCompCoeff}
-  \uses{con:compare-conj-factors, con:push-forward-conj-factor, con:good-rep-iso-coeff, def:conj-factor}
+  % \uses{con:compare-conj-factors, con:push-forward-conj-factor, con:good-rep-iso-coeff, def:conj-factor}
 \end{lemma}
 \begin{proof}
   By~\cref{con:compare-conj-factors}, we have $y_{\sigma}y_{\tau} = \iota_{B}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)y_{\sigma\tau}$.
@@ -690,7 +690,7 @@ For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequ
   Cancelling $x_{\sigma\tau}$ and by injectivity of $\iota_{A}$, the result is proved.
 \end{proof}
 
-\begin{lemma}\label{lem:compare-to-2-cocylce}
+\begin{lemma}\label{lem:compare-to-2-cocycle}
   Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence. We have
   \[
     \mathcal{B}^{2}_{B,y}(\sigma,\tau) v_{x_{\sigma\tau},y_{\sigma\tau}} =
@@ -698,7 +698,7 @@ For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequ
   \]
   \leanok
   \lean{GoodRep.compare_toTwoCocycles}
-  \uses{con:good-rep-to-2-cocycles,lem:compare-to-2-cocycle-aux}
+  % \uses{con:good-rep-to-2-cocycles,lem:compare-to-2-cocycle-aux}
 \end{lemma}
 
 \begin{proof}
@@ -706,25 +706,25 @@ For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequ
 \end{proof}
 
 We finally arrive at our main conclusion for this section.
-\begin{corollary}\label{cor:to-2-cocylce-wd}
+\begin{corollary}\label{cor:to-2-cocycle-wd}
   Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence. $\mathcal{B}^{2}_{A,x}$ and $\mathcal{B}^{2}_{B,y}$ are 2-cohomologous.
   \leanok
   \lean{GoodRep.compare_toTwoCocycles'}
-  \uses{def:second-group-coh, lem:compare-to-2-cocycle}
+  % \uses{def:second-group-coh, lem:compare-to-2-cocycle}
 \end{corollary}
 \begin{proof}
   By~\cref{def:second-group-coh}, we need to find a function $f : \gal(K/F)\to K^{\star}$ such that for all $\sigma, \tau\in\gal(K/F)$,
   \[
     \frac{\sigma\left(f(\tau)\right)}{f\left(\sigma\tau\right)}f(\sigma)=\frac{\mathcal{B}^{2}_{B,y}}{\mathcal{B}^{2}_{A,x}}.
   \]
-  Let $f(\rho) := v_{x_{\rho},y_{\rho}}$, by~\cref{lem:compare-to-2-cocylce} we see the equality holds.
+  Let $f(\rho) := v_{x_{\rho},y_{\rho}}$, by~\cref{lem:compare-to-2-cocycle} we see the equality holds.
 \end{proof}
 
 \begin{construction}[from $\br(K/F)$ to $\HH^{2}\left(\gal(K/F), K^{\star}\right)$]\label{con:br-to-snd-coh}
-  Let $X \in \br(K/F)$, by~\cref{cor:mem-relative-br-iff-good-rep}, $X$ admits a good representation $A$; by~\cref{con:exists-conj-seq}, $A$ admits a conjugation sequence $x$. We associate with $X$ an element $\HH^{2}(X) := \left[\mathcal{B}^{2}_{A,x}\right]$in $\HH^{2}\left(\gal(K/F),K^{\star}\right)$. By~\cref{cor:to-2-cocylce-wd}, for any other good representation $B$ and $B$-conjugation sequence $y$, we have $\left[\mathcal{B}^{2}_{A,x}\right]=\left[\mathcal{B}^{2}_{B,y}\right]$, hence we have a well-defined function $\HH^{2} : \br(K/F) \to \HH^{2}\left(\gal(K/F),K^{\star}\right)$.
+  Let $X \in \br(K/F)$, by~\cref{cor:mem-relative-br-iff-good-rep}, $X$ admits a good representation $A$; by~\cref{con:exists-conj-seq}, $A$ admits a conjugation sequence $x$. We associate with $X$ an element $\HH^{2}(X) := \left[\mathcal{B}^{2}_{A,x}\right]$in $\HH^{2}\left(\gal(K/F),K^{\star}\right)$. By~\cref{cor:to-2-cocycle-wd}, for any other good representation $B$ and $B$-conjugation sequence $y$, we have $\left[\mathcal{B}^{2}_{A,x}\right]=\left[\mathcal{B}^{2}_{B,y}\right]$, hence we have a well-defined function $\HH^{2} : \br(K/F) \to \HH^{2}\left(\gal(K/F),K^{\star}\right)$.
   \leanok
   \lean{RelativeBrGroup.toSnd, RelativeBrGroup.toSnd_wd}
-  \uses{con:exists-conj-seq, cor:mem-relative-br-iff-good-rep,cor:to-2-cocycle-wd}
+  % \uses{con:exists-conj-seq, cor:mem-relative-br-iff-good-rep,cor:to-2-cocycle-wd}
 \end{construction}
 
 \subsection{Cross Product as a Central Simple Algebra}
@@ -750,7 +750,7 @@ Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2
   The cross product $\cross_{\mathfrak{a}}$ is a ring with the multiplicative unit $\Delta_{\mathsf{id}, \mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}}$. The $F$-action on $\cross_{\mathfrak{a}}$ defined by $r \cdot \Delta_{\sigma, c} := \Delta_{\sigma, r\cdot c}$ makes it an $F$-algebra.
   \leanok
   \lean{GoodRep.CrossProduct.algebra}
-  \uses{def:second-group-coh, lem:2-cocycle-one-one}
+  % \uses{def:second-group-coh, lem:2-cocycle-one-one}
 \end{lemma}
 \begin{proof}
   We verify the axioms of rings on elements of the form $\Delta_{\sigma, c}$. Let $\sigma,\tau,\rho\in\gal(K/F)$ and $a,b,c\in K$.
@@ -829,7 +829,7 @@ From now on, we feel free to write $1 \in \cross_{\mfa}$ instead of $\Delta_{\id
   $\iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\id,b \mfa(\id,\id)^{-1}}\Delta_{\sigma, c} = \Delta_{\sigma, b\mfa(\id,\id)^{-1}c\mfa(\id,\sigma)} = \Delta_{\sigma,b\mfa(\id,\id)^{-1}c\mfa(\id,\id)} = \Delta_{\sigma, bc}$ by~\cref{lem:2-cocycle-one-one}. In another word, for any $b \in F$ and $c \in \cross_{\mfa}$, the $K$-action of $b$ on $c$ and the $F$-action of $b$ on $c$ agree.
 
   \leanok \lean{GoodRep.CrossProduct.ι,GoodRep.CrossProduct.identity_double_cross'}
-  \uses{lem:2-cocycle-one-one}
+  % \uses{lem:2-cocycle-one-one}
  \end{construction}
 
  \begin{lemma}
@@ -895,7 +895,7 @@ From now on, we feel free to write $1 \in \cross_{\mfa}$ instead of $\Delta_{\id
    \]
    \leanok
    \lean{GoodRep.CrossProduct.x__mul,GoodRep.CrossProduct.mul_single_in_xAsBasis}
-   \uses{con:cross-product-iota,lem:cross-product-basis-conj}
+   % \uses{con:cross-product-iota,lem:cross-product-basis-conj}
  \end{lemma}
  \begin{proof}
    The first equality is in~\cref{con:cross-product-iota}.
@@ -918,7 +918,7 @@ From now on, we feel free to write $1 \in \cross_{\mfa}$ instead of $\Delta_{\id
    The set $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ forms a $K$-basis for $\cross_{\mfa}$.
    \leanok
    \lean{GoodRep.CrossProduct.x_AsBasis}
-   \uses{con:cross-product-iota}
+   % \uses{con:cross-product-iota}
  \end{lemma}
  \begin{proof}
    Suppose some linear combination $\sum_{\sigma}\lambda_{\sigma}\cdot\Delta_{\sigma, 1}$ is $0$ for some $\lambda_{\sigma}$'s in $K$. We have, by the equality in~\cref{con:cross-product-iota}
@@ -950,7 +950,7 @@ We will assume $K/F$ is a finite dimensional Galois extension.
   $\cross_{\mfa}$ is a central $F$-algebra.
   \leanok
   \lean{GoodRep.CrossProduct.is_central}
-  \uses{lem:cross-product-basis-mul,lem:cross-product-basis-conj, lem:cross-product-basis}
+  % \uses{lem:cross-product-basis-mul,lem:cross-product-basis-conj, lem:cross-product-basis}
 \end{theorem}
 
 \begin{proof}
@@ -1031,7 +1031,7 @@ In this section we assume $K/F$ is a finite dimensional field extension. Let $I 
   If $I \ne \cross_{\mfa}$, the set $\{\pi\left(\Delta_{\sigma, 1}\right)|\sigma\in\gal(K/F)\}$ forms a $K$-basis for ${}^{\cross_{\mfa}}/_{I}$.
   \leanok
   \lean{GoodRep.CrossProduct.is_simple_proofs.basis}
-  \uses{lem:cross-product-basis,thm:conj-seq-basis,con:cross-product-simple-ring-mod,con:cross-product-iota, lem:cross-product-basis-conj, lem:cross-product-delta-invertible}
+  % \uses{lem:cross-product-basis,thm:conj-seq-basis,con:cross-product-simple-ring-mod,con:cross-product-iota, lem:cross-product-basis-conj, lem:cross-product-delta-invertible}
 \end{lemma}
 \begin{proof}
   It is easy to see that the set spans ${}^{\cross_{\mfa}}/_{I}$ because $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ spans $\cross_{\mfa}$ (\cref{lem:cross-product-basis}). For linear-independence, the idea is the same as in the proof of~\cref{thm:conj-seq-basis}. We repeat the argument here.
@@ -1084,7 +1084,7 @@ In this section we assume $K/F$ is a finite dimensional field extension. Let $I 
   If $I \ne \cross_{\mfa}$, the quotient ring ${}^{\cross_{\mfa}}/_{I}$ is isomorphic to $\cross_{\mfa}$ as $K$-modules. In particular $\pi$ is a $K$-linear isomorphism between $\cross_{\mfa}$ and the quotient ring ${}^{\cross_{\mfa}}/_{I}$.
   \leanok
   \lean{GoodRep.CrossProduct.is_simple_proofs.π₁}
-  \uses{lem:cross-product-basis,lem:cross-product-quotient-basis}
+  % \uses{lem:cross-product-basis,lem:cross-product-quotient-basis}
 \end{corollary}
 
 \begin{proof}
@@ -1095,7 +1095,7 @@ In this section we assume $K/F$ is a finite dimensional field extension. Let $I 
   $\cross_{\mfa}$ is a simple ring.
   \leanok
   \lean{GoodRep.CrossProduct.is_simple}
-  \uses{cor:cross-product-quot-iso}
+  % \uses{cor:cross-product-quot-iso}
 \end{corollary}
 
 \begin{proof}
@@ -1106,7 +1106,7 @@ In this section we assume $K/F$ is a finite dimensional field extension. Let $I 
   Let $K/F$ be a finite dimensional and Galois field extension and $\mfa$ be a 2-cocycle in $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, $\cross_{a}$ is a finite dimensional central simple $F$-algebra.
   \leanok
   \lean{GoodRep.CrossProduct.asCSA}
-  \uses{thm:cross-product-central, lem:cross-product-basis, cor:cross-product-simple}
+  % \uses{thm:cross-product-central, lem:cross-product-basis, cor:cross-product-simple}
 \end{theorem}
 \begin{proof}
   \Cref{thm:cross-product-central}, \cref{lem:cross-product-basis} and \cref{cor:cross-product-simple}.
@@ -1125,7 +1125,7 @@ For every 2-cocycle $\mfa$, we have defined the cross product $\cross_{\mfa}$ an
   is well-defined.
   \leanok
   \lean{RelativeBrGroup.fromSnd, RelativeBrGroup.fromSnd_wd}
-  \uses{def:second-group-coh, con:cross-product-iota, lem:cross-product-basis-mul, lem:cross-product-basis-conj}
+  % \uses{def:second-group-coh, con:cross-product-iota, lem:cross-product-basis-mul, lem:cross-product-basis-conj}
 \end{theorem}
 
 \begin{proof}
