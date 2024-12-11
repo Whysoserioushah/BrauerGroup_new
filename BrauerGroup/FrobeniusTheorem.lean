@@ -323,11 +323,12 @@ lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (al
       rwa [map_neg, eq_comm, eq_neg_iff_add_eq_zero]
 
 lemma x_is_in_V (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.val z): x.1 ∈ V := by
-  let hx2 := hx
+  -- let hx2 := hx
   apply x2_is_real at hx
   apply real_sq_in_R_or_V at hx
   have : x.1 ∉ (algebraMap ℝ D).range := by
-
+    by_contra! hxx 
+    
     sorry
   simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
 
