@@ -354,8 +354,9 @@ lemma x_is_in_V (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.va
   apply x2_is_real at hx
   apply real_sq_in_R_or_V at hx
   have : x.1 ∉ (algebraMap ℝ D).range := by
-    by_contra! hxx 
-    
+    by_contra! hxx
+    obtain ⟨r, hr⟩ := hxx
+
     sorry
   simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
 
@@ -384,11 +385,47 @@ abbrev toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) 
 }
 
 abbrev basisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) : Fin 4 → D :=
-  ![(1 : D), e.symm ⟨0, 1⟩, (algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1,
-      e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1)]
+  Fin.snoc (Fin.snoc ![(1 : D), e.symm ⟨0, 1⟩]
+    ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1))
+    (e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1))
 
+set_option synthInstance.maxHeartbeats 40000 in
+set_option maxHeartbeats 400000 in
 lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z):
-    LinearIndependent ℝ (basisijk k e x hx) := sorry
+    LinearIndependent ℝ (basisijk k e x hx) := by
+  rw [linearIndependent_fin_snoc]
+  constructor
+  · rw [linearIndependent_fin_succ']
+    constructor
+    · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc]
+      rw [LinearIndependent.pair_iff']
+      · intro r
+        rw [show (1 : D) = (1 : k) from rfl, ← Subalgebra.coe_smul,
+          ← _root_.map_one e.symm, ← map_smul e.symm]
+        -- suffices e.symm (r • 1) ≠ e.symm ⟨0, 1⟩ by aesop
+        suffices r • 1 ≠ (⟨0, 1⟩ : ℂ) by
+          simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, Complex.real_smul,
+            mul_one, ne_eq, SetLike.coe_eq_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true]
+        rw [show (1 : ℂ) = ⟨1, 0⟩ from rfl, show r • ⟨1, 0⟩ = (⟨r, 0⟩ : ℂ) by
+          apply Complex.ext <;> simp]
+        by_contra! h
+        rw [Complex.ext_iff] at h
+        simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, zero_ne_one, and_false]
+      · exact one_ne_zero
+    · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc, Matrix.range_cons, Matrix.range_empty,
+        Set.union_empty, Set.union_singleton, Fin.snoc_last]
+      by_contra! h
+      rw [Submodule.mem_span_pair] at h
+      obtain ⟨a, b, hab⟩ := h
+      rw [show (1 : D) = (1 : k) from rfl, ← Subalgebra.coe_smul, ← Subalgebra.coe_smul,
+          ← _root_.map_one e.symm, ← map_smul e.symm, ← map_smul e.symm, ← Subalgebra.coe_add,
+          ← map_add e.symm, show (1 : ℂ) = ⟨1, 0⟩ from rfl, show b • ⟨1, 0⟩ = (⟨b, 0⟩ : ℂ) by
+          apply Complex.ext <;> simp, show a • ⟨0, 1⟩ = (⟨0, a⟩ : ℂ) by
+          apply Complex.ext <;> simp, show ⟨0, a⟩ + ⟨b, 0⟩ = (⟨b, a⟩ : ℂ) by
+          apply Complex.ext <;> simp] at hab
+
+      sorry
+  · sorry
 
 abbrev isBasisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (h : Module.finrank ℝ D = 4) : Basis (Fin 4) ℝ D := .mk
