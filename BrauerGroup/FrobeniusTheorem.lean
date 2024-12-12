@@ -286,7 +286,9 @@ lemma x2_is_real (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val
           Matrix.head_cons]
         rw [IsBasis0, IsBasis1]
         · erw [mul_add, add_mul]
-          sorry
+          rw [Subalgebra.coe_smul, mul_smul_comm, smul_mul_assoc, Subalgebra.coe_one,
+            one_mul, mul_one, add_right_inj, Subalgebra.coe_smul, mul_smul_comm,
+            show ((⟨x.1^2, xink⟩ : k) : D) = x.1^2 by rfl, pow_two, ← mul_assoc, smul_mul_assoc]
         · simp
       specialize x_commutes_k $ e.symm ⟨0,1⟩
       specialize hx $ e.symm ⟨0,1⟩
@@ -411,54 +413,94 @@ abbrev basisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val 
     ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1))
     (e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1))
 
+instance : NoZeroSMulDivisors ℝ k := inferInstance
+
+set_option synthInstance.maxHeartbeats 40000 in
+omit hD [FiniteDimensional ℝ D] in
+lemma linindep1i :
+    LinearIndependent ℝ ![(1 : D), ↑(e.symm { re := 0, im := 1 })] := by
+  rw [LinearIndependent.pair_iff']
+  · intro r
+    rw [show (1 : D) = (1 : k) from rfl, ← Subalgebra.coe_smul,
+      ← _root_.map_one e.symm, ← map_smul e.symm]
+    -- suffices e.symm (r • 1) ≠ e.symm ⟨0, 1⟩ by aesop
+    suffices r • 1 ≠ (⟨0, 1⟩ : ℂ) by
+      simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, Complex.real_smul,
+        mul_one, ne_eq, SetLike.coe_eq_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true]
+    rw [show (1 : ℂ) = ⟨1, 0⟩ from rfl, show r • ⟨1, 0⟩ = (⟨r, 0⟩ : ℂ) by
+      apply Complex.ext <;> simp]
+    by_contra! h
+    rw [Complex.ext_iff] at h
+    simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, zero_ne_one, and_false]
+  · exact one_ne_zero
+
+set_option synthInstance.maxHeartbeats 40000 in
+lemma linindep1ij (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z):
+    LinearIndependent ℝ (Fin.snoc ![1, ↑(e.symm { re := 0, im := 1 })]
+      ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx).choose)⁻¹ * ↑x)) := by
+  rw [linearIndependent_fin_succ']
+  constructor
+  · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc]
+    exact linindep1i _ _
+  · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc, Matrix.range_cons, Matrix.range_empty,
+      Set.union_empty, Set.union_singleton, Fin.snoc_last]
+    by_contra! h
+    rw [Submodule.mem_span_pair] at h
+    obtain ⟨a, b, hab⟩ := h
+    rw [show (1 : D) = (1 : k) from rfl, ← Subalgebra.coe_smul, ← Subalgebra.coe_smul,
+        ← _root_.map_one e.symm, ← map_smul e.symm, ← map_smul e.symm, ← Subalgebra.coe_add,
+        ← map_add e.symm, show (1 : ℂ) = ⟨1, 0⟩ from rfl, show b • ⟨1, 0⟩ = (⟨b, 0⟩ : ℂ) by
+        apply Complex.ext <;> simp, show a • ⟨0, 1⟩ = (⟨0, a⟩ : ℂ) by
+        apply Complex.ext <;> simp, show ⟨0, a⟩ + ⟨b, 0⟩ = (⟨b, a⟩ : ℂ) by
+        apply Complex.ext <;> simp] at hab
+    apply_fun ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx).choose) * · ) at hab
+    rw [← mul_assoc, mul_inv_cancel₀ (by
+      simp_all only [ne_eq, map_eq_zero]
+      by_contra! eqzero
+      rw [Real.sqrt_eq_zero (le_of_lt (r_pos _ _ _ hx))] at eqzero
+      have := r_pos _ _ _ hx
+      simp_all only [Real.sqrt_zero, map_zero, zero_mul, inv_zero, mul_zero, lt_self_iff_false]),
+      one_mul] at hab
+    rw [show algebraMap ℝ D _ = (algebraMap ℝ k _ : D) from rfl, ← Subalgebra.coe_mul] at hab
+    have : ∃(y : k), y = x.1 := ⟨_, hab⟩
+    obtain ⟨y, hy⟩ := this
+    have hyy : x.1 ≠ 0 := Units.ne_zero x
+    rw [← hy] at hx hyy
+    rw [show y.1⁻¹ = (y⁻¹ : k) by
+      apply_fun (· * (y : D)) using (mul_left_injective₀ hyy)
+      simp only
+      rw [inv_mul_cancel₀ hyy, ← Subalgebra.coe_mul, inv_mul_cancel₀ (Subtype.coe_ne_coe.1 hyy)]
+      rfl] at hx
+    simp_rw [← Subalgebra.coe_mul] at hx
+    change ∀(z : k), _ = (z : D) at hx
+    simp_rw [Subtype.coe_inj, mul_comm, ← mul_assoc,
+      mul_inv_cancel₀ (Subtype.coe_ne_coe.1 hyy), one_mul] at hx
+    specialize hx $ e.symm Complex.I
+    simp only [f_apply, AlgEquiv.apply_symm_apply, Complex.conj_I, map_neg] at hx
+    symm at hx
+    rw [eq_neg_iff_add_eq_zero] at hx
+    ring_nf at hx
+    simp only [mul_eq_zero] at hx
+    cases' hx with hx1 hx2
+    · apply_fun e at hx1
+      simp only [map_zero, e.apply_symm_apply] at hx1
+      rw [Complex.ext_iff] at hx1
+      obtain ⟨hx11, hx12⟩ := hx1
+      simp only [Complex.I_im, Complex.zero_im, one_ne_zero] at hx12
+    · clear y hy hyy hab a b hx x
+      rw [show (2 : k) = (1 : k) + (1 : k) by norm_num, ← two_smul ℝ,
+        smul_eq_zero] at hx2
+      simp_all only [OfNat.ofNat_ne_zero, one_ne_zero, or_self]
+
 set_option synthInstance.maxHeartbeats 40000 in
 set_option maxHeartbeats 600000 in
 lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z):
     LinearIndependent ℝ (basisijk k e x hx) := by
   rw [linearIndependent_fin_snoc]
   constructor
-  · rw [linearIndependent_fin_succ']
-    constructor
-    · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc]
-      rw [LinearIndependent.pair_iff']
-      · intro r
-        rw [show (1 : D) = (1 : k) from rfl, ← Subalgebra.coe_smul,
-          ← _root_.map_one e.symm, ← map_smul e.symm]
-        -- suffices e.symm (r • 1) ≠ e.symm ⟨0, 1⟩ by aesop
-        suffices r • 1 ≠ (⟨0, 1⟩ : ℂ) by
-          simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, Complex.real_smul,
-            mul_one, ne_eq, SetLike.coe_eq_coe, EmbeddingLike.apply_eq_iff_eq, not_false_eq_true]
-        rw [show (1 : ℂ) = ⟨1, 0⟩ from rfl, show r • ⟨1, 0⟩ = (⟨r, 0⟩ : ℂ) by
-          apply Complex.ext <;> simp]
-        by_contra! h
-        rw [Complex.ext_iff] at h
-        simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, zero_ne_one, and_false]
-      · exact one_ne_zero
-    · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc, Matrix.range_cons, Matrix.range_empty,
-        Set.union_empty, Set.union_singleton, Fin.snoc_last]
-      by_contra! h
-      rw [Submodule.mem_span_pair] at h
-      obtain ⟨a, b, hab⟩ := h
-      rw [show (1 : D) = (1 : k) from rfl, ← Subalgebra.coe_smul, ← Subalgebra.coe_smul,
-          ← _root_.map_one e.symm, ← map_smul e.symm, ← map_smul e.symm, ← Subalgebra.coe_add,
-          ← map_add e.symm, show (1 : ℂ) = ⟨1, 0⟩ from rfl, show b • ⟨1, 0⟩ = (⟨b, 0⟩ : ℂ) by
-          apply Complex.ext <;> simp, show a • ⟨0, 1⟩ = (⟨0, a⟩ : ℂ) by
-          apply Complex.ext <;> simp, show ⟨0, a⟩ + ⟨b, 0⟩ = (⟨b, a⟩ : ℂ) by
-          apply Complex.ext <;> simp] at hab
-      apply_fun ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx).choose) * · ) at hab
-      rw [← mul_assoc, mul_inv_cancel₀ (by
-        simp_all only [ne_eq, map_eq_zero]
-        by_contra! eqzero
-        rw [Real.sqrt_eq_zero (le_of_lt (r_pos _ _ _ hx))] at eqzero
-        have := r_pos _ _ _ hx
-        simp_all only [Real.sqrt_zero, map_zero, zero_mul, inv_zero, mul_zero, lt_self_iff_false]),
-        one_mul] at hab
-      rw [show algebraMap ℝ D _ = (algebraMap ℝ k _ : D) from rfl, ← Subalgebra.coe_mul] at hab
-
-      sorry
+  · exact linindep1ij _ _ _ hx
   · by_contra! h
-    -- rw [show (Set.range (Fin.snoc ![1, ↑(e.symm { re := 0, im := 1 })] (((algebraMap ℝ D) √⋯.choose)⁻¹ * ↑x))) =
-    --   {(1 : D), } from sorry]
+
     sorry
 
 abbrev isBasisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
