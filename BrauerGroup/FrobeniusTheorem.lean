@@ -316,10 +316,10 @@ lemma x2_is_real (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val
   exact x2_is_central
 
 open scoped algebraMap in
-abbrev V : Set D := {x | ∃ r : ℝ, r ≤ 0 ∧ x^2 = (r : D)}
+abbrev V : Set D := {x | ∃ r : ℝ, r < 0 ∧ x^2 = (r : D)}
 
 set_option linter.unusedSectionVars false in
-lemma V_def (x : D) : x ∈ V ↔ ∃ r : ℝ, r ≤ 0 ∧ x^2 = (algebraMap ℝ D) r := by
+lemma V_def (x : D) : x ∈ V ↔ ∃ r : ℝ, r < 0 ∧ x^2 = (algebraMap ℝ D) r := by
     exact Set.mem_def
 
 lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (algebraMap ℝ D).range ∨ x ∈ V := by
@@ -329,7 +329,7 @@ lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (al
   else
     left
     simp only [V_def, not_exists, not_and] at h''
-    have : r > 0 := by
+    have : r ≥ 0 := by
       specialize h'' r
       by_contra!
       exact h'' this (id (Eq.symm hr))
@@ -360,8 +360,30 @@ lemma x_is_in_V (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.va
     sorry
   simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
 
+instance : NoZeroSMulDivisors ℝ D := inferInstance
+
 lemma x_corre_R (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.val z) :
-  ∃(r : ℝ), algebraMap ℝ D r = - x.1^2 := sorry
+    ∃(r : ℝ), algebraMap ℝ D r = - x.1^2 := by
+  have := x_is_in_V _ _ _ hx
+  rw [V_def] at this
+  obtain ⟨r, hr1, hr2⟩ := this
+  use -r
+  simp only [map_neg, hr2]
+
+lemma r_pos (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.val z) :
+    0 < (x_corre_R _ _ _ hx).choose := by
+  have eq1 := x_is_in_V _ _ _ hx
+  rw [V_def] at eq1
+  obtain ⟨r, hr1, hr2⟩ := eq1
+  have eq2 := x_corre_R _ _ _ hx|>.choose_spec
+  have : -r = (x_corre_R _ _ _ hx).choose := by
+    apply_fun -(·) at hr2
+    simp only [Pi.neg_apply] at hr2
+    have := eq2.trans hr2
+    simp only [← map_neg] at this
+    exact NoZeroSMulDivisors.algebraMap_injective _ _ this|>.symm
+  rw [← this]
+  simp only [Left.neg_pos_iff, hr1]
 
 set_option synthInstance.maxHeartbeats 40000 in
 abbrev toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) :
@@ -390,7 +412,7 @@ abbrev basisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val 
     (e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1))
 
 set_option synthInstance.maxHeartbeats 40000 in
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 600000 in
 lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z):
     LinearIndependent ℝ (basisijk k e x hx) := by
   rw [linearIndependent_fin_snoc]
@@ -423,9 +445,21 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
           apply Complex.ext <;> simp, show a • ⟨0, 1⟩ = (⟨0, a⟩ : ℂ) by
           apply Complex.ext <;> simp, show ⟨0, a⟩ + ⟨b, 0⟩ = (⟨b, a⟩ : ℂ) by
           apply Complex.ext <;> simp] at hab
+      apply_fun ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx).choose) * · ) at hab
+      rw [← mul_assoc, mul_inv_cancel₀ (by
+        simp_all only [ne_eq, map_eq_zero]
+        by_contra! eqzero
+        rw [Real.sqrt_eq_zero (le_of_lt (r_pos _ _ _ hx))] at eqzero
+        have := r_pos _ _ _ hx
+        simp_all only [Real.sqrt_zero, map_zero, zero_mul, inv_zero, mul_zero, lt_self_iff_false]),
+        one_mul] at hab
+      rw [show algebraMap ℝ D _ = (algebraMap ℝ k _ : D) from rfl, ← Subalgebra.coe_mul] at hab
 
       sorry
-  · sorry
+  · by_contra! h
+    -- rw [show (Set.range (Fin.snoc ![1, ↑(e.symm { re := 0, im := 1 })] (((algebraMap ℝ D) √⋯.choose)⁻¹ * ↑x))) =
+    --   {(1 : D), } from sorry]
+    sorry
 
 abbrev isBasisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (h : Module.finrank ℝ D = 4) : Basis (Fin 4) ℝ D := .mk
