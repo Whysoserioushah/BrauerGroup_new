@@ -449,42 +449,74 @@ lemma k_sq_eq_negone (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k
     Complex.I_mul_I, neg_neg, map_one, Subalgebra.coe_one, one_mul, mul_assoc, j_mul_j _ _ _ hx]
   simp only [neg_smul, one_smul]
 
+omit hD [FiniteDimensional ℝ D] in
+lemma i_mul_i : (e.symm ⟨0, 1⟩ : D) * e.symm ⟨0, 1⟩ = (-1 : ℝ) • 1 := by
+  rw [← Subalgebra.coe_mul, ← _root_.map_mul e.symm, ← Complex.I, Complex.I_mul_I, map_neg,
+    map_one, Subalgebra.coe_neg, Subalgebra.coe_one]; simp
+
+omit hD [FiniteDimensional ℝ D] in
+lemma i_ne_zero : (e.symm ⟨0, 1⟩ : D) ≠ 0 := by
+  intro h
+  change _ = ((0 : k) : D) at h
+  simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, AddEquivClass.map_eq_zero_iff] at h
+  rw [Complex.ext_iff] at h
+  obtain ⟨_, h⟩ := h
+  simp only [Complex.zero_im, one_ne_zero] at h
+
+lemma j_ne_zero (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) :
+    ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1) ≠ 0 := by
+  intro h
+  simp only [mul_eq_zero, Units.ne_zero, or_false, i_ne_zero, false_or] at h
+  simp only [map_inv₀, inv_eq_zero, map_eq_zero] at h
+  apply_fun (·)^2 at h
+  rw [Pi.pow_apply, Real.sq_sqrt (le_of_lt (r_pos _ _ _ hx)), Pi.pow_apply,
+    pow_two 0, zero_mul] at h
+  exact (r_pos _ _ _ hx).ne' h
+
+lemma k_ne_zero (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) :
+    e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1) ≠ 0 := by
+  intro h
+  rw [mul_eq_zero] at h
+  cases' h with h1 h2
+  · exact (i_ne_zero k e) h1
+  · exact (j_ne_zero _ _ _ hx) h2
+
+lemma j_mul_i_eq_neg_i_mul_j (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) :
+    (algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx).choose)⁻¹ * ↑x *
+    ↑(e.symm { re := 0, im := 1 }) = -(↑(e.symm { re := 0, im := 1 }) *
+    ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx).choose)⁻¹ * ↑x)) := by
+  have := k_sq_eq_negone _ _ _ hx
+  rw [pow_two] at this
+  set j := (algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1 with j_eq
+  apply_fun (· * ((↑(e.symm { re := 0, im := 1 }) * j)⁻¹)) at this
+  rw [mul_assoc, mul_inv_cancel₀ (k_ne_zero _ _ _ hx), mul_one, mul_inv_rev] at this
+  have jinv : j⁻¹ = -j := by
+    rw [← mul_eq_one_iff_inv_eq₀ (j_ne_zero _ _ _ hx), mul_neg, j_mul_j _ _ _ hx]
+    simp only [neg_smul, one_smul, neg_neg]
+  have iinv : ((e.symm { re := 0, im := 1 })).1⁻¹ = - (e.symm { re := 0, im := 1 }).1 := by
+    rw [← mul_eq_one_iff_inv_eq₀ (i_ne_zero _ _), mul_neg, ← Subalgebra.coe_mul,
+      ← map_mul e.symm, ← Complex.I, Complex.I_mul_I, map_neg, map_one, Subalgebra.coe_neg,
+      neg_neg]; rfl
+  rw [jinv, iinv] at this
+  simp only [mul_neg, neg_mul, neg_neg, one_mul] at this
+  apply_fun fun x ↦ -x at this
+  simp only [Pi.neg_apply, neg_neg] at this
+  exact this.symm
+
 set_option synthInstance.maxHeartbeats 40000 in
 abbrev toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) :
     ℍ[ℝ] →ₐ[ℝ] D := QuaternionAlgebra.lift (R := ℝ) (A := D) {
   i := e.symm ⟨0, 1⟩
   j := (algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1
   k := e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1)
-  i_mul_i := by
-    rw [← Subalgebra.coe_mul, ← _root_.map_mul e.symm,
-      show (⟨0, 1⟩ : ℂ) * ⟨0, 1⟩ = ⟨-1, 0⟩ by apply Complex.ext <;> simp]
-    nth_rw 1 [← mul_one (-1 : ℝ), ← mul_zero (-1 : ℝ), ← smul_eq_mul, ← smul_eq_mul]
-    symm; rw [show (1 :D) = e.symm 1 by simp, show (e.symm 1 : D) = k.val (e.symm 1) from rfl,
-      show (1 : ℂ) = ⟨1, 0⟩ from rfl, ← map_smul k.val, ← map_smul e.symm]
-    simp only [Subalgebra.coe_val]
-    congr 2
-    simp only [neg_smul, one_smul, smul_eq_mul, mul_one, mul_zero]
-    apply Complex.ext <;> simp
+  i_mul_i := i_mul_i _ _
   j_mul_j := j_mul_j _ _ _ hx
   i_mul_j := rfl
-  j_mul_i := by
-    have := k_sq_eq_negone _ _ _ hx
-    rw [pow_two] at this
-    set j := (algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1 with j_eq
-    apply_fun (· * ((↑(e.symm { re := 0, im := 1 }) * j)⁻¹)) at this
-    rw [mul_assoc, mul_inv_cancel₀ (by sorry), mul_one, mul_inv_rev] at this
-    have jinv : j⁻¹ = -j := by
-      rw [← mul_eq_one_iff_inv_eq₀ (by sorry), mul_neg, j_mul_j _ _ _ hx]
-      simp only [neg_smul, one_smul, neg_neg]
-    have iinv : ((e.symm { re := 0, im := 1 })).1⁻¹ = - (e.symm { re := 0, im := 1 }).1 := by
-      rw [← mul_eq_one_iff_inv_eq₀ (by sorry), mul_neg, ← Subalgebra.coe_mul, ← map_mul e.symm,
-        ← Complex.I, Complex.I_mul_I, map_neg, map_one, Subalgebra.coe_neg, neg_neg]; rfl
-
-    sorry
+  j_mul_i := j_mul_i_eq_neg_i_mul_j _ _ _ hx
 }
-#check mul_inv_eq_iff_eq_mul₀
+
 abbrev basisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z) : Fin 4 → D :=
-  Fin.cons     (e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1))
+  Fin.cons (e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1))
   (Fin.cons ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx).choose)⁻¹) * x.1)
     ![(1 : D), e.symm ⟨0, 1⟩])
 
@@ -519,8 +551,9 @@ lemma linindep1ij (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
   · exact linindep1i _ _
   · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc, Matrix.range_cons, Matrix.range_empty,
       Set.union_empty, Set.union_singleton, Fin.snoc_last]
+
+    rw [Submodule.mem_span_pair]
     by_contra! h
-    rw [Submodule.mem_span_pair] at h
     obtain ⟨a, b, hab⟩ := h
     rw [show (1 : D) = (1 : k) from rfl, ← Subalgebra.coe_smul, ← Subalgebra.coe_smul,
         ← _root_.map_one e.symm, ← map_smul e.symm, ← map_smul e.symm, ← Subalgebra.coe_add,
@@ -568,14 +601,14 @@ lemma linindep1ij (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
       simp_all only [OfNat.ofNat_ne_zero, one_ne_zero, or_self]
 
 set_option synthInstance.maxHeartbeats 40000 in
-set_option maxHeartbeats 600000 in
+-- set_option maxHeartbeats 600000 in
 lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z):
     LinearIndependent ℝ (basisijk k e x hx) := by
   rw [linearIndependent_fin_cons]
   constructor
   · exact linindep1ij _ _ _ hx
   · by_contra! h
-    simp only [map_inv₀, Fin.range_cons, Matrix.range_cons, Matrix.range_empty,
+    simp only [Fin.range_cons, Matrix.range_cons, Matrix.range_empty,
       Set.union_empty, Set.union_singleton, Submodule.mem_span_insert, Submodule.mem_span_pair,
       exists_exists_exists_and_eq] at h
     simp_rw [Submodule.mem_span_singleton] at h
@@ -584,11 +617,97 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
     rw [add_comm] at heq; nth_rw 2 [add_comm] at heq
     clear hc had
     set k := ↑(e.symm { re := 0, im := 1 }) * (((algebraMap ℝ D)
-      (Real.sqrt (x_corre_R _ _ _ hx).choose))⁻¹ * ↑x) with k_eq
-    have : k^2 = -1 := sorry
+      (Real.sqrt (x_corre_R _ _ _ hx).choose)⁻¹) * ↑x) with k_eq
+    have := k_sq_eq_negone _ _ _ hx
+    set j := (algebraMap ℝ D (Real.sqrt (x_corre_R _ e x hx).choose)⁻¹) * x.1 with j_eq
+    set i := e.symm ⟨0, 1⟩ with i_eq
+    rw [← k_eq, heq, pow_two, mul_add, mul_add, add_mul, add_mul, add_mul, add_mul, add_mul,
+      add_mul] at this
+    simp only [Algebra.mul_smul_comm, mul_one, Algebra.smul_mul_assoc, one_mul, i_mul_i _ _,
+      neg_smul, one_smul, smul_neg, j_mul_i_eq_neg_i_mul_j _ _ _ hx, j_mul_j _ _ _ hx,
+      ← i_eq, ← j_eq] at this
+    replace this : (a * a - b * b - c * c + (1 : ℝ)) • (1 : D) + (2 * a * b) • i +
+      (2 * a * c) • j = 0 := by
 
-
-    sorry
+      sorry
+    have ijindep := linindep1ij _ _ _ hx
+    rw [← i_eq, ← j_eq, Fintype.linearIndependent_iff] at ijindep
+    specialize ijindep ![(2 * a * c), (a * a - b * b - c * c + (1 : ℝ)), (2 * a * b)]
+    simp only [Nat.succ_eq_add_one, Nat.reduceAdd] at ijindep
+    specialize ijindep (by
+      simp only [Fin.sum_univ_three, Fin.isValue, Matrix.cons_val_zero, Fin.cons_zero,
+        Matrix.cons_val_one, Matrix.head_cons, Fin.cons_one, Matrix.cons_val_two,
+        Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.tail_cons]
+      rw [← Fin.succ_one_eq_two, Fin.cons_succ]
+      simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons]
+      rw [add_assoc, add_comm]; exact this)
+    have h1 := ijindep ⟨0, by omega⟩
+    have h2 := ijindep ⟨1, by omega⟩
+    have h3 := ijindep ⟨2, by omega⟩
+    simp only [Fin.zero_eta, Fin.isValue, Matrix.cons_val_zero, mul_eq_zero, OfNat.ofNat_ne_zero,
+      false_or, Fin.mk_one, Matrix.cons_val_one, Matrix.head_cons, Fin.reduceFinMk,
+      Matrix.cons_val_two, Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.tail_cons] at h1 h2 h3
+    have ha : a = 0 := by
+      by_contra! h
+      simp only [h, false_or] at h1 h3
+      simp only [h3, mul_zero, sub_zero, h1, add_eq_zero_iff_eq_neg] at h2
+      rw [← pow_two] at h2
+      have haa := h2
+      apply_fun Real.sqrt at h2
+      if ha1 : a < 0 then
+      have e1: 0 < a^2 := sq_pos_of_ne_zero h
+      have e2: a^2 < 0 := by rw [haa]; simp
+      linarith
+      else
+      simp only [not_lt] at ha1
+      rw [Real.sqrt_sq ha1, Real.sqrt_eq_zero_of_nonpos (by linarith)] at h2
+      rw [h2, pow_two, mul_zero] at haa
+      norm_num at haa
+    simp only [ha, mul_zero, zero_sub, zero_smul, zero_add] at h2 heq
+    have hbc : b ≠ 0 ∨ c ≠ 0 := by
+      by_contra! hbc
+      obtain ⟨⟩ := hbc
+      simp_all
+    have hb : b = 0 := by
+      have heq' := heq
+      apply_fun (i.1 * ·) at heq
+      nth_rw 1 [k_eq, ← mul_assoc, i_mul_i] at heq
+      simp only [neg_smul, one_smul, neg_mul, one_mul, mul_add, Algebra.mul_smul_comm, i_mul_i _ _,
+        smul_neg] at heq
+      rw [← k_eq, heq'] at heq
+      simp only [smul_add, smul_smul, ← add_assoc] at heq
+      symm at heq
+      rw [eq_neg_iff_add_eq_zero, add_assoc _ _ j] at heq
+      nth_rw 2 [← one_smul ℝ j] at heq; rw [← add_smul, ← neg_smul] at heq
+      have h1 := linindep1ij _ _ _ hx
+      rw [Fintype.linearIndependent_iff] at h1
+      specialize h1 ![(c * c + 1), -b, (c * b)]
+      simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.sum_univ_three, Fin.isValue,
+        Matrix.cons_val_zero, Fin.cons_zero, Matrix.cons_val_one, Matrix.head_cons, Fin.cons_one,
+        Matrix.cons_val_two, Matrix.tail_cons, ← j_eq, ← i_eq] at h1
+      rw [← Fin.succ_one_eq_two, Fin.cons_succ] at h1
+      simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons] at h1
+      rw [add_comm, ← add_assoc] at heq
+      specialize h1 heq ⟨1, by omega⟩
+      simp only [Fin.mk_one, Fin.isValue, Matrix.cons_val_one, Matrix.head_cons, neg_eq_zero] at h1
+      exact h1
+    have hc : c = 0 := by
+      simp only [hb, zero_smul, zero_add] at heq
+      rw [Algebra.smul_def, k_eq, mul_eq_mul_right_iff] at heq
+      have : j ≠ 0 := j_ne_zero _ _ _ hx
+      simp only [this, or_false] at heq
+      rename_i _ _ k' _ _
+      change _ = ((algebraMap ℝ k' _) : D) at heq
+      simp only [SetLike.coe_eq_coe, i_eq] at heq
+      apply_fun e at heq
+      rw [e.apply_symm_apply] at heq
+      simp only [AlgEquiv.commutes, Complex.coe_algebraMap] at heq
+      change ⟨0, 1⟩ = (⟨c, 0⟩ : ℂ) at heq
+      rw [Complex.ext_iff] at heq
+      obtain ⟨hc, _⟩ := heq
+      simp only at hc
+      exact hc.symm
+    tauto
 
 abbrev isBasisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (h : Module.finrank ℝ D = 4) : Basis (Fin 4) ℝ D := .mk
@@ -598,5 +717,74 @@ abbrev isBasisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
         from le_of_eq this
       exact LinearIndependent.span_eq_top_of_card_eq_finrank (K := ℝ) (b := basisijk _ _ _ hx)
         (linindepijk _ _ _ hx) (by simp only [Fintype.card_fin, h])|>.symm )
+
+abbrev linEquivH (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
+    (h : Module.finrank ℝ D = 4): ℍ[ℝ] ≃ₗ[ℝ] D :=
+  Basis.equiv (QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ)) (isBasisijk _ _ _ hx h)
+    $ {
+      toFun := ![2, 3, 1, 0]
+      invFun := ![3, 2, 0, 1]
+      left_inv := fun i ↦ by fin_cases i <;> simp
+      right_inv := fun i ↦ by fin_cases i <;> simp
+    }
+
+lemma toFun_i_eq (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z):
+    toFun _ _ _ hx ((QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ)) 1) = e.symm ⟨0, 1⟩ := by
+  simp only [QuaternionAlgebra.lift_apply, QuaternionAlgebra.Basis.liftHom, map_inv₀,
+    QuaternionAlgebra.basisOneIJK, Fin.isValue, Basis.coe_ofEquivFun,
+    QuaternionAlgebra.coe_linearEquivTuple_symm, QuaternionAlgebra.equivTuple_symm_apply, ne_eq,
+    zero_ne_one, not_false_eq_true, Pi.single_eq_of_ne, Pi.single_eq_same, Fin.reduceEq,
+    AlgHom.coe_mk', RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, QuaternionAlgebra.Basis.lift,
+    map_zero, one_smul, zero_add, zero_smul, add_zero]
+
+@[simp] theorem succ_two_eq_three (n : ℕ) : Fin.succ (2 : Fin (n + 3)) = 3 := rfl
+
+lemma linEquivH_eq_toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
+    (h : Module.finrank ℝ D = 4) : (linEquivH _ _ _ hx h).toLinearMap = toFun _ _ _ hx := by
+  apply Basis.ext (QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ))
+  intro i
+  change (linEquivH _ _ _ hx h) _ = (toFun _ _ _ hx) _
+  fin_cases i
+  · erw [Basis.equiv_apply]
+    simp only [Fin.isValue, Fin.zero_eta, Equiv.coe_fn_mk, Matrix.cons_val_zero, Basis.coe_mk,
+      basisijk, map_inv₀, QuaternionAlgebra.lift_apply, QuaternionAlgebra.Basis.liftHom,
+      QuaternionAlgebra.basisOneIJK, Basis.coe_ofEquivFun,
+      QuaternionAlgebra.coe_linearEquivTuple_symm, QuaternionAlgebra.equivTuple_symm_apply,
+      Pi.single_eq_same, ne_eq, one_ne_zero, not_false_eq_true, Pi.single_eq_of_ne, Fin.reduceEq,
+      AlgHom.coe_mk', RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, QuaternionAlgebra.Basis.lift,
+      map_one, zero_smul, add_zero]
+    rw [← Fin.succ_one_eq_two, Fin.cons_succ, ← Fin.succ_zero_eq_one, Fin.cons_succ]; simp
+  · erw [Basis.equiv_apply]
+    simp only [Fin.isValue, Fin.mk_one, Equiv.coe_fn_mk, Matrix.cons_val_one, Matrix.head_cons,
+      Basis.coe_mk, basisijk, map_inv₀, QuaternionAlgebra.lift_apply,
+      QuaternionAlgebra.Basis.liftHom, QuaternionAlgebra.basisOneIJK, Basis.coe_ofEquivFun,
+      QuaternionAlgebra.coe_linearEquivTuple_symm, QuaternionAlgebra.equivTuple_symm_apply, ne_eq,
+      zero_ne_one, not_false_eq_true, Pi.single_eq_of_ne, Pi.single_eq_same, Fin.reduceEq,
+      AlgHom.coe_mk', RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, QuaternionAlgebra.Basis.lift,
+      map_zero, one_smul, zero_add, zero_smul, add_zero]
+    rw [← succ_two_eq_three, Fin.cons_succ, ← Fin.succ_one_eq_two, Fin.cons_succ]; simp
+  · erw [Basis.equiv_apply]
+    simp [QuaternionAlgebra.basisOneIJK, QuaternionAlgebra.Basis.liftHom,
+      QuaternionAlgebra.Basis.lift]
+  · erw [Basis.equiv_apply]
+    simp [QuaternionAlgebra.basisOneIJK, QuaternionAlgebra.Basis.liftHom,
+      QuaternionAlgebra.Basis.lift]
+
+-- set_option maxHeartbeats 600000 in
+lemma bij_tofun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
+    (h : Module.finrank ℝ D = 4) : Function.Bijective (toFun _ _ _ hx) := by
+  have eq1 := linEquivH_eq_toFun _ _ _ hx h
+  haveI := LinearEquiv.bijective (linEquivH _ _ _ hx h)
+  have eq2 : @DFunLike.coe (ℍ[ℝ] ≃ₗ[ℝ] D) ℍ[ℝ] (fun x ↦ D) EquivLike.toFunLike
+      (linEquivH k e x hx h) = @DFunLike.coe (ℍ[ℝ] →ₐ[ℝ] D) ℍ[ℝ] (fun x ↦ D)
+      AlgHom.funLike (toFun k e x hx) := by
+    ext x
+    change (linEquivH _ _ _ hx h) x = (toFun _ _ _ hx).toLinearMap x
+    exact DFunLike.congr eq1.symm rfl|>.symm
+  rw [← eq2] ; exact this
+
+theorem rank4_iso_H (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
+    (h : Module.finrank ℝ D = 4) : Nonempty (ℍ[ℝ] ≃ₐ[ℝ] D) :=
+  ⟨AlgEquiv.ofBijective (toFun _ _ _ hx) (bij_tofun _ _ _ hx h)⟩
 
 -- theorem rank_2_D_iso_C : Module.finrank ℝ D = 2 → Nonempty (D≃ₐ[ℝ] ℂ) := sorry
