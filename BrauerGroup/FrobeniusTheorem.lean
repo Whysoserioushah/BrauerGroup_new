@@ -628,8 +628,23 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
       ← i_eq, ← j_eq] at this
     replace this : (a * a - b * b - c * c + (1 : ℝ)) • (1 : D) + (2 * a * b) • i +
       (2 * a * c) • j = 0 := by
-
-      sorry
+      simp only [smul_smul] at this
+      rw [add_comm ((c * a) • j + (c * b) • (↑i * j)), ← add_assoc,
+        ← add_assoc, ← add_assoc, ← add_assoc, add_assoc ((a * a) • 1),
+        add_assoc ((a * a) • 1), add_assoc ((a * a) • 1), add_comm _ (- ((b * b) • 1)),
+        ← add_assoc, ← neg_smul, ← add_smul, add_assoc ((a * a + -(b * b)) • 1),
+        add_assoc ((a * a + -(b * b)) • 1), add_comm _ (- ((c * c) • 1)), ← add_assoc,
+        ← neg_smul, ← add_smul, mul_comm b a, add_comm _ ((a * b) • i.1),
+        ← add_assoc ((a * b) • i.1), ← add_smul, ← two_mul, ← mul_assoc 2 a b,
+        ← add_assoc, ← add_assoc, mul_comm c a, add_assoc _ (-((b * c) • (↑i * j))),
+        add_comm (-((b * c) • (↑i * j))) ((a * c) • j), ← add_assoc,
+        add_assoc _ ((a * c) • j) ((a * c) • j), ← add_smul, ← two_mul, mul_comm c b,
+        add_assoc _ _ ((b * c) • (i.1 * j)), neg_add_cancel, add_zero,
+        eq_neg_iff_add_eq_zero, ← sub_eq_add_neg, ← sub_eq_add_neg] at this
+      nth_rw 2 [← one_smul ℝ (1 : D)] at this
+      rw [add_assoc, add_assoc, ← add_assoc _ _ (1 • 1), add_comm _ (1 • 1), ← add_assoc,
+        ← add_smul, ← add_assoc, ← mul_assoc] at this
+      exact this
     have ijindep := linindep1ij _ _ _ hx
     rw [← i_eq, ← j_eq, Fintype.linearIndependent_iff] at ijindep
     specialize ijindep ![(2 * a * c), (a * a - b * b - c * c + (1 : ℝ)), (2 * a * b)]
