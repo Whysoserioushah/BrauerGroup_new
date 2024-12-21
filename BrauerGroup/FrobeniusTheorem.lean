@@ -384,16 +384,29 @@ lemma real_sq_in_R_or_V (x : D) : x^2 ∈ (algebraMap ℝ D).range → x ∈ (al
 
 lemma x_is_in_V (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.val z)
     (hDD : Module.finrank ℝ D = 4): x.1 ∈ V := by
-  -- let hx := hx hDD
+  let hx3 := hx
   apply x2_is_real _ at hx
-  let hx := hx hDD
-  apply real_sq_in_R_or_V at hx
+  let hx' := hx hDD
+  have hx := real_sq_in_R_or_V _ hx'
   have : x.1 ∉ (algebraMap ℝ D).range := by
     by_contra! hxx
     obtain ⟨r, hr⟩ := hxx
-    have hxsq : x.1^2 ∈ (algebraMap ℝ D).range := ⟨r^2, by simp [hr]⟩
-
-    sorry
+    have xcomm : ∀ (y : k), x.1⁻¹ * k.val y * x.1 = k.val y := by
+      intro y
+      rw [← hr, mul_assoc]
+      simp only [Subalgebra.coe_val, ← Algebra.commutes, ← mul_assoc]
+      rw [mul_inv_cancel₀ (by simp [hr, Units.ne_zero]), one_mul]
+    specialize xcomm (e.symm Complex.I)
+    specialize hx3 (e.symm Complex.I)
+    rw [← xcomm] at hx3
+    symm at hx3
+    simp only [f_apply, AlgEquiv.apply_symm_apply, Complex.conj_I, map_neg, NegMemClass.coe_neg,
+      mul_neg, neg_mul, Subalgebra.coe_val, eq_neg_iff_add_eq_zero, ← two_mul, mul_eq_zero] at hx3
+    cases' hx3 with hx31 hx32
+    · rw [show (2 : D) = (1 : D) + (1 : D) by norm_num, ← two_smul ℝ,
+        smul_eq_zero] at hx31 ; aesop
+    · simp only [inv_eq_zero, Units.ne_zero, ZeroMemClass.coe_eq_zero,
+      AddEquivClass.map_eq_zero_iff, Complex.I_ne_zero, or_self] at hx32
   simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
 
 instance : NoZeroSMulDivisors ℝ D := inferInstance
