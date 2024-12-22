@@ -1,15 +1,15 @@
-import BrauerGroup.QuatBasic
+import Mathlib.Algebra.QuaternionBasis
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import BrauerGroup.Subfield.Subfield
-import Mathlib.Algebra.Star.Basic
+-- import Mathlib.Algebra.Star.Basic
 import BrauerGroup.SkolemNoether
 
 suppress_compilation
 
-open Quaternion TensorProduct BigOperators Classical FiniteDimensional
+open TensorProduct BigOperators Classical FiniteDimensional
 
 variable {D : Type} [DivisionRing D]
 
@@ -73,7 +73,7 @@ lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : Module.finran
 lemma D_equiv_C [Algebra ℂ D] [FiniteDimensional ℂ D]:
     Nonempty (D ≃ₐ[ℂ] ℂ) := by
   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed ℂ D
-  haveI : NeZero n := ⟨hn⟩
+  haveI : NeZero n := hn
   exact Wedderburn_Artin_uniqueness₀ ℂ D 1 n D (BrauerGroup.dim_one_iso D).symm ℂ iso
 
 end prerequisites
@@ -106,14 +106,14 @@ instance CAlg : Algebra ℂ (DD D e) where
     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
     rfl
 
--- -- instance (e : Subring.center D ≃+* ℂ) : Module (Subring.center D) ℂ where
--- --   smul d z := e d * z
--- --   one_smul :=
--- --   mul_smul := _
--- --   smul_zero := _
--- --   smul_add := _
--- --   add_smul := _
--- --   zero_smul := _
+-- instance (e : Subring.center D ≃+* ℂ) : Module (Subring.center D) ℂ where
+--   smul d z := e d * z
+--   one_smul :=
+--   mul_smul := _
+--   smul_zero := _
+--   smul_add := _
+--   add_smul := _
+--   zero_smul := _
 
 -- -- set_option synthInstance.maxHeartbeats 80000 in
 -- lemma complex_centre_equiv_complex (e : Subring.center (DD D) ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ (DD D)]:
@@ -122,7 +122,8 @@ instance CAlg : Algebra ℂ (DD D e) where
 --   exact DequivC
 
 end isoC
-variable [Algebra ℝ D] [hD : IsCentralSimple ℝ D] (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
+variable [Algebra ℝ D] [hD : Algebra.IsCentral ℝ D] [hD' : IsSimpleRing D]
+  (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
   (e : k ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ D]
 
 open ComplexConjugate
@@ -345,7 +346,7 @@ lemma x2_is_real (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val
       norm_num at x_commutes_k
 
   change _ ∈ (⊥ : Subalgebra ℝ D)
-  rw [← IsCentralSimple.center_eq ℝ D]
+  rw [← Algebra.IsCentral.center_eq_bot ℝ D]
   exact x2_is_central
 
 open scoped algebraMap in
@@ -406,10 +407,10 @@ lemma x_is_in_V (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.va
     · rw [show (2 : D) = (1 : D) + (1 : D) by norm_num, ← two_smul ℝ,
         smul_eq_zero] at hx31 ; aesop
     · simp only [inv_eq_zero, Units.ne_zero, ZeroMemClass.coe_eq_zero,
-      AddEquivClass.map_eq_zero_iff, Complex.I_ne_zero, or_self] at hx32
+      EmbeddingLike.map_eq_zero_iff, Complex.I_ne_zero, or_self] at hx32
   simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
 
-instance : NoZeroSMulDivisors ℝ D := inferInstance
+-- instance : NoZeroSMulDivisors ℝ D := inferInstance
 
 lemma x_corre_R (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.val z)
     (hDD : Module.finrank ℝ D = 4):
@@ -512,7 +513,7 @@ omit hD [FiniteDimensional ℝ D] in
 lemma i_ne_zero : (e.symm ⟨0, 1⟩ : D) ≠ 0 := by
   intro h
   change _ = ((0 : k) : D) at h
-  simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, AddEquivClass.map_eq_zero_iff] at h
+  simp only [ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero, EmbeddingLike.map_eq_zero_iff] at h
   rw [Complex.ext_iff] at h
   obtain ⟨_, h⟩ := h
   simp only [Complex.zero_im, one_ne_zero] at h
@@ -563,6 +564,8 @@ lemma j_mul_i_eq_neg_i_mul_j (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z)
   simp only [Pi.neg_apply, neg_neg] at this
   exact this.symm
 
+open Quaternion
+
 set_option synthInstance.maxHeartbeats 40000 in
 abbrev toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (hDD : Module.finrank ℝ D = 4):
@@ -582,7 +585,7 @@ abbrev basisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val 
   (Fin.cons ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx hDD).choose)⁻¹) * x.1)
     ![(1 : D), e.symm ⟨0, 1⟩])
 
-instance : NoZeroSMulDivisors ℝ k := inferInstance
+-- instance : NoZeroSMulDivisors ℝ k := inferInstance
 
 set_option synthInstance.maxHeartbeats 40000 in
 omit hD [FiniteDimensional ℝ D] in
@@ -613,7 +616,6 @@ lemma linindep1ij (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
   · exact linindep1i _ _
   · simp only [Nat.reduceAdd, map_inv₀, Fin.init_snoc, Matrix.range_cons, Matrix.range_empty,
       Set.union_empty, Set.union_singleton, Fin.snoc_last]
-
     rw [Submodule.mem_span_pair]
     by_contra! h
     obtain ⟨a, b, hab⟩ := h
