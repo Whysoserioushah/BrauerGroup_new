@@ -16,7 +16,7 @@ variable (A B : Type u) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
 open scoped TensorProduct BigOperators
 
 lemma bijective_of_dim_eq_of_isCentralSimple
-    [csa_source : IsSimpleOrder (TwoSidedIdeal A)]
+    [csa_source : IsSimpleRing A]
     [fin_source : FiniteDimensional K A]
     [fin_target : FiniteDimensional K B]
     (f : A →ₐ[K] B) (h : Module.finrank K A = Module.finrank K B) :
@@ -36,15 +36,9 @@ lemma bijective_of_dim_eq_of_isCentralSimple
     rw [Function.bijective_iff_existsUnique]
     intro b
     refine ⟨0, Subsingleton.elim _ _, fun _ _ => Subsingleton.elim _ _⟩
-  · have := TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 csa_source f.toRingHom
+  · have := IsSimpleRing.iff_injective_ringHom_or_subsingleton_codomain A |>.1 csa_source
+      f.toRingHom
     rcases this with (H|H)
-    · have : (1 : A) ∈ TwoSidedIdeal.ker f.toRingHom := H ▸ ⟨⟩
-      simp only [AlgHom.toRingHom_eq_coe, TwoSidedIdeal.mem_ker, map_one] at this
-      have hmm : Nontrivial B := by
-        let e := LinearEquiv.ofFinrankEq _ _ h
-        exact Equiv.nontrivial e.symm.toEquiv
-
-      exact one_ne_zero this |>.elim
     · refine ⟨H, ?_⟩
       change Function.Surjective f.toLinearMap
       have := f.toLinearMap.finrank_range_add_finrank_ker
@@ -58,30 +52,32 @@ lemma bijective_of_dim_eq_of_isCentralSimple
 
       apply Submodule.eq_top_of_finrank_eq
       exact this
+    · have : (1 : A) ∈ TwoSidedIdeal.ker f.toRingHom := by
+        simp only [AlgHom.toRingHom_eq_coe, TwoSidedIdeal.mem_ker, RingHom.coe_coe, map_one]
+        exact Subsingleton.elim _ _
+      simp only [AlgHom.toRingHom_eq_coe, TwoSidedIdeal.mem_ker, map_one] at this
+      have hmm : Nontrivial B := by
+        let e := LinearEquiv.ofFinrankEq _ _ h
+        exact Equiv.nontrivial e.symm.toEquiv
+
+      exact one_ne_zero this |>.elim
+
 
 lemma bijective_of_surj_of_isCentralSimple
-    [csa_source : IsSimpleOrder (TwoSidedIdeal A)]
+    [csa_source : IsSimpleRing A]
     (f : A →ₐ[K] B) [Nontrivial B] (h : Function.Surjective f) :
     Function.Bijective f :=
-  ⟨by
-    haveI : Nontrivial A := inferInstance
-    have := TwoSidedIdeal.IsSimpleOrder.iff_eq_zero_or_injective A |>.1 inferInstance f.toRingHom
-    refine this.resolve_left ?_
-    intro H
-    have : (1 : A) ∈ (⊤ : TwoSidedIdeal A) := ⟨⟩
-    rw [← H] at this
-    simp only [AlgHom.toRingHom_eq_coe, TwoSidedIdeal.mem_ker, map_one] at this
-    have eq1 : (1 : B) ≠ 0 := one_ne_zero
-    exact eq1 this |>.elim, h⟩
+  ⟨IsSimpleRing.iff_injective_ringHom A |>.1 inferInstance f.toRingHom, h⟩
+-- instance tensor_CSA_is_CSA
+--     [Algebra.IsCentral K A] [hA: IsSimpleRing A]
+--     [Algebra.IsCentral K B] [hB: IsSimpleRing B] :
+--     IsSimpleRing (A ⊗[K] B) := inferInstance
+  --  is_central := IsCentralSimple.TensorProduct.isCentral K A B hA.is_central hB.is_central
+  --  simple := IsCentralSimple.TensorProduct.simple K A B
 
-instance tensor_CSA_is_CSA [hA: IsCentralSimple K A] [hB: IsCentralSimple K B] :
-    IsCentralSimple K (A ⊗[K] B) where
-   is_central := IsCentralSimple.TensorProduct.isCentral K A B hA.is_central hB.is_central
-   is_simple := by haveI := hA.is_simple; exact IsCentralSimple.TensorProduct.simple K A B
-
-lemma CSA_op_is_CSA (hA: IsCentralSimple K A):
-    IsCentralSimple K Aᵐᵒᵖ where
-  is_central z hz:= by
+instance CSA_op_is_CSA [hA: Algebra.IsCentral K A] :
+    Algebra.IsCentral K Aᵐᵒᵖ where
+  out z hz:= by
     let z': A := z.unop
     have hz' : ∀ (x : A), x * z' = z' * x := by
       rw [Subalgebra.mem_center_iff] at hz
@@ -91,13 +87,15 @@ lemma CSA_op_is_CSA (hA: IsCentralSimple K A):
       have : (MulOpposite.op (z' * x)).unop = z' * x := rfl
       simp_all only [MulOpposite.op_mul, MulOpposite.op_unop, MulOpposite.unop_mul,
           MulOpposite.unop_op, z']
-    obtain ⟨k, hk⟩ := hA.is_central $ Subalgebra.mem_center_iff.mpr hz'
+    obtain ⟨k, hk⟩ := hA.out $ Subalgebra.mem_center_iff.mpr hz'
     exact ⟨k, MulOpposite.unop_inj.mp hk⟩
-  is_simple := @op_simple A _ hA.is_simple
+  -- is_simple := @op_simple A _ hA.is_simple
+
+-- instance [IsSimpleRing A] : IsSimpleRing Aᵐᵒᵖ := @op_simple A _ _
 
 namespace tensor_self_op
 
-variable [hA: IsCentralSimple K A] [FiniteDimensional K A]
+variable [Algebra.IsCentral K A] [hA: IsSimpleRing A] [FiniteDimensional K A]
 
 instance st : IsScalarTower K K (Module.End K A) where
   smul_assoc k₁ k₂ f := DFunLike.ext _ _ fun a => by
@@ -131,14 +129,14 @@ def toEnd : A ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
     fun a a' => show _ = _ from DFunLike.ext _ _ fun x => show a * (x * a'.unop) = a * x * a'.unop
       from mul_assoc _ _ _ |>.symm
 
-instance : IsCentralSimple K Aᵐᵒᵖ := CSA_op_is_CSA K A inferInstance
+-- instance : Algebra.IsCentral K Aᵐᵒᵖ := inferInstance -- CSA_op_is_CSA K A inferInstance
 instance : FiniteDimensional K Aᵐᵒᵖ := LinearEquiv.finiteDimensional
   (MulOpposite.opLinearEquiv K : A ≃ₗ[K] Aᵐᵒᵖ)
 
 instance fin_end : FiniteDimensional K (Module.End K A) :=
   LinearMap.finiteDimensional
 
-omit hA in
+omit [Algebra.IsCentral K A] hA in
 lemma dim_eq :
     Module.finrank K (A ⊗[K] Aᵐᵒᵖ) = Module.finrank K (Module.End K A) := by
   rw [Module.finrank_tensorProduct]
@@ -151,19 +149,20 @@ lemma dim_eq :
   simp only [Module.finrank_self, mul_one]
 
 def equivEnd : A ⊗[K] Aᵐᵒᵖ ≃ₐ[K] Module.End K A :=
-  AlgEquiv.ofBijective (toEnd K A) $
-    @bijective_of_dim_eq_of_isCentralSimple K _ _ _ _ _ _ _
-      (@IsCentralSimple.TensorProduct.simple K _ A Aᵐᵒᵖ _ _ _ _ hA.2 _) _ _ _ $ dim_eq K A
+  AlgEquiv.ofBijective (toEnd K A) <| bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <|
+    dim_eq K A
 
 end tensor_self_op
 
 open tensor_self_op in
-def tensor_self_op [IsCentralSimple K A] [FiniteDimensional K A] :
+def tensor_self_op
+    [Algebra.IsCentral K A] [hA: IsSimpleRing A] [FiniteDimensional K A] :
     A ⊗[K] Aᵐᵒᵖ ≃ₐ[K]
     (Matrix (Fin $ Module.finrank K A) (Fin $ Module.finrank K A) K) :=
   equivEnd K A |>.trans $ algEquivMatrix $ Module.finBasis _ _
 
-def tensor_op_self [IsCentralSimple K A] [FiniteDimensional K A] :
+def tensor_op_self
+    [Algebra.IsCentral K A] [hA: IsSimpleRing A] [FiniteDimensional K A] :
     Aᵐᵒᵖ ⊗[K] A ≃ₐ[K]
     (Matrix (Fin $ Module.finrank K A) (Fin $ Module.finrank K A) K) :=
   (Algebra.TensorProduct.comm _ _ _).trans $ tensor_self_op _ _
@@ -183,7 +182,8 @@ structure CSA (K : Type u) [Field K] where
   (carrier : Type v)
   [ring : Ring carrier]
   [algebra : Algebra K carrier]
-  [is_central_simple : IsCentralSimple K carrier]
+  [isCentral : Algebra.IsCentral K carrier]
+  [isSimple : IsSimpleRing carrier]
   [fin_dim : FiniteDimensional K carrier]
 
 instance : CoeSort (CSA.{u, v} K) (Type v) where
@@ -193,28 +193,30 @@ instance (A : CSA K) : Ring A := A.ring
 
 instance (A : CSA K) : Algebra K A := A.algebra
 
-instance (A : CSA K) : IsCentralSimple K A := A.is_central_simple
+instance (A : CSA K) : Algebra.IsCentral K A := A.isCentral
 
-instance (A : CSA K) : IsSimpleOrder (TwoSidedIdeal A) := A.is_central_simple.is_simple
+instance (A : CSA K) : IsSimpleRing A := A.isSimple
 
 instance (A : CSA K) : FiniteDimensional K A := A.fin_dim
 
 variable {K : Type u} [Field K]
 
 structure BrauerEquivalence (A B : CSA K) where
-(n m : ℕ) (hn: n ≠ 0) (hm : m ≠ 0)
+(n m : ℕ) [hn: NeZero n] [hm : NeZero m]
 (iso: Matrix (Fin n) (Fin n) A ≃ₐ[K] Matrix (Fin m) (Fin m) B)
 
+instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.n := h.hn
+instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.m := h.hm
 
 abbrev IsBrauerEquivalent (A B : CSA K) := Nonempty (BrauerEquivalence A B)
 
 namespace IsBrauerEquivalent
 
-def refl (A : CSA K) : IsBrauerEquivalent A A := ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.refl⟩⟩
+def refl (A : CSA K) : IsBrauerEquivalent A A := ⟨⟨1, 1, AlgEquiv.refl⟩⟩
 
 def symm {A B : CSA K} (h : IsBrauerEquivalent A B) : IsBrauerEquivalent B A := by
-  obtain ⟨n, m, hn, hm, iso⟩ := h
-  exact ⟨⟨m, n, hm, hn, iso.symm⟩⟩
+  obtain ⟨n, m, iso⟩ := h
+  exact ⟨⟨m, n, iso.symm⟩⟩
 
 def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
     (Matrix (Fin n × Fin m) (Fin n × Fin m) A) ≃ₐ[K] Matrix (Fin (n * m)) (Fin (n * m)) A :=
@@ -228,9 +230,9 @@ def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
 
 def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivalent B C) :
     IsBrauerEquivalent A C := by
-  obtain ⟨n, m, hn, hm, iso1⟩ := hAB
-  obtain ⟨p, q, hp, hq, iso2⟩ := hBC
-  refine ⟨⟨_, _, Nat.mul_ne_zero hp hn, Nat.mul_ne_zero hm hq,
+  obtain ⟨n, m, iso1⟩ := hAB
+  obtain ⟨p, q, iso2⟩ := hBC
+  refine ⟨⟨p * n, m * q,
     matrix_eqv' _ _ _ |>.symm.trans $ Matrix.compAlgEquiv _ _ _ _|>.symm.trans $
       iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.compAlgEquiv _ _ _ _|>.trans $ ?_⟩⟩
   exact Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans $
@@ -238,7 +240,7 @@ def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivale
     Matrix.compAlgEquiv _ _ _ _|>.trans $ matrix_eqv' _ _ _
 
 lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B := by
-  exact ⟨⟨_, _, one_ne_zero, one_ne_zero, h.mapMatrix (m := (Fin 1))⟩⟩
+  exact ⟨⟨1, 1, h.mapMatrix (m := (Fin 1))⟩⟩
 
 theorem Braur_is_eqv : Equivalence (IsBrauerEquivalent (K := K)) where
   refl := refl
@@ -255,7 +257,6 @@ def CSA_Setoid : Setoid (CSA K) where
 
 def mul (A B : CSA K) : CSA K where
   carrier := A ⊗[K] B
-  is_central_simple := tensor_CSA_is_CSA K A B
   fin_dim := Module.Finite.tensorProduct K A B
 
 def is_fin_dim_of_mop (A : Type*) [Ring A] [Algebra K A] [FiniteDimensional K A] :
@@ -265,44 +266,29 @@ def is_fin_dim_of_mop (A : Type*) [Ring A] [Algebra K A] [FiniteDimensional K A]
 
 instance inv (A : CSA K) : CSA K where
   carrier := Aᵐᵒᵖ
-  is_central_simple := CSA_op_is_CSA K A A.is_central_simple
   fin_dim := is_fin_dim_of_mop A
 
-instance one_in (n : ℕ) (hn : n ≠ 0): CSA K where
-  carrier := Matrix (Fin n) (Fin n) K
-  is_central_simple := by
-   haveI: Nonempty (Fin n) := Fin.pos_iff_nonempty.mp (by omega)
-   exact MatrixRing.isCentralSimple K (Fin n)
+def one_in (n : ℕ) [hn : NeZero n] : CSA K := ⟨Matrix (Fin n) (Fin n) K⟩
 
-instance one_in' : CSA K where
-  carrier := K
-  is_central_simple :=
-  { is_central := Subsingleton.le (Subalgebra.center _ _) ⊥
-    is_simple := inferInstance }
+def one_in' : CSA K := ⟨K⟩
 
-instance one_mul_in (n : ℕ) (hn : n ≠ 0) (A : CSA K) : CSA K where
-  carrier := A ⊗[K] (Matrix (Fin n) (Fin n) K)
-  is_central_simple := by
-    haveI: Nonempty (Fin n) := Fin.pos_iff_nonempty.mp (by omega)
-    exact tensor_CSA_is_CSA K A (Matrix (Fin n) (Fin n) K)
-      -- (MatrixRing.isCentralSimple K (Fin n))
+def one_mul_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
+  ⟨A ⊗[K] (Matrix (Fin n) (Fin n) K)⟩
 
-instance mul_one_in (n : ℕ) (hn : n ≠ 0) (A : CSA K) : CSA K where
-  carrier := (Matrix (Fin n) (Fin n) K) ⊗[K] A
-  is_central_simple := by
-    haveI: Nonempty (Fin n) := Fin.pos_iff_nonempty.mp (by omega)
-    exact tensor_CSA_is_CSA K (Matrix (Fin n) (Fin n) K) A
+def mul_one_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
+  ⟨(Matrix (Fin n) (Fin n) K) ⊗[K] A⟩
 
 def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A'): CSA K where
   carrier := A'
-  is_central_simple := AlgEquiv.isCentralSimple e
+  isCentral := AlgEquiv.isCentral e
+  isSimple := ⟨TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv.symm |>.isSimpleOrder⟩
   fin_dim := LinearEquiv.finiteDimensional e.toLinearEquiv
 
-instance matrix_A (n : ℕ) (hn : n ≠ 0) (A : CSA K) : CSA K :=
-  eqv_in (one_mul_in n hn A) (Matrix (Fin n) (Fin n) A) $
+def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
+  eqv_in (one_mul_in n A) (Matrix (Fin n) (Fin n) A) $
     by unfold one_mul_in ; exact matrixEquivTensor K A (Fin n)|>.symm
 
-instance dim_1 (R : Type*) [Ring R] [Algebra K R]: Algebra K (Matrix (Fin 1) (Fin 1) R) where
+def dim_1 (R : Type*) [Ring R] [Algebra K R]: Algebra K (Matrix (Fin 1) (Fin 1) R) where
   toFun k := Matrix.diagonal (λ _ => (Algebra.ofId K R) k)
   map_one' := by simp only [map_one, Matrix.diagonal_one]
   map_mul' := by simp only [map_mul, Matrix.diagonal_mul_diagonal, implies_true]
@@ -340,8 +326,8 @@ def matrix_comp (n m : ℕ) (A : Type*) [Ring A] [Algebra K A]:
   Matrix.compAlgEquiv _ _ _ _|>.trans $ Matrix.reindexAlgEquiv _ _ (.prodComm _ _) |>.trans $
     Matrix.compAlgEquiv _ _ _ _|>.symm
 
-theorem eqv_mat (A : CSA K) (n : ℕ) (hn : n ≠ 0): IsBrauerEquivalent A (matrix_A _ hn A) := by
-  refine ⟨⟨n, 1, hn, one_ne_zero, ?_⟩⟩
+theorem eqv_mat (A : CSA K) (n : ℕ) [hn : NeZero n]: IsBrauerEquivalent A (matrix_A n A) := by
+  refine ⟨⟨n, 1, ?_⟩⟩
   unfold matrix_A one_mul_in eqv_in
   exact dim_one_iso _ |>.symm
 
@@ -416,13 +402,13 @@ def matrix_eqv (m n : ℕ): (Matrix (Fin m) (Fin m) K) ⊗[K] (Matrix (Fin n) (F
     apply matrixEquivForward_surjective
 
 
-lemma one_mul (n : ℕ) (hn : n ≠ 0) (A : CSA K) :
-    IsBrauerEquivalent A (one_mul_in n hn A) :=
-  ⟨⟨n, 1, hn, by omega, AlgEquiv.symm $ (dim_one_iso _).trans $ matrixEquivTensor _ _ _ |>.symm⟩⟩
+lemma one_mul (n : ℕ) [hn : NeZero n] (A : CSA K) :
+    IsBrauerEquivalent A (one_mul_in n A) :=
+  ⟨⟨n, 1, AlgEquiv.symm $ (dim_one_iso _).trans $ matrixEquivTensor _ _ _ |>.symm⟩⟩
 
-lemma mul_one (n : ℕ) (hn : n ≠ 0) (A : CSA K) :
-    IsBrauerEquivalent A (mul_one_in n hn A) :=
-  ⟨⟨n, 1, hn, by omega, AlgEquiv.symm $ (dim_one_iso _).trans $ AlgEquiv.symm $
+lemma mul_one (n : ℕ) [hn : NeZero n] (A : CSA K) :
+    IsBrauerEquivalent A (mul_one_in n A) :=
+  ⟨⟨n, 1, AlgEquiv.symm $ (dim_one_iso _).trans $ AlgEquiv.symm $
     matrixEquivTensor _ _ _ |>.trans $ Algebra.TensorProduct.comm _ _ _⟩⟩
 
 
@@ -450,19 +436,17 @@ def kroneckerMatrixTensor' (A B: Type*) [Ring A] [Ring B] [Algebra K A] [Algebra
       (Matrix (Fin (n*m)) (Fin (n*m)) (A ⊗[K] B)) := by
     have := matrixEquivTensor K A (Fin n)
     refine AlgEquiv.trans (Algebra.TensorProduct.congr (matrixEquivTensor K A (Fin n))
-      $ matrixEquivTensor K B (Fin m)) ?_
-    refine AlgEquiv.trans (huarongdao _ _ _ _) ?_
-    refine AlgEquiv.trans
-      (Algebra.TensorProduct.congr AlgEquiv.refl $ (matrix_eqv _ _).trans $ matrix_eqv' _ _ _) ?_
-    exact (matrixEquivTensor _ _ _).symm
+      $ matrixEquivTensor K B (Fin m)) <| AlgEquiv.trans (huarongdao ..) <| AlgEquiv.trans
+      (Algebra.TensorProduct.congr AlgEquiv.refl $ (matrix_eqv ..).trans $ matrix_eqv' ..) ?_
+    exact (matrixEquivTensor ..).symm
 
-theorem eqv_tensor_eqv (A B C D : CSA K) (hAB : IsBrauerEquivalent A B) (hCD : IsBrauerEquivalent C D) :
+theorem eqv_tensor_eqv
+    (A B C D : CSA K) (hAB : IsBrauerEquivalent A B) (hCD : IsBrauerEquivalent C D) :
     IsBrauerEquivalent (mul A C) (mul B D) := by
-  unfold mul
-  obtain ⟨n, m, hn, hm, e1⟩ := hAB; obtain ⟨p, q, hp, hq, e2⟩ := hCD
-  let e01 := kroneckerMatrixTensor' _ _ _ _|>.symm.trans $ Algebra.TensorProduct.congr e1 e2|>.trans
-    $ kroneckerMatrixTensor' _ _ _ _
-  exact ⟨⟨_, _, Nat.mul_ne_zero hn hp, Nat.mul_ne_zero hm hq, e01⟩⟩
+  obtain ⟨n, m, e1⟩ := hAB
+  obtain ⟨p, q, e2⟩ := hCD
+  exact ⟨⟨n * p, m * q, kroneckerMatrixTensor' _ _ _ _|>.symm.trans <|
+    Algebra.TensorProduct.congr e1 e2|>.trans <| kroneckerMatrixTensor' ..⟩⟩
 
 abbrev BrGroup := Quotient $ CSA_Setoid (K := K)
 
@@ -484,24 +468,26 @@ theorem mul_assoc' (A B C : BrGroup (K := K)) : A * B * C = A * (B * C) := by
 lemma mul_inv (A : CSA.{u, u} K) : IsBrauerEquivalent (mul A (inv (K := K) A)) one_in' := by
   unfold mul inv one_in'
   let n := Module.finrank K A
-  have hn : n ≠ 0 := by
+  have hn : NeZero n := by
+    constructor
     by_contra! hn
     simp only [n] at hn
     have := Module.finrank_pos_iff (R := K) (M := A) |>.2 inferInstance
     omega
   have := tensor_self_op K A
-  exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso _|>.trans this⟩⟩
+  exact ⟨⟨1, n, dim_one_iso _|>.trans this⟩⟩
 
 lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) one_in' := by
   unfold mul inv one_in'
   let n := Module.finrank K A
-  have hn : n ≠ 0 := by
+  have hn : NeZero n := by
+    constructor
     by_contra! hn
     simp only [n] at hn
     have := Module.finrank_pos_iff (R := K) (M := A) |>.2 $ inferInstance
     omega
   have := tensor_op_self K A
-  exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso _|>.trans this⟩⟩
+  exact ⟨⟨1, n, dim_one_iso _|>.trans this⟩⟩
 
 variable (K R : Type*) [CommSemiring K] [Semiring R] [Algebra K R] in
 open BigOperators Matrix MulOpposite in
@@ -524,8 +510,8 @@ def matrixEquivMatrixMop_algebra (n : ℕ):
 lemma inv_eqv (A B: CSA K) (hAB : IsBrauerEquivalent A B):
     IsBrauerEquivalent (inv (K := K) A) (inv (K := K) B) := by
   unfold inv
-  obtain ⟨n, m, hn, hm, iso⟩ := hAB
-  refine ⟨⟨n, m, hn, hm, (matrixEquivMatrixMop_algebra _ _ _).trans $
+  obtain ⟨n, m, iso⟩ := hAB
+  refine ⟨⟨n, m, (matrixEquivMatrixMop_algebra _ _ _).trans $
     (AlgEquiv.op iso).trans (matrixEquivMatrixMop_algebra _ _ _).symm⟩⟩
 
 instance Inv: Inv (BrGroup (K := K)) := ⟨Quotient.lift (fun A ↦ Quotient.mk (CSA_Setoid) $ inv A)
@@ -543,13 +529,13 @@ theorem mul_left_inv' (A : BrGroup (K := K)) : A⁻¹ * A = 1 := by
 theorem one_mul' (A : BrGroup (K := K)) : 1 * A = A := by
   induction' A using Quotient.inductionOn' with A
   change Quotient.mk'' one_in' * _ = _ ; apply Quotient.sound
-  exact (mul_one 1 one_ne_zero A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
+  exact (mul_one 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     (dim_one_iso _) AlgEquiv.refl))|>.symm
 
 theorem mul_one' (A : BrGroup (K := K)) : A * 1 = A := by
   induction' A using Quotient.inductionOn' with A
   change _ * Quotient.mk'' one_in' = _ ; apply Quotient.sound
-  exact (one_mul 1 one_ne_zero A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
+  exact (one_mul 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     AlgEquiv.refl (dim_one_iso _)))|>.symm
 
 instance Bruaer_Group : Group (BrGroup (K := K)) where
@@ -561,7 +547,7 @@ instance Bruaer_Group : Group (BrGroup (K := K)) where
 lemma Alg_closed_equiv_one [IsAlgClosed K]: ∀(A : CSA K), IsBrauerEquivalent A one_in' := by
   intro A
   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed K A
-  exact ⟨⟨1, n, one_ne_zero, hn, dim_one_iso A|>.trans iso⟩⟩
+  exact ⟨⟨1, n, dim_one_iso A|>.trans iso⟩⟩
 
 lemma Alg_closed_eq_one [IsAlgClosed K]: ∀(A : BrGroup (K := K)), A = 1 := by
   intro A ; induction' A using Quotient.inductionOn' with A
@@ -660,15 +646,21 @@ def e3Aux1 : E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E] E ⊗[K] A ⊗[K] Matri
     (Algebra.TensorProduct.includeLeft : E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E]
       (E ⊗[K] Matrix (Fin m) (Fin m) K) ⊗[K] A)
 
-lemma e3Aux2 (hm : m ≠ 0) [IsCentralSimple K A] :
-    IsCentralSimple E ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K)) :=
-  haveI : Nonempty (Fin m) := ⟨0, by omega⟩
-  tensor_CSA_is_CSA E (E ⊗[K] A) (E ⊗[K] Matrix (Fin m) (Fin m) K)
+-- instance e3Aux2 [hm : NeZero m] [Algebra.IsCentral K A] [IsSimpleRing A] :
+--     Algebra.IsCentral E ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K)) :=
+--   inferInstance
 
-lemma e3Aux2' (hm : m ≠ 0) [IsCentralSimple K A] :
-    IsCentralSimple E (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := by
-  haveI : Nonempty (Fin m) := ⟨0, by omega⟩
-  apply IsCentralSimple.baseChange
+-- instance e3Aux2' [hm : NeZero m] [Algebra.IsCentral K A] [IsSimpleRing A] :
+--     IsSimpleRing ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K)) :=
+--   inferInstance
+
+-- instance e3Aux2''  [hm : NeZero m] [Algebra.IsCentral K A] [IsSimpleRing A] :
+--     Algebra.IsCentral E (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) :=
+--   inferInstance
+
+-- instance e3Aux2'''  [hm : NeZero m] [Algebra.IsCentral K A] [IsSimpleRing A] :
+--     IsSimpleRing (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) :=
+--   inferInstance
 
 lemma e3Aux3 (hm : m = 0) : Subsingleton ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K)) := by
   suffices ∀ a : (E ⊗[K] A) ⊗[E] E ⊗[K] Matrix (Fin m) (Fin m) K, a = 0 by
@@ -729,13 +721,13 @@ def e3Aux4 : (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) →ₐ[E]
           mul_add (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
       )
 
-instance : AddHomClass ((E ⊗[K] A) ⊗[E] E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E]
-    E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
-    ((E ⊗[K] A) ⊗[E] E ⊗[K] Matrix (Fin m) (Fin m) K) (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
-    where
-      map_add f := fun x y ↦ by
-        change f.toRingHom _ = f.toRingHom _ + f.toRingHom _
-        exact RingHom.map_add f.toRingHom x y
+-- instance : AddHomClass ((E ⊗[K] A) ⊗[E] E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E]
+--     E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
+--     ((E ⊗[K] A) ⊗[E] E ⊗[K] Matrix (Fin m) (Fin m) K) (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
+--     where
+--       map_add f := fun x y ↦ by
+--         change f.toRingHom _ = f.toRingHom _ + f.toRingHom _
+--         exact RingHom.map_add f.toRingHom x y
 
 set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 100000 in
@@ -768,7 +760,7 @@ lemma e3Aux5 : Function.Surjective (e3Aux4 (K := K) (E := E) A m) := by
     refine ⟨e + a, ?_⟩
     exact map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
 
-def e3 [csa_A : IsCentralSimple K A] :
+def e3 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A] :
     (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) ≃ₐ[E]
     E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K) :=
   AlgEquiv.ofBijective (e3Aux4 (K := K) (E := E) A m) $ by
@@ -777,13 +769,10 @@ def e3 [csa_A : IsCentralSimple K A] :
         haveI := e3Aux3 (K := K) (E := E) A m hm
         refine ⟨fun _ _ _ => Subsingleton.elim _ _, e3Aux5 (K := K) (E := E) A m⟩
       else
-        letI csa := e3Aux2 (K := K) (E := E) A m hm
+        have : NeZero m := ⟨hm⟩
         letI r1 : Ring ((E ⊗[K] A) ⊗[E] E ⊗[K] Matrix (Fin m) (Fin m) K) := inferInstance
         letI r2 : Ring (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := inferInstance
-        letI : Nontrivial (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := by
-            have := e3Aux2' (K := K) (E := E) A m hm |>.2
-            exact TwoSidedIdeal.instNontrivialOfIsSimpleOrder_brauerGroup _
-        have := csa.2
+
         apply bijective_of_surj_of_isCentralSimple E _ _ _ $ e3Aux5 (K := K) (E := E) A m
 
 def e4 :
@@ -859,7 +848,8 @@ def e6Aux0 :
             · simp only [map_add, mul_add, hx, hx', add_mul]
 
 set_option synthInstance.maxHeartbeats 40000 in
-def e6 [csa_A : IsCentralSimple K A] [csa_B : IsCentralSimple K B] :
+def e6 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A]
+    [Algebra.IsCentral K B] [csa_B : IsSimpleRing B] :
     (E ⊗[K] A) ⊗[E] (E ⊗[K] B) ≃ₐ[E] E ⊗[K] (A ⊗[K] B) :=
   AlgEquiv.ofBijective (e6Aux0 (K := K) (E := E) A B) $ by
     apply bijective_of_surj_of_isCentralSimple E _ _ _
@@ -899,21 +889,17 @@ abbrev BaseChange : BrGroup (K := K) →* BrGroup (K := E) where
     { carrier := E ⊗[K] A
       ring := inferInstance
       algebra := inferInstance
-      is_central_simple := inferInstance
-      fin_dim := inferInstance }) $ fun A B => Nonempty.map $ fun ⟨m, n, hm, hn, e⟩ =>
-          ⟨m, n, hm, hn, (someEquivs.e1 A m).trans $ (someEquivs.e2 A m).trans $
+      fin_dim := inferInstance }) $ fun A B => Nonempty.map $ by
+          rintro ⟨m, n, e⟩
+          exact ⟨m, n, (someEquivs.e1 A m).trans $ (someEquivs.e2 A m).trans $
             (someEquivs.e3 A m).trans $ (someEquivs.e4 A m).trans $ AlgEquiv.symm $
             (someEquivs.e1 B n).trans $ (someEquivs.e2 B n).trans $
             (someEquivs.e3 B n).trans $ (someEquivs.e4 B n).trans $ someEquivs.e5 _ _ e.symm⟩
   map_one' := by
-    change Quotient.map' _ _ (Quotient.mk'' _) = Quotient.mk'' _
     erw [Quotient.eq'']
-    change IsBrauerEquivalent _ _
-    simp only
-    refine ⟨1, 1, by omega, by omega, ?_⟩
-    refine (dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans ?_
-    change E ≃ₐ[E] (E ⊗[K] K)
-    exact someEquivs.e7
+    letI : Field one_in'.carrier := inferInstanceAs <| Field K
+    letI : Algebra one_in'.carrier E := inferInstanceAs <| Algebra K E
+    exact ⟨1, 1, (dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <| someEquivs.e7⟩
   map_mul' := by
     intro x y
     induction' x using Quotient.inductionOn' with A
@@ -921,11 +907,8 @@ abbrev BaseChange : BrGroup (K := K) →* BrGroup (K := E) where
     simp only [Quotient.map'_mk'']
     erw [Quotient.map'_mk'']
     erw [Quotient.eq'']
-    change IsBrauerEquivalent _ _
-    refine ⟨1, 1, by omega, by omega, ?_⟩
-    refine (dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans ?_
-    change (E ⊗[K] A) ⊗[E] (E ⊗[K] B) ≃ₐ[E] E ⊗[K] (A ⊗[K] B)
-    exact someEquivs.e6 A B
+    exact ⟨1, 1, (dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <|
+      someEquivs.e6 A B⟩
 
 abbrev BaseChange_Q_to_C := BaseChange (K := ℚ) (E := ℂ)
 
@@ -946,7 +929,7 @@ instance IsAbelBrauer : CommGroup (BrGroup (K := K)) := {
     apply Quotient.sound'
     change IsBrauerEquivalent _ _
     unfold mul
-    exact ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.mapMatrix $ Algebra.TensorProduct.comm _ _ _ ⟩⟩
+    exact ⟨⟨1, 1, AlgEquiv.mapMatrix $ Algebra.TensorProduct.comm ..⟩⟩
 }
 
 open CategoryTheory
@@ -1017,10 +1000,7 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
   simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.coe_comp, Function.comp_apply]
   induction' A using Quotient.inductionOn' with A
   simp only [Quotient.map'_mk'', Quotient.eq'']
-  change IsBrauerEquivalent _ _
-  refine ⟨⟨1, 1, one_ne_zero, one_ne_zero, AlgEquiv.mapMatrix ?_⟩⟩
-  symm
-  apply baseChange_idem.Aux'
+  exact ⟨⟨1, 1, AlgEquiv.mapMatrix <| AlgEquiv.symm <| baseChange_idem.Aux' ..⟩⟩
 
 def Br : FieldCat ⥤ CommGrp where
   obj F := .of $ BrGroup (K := F)
@@ -1032,7 +1012,7 @@ def Br : FieldCat ⥤ CommGrp where
     induction' A using Quotient.inductionOn' with A
     simp only [Quotient.map'_mk'', Quotient.eq'']
     change IsBrauerEquivalent _ _
-    exact ⟨1, 1, by omega, by omega, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
+    exact ⟨1, 1, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
   map_comp {F K E} f g := by
     apply (config := { allowSynthFailures := true }) baseChange_idem
     letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
@@ -1040,11 +1020,4 @@ def Br : FieldCat ⥤ CommGrp where
     letI : Algebra K E := RingHom.toAlgebra g
     exact IsScalarTower.of_algebraMap_smul fun r ↦ congrFun rfl
 
-
 end BrauerGroupHom
-
-namespace Brauer'
-
-
-
-end Brauer'

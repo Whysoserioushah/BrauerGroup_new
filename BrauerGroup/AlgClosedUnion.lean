@@ -1,14 +1,26 @@
 import Mathlib.LinearAlgebra.FiniteDimensional
 import Mathlib.RingTheory.Finiteness
 import Mathlib.RingTheory.Flat.Basic
-
-import BrauerGroup.Quaternion
+import Mathlib.FieldTheory.AlgebraicClosure
+import Mathlib.RingTheory.TensorProduct.Free
 
 suppress_compilation
 
 open TensorProduct
 
 universe u
+
+section
+
+variable (K L : Type u) [Field K] [Field L] [Algebra K L]
+  (V : Type u) [AddCommGroup V] [Module K V] [Module.Finite K V]
+
+lemma dim_eq : Module.finrank K V = Module.finrank L (L ⊗[K] V) := by
+  let b := Module.finBasis K V
+  let b' := Algebra.TensorProduct.basis L b
+  rw [Module.finrank_eq_card_basis b, Module.finrank_eq_card_basis b']
+
+end
 
 section
 variable (K K_bar: Type u) [Field K] [Field K_bar] [Algebra K K_bar] [IsAlgClosure K K_bar]
@@ -102,7 +114,7 @@ lemma intermediateTensor_mono {L1 L2 : IntermediateField K K_bar} (h : L1 ≤ L2
   simp only [AlgHom.toNonUnitalAlgHom_eq_coe, NonUnitalAlgHom.toDistribMulActionHom_eq_coe,
     Submodule.mem_comap, LinearMap.mem_range, exists_apply_eq_apply]
 
-private abbrev SetOfFinite : Set (IntermediateField K K_bar) :=
+abbrev SetOfFinite : Set (IntermediateField K K_bar) :=
   {M | FiniteDimensional K M}
 
 omit [IsAlgClosure K K_bar] in
@@ -165,96 +177,7 @@ theorem mem_subfieldOf' (x : K_bar ⊗[K] A) : x ∈ intermediateTensor' K K_bar
 end
 
 namespace lemma_tto
-/-
-%% LyX 2.4.1 created this file.  For more info, see https://www.lyx.org/.
-%% Do not edit unless you really know what you are doing.
-\documentclass[oneside,american]{amsart}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{luainputenc}
-\usepackage{amstext}
-\usepackage{amsthm}
 
-\makeatletter
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
-\numberwithin{equation}{section}
-\numberwithin{figure}{section}
-\theoremstyle{plain}
-\newtheorem{thm}{\protect\theoremname}
-\theoremstyle{plain}
-\newtheorem{lem}[thm]{\protect\lemmaname}
-\theoremstyle{definition}
-\newtheorem{defn}[thm]{\protect\definitionname}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
-\DeclareMathOperator{\Hom}{Hom}
-
-\makeatother
-
-\usepackage{babel}
-\providecommand{\definitionname}{Definition}
-\providecommand{\lemmaname}{Lemma}
-\providecommand{\theoremname}{Theorem}
-
-\begin{document}
-\title{Galois Descent}
-
-\maketitle
-\tableofcontents{}
-
-\section*{Some preliminary stuff}
-
-In this section, let $K/k$ be a field extension and $V$ a $k$-vector
-space. We sometimes use $V_{K}$ to denote the $K$-vector space $K\otimes_{k}V$.
-We write $V^{\otimes_{k}^{p}}$ for $\underbrace{V\otimes_{k}\cdots\otimes_{k}V}_{p\text{ times}}$
-when we feel like we need to stress the base field; or just $V^{\otimes^{p}}$
-when $k$ is clear.
-\begin{lem}
-\label{lem:some-useful-basis}Some basis:
-\begin{enumerate}
-\item if $\mathcal{B}$ is a $k$-basis of $V$, then $\{1\otimes\bigotimes_{j=1}^{p}v_{j}|v_{j}\in\mathcal{B}\}$
-is a basis for $K\otimes_{k}V^{\otimes^{p}}$;
-\item if $\mathcal{B}$ is a $k$-basis of $V$,then $\{\bigotimes_{j=1}^{p}(1\otimes v_{j})|v_{j}\in\mathcal{B}\}$
-is a basis for $(K\otimes_{k}V)^{\otimes_{K}^{p}}$.
-\end{enumerate}
-\end{lem}
-
-\begin{lem}
-\label{lem:some-useful-isos}Some isomorphisms:
-\end{lem}
-
-\begin{enumerate}
-\item for any natural number $p$, we have $(K\otimes_{k}V)^{\otimes_{K}^{p}}\cong K\otimes_{k}V^{\otimes_{k}^{p}}$,
-in another word the notation $V_{K}^{\otimes^{p}}$ is not ambiguous.
-\end{enumerate}
-\begin{proof}
-I believe there is no canonical isomorphisms here, i.e. we need to
-choose a basis $\mathcal{B}$ for $V$ and use lemma \ref{lem:some-useful-basis}.
-\end{proof}
-
-\section{Tensor of type $(p,q)$}
-
-In this section, let $K/k$ be a field extension and $V$ a $k$-vector
-space.
-\begin{defn}
-A tensor $\Phi$ of type $(p,q)$ is an element $\Hom_{k}(V^{\otimes q},V^{\otimes p})$,
-i.e. a $k$-linear map from $\underbrace{V\otimes\cdots\otimes V}_{q\text{ times}}$
-to $\underbrace{V\otimes\cdots\otimes V}_{p\text{ times}}$.
-
-When $V$ is finite dimensional, a tensor of type $(p,q)$ is the
-same as $V^{\otimes^{p}}\otimes_{k}\text{(}V^{\star}\text{)}^{\otimes^{q}}$.
-The map from $V^{\otimes^{p}}\otimes_{k}\text{(}V^{\star}\text{)}^{\otimes^{q}}$
-to $\Hom_{k}(V^{\otimes q},V^{\otimes p})$ is $x\otimes f\mapsto v_{1}\otimes\cdots\otimes
-  v_{q}\mapsto f(v_{1})f(v_{2})...f(v_{q})x$
-where $f$ is seen as $\text{(}V^{\otimes^{q}}\text{)}^{\star}$.
-\end{defn}
-
-
-\section{$k$-objects and $k$-morphisms}
-
-In this section, let $k$ be a field and $V$ a $k$-vector space.
-\end{document}
-
--/
 variable (n : ℕ) [NeZero n] (k k_bar A : Type u) [Field k] [Field k_bar] [Algebra k k_bar]
   [IsAlgClosure k k_bar] [Ring A] [Algebra k A] [FiniteDimensional k A]
   (iso : k_bar ⊗[k] A ≃ₐ[k_bar] Matrix (Fin n) (Fin n) k_bar)
@@ -418,16 +341,6 @@ lemma comm_square :
     (inclusion n k k_bar A iso).toLinearMap := by
   rw [← comm_triangle n k k_bar A iso, ← LinearMap.comp_assoc, comm_square' n k k_bar A iso]
   rfl
-
--- instance : OneHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
---     ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
-
---   sorry
-
--- instance : MulHomClass ({ x // x ∈ ℒ } ⊗[k] A →ₐ[{ x // x ∈ ℒ }] k_bar ⊗[k] A)
---     ({ x // x ∈ ℒ } ⊗[k] A) (k_bar ⊗[k] A) := by
-
---   sorry
 
 set_option synthInstance.maxHeartbeats 40000 in
 lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by

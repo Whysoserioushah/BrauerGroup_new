@@ -1,6 +1,6 @@
-\contentsline {chapter}{\numberline {1}Galois Descent}{2}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Preliminary results}{2}{section.1.1}%
-\contentsline {section}{\numberline {1.2}$(p, q)$-tensor}{2}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Vector space with tensor of type $(p,q)$}{3}{section.1.3}%
-\contentsline {chapter}{\numberline {2}BrauerGroup over Extension}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Splitting Field of CSA}{4}{section.2.1}%
+\contentsline {chapter}{\numberline {1}Morita Equivalence}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Construction of the equivalence}{2}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Stacks 074E}{3}{section.1.2}%
+\contentsline {chapter}{\numberline {2}Wedderburn-Artin Theorem for Simple Rings}{4}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Classification of Simple Rings}{4}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Uniqueness of the classification}{5}{section.2.2}%

@@ -2,6 +2,7 @@ import Mathlib.RingTheory.SimpleModule
 import Mathlib.RingTheory.Artinian
 import BrauerGroup.Con
 import Mathlib.Algebra.Ring.Equiv
+import Mathlib.Algebra.Central.Basic
 import Mathlib.LinearAlgebra.Matrix.IsDiag
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.MoritaEquivalence
@@ -33,7 +34,7 @@ def TwoSidedIdeal.mapMatrix (I : TwoSidedIdeal A) : TwoSidedIdeal M[ι, A] := .m
     intro _ _ _ _ h h' i j
     rw [Matrix.mul_apply, Matrix.mul_apply]
     rw [TwoSidedIdeal.rel_iff, ← Finset.sum_sub_distrib]
-    apply I.sum_mem
+    apply I.finsetSum_mem
     rintro k -
     rw [← TwoSidedIdeal.rel_iff]
     apply I.ringCon.mul (h _ _) (h' _ _)
@@ -76,7 +77,7 @@ def TwoSidedIdeal.equivRingConMatrix (oo : ι) : TwoSidedIdeal A ≃ TwoSidedIde
     · intro h
       choose y hy1 hy2 using h
       rw [Matrix.matrix_eq_sum_stdBasisMatrix x]
-      refine J.sum_mem _ fun i _ ↦ J.sum_mem _ fun j _ ↦ ?_
+      refine J.finsetSum_mem _ _ fun i _ ↦ J.finsetSum_mem _ _ fun j _ ↦ ?_
       suffices
           stdBasisMatrix i j (x i j) =
           stdBasisMatrix i oo 1 * y i j * stdBasisMatrix oo j 1 by
@@ -138,25 +139,25 @@ section simple_ring
 
 open MulOpposite
 
-variable (K D : Type*) [Field K] [IsSimpleOrder (TwoSidedIdeal A)] [Algebra K A] [DivisionRing D]
+variable (K D : Type*) [Field K] [IsSimpleRing A] [Algebra K A] [DivisionRing D]
 
-/--
-Division rings are a simple ring
--/
-instance : IsSimpleOrder (TwoSidedIdeal D) where
-  eq_bot_or_eq_top r := by
-    obtain h | h := _root_.forall_or_exists_not (fun x ↦ x ∈ r ↔ x = 0)
-    · left
-      exact SetLike.ext fun x ↦ (h x).trans (by rfl)
-    · right
-      obtain ⟨x, hx⟩ := h
-      refine SetLike.ext fun y ↦ ⟨fun _ ↦ trivial, fun _ ↦ ?_⟩
-      have hx' : x ≠ 0 := by rintro rfl; simp [r.zero_mem] at hx
-      rw [show y = y * x * x⁻¹ by field_simp]
-      refine r.mul_mem_right _ _ <| r.mul_mem_left _ _ (by tauto)
+-- /--
+-- Division rings are a simple ring
+-- -/
+-- instance : IsSimpleOrder (TwoSidedIdeal D) where
+--   eq_bot_or_eq_top r := by
+--     obtain h | h := _root_.forall_or_exists_not (fun x ↦ x ∈ r ↔ x = 0)
+--     · left
+--       exact SetLike.ext fun x ↦ (h x).trans (by rfl)
+--     · right
+--       obtain ⟨x, hx⟩ := h
+--       refine SetLike.ext fun y ↦ ⟨fun _ ↦ trivial, fun _ ↦ ?_⟩
+--       have hx' : x ≠ 0 := by rintro rfl; simp [r.zero_mem] at hx
+--       rw [show y = y * x * x⁻¹ by field_simp]
+--       refine r.mul_mem_right _ _ <| r.mul_mem_left _ _ (by tauto)
 
-instance op_simple : IsSimpleOrder (TwoSidedIdeal (Aᵐᵒᵖ)) :=
-  TwoSidedIdeal.toMopOrderIso.symm.isSimpleOrder
+instance op_simple : IsSimpleRing Aᵐᵒᵖ :=
+  ⟨TwoSidedIdeal.toMopOrderIso.symm.isSimpleOrder⟩
 
 /--
 The canonical map from `Aᵒᵖ` to `Hom(A, A)`
@@ -220,10 +221,10 @@ def matrixEquivMatrixMop (n : ℕ) (D : Type*) [Ring D] :
   map_mul' x y := unop_injective $ by ext; simp [transpose_map, transpose_apply, mul_apply]
   map_add' x y := by aesop
 
-instance matrix_simple_ring (ι : Type) [ne : Nonempty ι] [Fintype ι] [DecidableEq ι]
-    (R : Type*) [Ring R] [IsSimpleOrder (TwoSidedIdeal R)] :
-    IsSimpleOrder (TwoSidedIdeal M[ι, R]) :=
-  TwoSidedIdeal.equivRingConMatrix' _ ι (ne.some) |>.symm.isSimpleOrder
+-- instance matrix_simple_ring (ι : Type) [ne : Nonempty ι] [Fintype ι] [DecidableEq ι]
+--     (R : Type*) [Ring R] [IsSimpleOrder (TwoSidedIdeal R)] :
+--     IsSimpleOrder (TwoSidedIdeal M[ι, R]) :=
+--   TwoSidedIdeal.equivRingConMatrix' _ ι (ne.some) |>.symm.isSimpleOrder
 
 universe u
 
@@ -266,12 +267,12 @@ lemma minimal_ideal_isSimpleModule {A : Type u} [Ring A]
   exact hx.1
 
 lemma Wedderburn_Artin.aux.one_eq
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     ∃ (n : ℕ) (x : Fin n → A) (i : Fin n → I), ∑ j : Fin n, i j * x j = 1 := by
 
   letI I' : TwoSidedIdeal A := TwoSidedIdeal.span I
-  have I'_is_everything : I' = ⊤ := simple.2 I' |>.resolve_left (fun r ↦ by
+  have I'_is_everything : I' = ⊤ := simple.1.2 I' |>.resolve_left (fun r ↦ by
     obtain ⟨y, hy⟩ := Submodule.nonzero_mem_of_bot_lt (bot_lt_iff_ne_bot.mpr I_nontrivial)
     have hy' : y.1 ∈ I' := by
       change I'.ringCon y 0
@@ -286,38 +287,39 @@ lemma Wedderburn_Artin.aux.one_eq
   exact ⟨Fintype.card n, x ∘ (Fintype.equivFin _).symm, y ∘ (Fintype.equivFin _).symm, hy ▸
     Fintype.sum_bijective (Fintype.equivFin _).symm (Equiv.bijective _) _ _ fun k ↦ rfl⟩
 
-private noncomputable abbrev Wedderburn_Artin.aux.n
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+noncomputable abbrev Wedderburn_Artin.aux.n
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) : ℕ := by
   classical
   exact Nat.find <| Wedderburn_Artin.aux.one_eq I I_nontrivial
 
-private noncomputable abbrev Wedderburn_Artin.aux.x
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+noncomputable abbrev Wedderburn_Artin.aux.x
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     Fin (Wedderburn_Artin.aux.n I I_nontrivial) → A  := by
   classical
   exact (Nat.find_spec <| Wedderburn_Artin.aux.one_eq I I_nontrivial).choose
 
-private noncomputable abbrev Wedderburn_Artin.aux.i
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+noncomputable abbrev Wedderburn_Artin.aux.i
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     Fin (Wedderburn_Artin.aux.n I I_nontrivial) → I := by
   classical
   exact (Nat.find_spec <| Wedderburn_Artin.aux.one_eq I I_nontrivial).choose_spec.choose
 
 open Wedderburn_Artin.aux in
-private noncomputable abbrev Wedderburn_Artin.aux.nxi_spec
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+noncomputable abbrev Wedderburn_Artin.aux.nxi_spec
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     ∑ j : Fin (n I I_nontrivial), (i I I_nontrivial j) * (x I I_nontrivial j) = 1 := by
   classical
   exact (Nat.find_spec <| Wedderburn_Artin.aux.one_eq I I_nontrivial).choose_spec.choose_spec
 
-private lemma Wedderburn_Artin.aux.n_ne_zero
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+lemma Wedderburn_Artin.aux.n_ne_zero
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
-    Wedderburn_Artin.aux.n I I_nontrivial ≠ 0 := by
+    NeZero <| Wedderburn_Artin.aux.n I I_nontrivial := by
+  constructor
   by_contra hn
   let n : ℕ := Wedderburn_Artin.aux.n I I_nontrivial
   let x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
@@ -333,13 +335,14 @@ private lemma Wedderburn_Artin.aux.n_ne_zero
     _ = 0 := by simp
 
 open Wedderburn_Artin.aux in
-private noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     ∀ j, x I I_nontrivial j ≠ 0 ∧ i I I_nontrivial j ≠ 0 := by
   classical
   let n : ℕ := Wedderburn_Artin.aux.n I I_nontrivial
-  have n_ne : n ≠ 0 := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
+  have n_ne : NeZero n := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
+  have n_ne' : n ≠ 0 := n_ne.1
   let x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
   let i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
   have one_eq : ∑ j : Fin n, (i j) * (x j) = 1 := Wedderburn_Artin.aux.nxi_spec I I_nontrivial
@@ -362,13 +365,14 @@ private noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
   then rw [xj_eq, mul_zero, zero_add] at one_eq; exact ⟨_, _, one_eq.symm⟩
   else erw [hj xj_eq, Submodule.coe_zero, zero_mul, zero_add] at one_eq; exact ⟨_, _, one_eq.symm⟩
 
-private lemma Wedderburn_Artin.aux.equivIdeal
-    {A : Type u} [Ring A] [simple : IsSimpleOrder (TwoSidedIdeal A)]
+lemma Wedderburn_Artin.aux.equivIdeal
+    {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) (I_minimal : ∀ J : Ideal A, J ≠ ⊥ → ¬ J < I) :
-    ∃ (n : ℕ) (_ : n ≠ 0), Nonempty ((Fin n → I) ≃ₗ[A] A) := by
+    ∃ (n : ℕ) (_ : NeZero n), Nonempty ((Fin n → I) ≃ₗ[A] A) := by
   classical
   letI n : ℕ := Wedderburn_Artin.aux.n I I_nontrivial
-  have n_ne : n ≠ 0 := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
+  have n_ne : NeZero n := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
+  have n_ne' : n ≠ 0 := n_ne.1
   letI x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
   letI i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
   have one_eq : ∑ j : Fin n, (i j) * (x j) = 1 :=
@@ -494,8 +498,8 @@ def endPowEquivMatrix (A : Type*) [Ring A]
 
 
 theorem Wedderburn_Artin_ideal_version
-    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleOrder (TwoSidedIdeal A)] :
-    ∃ (n : ℕ) (_ : n ≠ 0) (I : Ideal A) (_ : IsSimpleModule A I),
+    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
+    ∃ (n : ℕ) (_ : NeZero n) (I : Ideal A) (_ : IsSimpleModule A I),
     Nonempty ((Fin n → I) ≃ₗ[A] A) := by
   classical
   obtain ⟨(I : Ideal A), (I_nontrivial : I ≠ ⊥), (I_minimal : ∀ J : Ideal A, J ≠ ⊥ → ¬ J < I)⟩ :=
@@ -506,8 +510,8 @@ theorem Wedderburn_Artin_ideal_version
   exact ⟨n, hn, I, inferInstance, ⟨e⟩⟩
 
 theorem Wedderburn_Artin
-    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleOrder (TwoSidedIdeal A)] :
-    ∃ (n : ℕ) (_ : n ≠ 0) (I : Ideal A) (_ : IsSimpleModule A I),
+    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
+    ∃ (n : ℕ) (_ : NeZero n) (I : Ideal A) (_ : IsSimpleModule A I),
     Nonempty (A ≃+* M[Fin n, (Module.End A I)ᵐᵒᵖ]) := by
   classical
   obtain ⟨(I : Ideal A), (I_nontrivial : I ≠ ⊥), (I_minimal : ∀ J : Ideal A, J ≠ ⊥ → ¬ J < I)⟩ :=
@@ -526,20 +530,20 @@ theorem Wedderburn_Artin
     (endPowEquivMatrix A I n).op.trans $ (matrixEquivMatrixMop n (Module.End A ↥I)).symm⟩⟩
 
 theorem Wedderburn_Artin'
-    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleOrder (TwoSidedIdeal A)] :
-    ∃ (n : ℕ) (_ : n ≠ 0) (S : Type u) (_ : DivisionRing S),
+    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
+    ∃ (n : ℕ) (_ : NeZero n) (S : Type u) (_ : DivisionRing S),
     Nonempty (A ≃+* (M[Fin n, S])) := by
   classical
   obtain ⟨n, hn, I, inst, e⟩ := Wedderburn_Artin A
   exact ⟨n, hn, (Module.End A I)ᵐᵒᵖ, inferInstance, e⟩
 
 theorem Wedderburn_Artin_divisionRing_unique
-    (D E : Type u) [DivisionRing D] [DivisionRing E] (m n : ℕ) (hm : m ≠ 0) (hn : n ≠ 0)
+    (D E : Type u) [DivisionRing D] [DivisionRing E] (m n : ℕ) [hm : NeZero m] [hn : NeZero n]
     (iso : M[Fin m, D] ≃+* M[Fin n, E]) : Nonempty $ D ≃+* E := by
   classical
   have i1 : IsMoritaEquivalent D E := @IsMoritaEquivalent.trans _ _ _ _ _ _
-      (@IsMoritaEquivalent.trans _ _ _ _ _ _ (.matrix' D m hm) (.ofIso _ _ iso))
-      (IsMoritaEquivalent.matrix' E n hn).symm
+      (@IsMoritaEquivalent.trans _ _ _ _ _ _ (.matrix' D m) (.ofIso _ _ iso))
+      (IsMoritaEquivalent.matrix' E n).symm
   exact ⟨i1.ringEquivOfDivisionRing⟩
 
 end simple_ring
@@ -578,14 +582,6 @@ lemma Matrix.mem_center_iff' (K R : Type*) [Field K] [Ring R] [Algebra K R] (n :
     ∃ α : (Subalgebra.center K R), M = α • 1 :=
   Matrix.mem_center_iff R n M
 
-/--
-For a matrix ring `Mₙₙ(R)`, the center of the matrix ring `Z(Mₙₙ(R))` is isomorphic to the center
-`Z(R)` of `R`.
--/
--- @[simps!]
--- def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R]:
---     Subring.center (M[Fin n, R]) ≃+* (Subring.center R) := Matrix.centerEquivBase1 n hn R
-
 theorem RingEquiv.mem_center_iff {R1 R2 : Type*} [Ring R1] [Ring R2] (e : R1 ≃+* R2) :
     ∀ x, x ∈ Subring.center R1 ↔ e x ∈ Subring.center R2 := fun x => by
   simpa only [Subring.mem_center_iff] using
@@ -622,8 +618,8 @@ lemma algebraEndIdealMop.algebraMap_eq (I : Ideal B) :
 
 set_option maxHeartbeats 800000 in
 lemma Wedderburn_Artin_algebra_version
-    [sim : IsSimpleOrder (TwoSidedIdeal B)]:
-    ∃ (n : ℕ) (_ : n ≠ 0) (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
+    [sim : IsSimpleRing B]:
+    ∃ (n : ℕ) (_ : NeZero n) (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
     Nonempty (B ≃ₐ[K] (M[Fin n, S])) := by
   classical
   have hB : IsArtinianRing B := .of_finite K B
@@ -673,61 +669,13 @@ lemma Wedderburn_Artin_algebra_version
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
     exact congr_arg e $ by ext; simp
 
--- instance (priority := high) (M : Type*) [AddCommGroup M] [Module B M]   :
---     Algebra K (Module.End B M) :=
---   letI : Module K M := Module.compHom M (algebraMap K B)
---   letI : SMulCommClass B K M :=
---   { smul_comm := fun b k m =>
---       show b • (algebraMap K B k) • m = _ by
---       rw [← MulAction.mul_smul, ← Algebra.commutes, MulAction.mul_smul]
---       rfl }
---   letI : IsScalarTower K B M :=
---   { smul_assoc := fun k b m => by
---       rw [Algebra.smul_def, MulAction.mul_smul]; rfl }
-
---   Module.End.instAlgebra K B M
-
--- def test' (D : Type*) [DivisionRing D] [Algebra K D] (m : ℕ) (hm : m ≠ 0)
---     (Wdb : B ≃ₐ[K] M[Fin m, D]) (M : Type*)
---     [AddCommGroup M] [Module B M] [IsSimpleModule B M] :
---     Module.End B M ≃ₐ[K] Dᵐᵒᵖ := by sorry
-
--- theorem Wedderburn_Artin_divisionRing_unique_algebra_version
---     (D E : Type*) [DivisionRing D] [DivisionRing E] [Algebra K D] [Algebra K E]
---     (m n : ℕ) (hm : m ≠ 0) (hn : n ≠ 0)
---     (iso : M[Fin m, D] ≃ₐ[K] M[Fin n, E]) : Nonempty $ D ≃ₐ[K] E := by
---   haveI : Inhabited (Fin m) := ⟨0, by omega⟩
---   haveI : Inhabited (Fin n) := ⟨0, by omega⟩
-
---   haveI : IsSimpleModule D (ModuleCat.of D D) := inferInstanceAs (IsSimpleModule D D)
---   haveI : IsSimpleModule E (ModuleCat.of E E) := inferInstanceAs (IsSimpleModule E E)
-
---   haveI : IsSimpleModule M[Fin m, D] (Fin m → D) :=
---     IsMoritaEquivalent.division_ring.IsSimpleModule.functor
---       D M[Fin m, D] (moritaEquivalentToMatrix D (Fin m)) (.of D D)
-
---   let iso1 := test' K M[Fin m, D] E n hn iso (Fin m → D)
---   let iso2 := test' K M[Fin m, D] D m hm AlgEquiv.refl (Fin m → D)
---   let iso3 := iso1.symm.trans iso2
---   refine ⟨{
---     toFun := fun x => iso3.symm (.op x) |>.unop
---     invFun := fun x => iso3 (.op x) |>.unop
---     left_inv := fun d => by simp
---     right_inv := fun e => by simp
---     map_mul' := fun x y => by simp
---     map_add' := fun x y => by simp
---     commutes' := fun k => MulOpposite.op_injective $ by
---       simp only [op_unop]
---       exact iso3.symm.commutes k
---   }⟩
-
 omit [FiniteDimensional K B] in
-theorem is_central_of_wdb
-    (hctr : Subalgebra.center K B = ⊥)
-    (n : ℕ) (S : Type*) (hn : 0 < n) [h : DivisionRing S]
+theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]
+    -- (hctr : Subalgebra.center K B = ⊥)
+    (n : ℕ) (S : Type*) [NeZero n] [h : DivisionRing S]
     [Algebra K S] (Wdb: B ≃ₐ[K] M[Fin n, S]) :
-    Subalgebra.center K S = ⊥ := by
-  rw [eq_bot_iff] at hctr ⊢
+    Algebra.IsCentral K S := by
+  constructor
   intro x hx
   have hx' : (Matrix.diagonal fun _ => x) ∈ Subalgebra.center K M[Fin n, S] :=
     Matrix.mem_center_iff' _ _ _ _ |>.2 $
@@ -740,25 +688,23 @@ theorem is_central_of_wdb
   have hx'' : Wdb.symm (Matrix.diagonal fun _ => x) ∈ Subalgebra.center K B := by
     rw [Subalgebra.mem_center_iff] at hx' ⊢
     exact fun b => Wdb.injective $ by simpa using hx' (Wdb b)
-  obtain ⟨s, (hs : algebraMap _ _ s = _)⟩ := hctr hx''
+  obtain ⟨s, (hs : algebraMap _ _ s = _)⟩ := hctr.out hx''
   exact ⟨s, show algebraMap _ _ _ = _ by
-    simpa using Matrix.ext_iff.2 congr(Wdb $hs) ⟨0, by omega⟩ ⟨0, by omega⟩⟩
+    simpa using Matrix.ext_iff.2 congr(Wdb $hs) 0 0⟩
 
 theorem is_fin_dim_of_wdb
-    (n : ℕ) (S : Type*) (hn : 0 < n) [h : DivisionRing S]
+    (n : ℕ) (S : Type*) [NeZero n] [h : DivisionRing S]
     [Algebra K S] (Wdb: B ≃ₐ[K] M[Fin n, S]) :
     FiniteDimensional K S := by
   classical
-  obtain ⟨⟨s, span_eq⟩⟩ : FiniteDimensional K M[Fin n, S] :=
-    FiniteDimensional.of_injective Wdb.symm.toLinearEquiv.toLinearMap Wdb.symm.injective
-  refine ⟨⟨s.image (fun M : M[Fin n, S] => M ⟨0, by omega⟩ ⟨0, by omega⟩), ?_⟩⟩
-  rw [eq_top_iff] at span_eq ⊢
-  rintro x -
-  obtain ⟨r, hr⟩ := mem_span_finset.1 $ span_eq (by trivial : (diagonal fun _ => x) ∈ ⊤)
-  apply_fun (· ⟨0, by omega⟩ ⟨0, by omega⟩) at hr
-  simp only [sum_apply, smul_apply, diagonal_apply_eq] at hr
-  exact hr ▸ Submodule.sum_mem _ fun i hi =>
-    Submodule.smul_mem _ _ $ Submodule.subset_span $ by simpa using ⟨i, hi, rfl⟩
+  have := FiniteDimensional.of_injective Wdb.symm.toLinearEquiv.toLinearMap Wdb.symm.injective
+  exact Module.Finite.of_injective
+      ({
+        toFun := fun s => Matrix.diagonal (fun _ => s)
+        map_add' := by
+          intros; ext i j; by_cases i = j  <;> aesop
+        map_smul' := by intros; ext i j; by_cases i = j  <;> aesop
+      } : S →ₗ[K] Matrix (Fin n) (Fin n) S) fun x y h => Matrix.ext_iff.2 h 0 0
 
 lemma bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed
     (K D : Type*) [Field K] [IsAlgClosed K] [DivisionRing D] [alg : Algebra K D]
@@ -768,12 +714,13 @@ lemma bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed
     IsAlgClosed.algebraMap_surjective_of_isIntegral
   exact ⟨(algebraMap K D).injective, surj⟩
 
-theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleOrder (TwoSidedIdeal B)] :
-    ∃ (n : ℕ) (_ : n ≠ 0), Nonempty (B ≃ₐ[K] M[Fin n, K]) := by
+theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :
+    ∃ (n : ℕ) (_ : NeZero n), Nonempty (B ≃ₐ[K] M[Fin n, K]) := by
   rcases Wedderburn_Artin_algebra_version K B with ⟨n, hn, S, ins1, ins2, ⟨e⟩⟩
-  have := is_fin_dim_of_wdb K B n S (by omega) e
+  have hn := hn.1
+  have := is_fin_dim_of_wdb K B n S e
 
-  exact ⟨n, hn, ⟨e.trans $ AlgEquiv.mapMatrix $ AlgEquiv.symm $
+  exact ⟨n, ⟨hn⟩, ⟨e.trans $ AlgEquiv.mapMatrix $ AlgEquiv.symm $
     AlgEquiv.ofBijective (Algebra.ofId _ _) $
       bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed _ _⟩⟩
 

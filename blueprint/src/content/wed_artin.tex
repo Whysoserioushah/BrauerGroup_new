@@ -1,0 +1,74 @@
+\chapter{Wedderburn-Artin Theorem for Simple Rings}\label{chap:wed-artin}
+
+\section{Classification of Simple Rings}\label{sec:wed-artin-proof}
+
+
+\begin{lemma}[minimal ideal of simple rings]\label{lemma:min-ideal-simple-ring}
+  Let $A$ be a ring and $I$ a non-trivial minimal left ideal of $A$, then $I$ is a simple $A$-module.
+  \leanok
+  \lean{minimal_ideal_isSimpleModule}
+\end{lemma}
+\begin{proof}
+Let $J\le I$ be an $A$-submodule of $I$, suppose $J$ is non-trivial, we prove that $J=I$. Then the image $J'$ of $J$ under $I \hookrightarrow A$ is a non-trivial left ideal of $A$. Since $I \hookrightarrow A$ is injective, it is sufficient to prove that $J' = I$. This is because $J'\le I$ and $J' \not< J$.
+\end{proof}
+
+\begin{lemma}
+  Let $A$ be a simple ring and $I$ a non-trivial left ideal. One can write $1 \in A$ as $\sum_{i=0}^{n}x_{i}y_{i}$ for some $x_{i}\in I$ and $y_{i} \in A$.
+\end{lemma}
+
+\begin{proof}
+  Let $I'$ be the two-sided ideal spanned by $I$. Then since $A$ is a simple ring, $I' = A$. Thus $1 \in I'$. One can write $1 \in A$ as $\sum_{i}a_{i}x_{i}b_{i}$ for some $x_{i}\in I$ and $a_{i},b_{i}\in A$, since $I$ is a left ideal $a_{i}x_{i}\in I$ as well.
+\end{proof}
+
+Now, we can find the smallest $n$ such that $1\in A$ can be written as $\sum_{i=0}^{n}x_{i}y_{i}$ for some $x_{i}\in I$ and $y_{i}\in A$. Let us fix the notations $n$, $x_{i}$ and $y_{i}$
+
+\begin{lemma} The $n$, $x_{i}$ and $y_{i}$ are all non-zero.
+  \leanok
+  \lean{Wedderburn_Artin.aux.nxi_ne_zero}
+\end{lemma}
+
+\begin{proof}
+  If $n$ is $0$, then $1 = 0$ in $A$, but all simple rings are non-trivial.
+  We argue by contradiction to prove that all $x_{i}$ and $y_{i}$ are non-zero. Assume there exists a $j$ such that $y_{j}\ne0$ implies $x_{j} = 0$. Without loss of generality, we assume $j = 0$. Then $1 = \sum_{i=0}^{n}x_{i}y_{i}=\sum_{i=1}^{n}x_{i}y_{i}$. This contradicts the minimality of $n$.
+\end{proof}
+
+\begin{theorem}[Wedderburn]\label{thm:wed}
+  Let $A$ be a simple ring and $I$ a non-trivial minimal left ideal. Then there exists a non-zero $n \in \mathbb{N}$ such that $A \cong I^{n}$ as $A$-modules.
+  \leanok
+  \lean{Wedderburn_Artin.aux.equivIdeal}
+  \uses{lemma:min-ideal-simple-ring}
+\end{theorem}
+
+\begin{proof}
+  We continue to write $1 = \sum_{i=0}^{n}x_{i}y_{i}$ in the shortest possible manner. Then we can define an $A$-linear map $g : I^{n}\to A$ by $(v_{i})\mapsto \sum v_{i}y_{i}$. Then $g$ is surjective: if $a \in A$, then $(ax_{i})$ is mapped to $a$ under $g$. $g$ is injective as well: support $g(v_{i})=0=\sum_{i}v_{i}y_{i}$ with $(v_{i})$ not all zero. Without loss of generality, we assume $v_{0} \ne 0$, then the ideal $\langle v_{0}\rangle$ is equal to $I$ (since $I$ is simple\cref{lemma:min-ideal-simple-ring}). Thus $x_{0}\in I = \langle v_{0}\rangle$; implying that $x_{0}=r\cdot v_{0}$ for some $r\in A$. Thus $1=1 - r\cdot 0 = \sum_{i=0}^{n}x_{i}y_{i}-\sum_{i=0}^{n}r\cdot v_{i}y_{i}$. In this way, we cancelled the term at $i=0$, contradicting the minimality of $n$. Hence $g$ is an isomorphism.
+\end{proof}
+
+\begin{theorem}[Wedderburn-Artin (Ideal)]
+  Let $A$ be an Artinian simple ring. There exists a non-zero $n$ and an ideal $I \subseteq A$ such that $I$ is simple as an $A$-module and $A \cong I^{n}$ as $A$-module.
+  \label{thm:wed-artin-ideal}
+  \leanok
+  \lean{Wedderburn_Artin_ideal_version}
+  \uses{thm:wed}
+\end{theorem}
+
+\begin{proof}
+  By~\cref{thm:wed}, we only need a minimal left ideal. Since $A$ is Artinian, such ideal exists.
+\end{proof}
+
+\begin{theorem}[Wedderburn-Artin (Algebra)]
+  \label{thm:wed-artin-algebra}
+  Let $K$ be a field and $B$ an finite dimensional simple algebra over $K$. There exists a non-zero $n\in\mathbb{N}$ and a division $K$-algebra $S$ such that $B \cong \Mat_{n}(S)$.
+  \leanok
+  \lean{Wedderburn_Artin_algebra_version}
+\end{theorem}
+
+\begin{proof}
+  By~\cref{thm:wed-artin-ideal}, we can find a $n$ and a minimal left ideal $I$ such $A \cong I^{n}$ as $A$-modules. Note that ${\left(\End_{B}I\right)}^{\opp}$ is a division ring. Then since $B^{\opp}\cong\End_{B}B\cong{\End_{B}(I^{n})}\cong\Mat_{n}\left(\End_{B}I\right)$ as rings, we have $e : B\cong \Mat_{n}\left(\End_{B}I\right)^{\opp}$ as rings. We also have a $K$-algebra structure on ${\left(\End_{B} I\right)}^{\opp}$ given by $(a \cdot f)(x)=f(a\cdot x)$, and this algebra structure promotes the ring isomorphism $e$ to a $k$-algebra isomorphism.
+\end{proof}
+
+\section{Uniqueness of the classification}\label{sec:wed-artin-unique}
+In the previous section, we know that finite dimensional simple $K$-algebra $B$ over is in fact a matrix algebras of a division $K$-algebra $S$. In this section, we prove that the division algebra $S$ is essentially unique.
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% End:

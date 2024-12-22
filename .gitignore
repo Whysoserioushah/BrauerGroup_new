@@ -10,6 +10,7 @@ lean_decls
 *.log
 *.out
 *.synctex.gz
+*.toc
 print.pdf
 web.paux
 
@@ -18,5 +19,6 @@ blueprint/src/_region_.prv/*
 
 *.el
 /blueprint/src/_region_.tex
+.DS_Store
 
 .history/*
