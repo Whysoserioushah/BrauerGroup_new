@@ -1,11 +1,10 @@
 import Mathlib.Algebra.QuaternionBasis
-import Mathlib.Analysis.InnerProductSpace.Basic
+-- import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import BrauerGroup.Subfield.Subfield
 -- import Mathlib.Algebra.Star.Basic
-import BrauerGroup.SkolemNoether
 
 suppress_compilation
 
@@ -70,41 +69,41 @@ lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : Module.finran
         LinearMap.linearEquivOfInjective (ι₀.comp ι₁).toLinearMap (RingHom.injective _)
             (h.trans Complex.finrank_real_complex.symm) |>.bijective
 
-lemma D_equiv_C [Algebra ℂ D] [FiniteDimensional ℂ D]:
-    Nonempty (D ≃ₐ[ℂ] ℂ) := by
-  obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed ℂ D
-  haveI : NeZero n := hn
-  exact Wedderburn_Artin_uniqueness₀ ℂ D 1 n D (BrauerGroup.dim_one_iso D).symm ℂ iso
+-- lemma D_equiv_C [Algebra ℂ D] [FiniteDimensional ℂ D]:
+--     Nonempty (D ≃ₐ[ℂ] ℂ) := by
+--   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed ℂ D
+--   haveI : NeZero n := hn
+--   exact Wedderburn_Artin_uniqueness₀ ℂ D 1 n D (BrauerGroup.dim_one_iso D).symm ℂ iso
 
 end prerequisites
 
-section isoC
+-- section isoC
 
-variable [Algebra ℝ D] (e : Subring.center D ≃ₐ[ℝ] ℂ)
+-- variable [Algebra ℝ D] (e : Subring.center D ≃ₐ[ℝ] ℂ)
 
-variable (D) in
-set_option linter.unusedVariables false in
-def DD (e : Subring.center D ≃ₐ[ℝ] ℂ):= D
+-- variable (D) in
+-- set_option linter.unusedVariables false in
+-- def DD (e : Subring.center D ≃ₐ[ℝ] ℂ):= D
 
-instance : DivisionRing (DD D e) := inferInstanceAs (DivisionRing D)
+-- instance : DivisionRing (DD D e) := inferInstanceAs (DivisionRing D)
 
-instance : Algebra ℝ (DD D e) := inferInstanceAs (Algebra ℝ D)
+-- instance : Algebra ℝ (DD D e) := inferInstanceAs (Algebra ℝ D)
 
-set_option synthInstance.maxHeartbeats 30000 in
-instance CAlg : Algebra ℂ (DD D e) where
-  smul z (d : D) := (e.symm z).1 * d
-  toFun z := e.symm z|>.1
-  map_one' := by simp only [map_one, OneMemClass.coe_one]
-  map_mul' := by simp only [map_mul, Subring.coe_mul, implies_true]
-  map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
-  map_add' := fun x y => by simp only [map_add, Subring.coe_add]
-  commutes' z d := by
-    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
-    exact Subring.mem_center_iff.1 (e.symm z).2 d |>.symm
-  smul_def' := by
-    intro z d
-    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
-    rfl
+-- set_option synthInstance.maxHeartbeats 30000 in
+-- instance CAlg : Algebra ℂ (DD D e) where
+--   smul z (d : D) := (e.symm z).1 * d
+--   toFun z := e.symm z|>.1
+--   map_one' := by simp only [map_one, OneMemClass.coe_one]
+--   map_mul' := by simp only [map_mul, Subring.coe_mul, implies_true]
+--   map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
+--   map_add' := fun x y => by simp only [map_add, Subring.coe_add]
+--   commutes' z d := by
+--     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+--     exact Subring.mem_center_iff.1 (e.symm z).2 d |>.symm
+--   smul_def' := by
+--     intro z d
+--     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+--     rfl
 
 -- instance (e : Subring.center D ≃+* ℂ) : Module (Subring.center D) ℂ where
 --   smul d z := e d * z
@@ -121,7 +120,7 @@ instance CAlg : Algebra ℂ (DD D e) where
 --   haveI := FiniteDimensional.right ℝ ℂ (DD D)
 --   exact DequivC
 
-end isoC
+-- end isoC
 variable [Algebra ℝ D] [hD : Algebra.IsCentral ℝ D] [hD' : IsSimpleRing D]
   (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
   (e : k ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ D]
@@ -170,7 +169,7 @@ lemma f_apply_apply (z : ℂ): f k e (e.symm z) = e.symm (conj z) := by
   exact AlgEquiv.apply_symm_apply e z
 
 set_option maxHeartbeats 500000 in
-lemma f_is_conjugation : ∃ (x : D), ∀ (z : k), (x⁻¹) * (f k e z) * x = k.val z := by
+lemma f_is_conjugation : ∃ (x : Dˣ), ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z := by
   obtain ⟨x, hx⟩ := SkolemNoether' ℝ D k k.val (k.val.comp (f k e))
   use x
   intro z
@@ -850,4 +849,97 @@ theorem rank4_iso_H (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.
     (h : Module.finrank ℝ D = 4) : Nonempty (ℍ[ℝ] ≃ₐ[ℝ] D) :=
   ⟨AlgEquiv.ofBijective (toFun _ _ _ hx h) (bij_tofun _ _ _ hx h)⟩
 
--- theorem rank_2_D_iso_C : Module.finrank ℝ D = 2 → Nonempty (D≃ₐ[ℝ] ℂ) := sorry
+set_option synthInstance.maxHeartbeats 40000 in
+abbrev SmulCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
+    (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)): ℂ →+* A where
+  toFun := fun z ↦ e z
+  map_one' := by simp
+  map_mul' := by simp
+  map_zero' := by simp
+  map_add' := fun z1 z2 ↦ by simp
+
+instance AlgCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
+    (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)): Algebra ℂ A where
+  __ := SmulCA A e
+  smul z a := (SmulCA A e z) * a
+  commutes' := fun z _ ↦ by
+    simp [Subalgebra.mem_center_iff.1 (e z).2]
+  smul_def' := fun _ _ ↦ rfl
+
+set_option synthInstance.maxHeartbeats 40000 in
+lemma smulCRassoc (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
+    (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)) (r : ℝ) (z : ℂ) (a : A): (e (r • z)) * a =
+    r • ((e z) * a) := by
+  rw [map_smul e, Subalgebra.coe_smul]
+  exact smul_mul_assoc r (↑(e z)) a
+
+set_option synthInstance.maxHeartbeats 40000 in
+theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
+    (hA : Nonempty ((Subalgebra.center ℝ A) ≃ₐ[ℝ] ℂ)): Nonempty (A ≃ₐ[ℝ] ℂ):= by
+  have e := hA.some.symm
+  letI : Algebra ℂ A := AlgCA A e
+  have : IsScalarTower ℝ ℂ A := { smul_assoc := smulCRassoc A e }
+  rename_i _ _ fin _
+  unfold FiniteDimensional at fin
+  have : Algebra.toModule (R := ℝ) (A := A) = Module.complexToReal A := by
+    ext r a
+    change r • a = (e (algebraMap ℝ ℂ r)) * a
+    rw [Algebra.algebraMap_eq_smul_one, _root_.map_smul e, map_one, Subalgebra.coe_smul,
+      Subalgebra.coe_one, smul_mul_assoc, one_mul]
+  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 $ by
+    rw [this] at fin ; exact fin
+  haveI : FiniteDimensional ℂ A := Module.Finite.right ℝ ℂ A
+  have bij := bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed ℂ A
+  exact ⟨(AlgEquiv.ofBijective {
+    toFun := algebraMap ℂ A
+    map_one' := _
+    map_mul' := _
+    map_zero' := _
+    map_add' := _
+    commutes' := fun r => by
+      simp; change (algebraMap ℂ A) (algebraMap ℝ ℂ r) = _;
+      rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+        Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij).symm ⟩
+
+set_option synthInstance.maxHeartbeats 40000 in
+theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]:
+    Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
+  have hh := RealExtension_is_RorC (Subalgebra.center ℝ A)
+  cases' hh with hR hC
+  · right
+    obtain hR := hR.some
+    have : Subalgebra.center ℝ A = ⊥ := by
+      have := LinearEquiv.finrank_eq hR.toLinearEquiv
+      simp only [Module.finrank_self, Subalgebra.finrank_eq_one_iff] at this
+      exact this
+    have hAA : Algebra.IsCentral ℝ A := ⟨le_of_eq this⟩
+    have hhA' (L : SubField ℝ A) (hL : IsMaximalSubfield ℝ A L) :
+      Module.finrank ℝ L = 1 ∨ Module.finrank ℝ L = 2 := by
+      have := RealExtension_is_RorC L
+      cases' this with hR hH
+      · have := LinearEquiv.finrank_eq hR.some.toLinearEquiv
+        simp only [Module.finrank_self, Subalgebra.finrank_eq_one_iff] at this
+        exact Or.inl this
+      · have := LinearEquiv.finrank_eq hH.some.toLinearEquiv
+        simp only [Complex.finrank_real_complex] at this
+        exact Or.inr this
+    specialize hhA'
+    have : ∃ (L : SubField ℝ A), IsMaximalSubfield ℝ A L := by sorry
+    obtain ⟨L, hL⟩ := this
+    specialize hhA' L hL
+    have dimeq := dim_max_subfield ℝ A L hL
+    cases' hhA' with h1 h2
+    · left
+      simp only [h1, mul_one] at dimeq
+      exact rank_1_D_iso_R dimeq
+    · right
+      simp only [h2, Nat.reduceMul] at dimeq
+      have e := RealExtension_is_RorC L
+      cases' e with e1 e2
+      · exfalso
+        have := LinearEquiv.finrank_eq e1.some.toLinearEquiv
+        rw [Module.finrank_self] at this
+        linarith
+      · exact ⟨(rank4_iso_H L e2.some (f_is_conjugation L e2.some).choose
+          (f_is_conjugation L e2.some).choose_spec dimeq).some.symm⟩
+  · left; exact centereqvCisoC A hC
