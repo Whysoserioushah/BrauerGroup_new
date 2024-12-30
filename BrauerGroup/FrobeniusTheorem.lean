@@ -901,6 +901,14 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
       rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij).symm ⟩
 
+lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D]: ∃(L : SubField ℝ D),
+    IsMaximalSubfield ℝ D L := by
+  obtain ⟨m, hm⟩ := zorn_le (α := SubField ℝ D) (fun α hα ↦ by
+    simp only [IsChain] at hα
+    -- use (⊔(L : SetOfFinite α), L)
+    sorry)
+  exact ⟨m, isMax_iff_isMaxSubfield _ _ _ |>.1 hm⟩
+
 set_option synthInstance.maxHeartbeats 40000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]:
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
@@ -924,8 +932,7 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
         simp only [Complex.finrank_real_complex] at this
         exact Or.inr this
     specialize hhA'
-    have : ∃ (L : SubField ℝ A), IsMaximalSubfield ℝ A L := by sorry
-    obtain ⟨L, hL⟩ := this
+    obtain ⟨L, hL⟩ := exitsmaxsub A
     specialize hhA' L hL
     have dimeq := dim_max_subfield ℝ A L hL
     cases' hhA' with h1 h2

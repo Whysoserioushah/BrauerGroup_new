@@ -68,6 +68,10 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : SetLike (SubField K A
       exact le_of_eq_of_le hL12.symm fun _ a ↦ a
     exact (LE.le.le_iff_eq le).1 ge|>.symm
 
+lemma isMax_iff_isMaxSubfield (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A):
+    IsMax L ↔ IsMaximalSubfield K A L :=
+  ⟨fun hL _ hB ↦ (IsMax.eq_of_le hL hB).symm, fun hL B hB ↦ le_of_eq $ hL B hB⟩
+
 end def_and_lemmas
 
 section instances
@@ -145,6 +149,11 @@ instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : Sub
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     (L : SubField K A): FiniteDimensional K L :=
   FiniteDimensional.finiteDimensional_subalgebra L.1
+
+instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A]:
+    Preorder (SubField K A) where
+  le_refl _ := le_of_eq rfl
+  le_trans _ _ _ hL12 hL23 := hL12.trans hL23
 
 end SubField
 
