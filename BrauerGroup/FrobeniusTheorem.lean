@@ -1,10 +1,5 @@
-import Mathlib.Algebra.QuaternionBasis
--- import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.LinearAlgebra.FreeModule.PID
-import Mathlib.Analysis.Complex.Polynomial.Basic
-import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import BrauerGroup.Subfield.Subfield
--- import Mathlib.Algebra.Star.Basic
+import Mathlib.Algebra.QuaternionBasis
 
 suppress_compilation
 
@@ -55,72 +50,8 @@ lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensio
       (e.symm.toAlgHom.comp <| Algebra.ofId K CC |>.restrictScalars ℝ)
       (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by simp [h2])
 
-lemma field_over_R_iso_C (K : Type) [Field K] [Algebra ℝ K] (h : Module.finrank ℝ K = 2) :
-    Nonempty (K ≃ₐ[ℝ] ℂ) := by
-    haveI : FiniteDimensional ℝ K := .of_finrank_eq_succ h
-    haveI : Algebra.IsAlgebraic ℝ K := Algebra.IsAlgebraic.of_finite _ _
-    haveI : Algebra.IsAlgebraic ℝ (AlgebraicClosure K) :=
-      Algebra.IsAlgebraic.trans (K := ℝ) (L := K)
-    let ι₀ : (AlgebraicClosure K) →ₐ[ℝ] ℂ :=
-        IsAlgClosed.lift (R := ℝ) (M := ℂ) (S := AlgebraicClosure K)
-    let ι₁ : K →ₐ[ℝ] AlgebraicClosure K :=
-        IsScalarTower.toAlgHom ℝ K (AlgebraicClosure K)
-    exact .intro <| AlgEquiv.ofBijective (ι₀.comp ι₁) <|
-        LinearMap.linearEquivOfInjective (ι₀.comp ι₁).toLinearMap (RingHom.injective _)
-            (h.trans Complex.finrank_real_complex.symm) |>.bijective
-
--- lemma D_equiv_C [Algebra ℂ D] [FiniteDimensional ℂ D]:
---     Nonempty (D ≃ₐ[ℂ] ℂ) := by
---   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed ℂ D
---   haveI : NeZero n := hn
---   exact Wedderburn_Artin_uniqueness₀ ℂ D 1 n D (BrauerGroup.dim_one_iso D).symm ℂ iso
-
 end prerequisites
 
--- section isoC
-
--- variable [Algebra ℝ D] (e : Subring.center D ≃ₐ[ℝ] ℂ)
-
--- variable (D) in
--- set_option linter.unusedVariables false in
--- def DD (e : Subring.center D ≃ₐ[ℝ] ℂ):= D
-
--- instance : DivisionRing (DD D e) := inferInstanceAs (DivisionRing D)
-
--- instance : Algebra ℝ (DD D e) := inferInstanceAs (Algebra ℝ D)
-
--- set_option synthInstance.maxHeartbeats 30000 in
--- instance CAlg : Algebra ℂ (DD D e) where
---   smul z (d : D) := (e.symm z).1 * d
---   toFun z := e.symm z|>.1
---   map_one' := by simp only [map_one, OneMemClass.coe_one]
---   map_mul' := by simp only [map_mul, Subring.coe_mul, implies_true]
---   map_zero' := by simp only [map_zero, ZeroMemClass.coe_zero]
---   map_add' := fun x y => by simp only [map_add, Subring.coe_add]
---   commutes' z d := by
---     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
---     exact Subring.mem_center_iff.1 (e.symm z).2 d |>.symm
---   smul_def' := by
---     intro z d
---     simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
---     rfl
-
--- instance (e : Subring.center D ≃+* ℂ) : Module (Subring.center D) ℂ where
---   smul d z := e d * z
---   one_smul :=
---   mul_smul := _
---   smul_zero := _
---   smul_add := _
---   add_smul := _
---   zero_smul := _
-
--- -- set_option synthInstance.maxHeartbeats 80000 in
--- lemma complex_centre_equiv_complex (e : Subring.center (DD D) ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ (DD D)]:
---     Nonempty ((DD D) ≃ₐ[ℝ] ℂ) := by
---   haveI := FiniteDimensional.right ℝ ℂ (DD D)
---   exact DequivC
-
--- end isoC
 variable [Algebra ℝ D] [hD : Algebra.IsCentral ℝ D] [hD' : IsSimpleRing D]
   (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
   (e : k ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ D]
@@ -994,3 +925,4 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
       · exact ⟨(rank4_iso_H L e2.some (f_is_conjugation L e2.some).choose
           (f_is_conjugation L e2.some).choose_spec dimeq).some.symm⟩
   · left; exact centereqvCisoC A hC
+#min_imports

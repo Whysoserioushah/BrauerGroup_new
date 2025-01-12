@@ -1,6 +1,4 @@
-import BrauerGroup.DoubleCentralizer
-import Mathlib.Tactic
-import Mathlib.RingTheory.Adjoin.Basic
+import Mathlib.LinearAlgebra.FiniteDimensional.Defs
 
 universe u
 

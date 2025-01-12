@@ -1,4 +1,5 @@
 import BrauerGroup.Subfield.Basic
+import BrauerGroup.DoubleCentralizer
 
 universe u
 
@@ -180,3 +181,4 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     exact L.mul_comm _ _ hx hy
 
 end cors_of_DC
+#min_imports
