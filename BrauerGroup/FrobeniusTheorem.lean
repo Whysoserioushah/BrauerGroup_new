@@ -925,4 +925,3 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
       · exact ⟨(rank4_iso_H L e2.some (f_is_conjugation L e2.some).choose
           (f_is_conjugation L e2.some).choose_spec dimeq).some.symm⟩
   · left; exact centereqvCisoC A hC
-#min_imports
