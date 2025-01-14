@@ -1,4 +1,5 @@
 import Mathlib.Data.ZMod.Basic
+import Mathlib.GroupTheory.QuotientGroup.Defs
 import BrauerGroup.FrobeniusTheorem
 
 suppress_compilation
@@ -79,6 +80,9 @@ lemma toEnd_bij : Function.Bijective toEnd :=
 def QuaternionTensorEquivMatrix : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] ≃ₐ[ℝ] Matrix (Fin 4) (Fin 4) ℝ :=
   (AlgEquiv.ofBijective toEnd toEnd_bij).trans <| algEquivMatrix
     (QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ))
+
+lemma QuaternionTensorEquivOne : IsBrauerEquivalent (K := ℝ) ⟨ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]⟩ ⟨ℝ⟩ :=
+  ⟨⟨1, 4, dim_one_iso _ |>.trans QuaternionTensorEquivMatrix⟩⟩
 
 lemma QuaternionNotEquivR : ¬ IsBrauerEquivalent (K := ℝ) ⟨ℍ[ℝ]⟩ ⟨ℝ⟩ := by
   intro h
@@ -228,14 +232,13 @@ abbrev C2toBrauerOverR : ZMod 2 →+ Additive (BrauerGroup.BrGroup (K := ℝ)) w
   toFun x := if hx : x = 0 then Quotient.mk'' one_in' else Quotient.mk'' ⟨ℍ[ℝ]⟩
   map_zero' := by simp only [↓reduceDIte]; rfl
   map_add' x y := by
-    fin_cases x
-    · fin_cases y
-      · simp; rfl
-      · simp; rfl
-    · fin_cases y
-      · simp; rfl
-      · simp;
-        sorry
+    fin_cases x <;> fin_cases y <;> simp <;> try rfl
+    erw [show 1 + 1 = (0 : ZMod 2) from rfl]
+    simp only [↓reduceIte]
+    change _ = Quotient.mk'' _
+    rw [Quotient.sound']
+    change IsBrauerEquivalent _ ⟨ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]⟩
+    exact QuaternionTensorEquivOne.symm
 
 lemma toC2.left_inv : Function.LeftInverse C2toBrauerOverR toC2 := fun A ↦ by
   induction' A using Quotient.inductionOn' with A
