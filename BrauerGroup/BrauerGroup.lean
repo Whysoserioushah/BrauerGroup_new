@@ -445,7 +445,7 @@ theorem eqv_tensor_eqv
     IsBrauerEquivalent (mul A C) (mul B D) := by
   obtain ⟨n, m, e1⟩ := hAB
   obtain ⟨p, q, e2⟩ := hCD
-  exact ⟨⟨n * p, m * q, kroneckerMatrixTensor' _ _ _ _|>.symm.trans <|
+  exact ⟨⟨n * p, m * q, kroneckerMatrixTensor' .. |>.symm.trans <|
     Algebra.TensorProduct.congr e1 e2|>.trans <| kroneckerMatrixTensor' ..⟩⟩
 
 abbrev BrGroup := Quotient $ CSA_Setoid (K := K)

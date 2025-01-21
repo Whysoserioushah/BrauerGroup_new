@@ -1,0 +1,401 @@
+\subsection{$\HH^{2} \circ \cross$ and $\cross \circ \HH^{2}$}
+
+For a finite dimensional Galois extension of field $K/F$, we have constructed two functions $\HH^{2}$ and $\cross$ between the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ and the relative Brauer group $\br(K/F)$. In this section, we prove that they are mutual inverse to one another,
+
+\begin{lemma}\label{lem:relative-br-snd-inverse-1}
+  The composition of $\cross$ and $\HH^{2}$ is the identity:
+  \begin{center}
+    \begin{tikzcd}
+      \displaystyle \HH^2\left(\gal(K/F), K^\star\right) \arrow{r}{\cross} \arrow[bend right = 15, swap]{rr}{\id} &
+      \br(K/F) \arrow{r}{\HH^2} & \displaystyle \HH^2\left(\gal(K/F), K^\star\right).
+    \end{tikzcd}
+  \end{center}
+  \leanok
+  \lean{RelativeBrGroup.toSnd_fromSnd}
+  % \uses{lem:cross-product-basis-conj,con:good-rep-to-2-cocycles,cor:to-2-cocycle-wd, thm:snd-coh-to-relative-br, con:compare-conj-factors}
+\end{lemma}
+\begin{proof}
+  Let $\mfa$ be any 2-cocycle, by~\cref{lem:cross-product-basis-conj}, we notice that $x : \sigma \mapsto \Delta_{\sigma, 1}$ is a conjugation sequence for $\cross_{\mfa}$. Hence by~\cref{con:good-rep-to-2-cocycles}, ~\cref{cor:to-2-cocylce-wd} and~\cref{thm:snd-coh-to-relative-br}, we evaluate the composition at $\mfa$ as:
+  \begin{center}
+    \begin{tikzcd}
+      {[\mfa]} \arrow[mapsto]{r} & {\left[\cross_\mfa\right]_{\sim_{\br}}} \arrow[mapsto]{r}& {\left[(\sigma,\tau)\mapsto\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right]}
+    \end{tikzcd}.
+  \end{center}
+  That is, we need to show that $\mfa$ and $(\sigma, \tau) \mapsto \comp_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}$ are 2-cohomologous. In fact, they are equal.
+  By~\cref{con:compare-conj-factors}, we have that $\iota_{\cross_{\mfa}}\left(\comp^{x}_{\Delta_{\sigma, 1}, \Delta_{\tau, 1}, \Delta_{\sigma\tau, 1}}\right) = \Delta_{\sigma, 1}\Delta_{\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot \Delta_{\sigma\tau, 1}\Delta_{\sigma\tau, 1}^{-1} = \mfa(\sigma,\tau)\cdot 1 = \Delta_{\id,\mfa(\sigma,\tau)}$ which is precisely $\iota_{\cross_{\mfa}}(\mfa(\sigma,\tau))$.
+\end{proof}
+
+\begin{lemma}\label{lem:relative-br-snd-inverse-2}
+  The composition of $\HH^{2}$ and $\cross$ is the identity:
+  \begin{center}
+    \begin{tikzcd}
+      \br(K/F) \arrow{r}{\HH^2} \arrow[bend right = 15, swap]{rr}{\id} &
+      \HH^2\left(\gal(K/F), K^\star\right) \arrow{r}{\cross} &
+      \br(K/F)
+    \end{tikzcd}.
+  \end{center}
+  \leanok
+  \lean{RelativeBrGroup.fromSnd_toSnd}
+  % \uses{cor:mem-relative-br-iff-good-rep, con:exists-conj-seq, def:good-rep, cor:to-2-cocycle-wd, thm:snd-coh-to-relative-br, con:good-rep-mod, con:compare-conj-factors, def:conj-factor}
+\end{lemma}
+\begin{proof}
+  Let $X \in \br(K/F)$, $A$ be an arbitrary good representation of $X$ and $x$ be an arbitrary $A$-conjugation sequence which exists by~\cref{cor:mem-relative-br-iff-good-rep} and~\cref{con:exists-conj-seq}. By~\cref{def:good-rep}, $X = \left[A\right]_{\sim_{\br}}$.
+  Hence by~\cref{cor:to-2-cocylce-wd} and~\cref{thm:snd-coh-to-relative-br}, we evaluate the composition at $X$ as:
+  \begin{center}
+    \begin{tikzcd}
+      {[A]_{\sim_{\br}}} \arrow[mapsto]{r} &
+      {\left[\mathcal{B}^2_x\right]} \arrow[mapsto]{r} &
+      {\left[\cross_{\mathcal{B}^2_x}\right]}
+    \end{tikzcd}.
+  \end{center}
+  Hence we need to prove that $A$ and $\cross_{\mathcal{B}^{2}_{x}}$ are Brauer equivalent. We will show that they are isomorphic as $F$-algebras. since $\{x_{\sigma}|\sigma\in\gal(K/F)\}$ is a $K$-basis for $A$ and $\{\Delta_{\sigma, 1}|\sigma \in \gal(K/F)\}$ is a $K$-basis for $\cross_{\mathcal{B}^{2}_{x}}$, they are certainly isomorphic as $K$-modules. Let $\phi : \cross_{\mathcal{B}^{2}_{x}} \cong A$ be the $K$-linear isomorphism defined by $\Delta_{\sigma, 1} \mapsto x_{\sigma}$, since the $K$-action on $A$ and the $F$-action on $A$ are compatible (\cref{con:good-rep-mod}), $\phi$ is also an $F$-linear isomorphism. Like in~\cref{thm:snd-coh-to-relative-br}, we check that $\phi(1) = 1$ and $\phi(xy)=\phi(x)\phi(y)$ for all $x,y \in A$:
+  \begin{enumerate}
+    \item preservation of one: by~\cref{con:compare-conj-factors}, we have
+          \[
+          \begin{aligned}
+            \phi(1)
+            &= \phi\left(\Delta_{\id,\mathcal{B}^{2}_{x}(\id,\id)^{-1}}\right) \\
+            &= \mathcal{B}^{2}_{x}(\id,\id)^{-1} \phi\left(\Delta_{\id, 1}\right) \\
+            &= \mathcal{B}^{2}_{x}(\id,\id)^{-1} x_{\id} \\
+            &= \comp_{x_{\id},x_{\id},x_{\id}}^{-1} x_{\id} \\
+            &= \comp_{x_{\id},x_{\id},x_{\id}} x_{\id} x_{\id} x_{\id}^{-1} \\
+            &= x_{\id} x_{\id}^{-1} \\
+            &= 1.
+          \end{aligned}
+          \]
+    \item preservation of multiplication: let $\sigma,\tau\in\gal(K/F)$ and $c,d \in K$, by~\cref{con:compare-conj-factors} and~\cref{def:conj-factor}, we have
+          \[
+          \begin{aligned}
+            \phi\left(\Delta_{\sigma,c}\Delta_{\tau,d}\right)
+            &= \phi\left(\Delta_{\sigma\tau, c\sigma(d)\mathcal{B}^{2}_{x}(\sigma,\tau)}\right) \\
+            &= c\sigma(d)\mathcal{B}^{2}_{x}(\sigma,\tau) \,\cdot\, \phi\left(\Delta_{\sigma\tau, 1}\right) \\
+            &= c\sigma(d)\mathcal{B}^{2}_{x}(\sigma,\tau) \,\cdot\, x_{\sigma\tau} \\
+            &= c\sigma(d)\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}} \,\cdot\, x_{\sigma\tau} \\
+            &= c\sigma(d)\,\cdot\, \iota_{A}\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\sigma\tau} \\
+            &= c\sigma(d) \,\cdot\, x_{\sigma}x_{\tau}\\
+            %%%%
+            %%%%
+            \phi\left(\Delta_{\sigma,c}\right)\phi\left(\Delta_{\tau,d}\right)
+            &=\left(c \cdot \phi\left(\Delta_{\sigma, 1}\right)\right)
+              \left(d \cdot \phi\left(\Delta_{\tau, 1}\right)\right) \\
+            &= \left(c \cdot x_{\sigma}\right) \left(d \cdot x_{\tau}\right)\\
+            &= c \,\cdot\, x_{\sigma}\iota_{A}(d) x_{\tau} \\
+            &= c\sigma_{d} \,\cdot\, x_{\sigma}x_{\tau}.
+          \end{aligned}
+          \]
+  \end{enumerate}
+\end{proof}
+
+\begin{corollary}\label{cor:relative-br-2nd-coh-bij}
+  For a finite dimensional and Galois extension of field $K/F$, the relative Brauer group $K/F$ bijects to the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ by the following commutative diagram
+  \begin{center}
+  \begin{tikzcd}
+    {\br(K/F)} \arrow{r}{\HH^2} \arrow[equal]{d} & {\HH^2\left(\gal(K/F), K^\star\right)} \arrow[equal]{d} \\
+    {\br(K/ F)} & {\HH^2\left(\gal(K/F), K^{\star}\right)} \arrow{l}{\cross}
+  \end{tikzcd}.
+\end{center}
+\leanok
+\lean{RelativeBrGroup.equivSnd}
+% \uses{lem:relative-br-snd-inverse-1,lem:relative-br-snd-inverse-2}
+\end{corollary}
+
+\begin{proof}
+  Exactly~\cref{lem:relative-br-snd-inverse-1} and~\cref{lem:relative-br-snd-inverse-2}.
+\end{proof}
+
+\subsection{Group Homomorphism}
+
+In previous sections, when $K/F$ is a finite dimensional Galois extension, we have set up a bijection between the relative Brauer group $\br(K/F)$ and the second cohomology group $\HH^{2}\left(\gal(K/F), K^{\star}\right)$. But both functions $\HH^{2}$ and $\cross$ are only set-theoretical function. In this section, we aim to upgrade them to group homomorphisms. Technically, we only need to prove either one of them preserves multiplication; we provide a proof that $\HH^{2}$ preserves one anyway because we found the proof to be entertaining.
+
+\subsubsection{$\cross_{1} = 1$ and $\HH^{2}(1) = 1$}
+
+\begin{theorem}
+  \label{thm:map_one}
+  The function $\cross:\HH^{2}\left(\gal(K/F), K^{\star}\right) \to \br(K/F)$ preserves one, that is $\cross_{}$
+ \leanok
+ \lean{map_one_proof.fromSnd_zero}
+ % \uses{lem:cross-product-basis, cor:alghom-bijective-of-dim-eq}
+\end{theorem}
+
+\begin{proof}
+  Since $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ is a $K$-basis for $\cross_{1}$ where $1 \in \mathcal{B}^{2}\left(\gal(K/F),K^{\star}\right)$ is the constant function $1$ (\cref{lem:cross-product-basis}), we construct a $K$-linear map $\phi : \cross_{1} \to \End_{F} K$ by $\Delta_{\sigma, 1} \mapsto \sigma$; note that $\phi$ is $F$-linear as well. In fact, $\phi$ is also an $F$-algebra homomorphism:
+  \begin{enumerate}
+    \item $\phi(1) = 1$: indeed $\phi\left(\Delta_{\id,1}\right) = \id$.
+    \item $\phi(xy) = \phi(x)\phi(y)$: indeed, let $\sigma,\tau\in\gal(K/F)$ and $c,d\in K$, we need to check that $\phi\left(\Delta_{\sigma,c}\Delta_{\tau,d}\right) = \phi\left(\Delta_{\sigma,c}\right)\phi\left(\Delta_{\tau,d}\right)$. The left hand side is equal to
+          \[\phi\left(\Delta_{\sigma\tau,c\sigma(d)}\right) = \phi\left(c\sigma(d)\,\cdot\, \Delta_{\sigma\tau,1}\right) = c\sigma(d)\,\cdot\, \sigma\tau;\]
+          and the right hand side is equal to
+          \[
+        \phi\left(c\cdot \Delta_{\sigma,1}\right)\phi\left(d\cdot \Delta_{\tau, 1}\right) = (c \cdot \sigma) (d \cdot \tau).
+          \]
+          For any $x \in K$, applying left hand side to $x$ will result in $c\sigma(d)\sigma(\tau(x))$ while right hand side will result in $c\sigma(d\tau(x))$, hence both sides are equal.
+  \end{enumerate}
+  Hence, $\phi$ is an $F$-algebra isomorphism by~\cref{cor:alghom-bijective-of-dim-eq}; that is we have $\cross_{1} \cong \End_{F}K \cong\mat_{\dim_{F}K}(F)$. We conclude that $\cross_{1}$ is Brauer equivalent to $F$ and consequently $\HH^{2}(1) = 1$.
+\end{proof}
+
+
+\begin{corollary}
+  The function $\HH^{2}:\br(K/F) \to \HH^{2}\left(\gal(K/F), K^{\star}\right)$ preserves one, that is $\HH^{2}(1) = 1$.
+  \leanok
+  \lean{RelativeBrGroup.toSndAddMonoidHom}
+  % \uses{lem:relative-br-snd-inverse-2,thm:map_one}
+\end{corollary}
+\begin{proof}
+  Apply $\cross$ then use~\cref{lem:relative-br-snd-inverse-2} and~\cref{thm:map_one}.
+\end{proof}
+
+\subsubsection{$\cross_{\mfa\mfb}\sim_{\br}\cross_{\mfa}\otimes_{F}\cross_{\mfb}$}
+The argument in this section is more complicated, because, unlike before, the left hand side and the right hand side are not isomorphic as $F$-algebras --- left hand side has $F$-dimension $\left(\dim_{F}K\right)$ while the right hand side has $F$-dimension $\left(\dim_{F}K\right)^{4}$. Let $\mfa$ and $\mfb$ be two 2-cocycles in $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, we denote $\mfc$ to be the 2-cocycle $\mfa \mfb$. Intuitively, $\cross_{\mfa} \ox_{F} \cross_{\mfb}$ is too ``big'', to address this issue we introduce a quotient module.
+
+\begin{construction}[$M$]
+  Consider the quotient module
+  \[M := {}^{\cross_{\mfa}\ox_{F}\cross_{\mfb}}/_{\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle}.\]
+  For any $a' \in \cross_{\mfa}$ and $b' \in \cross_{\mfb}$, we can define an $F$-linear map $M \to M$ by descending the $F$-linear map
+$\cross_{\mfa}\ox_{F}\cross_{\mfb} \to \cross_{\mfa}\ox \cross_{\mfb}$
+  \[
+      a\ox b \mapsto aa' \ox bb';
+    \]
+    we need to check that for all $k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb}$, the image of $(k\cdot a)\ox b - a\ox(k\cdot b)$ is in $\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle$:
+    the image is $(k\,\cdot\, aa')\ox b - a\ox(k\,\cdot\, bb')$ which is in the generating set with $k \in K, aa' \in\cross_{\mfa}, $ and $bb'\in\cross_{\mfb}$.
+  This map is in fact $F$-linear in both $a'$ and $b'$, hence we have an $F$-bilinear map $\cross_{\mfa}\ox\cross_{\mfb} \to M \to M$.
+  This gives $M$ a $\left(\cross_{\mfa}\ox_{F}\cross_{\mfb}\right)^{\opp}$-module structure given by
+  \[
+    (a' \ox b') \cdot [a\ox b] = aa' \ox bb'
+  \]
+  for any $a,a' \in \cross_{\mfa}$ and $b, b' \in\cross_{\mfb}$. All of the module axioms in this case follows from $F$-bilinearity.
+
+
+  For any $c \in \cross_{\mfc}$, we can define another $F$-linear map $M \to M$ by descending the $F$-linear map $\cross_{\mfa}\ox_{F}\cross_{\mfb} \to \cross_{\mfa}\ox \cross_{\mfb}$
+  \[
+      a \ox b \mapsto \sum_{\sigma\in\gal(K/F)} \Delta^{\mfa}_{\sigma,c(\sigma)}a \, \ox \, \Delta^{\mfb}_{\sigma, 1}b;
+    \]
+    we need check that for all $k \in K, a \in\cross_{\mfa}, b \in \cross_{\mfb}$, the image of $(k\cdot a)\ox b - a \ox (k\cdot b)$ is in
+    $\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle$: by~\cref{lem:cross-product-basis-conj} the image is
+    \[
+\begin{aligned}
+      & \sum_{\sigma\in\gal(K/F)}
+      \Delta^{\mfa}_{\sigma, c(\sigma)}(k \cdot a) \,\ox\, \Delta^{\mfb}_{\sigma, 1}b
+      -
+        \Delta^{\mfa}_{\sigma, c(\sigma)}a \,\ox\, \Delta^{\mfb}_{\sigma, 1}(k \cdot b) \\
+  = & \sum_{\sigma\in\gal(K/F)}
+      \Delta^{\mfa}_{\sigma,c(\sigma)}\iota_{\mfa}(k)a \,\ox\, \Delta^{\mfb}_{\sigma,1}b
+      -
+      \Delta^{\mfa}_{\sigma,c(\sigma)} \,\ox\, \Delta^{\mfb}_{\sigma, 1}\iota_{\mfb}(k)b \\
+  =& \sum_{\sigma\in\gal(K/F)}
+     \sigma(k)\cdot\Delta^{\mfa}_{\sigma, c(\sigma)}a \,\ox\, \Delta^{\mfb}_{\sigma, 1}b
+     - \Delta^{\mfa}_{\sigma, c(\sigma)} \,\ox\, \sigma(k)\cdot\Delta^{\mfb}_{\sigma,1}b,
+  \end{aligned}
+\]
+which is in $\left\langle (k\cdot a)\ox b - a \ox (k\cdot b) | k \in K, a \in \cross_{\mfa}, b \in \cross_{\mfb} \right\rangle$ because for each $\sigma \in \gal(K/F)$, the summand is in the generating set with $\sigma(k) \in K, \Delta^{\mfa}_{\sigma, c(\sigma)}a \in \cross_{\mfa}$ and $\Delta^{\mfb}_{\sigma, 1}b \in \cross_{\mfb}$. This map is in fact $F$-linear in $c$, therefore we have an $F$-bilinear map $\cross_{\mfc}\to M \to M$. (In the above calculation ``$\ox$'' symbol has low precedence.) This gives $M$ a $\cross_{\mfc}$-module structure given by
+\[
+  c \cdot [a \ox b] = \left[\sum_{\sigma\in\gal(K/F)}\Delta^{\mfa}_{\sigma, c(\sigma)}a \ox \Delta^{\mfb}_{\sigma, 1}b\right].
+\]
+In particular, if $c$ is of the form $k \cdot \Delta^{\mfc}_{\tau, 1}$, then $\left(k\cdot \Delta^{\mfc}_{\tau, 1}\right)\cdot [a \ox b]$ is equal to $\left[\left(k\cdot \Delta^{\mfa}_{\tau,1}\right)a \ox \Delta^{\mfb}_{\tau, 1} b\right]$ because $\Delta_{\tau, 1}^{\mfc}(\sigma) = 0$ for all $\sigma \ne \tau$. Two of the module axioms need more than $F$-bilinearity:
+\begin{itemize}
+  \item $c = 1$: note that $c = 1 = \mfb(\id,\id)^{-1}\mfa(\id,\id)^{-1}\,\cdot\,\Delta^{\mfc}_{\id, 1}$, hence
+        \[
+        \begin{aligned}
+          1 \cdot [a\ox b]
+          &= [\mfb(\id,\id)^{-1}\mfa(\id,\id)^{-1}\Delta^{\mfa}_{\id,1}a \ox \Delta^{\mfb}_{\id, 1}b] \\
+          &= [\Delta^{\mfa}_{\id,\mfa(\id,\id)^{-1}}a \ox \Delta^{\mfb}_{\id,\mfb(\id,\id)^{-1}}b] \\
+          &= [a\ox b].
+        \end{aligned}
+        \]
+  \item $c_{1}c_{2}\cdot [a \ox b] = c_{1}\cdot c_{2}\cdot [a\ox b]$: assume $c_{1} = k_{1}\cdot\Delta^{\mfc}_{\tau_{1}, 1}$ and $c_{2}=k_{2}\cdot\Delta^{\mfc}_{\tau_{2},1}$. Then $c_{1}c_{2} = k_{1}\tau_{1}\left(k_{2}\right)\cdot \Delta^{\mfc}_{\tau_{1}\tau_{2},\mfc(\tau_{1},\tau_{2})} = k_{1}\tau_{1}\left(k_{2}\right)\mfa(\tau_{1},\tau_{2})\mfb(\tau_{1},\tau_{2})\cdot \Delta^{\mfc}_{\tau_{1}\tau_{2},1}$.
+        Therefore, the left hand side is equal to
+        \[
+        \begin{aligned}
+          & \left[\left(k_{1}\tau_{1}(k_{2})\mfa(\tau_{1},\tau_{2})\mfb(\tau_{1},\tau_{2})\cdot \Delta^{\mfa}_{\tau_{1}\tau_{2}, 1}\right)a \ox \Delta^{\mfb}_{\tau_{1}\tau_{2},1}b\right] \\
+          =& \left[
+             k_{1}\tau_{1}(k_{2})\mfa(\tau_{1},\tau_{2})\cdot \Delta^{\mfa}_{\tau_{1}\tau_{2},1} a \ox \mfb(\tau_{1},\tau_{2})\Delta^{\mfb}_{\tau_{1}\tau_{2}, 1}b
+             \right]\\
+          =& \left[
+             \Delta^{\mfa}_{\tau_{1},k_{1}}\Delta^{\mfa}_{\tau_{2},k_{2}} a \ox
+             \Delta^{\mfb}_{\tau_{1},1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right];
+        \end{aligned}
+        \]
+        and the right hand side is also equal to
+        \[
+        \begin{aligned}
+        &\left(k_{1}\cdot \Delta^{\mfc}_{\tau_{1}, 1}\right)
+        \left[
+        k_{2}\cdot\Delta^{\mfa}_{\tau_{2},1}a \ox \Delta^{\mfb}_{\tau_{2}, 1} b
+          \right] \\
+          =& \left[
+             \left(k_{1}\cdot \Delta^{\mfa}_{\tau_{1}, 1}\right)\left(k_{2}\cdot\Delta^{\mfa}_{\tau_{2}, 1}\right)a \ox
+             \Delta^{\mfb}_{\tau_{1},1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right]\\
+          =&\left[
+           k_{1}\tau_{1}(k_{2})\cdot \Delta^{\mfa}_{\tau_{1}\tau_{2},\mfa(\tau_{1},\tau_{2})}a \ox \Delta^{\mfb}_{\tau_{1}, 1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right]\\
+          =&\left[
+             \left(k_{1}\cdot \Delta^{\mfa}_{\tau_{1}, 1}\right)\left(k_{2}\cdot\Delta^{\mfa}_{\tau_{2}, 1}\right)a \ox
+             \Delta^{\mfb}_{\tau_{1},1}\Delta^{\mfb}_{\tau_{2},1}b
+             \right].
+          \end{aligned}
+        \]
+\end{itemize}
+
+Expanding everything out and checking on the basic elements, we see that for any $x \in \left(\cross_{\mfa}\ox_{F}\cross_{\mfb}\right)^{\opp}$, $y \in \cross_{\mfc}$ and $z \in M$, $x \cdot y \cdot z = y \cdot x \cdot z$. In another word, we gave $M$ a $\left(\cross_{\mfc}, \cross_{\mfa} \ox_{F} \cross_{\mfb}\right)$-bimodule structure.
+  \leanok
+  \lean{map_mul_proof.M, map_mul_proof.Aox_FB_op_tmul_smul_mk_tmul, map_mul_proof.C_smul_calc}
+  % \uses{lem:cross-product-basis-conj}
+\end{construction}
+
+
+\begin{lemma}\label{lem:M-iso-tensor-over-K}
+  $M$ is isomorphic to $\cross_{\mfa}\ox_{K}\cross_{\mfb}$ as $F$-modules.
+  \leanok
+  \lean{map_mul_proof.Aox_KBEquivM}
+\end{lemma}
+\begin{proof}
+  The map $M \to \cross_{\mfa}\ox_{K}\cross_{\mfb}$ is obtained by descending the obvious $F$-linear map $\cross_{\mfa}\ox_{F}\cross_{\mfb}\to\cross_{\mfa}\ox_{K}\cross_{\mfb}$.
+  By universal property of tensor product, there is an additive group homomorphism $\cross_{\mfa}\ox_{K}\cross_{\mfb} \to M$ given by $a \ox b \mapsto [a\ox b]$, this map is in fact $F$-linear. The two maps are inverse to each other.
+\end{proof}
+
+\begin{corollary}\label{cor:dim-finite-M}
+  The $F$-dimension of $M$ is equal to ${\left(\dim_{F}K\right)}^{3}$, consequently $M$ is a finitely generated $\cross_{\mfc}$-module.
+  \leanok
+  \lean{map_mul_proof.M_F_dim}
+  % \uses{lem:M-iso-tensor-over-K, lem:cross-product-basis}
+\end{corollary}
+\begin{proof}
+  By~\cref{lem:M-iso-tensor-over-K}, the dimension of $M$ is equal to $\dim_{F}\cross_{\mfa}\ox_{K}\cross_{\mfb} = \dim_{K}\cross_{\mfa}\ox_{K}\cross_{\mfb}\dim_{F}K$. By~\cref{lem:cross-product-basis}, $\dim_{K}\cross_{\mfa} = \dim_{K}\cross_{\mfb} = \dim_{F}K$.
+\end{proof}
+
+\begin{construction}\label{con:cross-product-mul-iso}
+  By~\cref{lem:direct-sum-simple-mod}, there exists some simple $\cross_{\mfc}$-module $S$ such that $\cross_{\mfc}$ is isomorphic to $\bigoplus_{i\in J}S$ as $\cross_{\mfc}$-module for some indexing set $J$. If we give $S$ the $F$-module structure by pulling back the $\cross_{\mfc}$-module structure, by restricting scalars $\cross_{\mfc}$ is isomorphic to $\bigoplus_{i\in J} S$ as $F$-module as well. Since $\cross_{\mfc}$ is a finite dimensional $F$-vector space, $J$ must be finite as well. Note that $S$ must be a finite dimensional $F$-vector space, because $S$ is finitely generated as $\cross_{\mfc}$-module and $\cross_{\mfc}$ has finite $F$-dimension.
+  The indexing set $J$ must be nonempty, otherwise $\cross_{\mfc}$ being isomorphic to $\bigoplus_{\emptyset} S$ is a trivial ring; but simple rings are non-trivial. Since $J$ is finite, direct sum over $J$ and direct product over $J$ agree.
+  Recall~\cref{con:self-tensor-opp-iso-end} and~\cref{con:end-vec-iso-matrix}, for all non-zero $m \in\mathbb{N}$, we have
+  \[
+    \End_{\cross_{\mfc}}\left(S^{m}\right) \cong \mat_{m}\left(\End_{\cross_{\mfc}}S\right)
+  \]
+  as $F$-algebras, hence
+  \[
+    \cross_{\mfc}^{\opp} \cong \End_{\cross_{\mfc}}\cross_{\mfc}\cong \End_{\cross_{\mfc}}S^{|J|} \cong \mat_{|J|}\left(\End_{\cross_{\mfc}}S\right)
+  \]
+  as $F$-algebras.
+  Finally
+  \[
+    \cross_{\mfc}\cong \mat_{|J|}\left(\End_{\cross_{\mfc}}\left(S\right)^{\opp}\right)
+  \]
+  as $F$-algebras.
+  \leanok
+  \lean{map_mul_proof.exists_simple_module_directSum,map_mul_proof.isoDagger, map_mul_proof.mopEquivEnd', map_mul_proof.C_iso}
+  % \uses{lem:direct-sum-simple-mod, con:self-tensor-opp-iso-end, con:end-vec-iso-matrix}
+\end{construction}
+
+\begin{corollary}\label{cor:dim-eq-1}
+  \[
+    \left(\dim_{F}K\right)^{2} = |J|^{2}\dim_{F}\End_{\cross_{\mfc}}S.
+  \]
+  \leanok
+  \lean{map_mul_proof.dim_endCSM}
+  % \uses{con:cross-product-mul-iso}
+\end{corollary}
+\begin{proof}
+  They are both equal to $\dim_{F}\cross_{\mfc}$ by~\cref{con:cross-product-mul-iso}.
+\end{proof}
+
+\begin{corollary}\label{cor:dim-eq-2}
+  \[
+    |J|\dim_{F}S = \left(\dim_{F}K\right)^{2}
+  \]
+  \leanok
+  \lean{map_mul_proof.SM_F_dim}
+  % \uses{con:cross-product-mul-iso}
+\end{corollary}
+\begin{proof}
+  They are all equal to $\dim_{F}\cross_{\mfc} = \dim_{F}S^{|J|}$ by~\cref{con:cross-product-mul-iso}.
+\end{proof}
+
+\begin{lemma}\label{lem:M-iso-simple-pow}
+  There exists a $\cross_{\mfc}$-linear isomorphism between $M$ and $S^{|J|\dim_{F}K}$.
+  % Consequently there also exists an $F$-linear isomorphism between $M$ and $S^{|J|\dim_{F}K}$ and $F$-algebra isomorphism between $\End_{\cross_{\mfc}}M$ and $\End_{\cross_{\mfc}}\left(S^{|J|\dim_{F}K}\right)\cong\mat_{|J|\dim_{F}K}\left(S\right)$.
+  \leanok
+  \lean{map_mul_proof.M_iso_pow}
+  % \uses{lem:iso-of-dim-eq, cor:dim-finite-M, cor:dim-eq-2}
+\end{lemma}
+
+\begin{proof}
+  By~\cref{lem:iso-of-dim-eq}, we only need to show that $\dim_{F}M = \dim_{F}S^{|J|\dim_{F}K}$. We already have $\dim_{F}M = \left(\dim_{F}K\right)^{3}$ by~\cref{cor:dim-finite-M}. We also have $\dim_{F}S^{|J|\dim_{F}K} = |J|\dim_{F}K\dim_{F}S = \dim_{F}K \left(|J|\dim_{F}S\right) = \dim_{F}K\left(\dim_{F}K\right)^{2}$ by~\cref{cor:dim-eq-2}.
+\end{proof}
+
+\begin{corollary}\label{cor:M-iso-simple-pow}
+  As $F$-vector spaces, $M \cong S^{|J|\dim_{F}K}$.
+  \leanok
+  \lean{map_mul_proof.M_iso_pow'}
+  % \uses{lem:M-iso-simple-pow}
+\end{corollary}
+\begin{proof}
+  Restricting scalars on the $\cross_{\mfc}$-linear isomorphism in~\cref{lem:M-iso-simple-pow}
+\end{proof}
+
+\begin{corollary}\label{cor:end-M-iso-mat}
+  As $F$-algebras, $\End_{\cross_{\mfc}}M \cong \mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S)$.
+  \leanok
+  \lean{map_mul_proof.endCMIso'}
+  % \uses{cor:M-iso-simple-pow, con:end-vec-iso-matrix}
+\end{corollary}
+\begin{proof}
+  From~\cref{cor:M-iso-simple-pow}, we have $\End_{\cross_{\mfc}}M\cong \End_{\cross_{\mfc}}\left(S^{|J|\dim_{F}K}\right)$. By~\cref{con:end-vec-iso-matrix}, they are isomorphic to $\mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S)$.
+\end{proof}
+
+\begin{corollary}\label{cor:dim-eq-3}
+  \[
+    \dim_{F}\End_{\cross_{\mfc}}M = {\left(\dim_{F}K\right)}^{4}.
+  \]
+  \leanok
+  \lean{map_mul_proof.dim_endCM}
+  % \uses{cor:dim-eq-1}
+\end{corollary}
+
+\begin{proof}
+  \[
+    \begin{aligned}
+      \dim_{F}\End_{\cross_{\mfc}M}
+      &= \dim_{F}\mat_{|J|\dim_{F}K}(\End_{\cross_{\mfc}}S) \\
+      &= \dim_{F}\left(\End_{\cross_{\mfc}}S\ox_{F}\mat_{|J|\dim_{F}K}(F)\right)\\
+      &= |J|^{2}\left(\dim_{F}K\right)^{2}\dim_{F}\End_{\cross_{\mfc}}S\\
+      &= \left(\dim_{F}K\right)^{2}\left(|J|^{2}\dim_{F}\End_{\cross_{\mfc}}S\right) \\
+      &= \left(\dim_{F}K\right)^{2}\left(\dim_{F}K\right)^{2},
+    \end{aligned}
+  \]
+  where the last equality is by~\cref{cor:dim-eq-1}.
+\end{proof}
+
+\begin{theorem}\label{thm:cross-mul}
+  The cross product $\cross_{\mfc}$ and the tensor product $\cross_{\mfa}\ox_{F}\cross_{\mfb}$ are Brauer equivalent.
+  \leanok
+  \lean{map_mul_proof.isBrauerEquivalent}
+  % \uses{cor:dim-eq-3, cor:alghom-bijective-of-dim-eq, cor:end-M-iso-mat, con:cross-product-mul-iso}
+\end{theorem}
+
+\begin{proof}
+  We define an $F$-algebra homomorphism $\phi : \left(\cross_{\mfa}\ox_{F}\cross_{\mfb}\right)^{\opp} \to \End_{\cross_{\mfc}}M$ by
+  $x \mapsto (x \cdot \bullet)$. By~\cref{cor:dim-eq-3}, both sides has $F$-dimension $\left(\dim_{F}K\right)^{4}$, therefore, $\phi$ is an $F$-algebra isomorphism by~\cref{cor:alghom-bijective-of-dim-eq}. Hence we have another $F$-algebra isomorphism by composing the isomorphism in~\cref{cor:end-M-iso-mat}:
+  \[
+    \phi^{\opp}:\cross_{\mfa}\ox_{F}\cross_{\mfb}\cong \left(\End_{\cross_{\mfc}}M\right)^{\opp}\cong \mat_{|J|\dim_{F}K}\left(\left(\End_{\cross_{\mfc}}S\right)^{\opp}\right).
+  \]
+  In the meantime, by~\cref{con:cross-product-mul-iso}, we have $\cross_{\mfc}\cong\mat_{|J|}\left(\left(\End_{\cross_{\mfc}}S\right)\opp\right)$; hence $\mat_{\dim_{F}K}\left(\cross_{\mfc}\right)$ is isomorphic to $\cross_{\mfa}\ox_{F}\cross_{\mfb}$.
+\end{proof}
+
+\begin{corollary}[group isomorphism]
+  For a finite dimensional Galois field extension $K/F$, the relative Brauer group $\br(K/F)$ is isomorphic to the second group cohomology $\HH^{2}\left(\gal(K/F),K^{\star}\right)$.
+  \leanok
+  \lean{RelativeBrGroup.isoSnd}
+  % \uses{cor:relative-br-2nd-coh-bij, thm:cross-mul}
+\end{corollary}
+\begin{proof}
+  In~\cref{cor:relative-br-2nd-coh-bij}, we have seen that $\HH^{2}$ and $\cross$ form a bijection, thus it is sufficient to check either one of them preserves multiplication. The function $\cross: \HH^{2}\left(\gal(K/F), K^{\star}\right)$ preserves multiplication: let $[\mfa], [\mfb]$ be two elements in $\HH^{2}\left(\gal(K/F), K^{\star}\right)$, by~\cref{thm:cross-mul}$, \cross(\mfa\mfb)$ is indeed Brauer equivalent to $\cross(\mfa)\ox_{F}\cross(\mfb)$ that is
+  \[
+    \left[\cross_{\mfa}\right]_{\sim_{\br}}\left[\cross_{\mfb}\right]_{\sim_{\br}} = \left[\cross_{\mfa\mfb}\right].
+  \]
+\end{proof}
+
+
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:

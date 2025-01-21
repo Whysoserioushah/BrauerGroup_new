@@ -1,0 +1,1252 @@
+% !TEX root = ../print.tex
+\chapter{Brauer Group}\label{cha:brauer-group}
+
+\section{Construction of Brauer Group}
+Let $K$ be a field. We denote the class of finite dimensional central simple $K$-algebras as $\CSA_{K}$. When $K$ is clear, we drop the subscript.
+
+\begin{remark}
+  By~\cref{lem:tensor-central} and~\cref{thm:tensor-csa}, $\CSA$ is closed under tensor product, that is if $A, B\in\CSA$, we have $A\otimes_{K} B\in\CSA$ as well.
+\end{remark}
+
+\begin{definition}[Brauer Equivalence]\label{def:br-eqv}
+  For any two $A, B\in\CSA$, we say $A$ and $B$ are Brauer equivalent, when there exists $m, n \in \mathbb{N}_{\ge0}$ such that $\Mat_{m}(A)\cong \Mat_{n}B$ as $K$-algebras. We denote this relation as $A\sim_{\Br_{K}} B$, when $K$ is clear, we drop the subscript.
+\end{definition}
+
+\begin{remark}
+  Isomorphic $K$-algebras are Brauer equivalent.
+\end{remark}
+
+\begin{lemma}
+  $\sim_{\Br}$ is reflexive.
+  \leanok
+  \lean{IsBrauerEquivalent.refl}
+\end{lemma}
+\begin{proof}
+  Indeed, $A \cong \Mat_{1}(A)$ as $K$-algerbas.
+\end{proof}
+
+\begin{lemma}
+  $\sim_{\Br}$ is symmetric.
+  \leanok
+  \lean{IsBrauerEquivalent.symm}
+\end{lemma}
+\begin{proof}
+  Indeed, just exchange $m$ and $n$.
+\end{proof}
+
+\begin{lemma}
+  $\sim_{\Br}$ is transitive.
+  \leanok
+  \lean{IsBrauerEquivalent.trans}
+  \uses{con:matrix-matrix}
+\end{lemma}
+\begin{proof}
+  Let $A\sim_{\Br}B$ and $B\sim_{\Br}C$; that is for some $m,n,p, q\in\mathbb{N}_{\ge0}$ we have $\Mat_{n}(A)\cong\Mat_{m}(B)$ and $\Mat_{p}(B)\cong \Mat_{q}(C)$ as $K$-algebras. Hence, from~\cref{con:matrix-matrix}, we have the following:
+  \[
+    \begin{aligned}
+      \Mat_{np}(A)&\cong \Mat_{p}\left(\Mat_{n}(A)\right)\cong\Mat_{p}\left(\Mat_{m}(B)\right)\\
+                  &\cong\Mat_{mp}(B)\cong\Mat_{m}\left(\Mat_{p}(B)\right)\\
+      &\cong\Mat_{m}\left(\Mat_{q}(C)\right)\cong\Mat_{mq}(C).
+    \end{aligned}
+  \]
+  In another word, $A\sim_{\Br}C$.
+\end{proof}
+
+Hence $\sim_{\Br}$ is really an equivalence relation, we denote the quotient ${}^{\CSA}/_{\sim_{\Br}}$ as $\Br(K)$.
+
+\begin{lemma}\label{lem:br-mul-wd}
+  $(\bullet\otimes_{K}\bullet):\CSA\times\CSA \to \CSA$ descends to a function on $\Br(K)$.
+  \leanok
+  \lean{BrauerGroup.eqv_tensor_eqv}
+  \uses{con:matrix-tensor-matrix}
+\end{lemma}
+\begin{proof}
+  We need to prove that for all $A, B, C, D \in \CSA$ such that $A\sim_{\Br} B$ and $C\sim_{\Br}D$, $A\otimes_{R}C \sim_{\Br} B\otimes_{R}D$ as well.
+  Suppose $\Mat_{m}(A)\cong \Mat_{n}(B)$ as $K$-algebras and $\Mat_{p}(C)\cong\Mat_{q}(D)$, by~\cref{con:matrix-tensor-matrix}, we have
+  \[
+    \begin{aligned}
+      \Mat_{mp}\left(A\otimes_{R} C\right)&\cong \Mat_{m}(A)\otimes_{R}\Mat_{p}(C) \\
+                                          &\cong \Mat_{n}(B)\otimes_{R}\Mat_{q}(D)\\
+      &\cong \Mat_{nq}\left(B\otimes_{R}D\right).
+    \end{aligned}
+  \]
+
+\end{proof}
+
+\begin{construction}[Brauer Group]\label{con:br}
+  $\Br(K)$ forms a group under $[A]_{\sim_{\Br}}\cdot[B]_{\sim_{\Br}}=[A\otimes_{K}B]_{\sim_{\Br}}$ with neutral element $[K]_{\sim_{\Br}}$ where $A, B\in\CSA$ and $[A]_{\sim_{Br}}^{-1}=[A^{\opp}]_{\sim_{\Br}}$. We need to prove the following properties:
+  \begin{enumerate}
+    \item associativity: for all $A, B, C\in\CSA$, $[A]_{\sim_{\Br}}\cdot\left([B]_{\sim_{\Br}}\cdot[C]_{\sim_{\Br}}\right)=\left([A]_{\sim_{\Br}}\cdot[B]_{\sim_{\Br}}\right)\cdot [C]_{\sim_{\Br}}$ because $A\ox_{R}\left(B\ox_{R}C\right)\cong \left(A\ox_{R}B\right)\ox_{R}C$ as $K$-algebras.
+    \item neutral element: for all $A\in \CSA$, $[K]_{\sim_{\Br}}\cdot[A]_{\sim_{\Br}}=[A]_{\sim_{\Br}}=[A]_{\sim_{\Br}}\cdot [K]_{\sim_{\Br}}$. Since $[K]_{\sim_{\Br}}\cdot[A]_{\sim_{\Br}}=[K\ox_{K} A]_{\sim_{\Br}}$, in~\cref{con:matrix-tensor-matrix}, we see that $\Mat_{n}(A)\cong A\ox_{K}\Mat_{n}(K)$, by~\cref{lem:br-mul-wd}, $A\ox_{K}\Mat_{n}(K)$ is Brauer equivalent to $A\ox_{K} K$ since $K\sim_{\Br}\Mat_{n}(K)$.
+    \item cancellation: for all $A \in \CSA$, we need $[A]_{\sim_{\Br}}\cdot[A^{\opp}]_{\sim_{\Br}}$, that is we want $A\ox_{K}A^{\opp}\sim_{\Br} K$. By~\cref{con:self-tensor-opp-iso-end}, we have $A\ox_{K}A^{\opp}\cong \End_{K}A$ which is isomorphic to $\Mat_{\dim_{K}A}(K)$ as $K$-algebras.
+  \end{enumerate}
+  \leanok
+  \lean{BrauerGroup.Bruaer_Group}
+  \uses{con:matrix-tensor-matrix,lem:br-mul-wd,con:self-tensor-opp-iso-end}
+\end{construction}
+
+\begin{theorem}
+  \label{thm:br-triv-alg-closed}
+  If $K$ is algebraically closed, $\Br(K)$ is trivial; in particular $\br_{n}(\mathbb{C})$ is trivial.
+  \leanok
+  \lean{BrauerGroup.Alg_closed_eq_one}
+  \uses{thm:wed-artin-algebra}
+\end{theorem}
+\begin{proof}
+  We need to show that every $A\in\CSA$ is isomorphic to $\Mat_{n}(K)$ for some $K$ when $K$ is algebraically closed. Indeed, by~\cref{thm:wed-artin-algebra}, $A \cong \Mat_{n}(D)$ for some division algebra $D$ and $n\in\nat_{\ge0}$. Since $K$ is algebraically closed and $D$ is an integral domain and finite dimensional, the structure morphism $\rho: K\to D$ is a isomorphism; therefore $A\cong \Mat_{n}(K)$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:common-div-alg}
+Let $A, B \in \csa_{K}$. There exists a division $K$-algebra $D$ and non-zero $m,n\in\mathbb{N}$ such that $A\cong\mat_{m}(D)$ and $B\cong\mat_{n}(D)$ as $K$-algebras.
+  \leanok
+  \lean{IsBrauerEquivalent.exists_common_division_algebra}
+  \uses{thm:wed-artin-algebra,thm:wed-artin-uniq}
+\end{lemma}
+
+\begin{proof}
+  By~\cref{thm:wed-artin-algebra}, we can find division algebras $S_{A}, S_{B}$ and non-zero $m, n\in\mathbb{N}$ such that $A\cong\mat_{n}\left(S_{A}\right)$ and $B\cong\mat_{m}\left(S_{B}\right)$ as $K$-algebras. Hence $B\sim_{\br}A\sim_{\br}\mat_{n}\left(S_{A}\right)\sim_{\br}S_{A}$, in another word, for some non-zero $a, a'\in\mathbb{N}$, we have $\mat_{a}(B)\cong\mat_{a'}\left(S_{A}\right)$ as $K$-algebras. Hence, by~\cref{thm:wed-artin-uniq}, we have that $S_{A}\cong S_{B}$ as $K$-algebras and the lemma is proved.
+\end{proof}
+
+\section{Base Change}
+In this section let $E/K$ be a field extension. We have seen in~\cref{cor:csa-basechange} that if $A\in\CSA_{K}$ then $E\otimes_{K}A\in\CSA_{E}$; therefore we have a set-theoretic function $\CSA_{K}\to\CSA_{E}$. In this section we prove that this descends to a group homomorphism $\Br(K)\to\Br(E)$. For brevity, if $A\in \CSA_{K}$, we denote $E\ox_{K}A$ as $A_{E}$ when this causes no confusion.
+\begin{construction}
+  \label{con:br-base-change}
+  We will construct a series of isomorphisms (either over $K$ or $E$) to arrive at the conclusion that $A\sim_{\Br_{K}}B$ implies $A_{E}\sim_{\Br_{E}}B_{E}$. Assume $m,n\in\nat_{\ge0}$ are such that $\Mat_{m}(A)\cong\Mat_{n}(B)$ are $K$-algebras. Then we do the following calculation: as $E$-algebras
+  \[
+    \begin{aligned}
+      \Mat_{m}\left(A_{E}\right)
+      &\cong A_{E}\otimes_{E}\Mat_{m}(E) &\text{see~\cref{con:matrix-tensor-matrix}}\\
+      &\cong A_{E}\otimes_{E}\left(E\ox_{K} \Mat_{m}(K)\right) & \text{see}~\dagger\\
+      &\cong E \ox_{K}\left(A\ox_{K}\Mat_{m}(K)\right) &\text{see}~\ddagger\\
+      &\cong E\ox_{K}\Mat_{m}(A) &\text{see~\cref{con:matrix-tensor-matrix} and}~\dagger\!\!\dagger \\
+      \Mat_{n}\left(B_{E}\right) &\cong E\ox_{K}\Mat_{n}(B) &\text{same as the case of}~A\\
+      Mat_{m}\left(A_{E}\right)&\cong \Mat_{n}\left(B_{E}\right) &\text{see}~\dagger\!\!\dagger
+    \end{aligned}.
+  \]
+
+   \noindent$\dagger$: Wee need to check $\Mat_{m}(E)\cong E\otimes_{K}\Mat_{m}K$ as $E$-algebras since~\cref{con:matrix-tensor-matrix} only gives a $K$-algebra isomorphism. If $e \in E$, then its image in $E\ox_{K}\Mat_{m}(K)$ is $e\otimes 1$ and its image in $\Mat_{m}(E)$ is $\diag(e)$ which under the $K$-algebra isomorphism is mapped to $\sum_{ij}\diag(e)_{ij}\cdot \delta_{ij}=e\ox1$.
+
+   \noindent$\ddagger$: This is defined by combining two $E$-algebra homomorphisms
+   \[
+     A_{E}\to A_{E}\ox_{K}\Mat_{m}(K)\to E\ox_{K}\left(A\ox_{K}\Mat_{m}(K)\right)\]
+     and
+     \[
+       E\ox_{K}\Mat_{m}(K)\to \left(E\ox_{K}\Mat_{m}(K)\right)\ox_{K}A \to E\ox_{K}(A\ox_{K}\Mat_{m}(K)).
+    \]
+   Since $\left(E\ox_{K}A\right)\ox_{E}\left(E\ox_{K}\Mat_{m}(K)\right)$ is a simple ring, this morphism is automatically injective. It is surjective as well: let $x\in E\ox_{K}\left(A\ox_{K}\Mat_{m}(K)\right)$, without loss of generality, assume $x=e\ox (a\ox\delta_{ij})$ for some $e\in E$, $a\in A$. Then precisely $\left(e\ox a\right)\ox\left(1\ox\delta_{ij}\right)$ is mapped to $x$.
+
+   \noindent$\dagger\!\dagger$: a $K$-algebra isomorphism $A\cong B$ gives an $E$-algebra isomorphism $E\ox_{K}A \cong E\ox_{K} B$.
+
+   Thus we have a well defined function $\Br(K)\to\Br(E)$. We now check that this is a group homomorphism. $[K]_{\sim_{\Br_{K}}}$ is mapped to $[E\ox_{K}K]_{\sim_{\Br_{E}}}$ but $E\ox_{K}K\cong E$ as $E$-algebra. For $A, B\in\CSA_{K}$, we have that $[AB]_{\sim_{\Br_{K}}}$ is mapped to $\left(A\ox_{K}B\right)_{E}\cong A_{E}\ox_{E} B_{E}$ as $E$-algebras; hence $[AB]_{\sim_{\Br_{K}}}$ and $[A]_{\sim_{\Br_{K}}}\cdot[B]_{\sim_{\Br_{K}}}$ have the same image under base change.
+   \leanok
+   \lean{BrauerGroupHom.BaseChange}
+   \uses{con:matrix-tensor-matrix}
+ \end{construction}
+ Denote the base change morphism in~\cref{con:br-base-change} as $\Br_{K}^{E}$.
+ \begin{lemma}\label{lem:br-base-change-self}
+   $\Br_{K}^{K}$ is identity.
+   \leanok
+ \end{lemma}
+ \begin{proof}
+   If $A\in\CSA$, then $A\sim_{\Br}K\ox_{K}A$.
+ \end{proof}
+
+ \begin{lemma}\label{lem:br-base-change-tower}
+   Consider the tower of field extension $E/F/K$,
+   \[
+     \Br_{K}^{E} = \Br_{E}^{F}\circ\Br_{K}^{E}.
+   \]
+ \end{lemma}
+
+ \begin{proof}
+   If $A\in\CSA_{K}$, then $E\ox_{F}\left(F\ox_{K}A\right)$ is isomorphic to $E \ox_{F} A$ as $E$-algebras.
+   \leanok
+   \lean{BrauerGroupHom.baseChange_idem}
+ \end{proof}
+
+ \begin{corollary}
+   $\Br$ forms a functor from category of field to category of abelian groups.
+   \leanok
+   \lean{BrauerGroupHom.Br}
+   \uses{lem:br-base-change-self, lem:br-base-change-tower}
+ \end{corollary}
+ \begin{proof}
+   This is the categorical version of~\cref{lem:br-base-change-self} and~\cref{lem:br-base-change-tower}.
+ \end{proof}
+
+ \begin{definition}[Relative Brauer Group]
+   Let $E/K$ be a field extension, we define the relative Brauer group $\Br(E/K)$ to be the kernel of the base change morphism $\Br_{K}^{E}$.
+   \leanok
+   \lean{RelativeBrGroup}
+   \uses{con:br-base-change}
+ \end{definition}
+
+ \begin{remark}
+   Unpacking the definition of the relative Brauer group, we see that for any $A \in \CSA_{K}$, if $E\ox_{K}A\cong\mat_{n}(E)$ as $E$-algebras, then $\br^{E}_{K}\left([A]_{\sim_{\br}}\right)=1$.
+ \end{remark}
+
+ \begin{definition}[Splitting Field]
+   For any field extension $E/K$ and any $K$-algebra $A$, we say $E$ is a splitting field of $A$ if and only if $E\ox_{K}A \cong \mat_{n}(E)$ as $E$-algebras for some non-zero $n$. We also say $E$ splits $A$ or $A$ is splited by $E$
+   \leanok
+   \lean{isSplit}
+ \end{definition}
+
+  \begin{theorem}
+   \label{thm:split-iff-mem-relative}
+   Let $E/K$ be a field extension and $A\in\csa_{K}$, $E$ splits $A$ if and only if $[A]_{\sim_{\br}}\in\br(E/K)$.
+   \leanok
+   \lean{BrauerGroup.split_iff}
+   \uses{thm:wed-artin-algebra,thm:wed-artin-uniq}
+ \end{theorem}
+
+ \begin{proof}
+   The ``only if'' part is by definition. For the other direction, we know by definition that $\mat_{n}(E\ox_{K}A)\cong\mat_{m}(E)$ as $E$-algebras for some non-zero $m, n$. By~\cref{thm:wed-artin-algebra}, we find some division algebra $D$ and non-zero natural number $p$ such that $E\ox_{K}A\cong \mat_{p}(D)$ as $E$-algebras. Thus $\mat_{pm}(E)\cong\mat_{pn}\left(E\ox_{K}A\right)\cong\mat_{p^{2}n}(D)$ as $E$-algebras. By~\cref{thm:wed-artin-uniq}, we conclude that $E\cong D$ as $E$-algebras. Hence $E\ox_{K}A\cong \mat_{p}(E)$, in another word, $E$ splits $A$.
+ \end{proof}
+
+ \begin{remark}
+   In light of~\cref{lem:br-base-change-tower}, if $K$ is algebraic closed then $K$ splits any $K$-algebra $A$. Indeed, $K$ splits $A$ if and only if $[A]_{\sim\br}$ but $[A]_{\sim\br}$ is equal to $1$.
+ \end{remark}
+
+ \begin{remark}
+   If two $\csa_{K}$ are Brauer equivalent, in another word, $A \sim_{\br_{K}} B$, then $E$ splits $A$ if and only if $E$ splits $B$. Indeed, if $A$ and $B$ are equivalent, then $[A]_{\sim\br} \in \br(E/K)$ if and only if $[B]_{\sim\br}\in\br(E/K)$.
+ \end{remark}
+
+
+ \section{Good Representative Lemma}
+ In this section, let $K/F$ be a finite dimensional field extension.
+
+ \begin{lemma}
+   \label{lem:good-rep-inv}
+   Let $A\in\csa_{F}$ splitted by $K$. There exists a $B\in\csa_{F}$ such that
+   \begin{itemize}
+     \item $[A]_{\sim_{\br}}[B]_{\sim_{\br}}=1$
+     \item there exists $F$-algebra map $K\hookrightarrow B$
+     \item ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
+   \end{itemize}
+   \leanok
+   \lean{exists_embedding_of_isSplit}
+   % \uses{thm:double-centralizer, lem:simple-centralizer, cor:self-tensor-centralizer, lem:dim-centralizer}
+ \end{lemma}
+\begin{proof}
+   Since $K$ splits $A$, we find a non-zero natural number $n$ such that $K\ox_{F}A\cong\mat_{n}K\cong\End_{K}\left(K^{n}\right)$ as $K$-algebras.
+   We define an $F$-algebra map $\iota: A\to\End_{F}\left(K^{n}\right)$ by
+   \begin{center}
+     \begin{tikzcd}
+       A \arrow{r} & K \ox_{F} A \arrow{r}{\cong} & \End_K\left(K^n\right) \arrow{r}{|_{F}} & \End_F\left(K^n\right)
+     \end{tikzcd},
+   \end{center}
+   where $|_{F}$ is restriction of scalars. Since $A$ is simple, $\iota$ is injective, therefore $A \cong \iota(A)$ as $F$-algebras. Define $B$ as $C_{\End_{F}\left(K^{n}\right)}(\iota(A))$, the centralizer of the range of $\iota$ in $\End_{F}\left(K^{n}\right)$.
+   We construct an embedding $K \hookrightarrow B$ by $r \mapsto (r \cdot \bullet)$
+
+   $B$ is a central $F$-algebra: if $x \in Z(B)$, then $x \in \iota(A)$ because by~\cref{thm:double-centralizer}, it is sufficient to prove that $x$ is in $C_{\End_{F}\left(K^{n}\right)}\left(B\right)$ which follows from the fact that $x \in Z(B)$. In fact, $x \in Z(\iota(A))$: suppose $a \in A$, we need to check $x \cdot \iota(a) = \iota(a)\cdot x$, this is the case because $B$ is defined as the centralizer of $\iota(A)$. Since $\iota(A) \cong A$ as $F$-algebras, $\iota(A)$ is $F$-central, hence $x \in F$.
+
+   $B$ is a simple ring: by~\cref{lem:simple-centralizer}, it is sufficient to prove that $\iota(A)$ is a simple ring which comes from $A \cong \iota(A)$ as $F$-algebras.
+
+   By~\cref{cor:self-tensor-centralizer}, we have $F$-algebra isomorphism $\End_{F}\left(K^{n}\right)\cong \iota(A)\ox_{F}B \cong A \ox_{F}B$. Since $\End_{F}\left(K^{n}\right)\cong\mat_{\dim_{F}\left(K^{n}\right)}\left(F\right)$ as $F$-algebras, we see that $[A]_{\sim_{\br}}$ and $[B]_{\sim_{\br}}$ are inverses.
+
+   By~\cref{lem:dim-centralizer}, $\dim_{F}B\cdot \dim_{F}\iota(A) = \dim_{F}B\cdot\dim_{F}A = \dim_{F}\End_{F}\left(K^{n}\right) = {\left(\dim_{F}\left(K^{n}\right)\right)}^{2}={\left(\dim_{F}K\cdot \dim_{K}\left(K^{n}\right)\right)}^{2}=n^{2}\cdot{\left(\dim_{F}K\right)}^{2}$. On the other hand, since $K\ox_{F}A\cong\mat_{n}K$, we have $\dim_{F}K\ox_{F}A=\dim_{F}K\cdot\dim_{F}A=\dim_{F}\mat_{n}K=\dim_{F}K\dim_{K}\mat_{n}K=n^{2}\dim_{F}K$. Since $\dim_{F}K\ne 0$ , we conclude $\dim_{F}A=n^{2}$. Since $n\ne 0$ and $\dim_{F}(B)\cdot \dim_{F}(A)=n^{2}\dim_{F}(B)=n^{2}{\left(\dim_{F}K\right)}^{2}$, we get the desired result.
+
+ \end{proof}
+
+ \begin{corollary}\label{cor:good-rep}
+   Let $A\in\csa_{F}$ splitted by $K$. There exists a $B \in \csa_{F}$ such that
+   \begin{itemize}
+     \item $[B]_{\sim_{\br}}=[A]_{\sim_{\br}}$
+     \item there exists an $F$-algebra map $K\hookrightarrow B$
+     \item  ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
+   \end{itemize}
+   % \uses{lem:good-rep-inv}
+ \end{corollary}
+
+ \begin{proof}
+   Let $B$ and $\iota : K \hookrightarrow B$ be as in~\cref{lem:good-rep-inv}. Consider $B^{\opp}$ and $K \hookrightarrow B \to B^{\opp}$. This works.
+ \end{proof}
+
+ \begin{theorem}\label{thm:good-rep-iff-split}
+   Let $A\in\csa_{F}$. $K$ splits $A$ if and only if there exists a $B\in\csa_{F}$ such that
+   \begin{itemize}
+     \item $[B]_{\sim_{\br}}=[A]_{\sim_{\br}}$
+     \item there exists an $F$-algebra map $K \hookrightarrow B$
+     \item ${\left(\dim_{F}K\right)}^{2}=\dim_{F}B$.
+   \end{itemize}
+   \leanok
+   \lean{isSplit_iff_dimension}
+   % \uses{cor:good-rep, cor:alghom-bijective-of-dim-eq}
+ \end{theorem}
+ \begin{proof}
+   The ``if'' direction is~\cref{cor:good-rep}. For the ``only if'' direction, let $B \in\csa_{F}$ and $\iota : K \hookrightarrow B$ be given. We give $B$ a $K$-module structure by right multiplication, that is for any $a \in K$ and $b \in B$, we define $a \cdot b := b \cdot \iota(a)$.
+   Since $B$ is a finite dimensional $F$-vector space and $K/F$ is a finite dimensional field extension, $B$ is a finite dimensional $K$-vector space as well. Since $[B]_{\sim_{\br}}=[A]_{\sim_{\br}}$, it is sufficient to show that $K$ splits $B$.
+   We define an $F$-bilinear map $\mu : K \to B \to \End_{K}B$ by $(c, a) \mapsto (c \cdot a \cdot \bullet)$ which induce an $F$-linear map $\mu' : K \ox_{F} B \to \End_{K}B$. Since for any $r, c\in K$ and $a \in B$, we have $\mu'\left(r \cdot c\ox a\right)(a') = a a' \iota(rc)=aa'\iota(c)\iota(r)=r\cdot \mu'(c\ox a)$, that is $\mu'$ is $K$-linear as well. Note that \[\mu'(1)=\mu'(1\ox 1) = (1\cdot 1\cdot \bullet) = 1\] and that
+   \[
+     \begin{aligned}
+       \mu'(c\ox a \cdot c'\ox a')(a'') &= \mu'(cc'\ox aa')(a'') \\
+                                        &= cc' \cdot aa' \cdot a'' \\
+                                        &= aa' a'' \iota(c c') \\
+                                        &= a(a' a'' \iota(c'))\iota(c) \\
+                                        &=\mu'(c \ox a)(a' a'' \iota(c'))\\
+                                        &=\mu'(c\ox a)\left(\mu'(c'\ox a')(a'')\right) \\
+                                        &= \left(\mu'(c\ox a)\circ\mu'(c'\ox a')\right)(a'')
+     \end{aligned},
+     \]
+     that is, $\mu'$ is an $K$-algebra map.
+
+   If we can show that $\mu'$ is a bijection, we will prove the result for $K\ox_{F} B \cong \End_{K} B \cong \mat_{\dim_{K} B}K$ as $K$-algebras. By~\cref{cor:alghom-bijective-of-dim-eq}, it is sufficient to show $\dim_{K}K\ox_{F}B = \dim_{K}\End_{K}B$. Let $n$ denote $\dim_{F}K$. Since, $\dim_{F}K\dim_{K}K\ox_{F}B =\dim_{F}K\ox_{F}B=\dim_{F}K \dim_{F}B$. we have $\dim_{K}K\ox_{F}B = \dim_{F}B = {\left(\dim_{F}K\right)}^{2}$. On the other hand, since ${\left(\dim_{F}K\right)}^{2}=\dim_{F} B = \dim_{F}K\dim_{K}B$, we have $\dim_{K} B = \dim_{F}K$; thus $\dim_{K}\End_{K} B = {\left(\dim_{K}B\right)}^{2}={\left(\dim_{F}K\right)}^{2}$ and the result is proved.
+ \end{proof}
+
+ In light of~\cref{thm:good-rep-iff-split}, we isolate the following useful definition:
+ \begin{definition}[Good Representation]\label{def:good-rep}
+   For any $X \in \br(F)$, a $K$-good representation of $X$ is an $A \in \csa_{F}$ and an $F$-algebra map $K \hookrightarrow A$ such that $[A]_{\sim_{\br}} = X$ and $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$. We often denote the $F$-algebra map $K \hookrightarrow A$ as $\iota$ or $\iota_{A}$.
+
+   \leanok
+   \lean{GoodRep}
+ \end{definition}
+
+ When $K$ is clear from context, we will simply say good representation instead of $K$-good representation
+
+ \begin{corollary}
+   \label{cor:mem-relative-br-iff-good-rep}
+   For any $X\in\br(F)$, $X\in\br(K/F)$ if and only if $X$ admits a good representation.
+   \leanok
+   \lean{mem_relativeBrGroup_iff_exists_goodRep}
+   % \uses{thm:good-rep-iff-split, thm:split-iff-mem-relative}
+ \end{corollary}
+ \begin{proof}
+   Rephrase of~\cref{thm:good-rep-iff-split} and~\cref{thm:split-iff-mem-relative}.
+ \end{proof}
+
+\subsection{Basic Properties}
+We observe the following easy result about good representations. Let $X \in \br(F)$ and $A$ be a good representation of $X$.
+
+\begin{lemma}
+  The range $\iota_{A}(A)$ is a simple ring.
+  \leanok
+  \lean{GoodRep.ιRange}
+\end{lemma}
+
+\begin{proof}
+  Because $K$ is a simple ring, $\iota_{A}$ is injective therefore $\iota_{A}(A)\cong K$.
+\end{proof}
+
+\begin{lemma}\label{lem:centralizer-range-good-rep}
+  $C_{A}\left(\iota_{A}(A)\right) = \iota_{A}(A)$.
+  \leanok
+  \lean{GoodRep.centralizerιRange}
+  % \uses{lem:tfae-subfield}
+\end{lemma}
+\begin{proof}
+  In the language of~\cref{sec:subfield}, $\iota_{A}(A)$ is a subfield of $A$, hence by~\cref{lem:tfae-subfield}, we only need to show $\dim_{F}A = {\left(\dim_{F}\iota_{A}(A)\right)}^{2}$. But $\dim_{F}A={\left(\dim_{F}K\right)}^{2}$ and $\iota(A)\cong K$.
+\end{proof}
+
+\begin{construction}\label{con:good-rep-mod}
+  We give $A$ a $K$-module structure by {\em left\/} multiplication, that is for any $c \in K$ and $a \in A$, we define $c\cdot a$ to be $\iota_{A}(c)a$. Note that if $c \in F$ then $\iota_{A}(c)a = c \cdot a$, in another word, the $K$-action and the $F$-action on $A$ are compatible. Then $A$ is a finite dimensional $K$-vector space and $\dim_{K}A=\dim_{F}K$: indeed $\dim_{F}K\cdot\dim_{K}A = \dim_{F}K\cdot \dim_{F}K = \dim_{F}A$.
+  \leanok
+  \lean{GoodRep.dim_eq'}
+\end{construction}
+
+\begin{lemma}\label{lem:good-rep-iso}
+  If $A$ and $B$ are two good representations of $X$, then $A \cong B$ as $F$-algebras.
+  \leanok
+  \lean{GoodRep.exists_iso}
+  % \uses{lem:common-div-alg}
+\end{lemma}
+\begin{proof}
+  By~\cref{lem:common-div-alg}, we find a division $F$-algebra $D$ and non-zero natural numbers $m, n$ such that $A \cong \mat_{m}(D)$ and $B \cong \mat_{n}(D)$ as $F$-algebras. Therefore
+  \[
+    \begin{aligned}
+      {\left(\dim_{F}K\right)}^{2} &= \dim_{F}A &= m^{2}\dim_{F}D \\
+      &= \dim_{F}B &= n^{2}\dim_{F}D.
+    \end{aligned}
+  \]
+  Therefore $m = n$ and $A \cong \mat_{m}D =\mat_{n}D\cong B$.
+\end{proof}
+
+\subsection{Conjugation Factors and Conjugation Sequences}
+In this section, let $K/F$ be a field extension, $X \in \br(F)$ and $A$ be a $K$-good representation of $X$.
+\begin{remark}
+  Since $\gal(K/F)$ acts on $K^{\star}$, for $x\in K^{\star}$,we feel free to write $\sigma\cdot x$ when it feels more readable than $\sigma(x)$, for example when there are nested brackets.
+\end{remark}
+
+
+\begin{definition}[Conjugation Factor]
+  \label{def:conj-factor}
+  With respect to $A$, a conjugation factor of $\sigma$ is a unit $x_{\sigma} \in A^{\star}$ such that for all $c \in K$,
+  \[
+    x_{\sigma} \iota_{A}(c)x_{\sigma}^{-1} = \iota_{A}(\sigma \cdot c).
+  \]
+
+  A conjugation sequence is a sequence $x:\gal(K/F) \to A^{\star}$ such that for all $\sigma\in\gal(K/F)$, $x_{\sigma}$ is a conjugation factor of $\sigma$. When we want to stress $A$, we say $A$-conjugation factor and $A$-conjugation sequence.
+  \leanok
+  \lean{GoodRep.conjFactor}
+\end{definition}
+
+\begin{remark}\label{rem:conj-factor-alternative-eq}
+  When $x_{\sigma}$ is a conjugation factor of $\sigma$, the equalities $x_{\sigma}\iota_{A}(c) = x_{\sigma}\iota_{A}(\sigma(c))$ and $\iota_{A}(c)x_{\sigma}^{-1}=x_{\sigma}^{-1}\iota_{A}(\sigma(c))$ are also useful.
+\end{remark}
+
+\begin{construction}\label{con:exists-conj-seq}
+  $A$ has a conjugation sequence:
+  let $\sigma \in \gal(K/F)$, we have two $F$-algebra homomorphisms $K \to A$ given by $\iota_{A}$ and $\iota_{A}\circ \sigma$. Applying~\cref{thm:skolem-noether} to $\iota_{A}$ and $\iota_{A}\circ \sigma$ gives us the desired conjugation factor.
+  \leanok
+  \lean{GoodRep.aribitaryConjFactor}
+  % \uses{thm:skolem-noether}
+\end{construction}
+
+\begin{construction}
+  If $x$ is a conjugation factor of $\sigma$ and $y$ of $\tau$, then $xy$ is a conjugation factor of $\sigma\tau$. For any $c \in K$
+  \[
+    \iota_{A}(\sigma \cdot\tau(c)) = x\iota_{A}(\tau\cdot c)x^{-1} = xy\iota_{A}(c)y^{-1}x^{-1}=\left(xy\right)\iota_{A}{\left(xy\right)}^{-1}.
+  \]
+  \leanok
+  \lean{GoodRep.mul'}
+\end{construction}
+
+\begin{theorem}\label{thm:conj-seq-basis}
+  If $x$ is an $A$-conjugation sequence, then $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is an $K$-linearly independent set. When $K/F$ is finite dimensional and Galois, $\{x_{\sigma}|\sigma\in \gal(K/F)\}$ is a $K$-basis for $A$.
+  \leanok
+  \lean{GoodRep.conjFactor_linearIndependent, GoodRep.conjFactorBasis}
+  % \uses{con:good-rep-mod, def:conj-factor}
+\end{theorem}
+
+\begin{proof}
+  Suppose $\{x_{\sigma}\}$ is linearly dependent. Let $J \subseteq \gal(K/F)$ be such that $\{x_{\sigma}|\sigma\in J\}$ is a maximally linearly independent subset.
+  Then $J \ne \gal(K/F)$, let $\sigma \in\gal(K/F)$ be an arbitrary automorphism that is not in $J$. Since $\{x_{\tau}|\tau\in J\}$ is maximally linearly independent, $x_\sigma \in \left\langle x_{\tau}|\tau\in J\right\rangle$. Hence, by~\cref{con:good-rep-mod} we have
+  \[
+    x_\sigma = \sum_{\tau\in J'}\lambda_{\tau}\cdot x_{\tau} = \sum_{\tau\in J'}\iota_{A}\left(\lambda_{\tau}\right)x_{\tau},
+  \]
+  for some non-zero $\lambda_{\tau}\in K$ and $J' \subseteq J$.
+  For each $c \in K$, we have the following equality
+  \[
+    \begin{aligned}
+      \iota_{A}\left(\sigma \cdot c\right) x_{\sigma}
+      &= x_{\sigma} \iota_{A}(c) &\text{by~\cref{def:conj-factor}}\\
+      &= \sum_{\tau\in J'}\lambda_{\tau}\cdot x_{\tau}\iota_{A}(c) & \\
+      &= \sum_{\tau\in J'}\lambda_{\tau}\cdot \iota_{A}\left(\tau\cdot c\right)x_{\tau} &\text{by~\cref{def:conj-factor} again}\\
+      &=\sum_{\tau\in J'}\iota_{A}\left(\lambda_{\tau}\tau(c)\right)x_{\tau};\\
+      \iota_{A}\left(\sigma\cdot c\right)x_{\sigma}
+      &= \sum_{\tau\in J'}\iota_{A}\left(\lambda_{\tau}\right) x_{\tau}\iota_{A}(c)\\
+      &= \sum_{\tau\in J'}\iota_{A}\left(\sigma(c)\lambda_{\tau}\right)x_{\tau}.
+    \end{aligned}
+  \]
+  Since $\{x_{\tau}|\tau\in J'\}$ is linearly independent, we have that for each $\tau \in J'$, $\lambda_{\tau}\tau(c) = \sigma(c)\lambda_{\tau} = \lambda_{\tau}\sigma(c)$. Note that $J'$ is not empty, for otherwise $x_{\sigma}=\sum_{\tau\in\emptyset}\lambda_{\tau}\cdot x_{\tau}=0$ but $x_{\sigma}$ is invertible. Since for any $\tau\in J'$, $\lambda_{\tau}$ is not zero, we have that for all $c \in K$, $\sigma(c) = \tau(c)$, i.e. $\sigma = \tau$. Hence $\sigma$ is in $J' \subseteq J$ after all; contradiction.
+
+  If $K/F$ is finite dimensional and Galois, then $\dim_{F}K$ is equal to the cardinality of $\gal(K/F)$, then by the linear independence of $\{x_{\sigma}|\sigma\in\gal(K/F)\}$, we conclude that it is indeed a $K$-basis for $A$.
+\end{proof}
+
+\section{The Second Galois Cohomology}
+
+In this section, we construct a group isomorphism between $\br(K/F) \cong \HH^{2}\left(\gal(K/F), K^{\star}\right)$ where $K/F$ is a finite dimensional Galois extension. To keep alignment of the Brauer group, let us use the multiplicative notation for group cohomology. Recall:
+
+\begin{definition}[the Second Group Cohomology]
+  \label{def:second-group-coh}
+  Let $G$ be a group and $M$ an abelian group (written multiplicatively) with a $G$-action.
+
+  A function $f : G \times G \to M$ is a {\em 2-cocycle\/} if for all $g,h,j\in G$,
+  \[
+    f(gh, j)f(g, h) = \left(g\cdot f(h, j)\right) f(g, hj).
+  \]
+  We denote the subgroup of 2-cocycles as $\mathcal{Z}^{2}(G, M)$.
+
+  A function $f : G\times G \to M$ is a {\em 2-coboundary\/} if there exists an $x : G \to M$ such that for all $g, h \in G$
+  \[
+    \frac{g\cdot x(h)}{x(gh)} x(g) = f(g, h).
+  \]
+  We denote the subgroup of 2-coboundaries as $\mathcal{B}^{2}(G, M)$.
+
+  The second group cohomology $\hh^{2}\left(G, M\right)$ is defined to be the quotient group of 2-cocycles modulo 2-coboundaries $^{\mathcal{Z}^{2}(G, M)}/_{\mathcal{B}^{2}(G, M)}$. If $s, t \in \mathcal{Z}^{2}(G, M)$, we say $s$ and $t$ are cohomologous if their equivalence class $[s], [t] \in \HH^{2}(G, M)$ are the same; in another word $st^{-1}\in\mathcal{B}^{2}(G, M)$.
+  \leanok
+  \lean{groupCohomology.H2, groupCohomology.IsMulTwoCoboundary, groupCohomology.IsMulTwoCocycle}
+\end{definition}
+
+\begin{lemma}\label{lem:2-cocycle-one-one}
+  If $f \in \mathcal{B}^{2}(G, M)$ is a 2-cocycle and $x\in G$, we have
+  \[
+    \begin{aligned}
+    f(1, x) &= f(1, 1) \\
+    f(x, 1) &= x\cdot f(1, 1).
+    \end{aligned}
+  \]
+\end{lemma}
+\begin{proof}
+  Indeed:
+  \[
+    \begin{aligned}
+      f(1\cdot 1, x)f(1, 1) &= (1\cdot f(1,x))f(1, 1\cdot x)  \\
+      f(1, x)f(1, 1) &= f(1, x) f(1,x) \\
+      f(1, x) &= f(1,1)
+    \end{aligned}
+  \] and
+  \[
+    \begin{aligned}
+      f(x\cdot 1, 1)f(x, 1) &= (x\cdot f(1, 1))f(x, 1\cdot 1)\\
+      f(x, 1)f(x, 1) &= (x\cdot f(1, 1))f(x, 1)\\
+      f(x, 1) &= x \cdot f(1, 1).
+    \end{aligned}
+  \]
+  \leanok
+  \lean{GoodRep.CrossProduct.a_one_left, GoodRep.CrossProduct.a_one_right}
+\end{proof}
+
+In the following sections of this chapter, we assume that $X \in\br(F)$ and $A$ is a good representation of $X$. We use $\rho, \sigma, \tau$ to denote elements of $\gal(K/F)$. To improve typographic aesthetics of our proofs, we sometimes use subscript to mean function application.
+
+
+\subsection{From $\br(K/F)$ to $\hh^{2}\left(\gal(K/F),K^{\star}\right)$}
+
+\begin{lemma}[Twisting Conjugation Factors]\label{lem:twist-spec1}
+  If $x$ and $y$ are two conjugation factors of $\sigma$, then there exists a unique $c \in K$ such that $x = y\iota_{A}(c)$.
+  \leanok
+  \lean{GoodRep.conjFactor_rel, GoodRep.conjFactorTwistCoeff}
+  % \uses{rem:conj-factor-alternative-eq, lem:centralizer-range-good-rep}
+\end{lemma}
+
+\begin{proof}
+  The uniqueness is clear: suppose $x = y\iota_{A}(c)=y\iota_{A}(c')$, then $c = c'$ because $x, y$ are units and $\iota_{A}$ is injective. We first observe that $y^{-1}x\in C_{A}(\iota(A))$: for any $z \in K$, $y^{-1}x\iota_{A}(z)=y^{-1}\iota_{A}(\sigma(z))x=\iota_{A}(z)y^{-1}x$ (by~\cref{rem:conj-factor-alternative-eq}). By~\cref{lem:centralizer-range-good-rep}, $y^{-1}x\in \iota(A)$, that is for some $z \in K$, we have that $y^{-1}x = \iota_{A}(z)$ and the claim is proved.
+\end{proof}
+
+We denote such $c$ by $\twist^{\sigma}(x, y)$ or $\twist^{\sigma}_{x, y}$, when $\sigma$ is clear from context, we often omit the superscript. With this notation, $x = y\iota_{A}(\twist_{x,y})$.
+
+\begin{remark}
+  $\twist(x, x)$ is equal to $1$ by uniqueness.
+\end{remark}
+
+\begin{remark}
+  In fact, $\twist(x, y)$ is in $K^{\star}$ and $\twist(x, y)^{-1}=\twist(y, x)$.
+\end{remark}
+
+\begin{lemma}\label{lem:twist-spec2}
+  If $x$ and $y$ are conjugation factors for $\sigma$, $x=\iota_{A}(\sigma(\twist_{x, y}))y$.
+  \leanok
+  \lean{GoodRep.conjFactorTwistCoeff_spec'}
+\end{lemma}
+\begin{proof}
+  \[
+    \begin{aligned}
+      x &= x \iota_{A}\left(\twist_{x,y}\right) x^{-1} x \iota_{A}(\twist_{y,x}) \\
+        &= \iota_{A}\left(\sigma\cdot\twist_{x,y}\right)x\iota_{A}\left(
+          \twist_{y,x}\right)\\
+      &=\iota_{A}\left(\sigma\cdot \twist_{x,y}\right)y
+    \end{aligned}.
+  \]
+\end{proof}
+
+\begin{construction}[Comparing Conjugation Factors]\label{con:compare-conj-factors}
+  Let $x$ be a conjugation factor for $\sigma$, $y$ for $\tau$ and $z$ for $\sigma\tau$. Since $xy$ is a also a conjugation factor, we define the comparison coefficient to be $\comp^{\sigma, \tau}_{x,y,z}:=\sigma\left(\tau\left(\twist_{xy, z}\right)\right)$. We often omit superscript when the context is clear. Note that $\comp_{x,y,z}$ is a unit in $K$ with inverse $\sigma\left(\tau\left(\twist_{z, xy}\right)\right)$. By~\cref{lem:twist-spec1} and~\cref{lem:twist-spec2}, we have the following useful equalities
+  \[
+    \begin{aligned}
+      xy &= \iota_{A}\left(\comp_{x,y,z}\right)z \\
+      \iota_{A}\left(\comp_{x,y,z}^{-1}\right)xy &= z \\
+      \iota_{A}\left(\comp_{x,y,z}\right) &= xyz^{-1}\\
+      \iota_{A}\left(\comp_{x,y,z}^{-1}\right) &= zy^{-1}x^{-1}\\
+      \dots &=\dots
+    \end{aligned}.
+  \]
+  %If we have a conjugation sequence $x : \gal(K/F)\to A^{\star}$, instead of $\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}^{\sigma,\tau}$, we simply write $\comp_{\sigma,\tau}^{x}$.
+  \leanok
+  \lean{GoodRep.conjFactorCompCoeff}
+  % \uses{lem:twist-spec1, lem:twist-spec2}
+\end{construction}
+
+\begin{lemma}\label{lem:compare-conj-factor-spec}
+  Let $x : \gal(K/F) \to A^{\star}$ be a conjugation sequence. We have
+  \[
+    \comp_{x_{\rho}, x_{\sigma}, x_{\rho\sigma}}\,\comp_{x_{\rho\sigma},x_{\tau},x_{\rho\sigma\tau}} =
+    \rho\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)\,\comp_{x_{\rho}, x_{\sigma\tau}, x_{\rho\sigma\tau}}.
+  \]
+  \leanok
+  \lean{GoodRep.conjFactorCompCoeff_comp_comp}
+  % \uses{con:compare-conj-factors, def:conj-factor, con:br-base-change}
+\end{lemma}
+\begin{proof}
+  It is sufficient to make the following calculations:
+  \begin{align}
+   x_{\rho}\,x_{\sigma}x_{\tau} &= \iota_{A}\left(\comp_{x_{\rho},x_{\sigma},x_{\rho\sigma}}\right) \, \iota_{A}\left(\comp_{x_{\rho\sigma}, x_{\tau}, x_{\rho\sigma\tau}}\right)\, x_{\rho\sigma\tau}\label{eq:1}\\
+   x_{\rho}\left(x_{\sigma}x_{\tau}\right) &= \iota_{A}\left(\rho\cdot\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)\,\iota_{A}\left(\comp_{x_{\rho},x_{\sigma\tau},x_{\rho\sigma\tau}}\right) x_{\rho\sigma\tau} \label{eq:2}
+ \end{align}
+ Then since $x_{\rho\sigma\tau}$ is invertible and $\iota_{A}$ is injective, we proved the desired result.
+
+ \Cref{eq:1} is because: by the first equality in~\cref{con:compare-conj-factors} (twice)
+ \[
+   x_{\rho}x_{\sigma}x_{\tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma}, x_{\rho\sigma}}\right)x_{\rho\sigma}x_{\tau}=\iota_{A}\left(\comp_{x_{\rho},x_{\sigma},x_{\rho\sigma}}\right)\iota_{A}\left(\comp_{x_{\rho\sigma},x_{\tau},x_{\rho\sigma\tau}}\right)x_{\rho\sigma\tau}.
+ \]
+ \Cref{eq:2} is because: by~\cref{def:conj-factor}, we have
+ \[\iota_{A}\left(\rho\cdot\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\rho}=x_{\rho}\iota_{A}\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right),\]
+ therefore by~\cref{con:br-base-change}
+ \[
+   \begin{aligned}
+     x_{\rho}\left(x_{\sigma}x_{\tau}\right) &= x_{\rho}\iota_{A}\left(\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\sigma\tau} \\
+                                             &= \iota_{A}\left(\rho\cdot \comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\rho}x_{\sigma\tau}\\
+     &= \iota_{A}\left(\rho\cdot\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)\,\iota_{A}\left(\comp_{x_{\rho},x_{\sigma\tau},x_{\rho\sigma\tau}}\right)x_{\rho\sigma\tau}
+   \end{aligned}.
+ \]
+\end{proof}
+
+\begin{construction}[from good representation to 2-cocycle]
+  \label{con:good-rep-to-2-cocycles}
+  Let $x$ be an $A$-conjugation sequence. We associate with $x$ a function $\mathcal{B}^{2}(x) : \gal(K/F)\times\gal(K/F)\to K^{\star}$ defined by
+  \[
+    (\sigma,\tau)\mapsto \comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}.
+  \]
+  We will write $\mathcal{B}^{2}(x)$ as $\mathcal{B}^{2}_{A, x}$, $\mathcal{B}^{2}_{A}(x)$ or $\mathcal{B}^{2}_{x}$ as well.
+  \leanok
+  \lean{GoodRep.toTwoCocycles}
+\end{construction}
+
+\begin{lemma}
+  For any $A$-conjugation sequence $x$, $\mathcal{B}^{2}_{x} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, that is $\mathcal{B}_{x}$ is indeed a 2-cocycle.
+  \leanok
+  \lean{GoodRep.isTwoCocyles}
+  % \uses{lem:compare-conj-factor-spec}
+\end{lemma}
+
+\begin{proof}
+  We need to prove
+  \[
+    \mathcal{B}_{x}(\rho\sigma, \tau)\, \mathcal{B}_{x}(\rho,\sigma) = \rho\left(\mathcal{B}_{x}(\sigma, \tau)\right)\, \mathcal{B}_{x}(\rho, \sigma\tau).
+  \]
+  But this is exactly~\cref{lem:compare-conj-factor-spec}.
+\end{proof}
+
+For any good representation $A$ of $X \in \br(K/F)$ and any $A$-conjugation sequence $x$, we have constructed a 2-cocycle $\mathcal{B}^{2}_{A}(x)$. But to obtain a well-defined function from $\br(K/F)$ to $\HH^{2}\left(\gal(K/F), K^{\star}\right)$, we need to verify that for any other good representation $B$ of $X$ and $B$-conjugation sequence $y$, $\mathcal{B}^{2}_{A}(x)$ and $\mathcal{B}^{2}_{B}(y)$ are cohomologous. Let us fix another good representation $B$ of $X \in \br(K/F)$ and a $B$-conjugation sequence $y$.
+
+\begin{construction}\label{con:good-rep-iso-coeff}
+  By~\cref{lem:good-rep-iso}, $A$ and $B$ are isomorphic as $F$-algebras, we use $e_{A,B}$ to denote an arbitrary $F$-algebra isomorphism between $A$ and $B$. When there is no confusion, we write $e$ instead of $e_{A, B}$ Since $e \circ \iota_{A}$ and $\iota_{B}$ are two $F$-algebra homomorphism from $K$ to $B$, by~\cref{thm:skolem-noether}, there exists some $u \in B^{\star}$ such that for all $r \in K$, we have $\iota_{B}(r) = ue\left(\iota_{A}(r)\right)u^{-1}$ (or equivalently, $u^{-1}\iota_{B}(r)u = e\left(\iota_{A}(r)\right)$). When there is confusion, we write $u_{A, B}$ instead of $u$.
+  % \uses{lem:good-rep-iso}
+\end{construction}
+
+\begin{lemma}\label{lem:iso-conj-coeff-spec2}
+  For any $c \in K$, $\sigma\in\gal(K/F)$ and $A$-conjugation factor $x$ of $\sigma$, we have
+  \[
+    \iota_{B}\left(\sigma\cdot c\right) = ue(x)u^{-1}\,\iota_{B}(c)\,ue\left(x^{-1}\right)u^{-1}.
+  \]
+  \leanok
+  \lean{GoodRep.isoConjCoeff_spec''}
+  % \uses{def:conj-factor, con:good-rep-iso-coeff}
+\end{lemma}
+\begin{proof}
+  From~\cref{def:conj-factor}, we have $e\left(\iota_{A}(\sigma \cdot c)\right) = e\left(x\iota_{A}(c)x^{-1}\right)$. Substituting it in~\cref{con:good-rep-iso-coeff}, we get
+  \[
+    \begin{aligned}
+      \iota_{B}(\sigma \cdot c) &= ue\left(x\iota_{A}(c)x^{-1}\right)u^{-1}\\
+                                &= ue(x)e\left(\iota_{A}(c)\right)e\left(x^{-1}\right)u^{-1}\\
+      &= ue(x)u^{-1}\iota_{B}(c)ue\left(x^{-1}\right)u^{-1}.
+    \end{aligned}
+  \]
+\end{proof}
+
+\begin{construction}
+  \label{con:push-forward-conj-factor}
+  If $x$ is an $A$-conjugation factor for $\sigma$, we can obtain a $B$-conjugation factor for $\sigma$ by defining $B_{\star}x := ue(x)u^{-1}$ with inverse $ue\left(x^{-1}\right)u^{-1}$. We use~\cref{lem:iso-conj-coeff-spec2} to check that $B_{\star}x$ is indeed a conjugation factor for $\sigma$. If $y$ is a $B$-conjugation factor for $\sigma$, another useful constant is $v := \sigma\left(\twist_{y, B_{\star}x}\right)$. We have
+  \[
+    \begin{aligned}
+    y &= \iota_{B}\left(v\right)\, B_{\star}x \\
+      \iota_{B}\left(v\right) &= u e\left(\iota_{A}\left(v\right)\right)u^{-1}\\
+      v^{-1} &= \sigma\left(\twist_{B_{\star}x, y}\right)
+    \end{aligned}.
+  \]
+  We also write $v_{x,y}$ or even $v^{A,B}_{x, y}$ when we stress the importance of good representation $A$ and $B$ and their conjugation factor $x$ and $y$.
+  % \uses{lem:iso-conj-coeff-spec2}
+\end{construction}
+
+\begin{lemma}\label{lem:compare-to-2-cocycle-aux}
+  Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence.
+  We have
+  \[
+    \comp_{y_{\sigma}, y_{\tau}, y_{\sigma\tau}} v_{x_{\sigma\tau},y_{\sigma\tau}} = v_{x_{\sigma},y_{\sigma}} \sigma\left(v_{x_{\tau},y_{\tau}}\right) \comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}.
+  \]
+  \leanok
+  \lean{GoodRep.compare_conjFactorCompCoeff}
+  % \uses{con:compare-conj-factors, con:push-forward-conj-factor, con:good-rep-iso-coeff, def:conj-factor}
+\end{lemma}
+\begin{proof}
+  By~\cref{con:compare-conj-factors}, we have $y_{\sigma}y_{\tau} = \iota_{B}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)y_{\sigma\tau}$.
+  By repeated application of~\cref{con:push-forward-conj-factor} and~\cref{con:good-rep-iso-coeff}, we have
+  \[
+    \begin{aligned}
+      y_{\sigma\tau}&= u\,e\left(\iota_{A}\left(v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)\,u^{-1}\\
+      y_{\sigma}y_{\tau} &= u\,e\left(\iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\right)x_{\sigma}\iota_{A}\left(v_{x_{\tau},y_{\tau}}\right)x_{\tau}\right)\,u^{-1}\\
+                    &= \iota_{B}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)y_{\sigma\tau}\\
+                    &= \iota_{B}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)u\,e\left(\iota_{A}\left(v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)\,u^{-1}\\
+                    &= u\,e\left(\iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}\right)\right)\,u^{-1}\,\,\,ue\left(\iota_{A}\left(v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)\,u^{-1}\\
+      &= ue\left(\iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}\right)u^{-1}.
+    \end{aligned}
+  \]
+  Hence
+  \[
+    \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\right)x_{\sigma}\iota_{A}\left(v_{x_{\tau},y_{\tau}}\right)x_{\tau} = \iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}.
+  \]
+  We also have by~\cref{def:conj-factor}
+  \[
+    x_{\sigma} \iota_{A}\left(v_{x_{\tau},y_{\tau}}\right) x_{\tau} =
+    \iota_{A}\left(\sigma\cdot v_{x_{\tau}y_{\tau}}\right) x_{\sigma}x_{\tau}.
+  \]
+  Hence
+  \[
+    \begin{aligned}    \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\right)x_{\sigma}\iota_{A}\left(v_{x_{\tau},y_{\tau}}\right)x_{\tau} &=
+                                                                                                                                      \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\, \sigma\left(v_{x_{\tau},y_{\tau}}\right)\right) x_{\sigma}x_{\tau} \\
+      &= \iota_{A}\left(v_{x_{\sigma},y_{\sigma}}\sigma\left(v_{x_{\tau},y_{\tau}}\right)\comp_{x_{\sigma},x_{\tau},x_{\sigma\tau}}\right)x_{\sigma\tau}\\
+      &= \iota_{A}\left(\comp_{y_{\sigma},y_{\tau},y_{\sigma\tau}}v_{x_{\sigma\tau},y_{\sigma\tau}}\right)x_{\sigma\tau}.
+    \end{aligned}
+  \]
+  Cancelling $x_{\sigma\tau}$ and by injectivity of $\iota_{A}$, the result is proved.
+\end{proof}
+
+\begin{lemma}\label{lem:compare-to-2-cocycle}
+  Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence. We have
+  \[
+    \mathcal{B}^{2}_{B,y}(\sigma,\tau) v_{x_{\sigma\tau},y_{\sigma\tau}} =
+    v_{x_{\sigma},y_{\sigma}} \sigma\left(v_{x_{\tau},y_{\tau}}\right) \mathcal{B}^{2}_{A,y}(\sigma,\tau).
+  \]
+  \leanok
+  \lean{GoodRep.compare_toTwoCocycles}
+  % \uses{con:good-rep-to-2-cocycles,lem:compare-to-2-cocycle-aux}
+\end{lemma}
+
+\begin{proof}
+  If we unfold~\cref{con:good-rep-to-2-cocycles}, we discover the lemma is saying exactly~\cref{lem:compare-to-2-cocycle-aux}.
+\end{proof}
+
+We finally arrive at our main conclusion for this section.
+\begin{corollary}\label{cor:to-2-cocycle-wd}
+  Let $x$ be an $A$-conjugation sequence and $y$ a $B$-conjugation sequence. $\mathcal{B}^{2}_{A,x}$ and $\mathcal{B}^{2}_{B,y}$ are 2-cohomologous.
+  \leanok
+  \lean{GoodRep.compare_toTwoCocycles'}
+  % \uses{def:second-group-coh, lem:compare-to-2-cocycle}
+\end{corollary}
+\begin{proof}
+  By~\cref{def:second-group-coh}, we need to find a function $f : \gal(K/F)\to K^{\star}$ such that for all $\sigma, \tau\in\gal(K/F)$,
+  \[
+    \frac{\sigma\left(f(\tau)\right)}{f\left(\sigma\tau\right)}f(\sigma)=\frac{\mathcal{B}^{2}_{B,y}}{\mathcal{B}^{2}_{A,x}}.
+  \]
+  Let $f(\rho) := v_{x_{\rho},y_{\rho}}$, by~\cref{lem:compare-to-2-cocycle} we see the equality holds.
+\end{proof}
+
+\begin{construction}[from $\br(K/F)$ to $\HH^{2}\left(\gal(K/F), K^{\star}\right)$]\label{con:br-to-snd-coh}
+  Let $X \in \br(K/F)$, by~\cref{cor:mem-relative-br-iff-good-rep}, $X$ admits a good representation $A$; by~\cref{con:exists-conj-seq}, $A$ admits a conjugation sequence $x$. We associate with $X$ an element $\HH^{2}(X) := \left[\mathcal{B}^{2}_{A,x}\right]$in $\HH^{2}\left(\gal(K/F),K^{\star}\right)$. By~\cref{cor:to-2-cocycle-wd}, for any other good representation $B$ and $B$-conjugation sequence $y$, we have $\left[\mathcal{B}^{2}_{A,x}\right]=\left[\mathcal{B}^{2}_{B,y}\right]$, hence we have a well-defined function $\HH^{2} : \br(K/F) \to \HH^{2}\left(\gal(K/F),K^{\star}\right)$.
+  \leanok
+  \lean{RelativeBrGroup.toSnd, RelativeBrGroup.toSnd_wd}
+  % \uses{con:exists-conj-seq, cor:mem-relative-br-iff-good-rep,cor:to-2-cocycle-wd}
+\end{construction}
+
+\subsection{Cross Product as a Central Simple Algebra}
+
+Let $\mathfrak{a} \in \mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ be any 2-cocycle. In this section, we construct the {\em cross product\/} associated with $\mathfrak{a}$ which we prove to be $F$-central simple. Finally, we show that if $\mathfrak{a}, \mathfrak{b}\in\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ are cohomologous, the cross products associated with $a$ and $b$ are Brauer equivalent.
+
+\begin{construction}[Cross product]\label{con:cross-product}
+  Denote $\cross_{\mathfrak{a}}$ to be $\gal(K/F) \to K$, i.e. functions from $\gal(K/F)$ to $K$. Notationally, elements of $\cross_{\mathfrak{a}}$ are sequences in $K$ indexed by $\gal(K/F)$; we denote $\Delta^{\mfa}_{\sigma, c}$ to be the sequence with value $c$ at $\sigma$-th index and zero elsewhere. When $\mfa$ is clear from context, we will omit the superscript. We give $\cross_{\mathfrak{a}}$ the usual zero, addition, negation, that is, we give $\cross_{\mathfrak{a}}$ the normal additive abelian group structure. Since for each $c \in \cross_{\mathfrak{a}}$,
+  \[
+    c = \sum_{\sigma\in\gal(K/F)}\Delta_{\sigma, c(\sigma)},
+    \]
+    it is often, if not always, sufficient to consider the special cases of $\Delta_{\sigma, c}$ and extend the result linearly.
+  For multiplications, we define the result of multiplying $\Delta_{\sigma, c},\Delta_{\tau, d} \cross_{\mathfrak{a}}$ to be $\Delta_{\sigma\tau, c\sigma(d)\, \mathfrak{a}(\sigma,\tau)}$. Immediately, if either $c$ or $d$ is $0$, the result of multiplication is also zero. That is, for all $c \in \cross_{\mfa}$, we have $c\cdot 0=0\cdot c =0$. For any $r \in F$ and $\Delta_{\sigma, c} \in \cross_{\mathfrak{a}}$, we define $r \cdot \Delta_{\sigma, c}$ to be $\Delta_{\sigma, r\cdot c}$.
+  \leanok
+  \lean{GoodRep.crossProductMul, GoodRep.crossProductSMul, GoodRep.CrossProduct.addCommGroup}
+\end{construction}
+
+\begin{remark}
+  When $K/F$ is infinite dimensional, the correct definition of $\cross_{\mathfrak{a}}$ is perhaps $\bigoplus_{\sigma\in\gal(K/F)}K$. But in Lean4, function type is easier to manipulate than direct sums. Since our scope is finite dimensional Galois extension, our definition is still accurate.
+\end{remark}
+
+\begin{lemma}
+  The cross product $\cross_{\mathfrak{a}}$ is a ring with the multiplicative unit $\Delta_{\mathsf{id}, \mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}}$. The $F$-action on $\cross_{\mathfrak{a}}$ defined by $r \cdot \Delta_{\sigma, c} := \Delta_{\sigma, r\cdot c}$ makes it an $F$-algebra.
+  \leanok
+  \lean{GoodRep.CrossProduct.algebra}
+  % \uses{def:second-group-coh, lem:2-cocycle-one-one}
+\end{lemma}
+\begin{proof}
+  We verify the axioms of rings on elements of the form $\Delta_{\sigma, c}$. Let $\sigma,\tau,\rho\in\gal(K/F)$ and $a,b,c\in K$.
+  \begin{itemize}
+    \item associativity of multiplication. We need to check that $\Delta_{\sigma,a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right) = \left(\Delta_{\sigma,a}\Delta_{\tau,b}\right)\Delta_{\rho,c}$:
+          \[
+          \begin{aligned}
+            \Delta_{\sigma, a}\left(\Delta_{\tau,b}\Delta_{\rho,c}\right)
+            &= \Delta_{\sigma,a}\Delta_{\tau\rho,b\tau(c) \mathfrak{a}(\sigma,\tau)}\\
+            &= \Delta_{\sigma\tau\rho,a\sigma(b)\sigma(\tau(c)) \sigma(\mathfrak{a}(\sigma, \tau))};\\
+            %
+            \left(\Delta_{\sigma,a}\Delta_{\tau,b}\right)\Delta_{\rho,c}
+            &= \Delta_{\sigma\tau,a\sigma(b)\mathfrak{a}(\sigma,\tau)}\Delta_{\rho,c}\\
+            &= \Delta_{\sigma\tau\rho,a\sigma(b)\mathfrak{a}(\sigma, \tau)\sigma(\tau(c))\mathfrak{a}(\sigma\tau, \rho)}.
+          \end{aligned}
+          \]
+          Hence it is sufficient to check
+          \[
+          \sigma(\tau(c))\sigma(\mathfrak{a}(\sigma,\tau)) =
+          \mathfrak{a}(\sigma,\tau)\sigma(\tau(c))\mathfrak{a}(\sigma\tau, \rho).
+          \]
+          This is the 2-cocycle condition in~\cref{def:second-group-coh} (modulo commutativity of $K$).
+    \item multiplicative unit: we need to check $\Delta_{\sigma, a}\Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})} = \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id},\mathsf{id})}\Delta_{\sigma, a} = \Delta_{\sigma, a}$. By multiple applications of~\cref{lem:2-cocycle-one-one}
+          \[
+          \begin{aligned}
+            \Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}}\Delta_{\sigma, a}
+            &= \Delta_{\sigma, \mathfrak{a}(\mathsf{id}, \mathsf{id})^{-1}a\mathfrak{a}(\mathsf{id},\sigma)}\\
+            &= \Delta_{\sigma, \mathfrak{a}(\mathsf{id}, \mathsf{id}) a\mathfrak{a}(\mathsf{id},\mathsf{id})}\\
+            &= \Delta_{\sigma, a} \\
+            \Delta_{\sigma, a}\Delta_{\mathsf{id},\mathfrak{a}(\mathsf{id},\mathsf{id})^{-1}}
+            &= \Delta_{\sigma, a\sigma(\mathfrak{a}(\id,\id))^{-1}\mathfrak{a}(\sigma,\id)}\\
+            &=\Delta_{\sigma, a\sigma(\mfa(\id,\id))^{-1}\sigma(\mfa(\id, id))}\\
+            &=\Delta_{\sigma, a}
+          \end{aligned}
+          \]
+    \item distributivity: We need to check left-distributivity $\Delta_{\sigma, a}\left(\Delta_{\tau, b} + \Delta_{\rho, c}\right) = \Delta_{\sigma,a}\Delta_{\tau,b} + \Delta_{\sigma, a}\Delta_{\rho, c}$ and right distributivity $\left(\Delta_{\tau,b} + \Delta_{\rho,c}\right)\Delta_{\sigma,a} = \Delta_{\tau,b}\Delta_{\sigma,a} + \Delta_{\rho,c}\Delta_{\sigma,a}$. This is precisely what ``extend linearly'' means.
+    \item $F$-algebra: We need to check for all $r \in F$, $\left(r\cdot \Delta_{\id,\mfa(\id,\id)^{-1}}\right)\Delta_{\sigma,c} = \Delta_{\sigma,c}\left(r\cdot\Delta_{\id,\mfa(\id,\id)^{-1}}\right)$. By~\cref{lem:2-cocycle-one-one}
+          \[
+          \begin{aligned}
+            \left(r\cdot \Delta_{\id,\mfa(\id,\id)^{-1}}\right)\Delta_{\sigma,c}
+            &= \Delta_{\id,r\cdot\mfa(\id,\id)^{-1}}\Delta_{\sigma,c}\\
+            &= \Delta_{\sigma,\left(r\cdot\mfa(\id,\id)^{-1}\right)c\mfa(\id,\sigma)} \\
+            &=\Delta_{\sigma,\left(r\cdot\mfa(\id,\id)^{-1}\right)c\mfa(\id,\id)} \\
+            &= \Delta_{\sigma, r\cdot c}\\
+            %
+            \Delta_{\sigma,c}\left(r\cdot\Delta_{\id,\mfa(\id,\id)^{-1}}\right)
+            &= \Delta_{\sigma,c}\Delta_{\id,r\cdot \mfa(\id,\id)^{-1}} \\
+            &= \Delta_{\sigma,c\sigma\left(r\cdot\mfa(\id,\id)^{-1}\right)\mfa(\sigma,\id)}\\
+            &=\Delta_{\sigma,c\left(r\cdot\sigma\left(\mfa(\id,\id)^{-1}\right)\right)\mfa(\id,\id)^{-1}}\\
+            &= \Delta_{\sigma, c\left(r\cdot 1\right)}\\
+            &=\Delta_{\sigma,r\cdot c}.
+          \end{aligned}
+          \]
+  \end{itemize}
+\end{proof}
+
+From now on, we feel free to write $1 \in \cross_{\mfa}$ instead of $\Delta_{\id,\mfa(\id,\id)^{-1}}$. Then the algebra map $F \hookrightarrow \cross_{\mfa}$ is the map $r \mapsto r \cdot 1$.
+
+\begin{construction}[$K$-embedding]\label{con:cross-product-iota}
+  The map $\iota_{\cross_{\mfa}}: K \to \cross_{\mfa}$ defined by
+  \[
+    b \mapsto \Delta_{\id, b\mfa(\id,\id)^{-1}}
+  \]
+  is an $F$-algebra map.
+  Checking that $\iota_{\cross_{\mfa}}$ preserves $1$, multiplication and addition uses nothing but axioms of ring.
+  For any $r \in F$, we need to check $\iota_{\cross_{\mfa}}(r) = r \cdot 1$. Indeed $\iota_{\cross_{\mfa}}(r) = \Delta_{\id, r\cdot \mfa(\id,\id)^{-1}}$ and $r\cdot 1 = r \cdot \Delta_{\id,\mfa(\id,\id)^{-1}} =\Delta_{\id,r\cdot\mfa(\id,\id)^{-1}}$.
+  When the context is clear, we also write $\iota_{\mfa}$ instead of $\iota_{\cross_{\mfa}}$. We give $\cross_{\mfa}$ a $K$-module structure by left-multiplication, that is for any $b \in K$ and $c\in\cross_{\mfa}$, we define $b\cdot c := \iota_{\mfa}(b)c$.
+
+
+  We note the following useful equality: for any $b \in K$
+
+  \[
+    b\cdot \Delta_{\sigma,c} = \iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\sigma, bc},
+  \]
+  indeed:
+  $\iota_{\mfa}(b)\Delta_{\sigma, c} = \Delta_{\id,b \mfa(\id,\id)^{-1}}\Delta_{\sigma, c} = \Delta_{\sigma, b\mfa(\id,\id)^{-1}c\mfa(\id,\sigma)} = \Delta_{\sigma,b\mfa(\id,\id)^{-1}c\mfa(\id,\id)} = \Delta_{\sigma, bc}$ by~\cref{lem:2-cocycle-one-one}. In another word, for any $b \in F$ and $c \in \cross_{\mfa}$, the $K$-action of $b$ on $c$ and the $F$-action of $b$ on $c$ agree.
+
+  \leanok \lean{GoodRep.CrossProduct.ι,GoodRep.CrossProduct.identity_double_cross'}
+  % \uses{lem:2-cocycle-one-one}
+ \end{construction}
+
+ \begin{lemma}
+   \label{lem:cross-product-delta-invertible}
+   For every $\sigma \in \gal(K/F)$, $\Delta_{\sigma,1}$ is invertible.
+   \leanok
+   \lean{GoodRep.CrossProduct.x_}
+ \end{lemma}
+
+ \begin{proof}
+   It is sufficient to prove that $\Delta_{\sigma, 1}$ has a left inverse and right inverse.
+   The left inverse of $\Delta_{\sigma, 1}$ is
+   \[
+     \Delta_{\sigma^{-1}, \mfa\left(\sigma^{-1},\sigma\right)^{-1}\mfa(\id,\id)^{-1}}.
+   \]
+   Indeed, for any $a \in K$, we have
+   \[
+     \Delta_{\sigma^{-1}, a}\,\Delta_{\sigma, 1} = \Delta_{\id, a\mfa\left(\sigma^{-1},\sigma\right)},
+   \]
+   hence substitute $a = \mfa\left(\sigma^{-1},\sigma\right)^{-1}\mfa(\id,\id)^{-1}$, we see the right hand side is $\Delta_{
+     \id,\mfa(\id,\id)^{-1}}$ which is precisely $1 \in \cross_{\mfa}$. The right inverse is
+   \[
+     \Delta_{\sigma^{-1}, \sigma^{-1}\left(\mfa\left(\sigma,\sigma^{-1}\right)^{-1} \mfa(\id,\id)^{-1}\right)}.
+   \]
+   Indeed, for any $a \in K$, we have
+   \[
+     \Delta_{\sigma,1}\,\Delta_{\sigma^{-1},a} = \Delta_{\id, \sigma(a)\mfa\left(\sigma,\sigma^{-1}\right)},
+   \]
+   hence substitude $a = \sigma^{-1}\left(\mfa\left(\sigma,\sigma^{-1}\right)^{-1}\mfa(\id,\id)^{-1}\right)$, the right hand side is again $\Delta_{\id,\mfa(\id,\id)^{-1}}$ which is precisely $1 \in \cross_{a}$.
+ \end{proof}
+ \begin{lemma}\label{lem:cross-product-basis-conj}
+   For any $c \in K$, we have
+   \[
+     \Delta_{\sigma,1}\,\iota_{\mfa}(c) = \iota_{\mfa}(\sigma\cdot c)\Delta_{\sigma, 1} = \Delta_{\sigma,\sigma\cdot c}
+   \]
+   and consequently,
+   \[
+     \Delta_{\sigma,1}\,\iota_{\mfa}(c)\,\Delta_{\sigma, 1}^{-1} = \iota_{\mfa}(\sigma \cdot c).
+   \]
+   \leanok
+   \lean{GoodRep.CrossProduct.x__conj}
+ \end{lemma}
+
+ \begin{proof}
+   We calculate
+   \[
+     \begin{aligned}
+       \Delta_{\sigma,1}\iota_{\mfa}(c)
+       &= \Delta_{\sigma,1}\,\Delta_{\id,c\mfa(\id,\id)^{-1}}\\
+       &= \Delta_{\sigma, \sigma(c\mfa(\id,\id)^{-1})\mfa(\sigma,1)}\\
+       &= \Delta_{\sigma,\sigma(c)\sigma(\mfa(\id,\id))^{-1}\sigma(\mfa(\id,\id))}\\
+       &= \Delta_{\sigma,\sigma(c)}.
+     \end{aligned}
+   \]
+ \end{proof}
+
+
+ \begin{lemma}\label{lem:cross-product-basis-mul}
+   We have $\Delta_{\sigma,1}\,\Delta_{\tau,1} = \iota_{\mfa}(\mfa(\sigma,\tau))\Delta_{\sigma\tau,1} = \mfa(\sigma,\tau)\cdot\Delta_{\sigma\tau,1}$
+   Consequently we have for any $c, d \in K$,
+   \[
+     \Delta_{\sigma, c}\Delta_{\tau,d} = \left(c \sigma(d)\mfa(\sigma,\tau)\right) \cdot \Delta_{\sigma\tau, 1}.
+   \]
+   \leanok
+   \lean{GoodRep.CrossProduct.x__mul,GoodRep.CrossProduct.mul_single_in_xAsBasis}
+   % \uses{con:cross-product-iota,lem:cross-product-basis-conj}
+ \end{lemma}
+ \begin{proof}
+   The first equality is in~\cref{con:cross-product-iota}.
+   For the second equality, by~\cref{lem:cross-product-basis-conj}, we have
+   \[
+     \begin{aligned}
+       \Delta_{\sigma,c}\Delta_{\sigma,d}
+       &= \left(c\cdot\Delta_{\sigma, 1}\right)\left(d\cdot\Delta_{\tau,1}\right) \\
+       &= \iota_{\mfa}(c)\left(\Delta_{\sigma, 1}\iota_{\mfa}(d)\right)\Delta_{\tau, 1} \\
+       &= \iota_{\mfa}\Delta_{\sigma, \sigma \cdot d}\Delta_{\tau, 1}\\
+       &= c \cdot \sigma(d) \cdot \Delta_{\sigma, 1}\Delta_{\tau, 1} \\
+       &= c \cdot \sigma(d)\cdot\mfa(\sigma,\tau)\cdot\Delta_{\sigma\tau,1}.\\
+     \end{aligned}
+   \]
+ \end{proof}
+
+
+ \begin{lemma}
+   \label{lem:cross-product-basis}
+   The set $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ forms a $K$-basis for $\cross_{\mfa}$.
+   \leanok
+   \lean{GoodRep.CrossProduct.x_AsBasis}
+   % \uses{con:cross-product-iota}
+ \end{lemma}
+ \begin{proof}
+   Suppose some linear combination $\sum_{\sigma}\lambda_{\sigma}\cdot\Delta_{\sigma, 1}$ is $0$ for some $\lambda_{\sigma}$'s in $K$. We have, by the equality in~\cref{con:cross-product-iota}
+   \[
+       \sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot\Delta_{\sigma,1}
+       = \sum_{\sigma\in\gal(K/F)}\Delta_{\sigma,\lambda_{\sigma}} = 0.\\
+     \]
+     Thus, for any $\tau \in \gal(K/F)$, we have
+     \[
+\left(\sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot \Delta_{\sigma,1}\right)(\tau) = 0 = \lambda_{\tau},
+\]
+which proves linear independence. The fact that $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ spans $\cross_{\mfa}$ is easy to see because every $\Delta_{\tau, a} = a \cdot \Delta_{\tau, 1}$ is certainly in the span.
+\end{proof}
+
+\begin{corollary}
+  \label{cor:dim-cross-product}
+  When $K/F$ is a finite dimensional Galois extension, the $K$-dimension of $\cross_{\mfa}$ is $\dim_{F}K$ and the $F$-dimension of $\cross_{\mfa}$ is ${\left(\dim_{F}K\right)}^{2}$.
+  \leanok
+  \lean{GoodRep.CrossProduct.dim_eq_square}
+\end{corollary}
+
+Now we see that cross product, like a good representation, is a $K$-module and $F$-algebra with a $K$-embedding and correct $F$-dimension. In the next sections, we prove that $\cross_{a}$ is in fact a central simple $F$-algebra.
+
+\subsubsection{Central Algebra}
+
+We will assume $K/F$ is a finite dimensional Galois extension.
+
+\begin{theorem}[Centrality]\label{thm:cross-product-central}
+  $\cross_{\mfa}$ is a central $F$-algebra.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_central}
+  % \uses{lem:cross-product-basis-mul,lem:cross-product-basis-conj, lem:cross-product-basis}
+\end{theorem}
+
+\begin{proof}
+  Let $z \in \cross_{\mfa}$ that is in the centre. We want to prove that $z$ is in $F$. We write $z$ as $\sum_{\sigma}\lambda_{\sigma}\cdot\Delta_{\sigma,1}$. We see that, for any $\tau \in \gal(K/F)$, we have
+  \[
+    z = \sum_{\sigma\in\gal(K/F)} \lambda_{\tau^{-1}\sigma\tau}\cdot\Delta_{\tau^{-1}\sigma\tau,1}.
+  \]
+  Therefore for any $d \in K$ and $\tau\in\gal(K/F)$, by~\cref{lem:cross-product-basis-mul} and~\cref{lem:cross-product-basis-conj}, we have
+  \[
+    \begin{aligned}
+      z\, \Delta_{\tau,d}
+      &= \sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot\Delta_{\sigma, 1}\Delta_{\tau,d}\\
+      &= \sum_{\sigma\in\gal(K/F)}\lambda_{\sigma}\cdot\sigma(d)\cdot \mfa(\sigma,\tau) \cdot \Delta_{\sigma\tau, 1}\\
+      &= \sum_{\sigma\in\gal(K/F)}\left(\lambda_{\sigma}\sigma(d)\mfa(\sigma,\tau)\right)\cdot \Delta_{\sigma\tau,1}\\
+      %
+      %
+      %
+      \Delta_{\tau,d}\, z
+      &= \sum_{\sigma\in\gal(K/F)}\Delta_{\tau,d}\left(\lambda_{\tau^{-1}\sigma\tau}\cdot \Delta_{\tau^{-1}\sigma\tau, 1}\right)\\
+      &= \sum_{\sigma\in\gal(K/F)}\Delta_{\tau,d}\iota_{\mfa}\left(\lambda_{\tau^{-1}\sigma\tau}\right)\Delta_{\tau^{-1}\sigma\tau, 1} \\
+      &=\sum_{\sigma\in\gal(K/F)} d \cdot \Delta_{\tau, 1}\iota_{\mfa}\left(\lambda_{\tau^{-1}\sigma, \tau}\right)\Delta_{\tau^{-1}\sigma\tau, 1}\\
+      &=\sum_{\sigma\in\gal(K/F)} d \cdot \Delta_{\tau, \tau\cdot \lambda_{\tau^{-1}\sigma\tau}}\Delta_{\tau^{-1}\sigma\tau, 1}\\
+      &=\sum_{\sigma\in\gal(K/F)} d\cdot \tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\cdot \Delta_{\tau,1}\Delta_{\tau^{-1}\sigma\tau, 1}\\
+      &= \sum_{\sigma\in\gal(K/F)}d\cdot \tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\cdot \mfa\left(\tau,\tau^{-1}\sigma\tau\right)\cdot \Delta_{\sigma\tau, 1}\\
+      &= \sum_{\sigma\in\gal(K/F)}\left(d\tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\mfa\left(\tau,\tau^{-1}\sigma\tau\right)\right) \cdot \Delta_{\sigma\tau,1}.
+    \end{aligned}
+  \]
+  By~\cref{lem:cross-product-basis}, for any $\sigma,\tau\in\gal(K/F)$ and $d\in K$, we have that
+  \begin{equation}
+    \label{eq:cross-product-central-eqn}
+    \lambda_{\sigma}\sigma(d)\mfa(\sigma,\tau) = d\tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\mfa\left(\tau,\tau^{-1}\sigma\tau\right).
+  \end{equation}
+  In particular, with $d = 1$, we have
+  \[
+    \lambda_{\sigma}\mfa(\sigma,\tau) = \tau\left(\lambda_{\tau^{-1}\sigma\tau}\right)\mfa\left(\tau,\tau^{-1}\sigma\tau\right),
+  \]
+  we substitute back into~\cref{eq:cross-product-central-eqn} and get
+  \[
+    \lambda_{\sigma}\sigma(d)\mfa(\sigma,\tau) = d\lambda_{\sigma}\mfa(\sigma,\tau).
+  \]
+  With $\tau = \id$, we have
+  \[
+    \lambda_{\sigma}\sigma(d)\mfa(\sigma,\id)=d\lambda_{\sigma}\mfa(\sigma,\id),
+  \]
+  Hence for all $d \in K$ with $\lambda_{\sigma} \ne 0$, we have $\sigma(d) = d$. We immediately deduce that for all $\sigma \ne \id$, $\lambda_{\sigma} = 0$ by contraposition. Thus $z = \lambda_{\id}\Delta_{\id, 1} = \Delta_{\id,\lambda_{\id}} = \iota_{\mfa}\left(\lambda_{\id}\mfa(\id,\id)\right) = \left(\lambda_{id}\mfa(\id,\id)\right) \cdot 1$. Consequently, to prove $z$ is in $F$, it is sufficient to prove that $\lambda_{\id}\mfa(\id,\id)$ is in $F$. Since $K/F$ is finite dimensional and Galois, we only need to prove that $\lambda_{\id}\mfa(\id,\id)$ is fixed by every $\tau\in\gal(K/F)$.Indeed, with $d = 1$ and $\sigma = \id$ in~\cref{eq:cross-product-central-eqn}, we have
+  \[
+    \begin{aligned}
+      \lambda_{\id}\mfa(\id,\tau) &= \tau\left(\lambda_{\id}\right)\mfa(\tau,\id)\\
+      &= \lambda_{\id}\mfa(\id,\id) \\ &= \tau\left(\lambda_{\id}\right)\tau\left(\mfa(\id,\id)\right)\\
+      &= \tau\left(\lambda_{\id}\mfa(\id,\id)\right).
+    \end{aligned}
+  \]
+
+\end{proof}
+
+
+\subsubsection{Simple Ring}
+In this section we assume $K/F$ is a finite dimensional field extension. Let $I \subseteq \cross_{\mfa}$ be a two sided ideal, we aim to show that either $I = \{0\}$ or $I = \cross_{\mfa}$. In this section, we use $\pi$ to denote the canonical ring homomorphism $\cross_{\mfa}\to{}^{\cross_{\mfa}}/_{I}$. We restrict $\pi$ to $\pi|_{\im\left(\iota_{\mfa}\right)} : \im\left(\iota_{\mfa}\right) \to {}^{\cross_{\mfa}}/_{I}$ and denote the range of $\pi|_{\im\left(\iota_{\mfa}\right)}$ to be $\Pi$.
+
+\begin{construction}\label{con:cross-product-simple-ring-mod}
+  The quotient ring ${}^{\cross_{\mfa}}/_{I}$ is a $\Pi$-module defined by $\pi\left(\iota_{\mfa}(a)\right)\cdot \pi(y) := \pi(a \cdot y)$. We first check that the $\Pi$-action is well-defined:
+  \begin{itemize}
+    \item Independence of $a$: Let $a, b \in K$ be such that $\pi\left(\iota_{\mfa}(a)\right) = \pi\left(\iota_{\mfa}(b)\right)$, that is, $\iota_{\mfa}(a-b)\in I$. Since $I$ is a two sided ideal, $a\cdot y - b \cdot y = (a - b)\cdot y = \iota_{\mfa}(a - b) y$ is also in $I$. This proves $\pi(a\cdot y) = \pi(b\cdot y)$.
+    \item Independence of $y$: Let $y_{1},y_{2}\in\cross_{\mfa}$ be such that $y_{1}-y_{2}\in I$, then for any $a \in K$, $a \cdot y_{1} - a \cdot y_{2} = \iota_{\mfa}(a)\left(y_{1}-y_{2}\right)$ is in $I$ because $I$ is a two sided ideal. This proves $\pi\left(\iota_{\mfa}(a)\right)\cdot \pi(y_{1}) = \pi\left(\iota_{\mfa}(a)\right)\cdot \pi(y_{2})$.
+  \end{itemize}
+  Then we check the axioms of module:
+  \begin{itemize}
+    \item Let $y \in \cross_{\mfa}$, we check that $1 \cdot \pi(y) = \pi(y)$ and $0 \cdot \pi(y) = 0$. This is because $\Pi\ni 1 = \pi\left(\iota_{\mfa}(1)\right)$ and $\Pi\ni 0=\pi\left(\iota_{\mfa}(0)\right)$. Let $a \in K$, $\pi\left(\iota_{\mfa}(a)\right)\cdot 0 = 0$ because $0 \in {}^{\cross_{\mfa}}/_{I}$ is equal to $\pi(0)$.
+    \item Let $a, b \in K$ and $x, y \in \cross_{\mfa}$, we check $\left(\pi\left(\iota_{\mfa}(a)\right) + \pi\left(\iota_{\mfa}(b)\right)\right)\cdot \pi(x) = \pi\left(\iota_{\mfa}(a)\right)\cdot\pi(x) + \pi\left(\iota_{\mfa}(b)\right)\cdot \pi(x)$ and $\pi\left(\iota_{\mfa}(a)\right)\cdot(\pi(x)+\pi(y)) = \pi\left(\iota_{\mfa}(a)\right)\cdot\pi(x) + \pi\left(\iota_{\mfa}(a)\right)\cdot\pi(y)$. These are true because $\pi$ preserves addition. Similarly $\pi\left(\iota_{\mfa}(a)\right)\cdot \pi\left(\iota_{\mfa}(b)\right) \cdot \pi(x) = \pi\left(\iota_{\mfa}(ab)\right)\cdot \pi(x)$ because $\pi$ preserves multiplication as well.
+  \end{itemize}
+
+  Hence ${}^{\cross_{\mfa}}/_{I}$ is also a $K$-module by pulling back the $\Pi$-module structure along $K \to \Pi$ given by $a \mapsto \pi\left(\iota_{\mfa}(a)\right)$. Note that $\pi$ is a $K$-linear map between $\cross_{\mfa}$ and ${}^{\cross_{\mfa}}/_{I}$ by this construction.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple_proofs.smul_def_quot, GoodRep.CrossProduct.is_simple_proofs.K_smul_quot}
+\end{construction}
+
+\begin{lemma}\label{lem:cross-product-quotient-basis}
+  If $I \ne \cross_{\mfa}$, the set $\{\pi\left(\Delta_{\sigma, 1}\right)|\sigma\in\gal(K/F)\}$ forms a $K$-basis for ${}^{\cross_{\mfa}}/_{I}$.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple_proofs.basis}
+  % \uses{lem:cross-product-basis,thm:conj-seq-basis,con:cross-product-simple-ring-mod,con:cross-product-iota, lem:cross-product-basis-conj, lem:cross-product-delta-invertible}
+\end{lemma}
+\begin{proof}
+  It is easy to see that the set spans ${}^{\cross_{\mfa}}/_{I}$ because $\{\Delta_{\sigma, 1}|\sigma\in\gal(K/F)\}$ spans $\cross_{\mfa}$ (\cref{lem:cross-product-basis}). For linear-independence, the idea is the same as in the proof of~\cref{thm:conj-seq-basis}. We repeat the argument here.
+
+  Suppose that $\{\pi\left(\Delta_{sigma, 1}\right)|\sigma\in\gal(K/F)\}$ is linearly dependent. Let $J \subseteq \gal(K/F)$ be such that $\{\pi\left(\Delta_{\sigma, 1}\right)|\sigma\in J\}$ is the maximally linearly independent set. Let $\sigma$ be an arbitrary automorphism that is not in $J$. Therefore, we have $\pi\left(\Delta_{\sigma, 1}\right) \in \left\langle \pi\left(\Delta_{\tau, 1}\right) | \tau\in J \right\rangle$. Hence we have, by~\cref{con:cross-product-simple-ring-mod} and~\cref{con:cross-product-iota}
+  \[
+    \pi\left(\Delta_{\sigma,1}\right) = \sum_{\tau\in J'}\lambda_{\tau}\cdot\pi\left(\Delta_{\tau, 1}\right) = \sum_{\tau\in J'}\pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\right)\pi\left(\Delta_{\tau, 1}\right) = \sum_{\tau\in J'}\pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\Delta_{\tau,1}\right) =\sum_{\tau\in J'}\pi\left(\lambda_{\tau}\cdot \Delta_{\tau, 1}\right).
+  \]
+  for some non-zero $\lambda_{\tau} \in K$ and some $J' \subseteq J$.
+  Hence, for any $c \in K$, we have
+  \[
+    \begin{aligned}
+      \pi\left(\iota_{\mfa}\left(\sigma \cdot c\right)\right) \pi\left(\Delta_{\sigma, 1}\right)
+      &= \pi\left(\Delta_{\sigma, 1}\right)\pi\left(\iota_{\mfa}(c)\right) &\text{by~\cref{lem:cross-product-basis-conj}} \\
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\right)
+        \pi\left(\Delta_{\tau, 1}\right)
+        \pi\left(\iota_{\mfa}(c)\right)\\
+      &= \sum_{\tau\in J}
+        \pi\left(
+        \iota_{\mfa}\left(\lambda_{\tau}\right)\Delta_{\tau, 1} \iota_{\mfa} c
+        \right) \\
+      &= \sum_{\tau\in J}
+        \pi\left(
+        \iota_{\mfa}\left(\lambda_{\tau}\right)\iota_{\mfa}(\tau\cdot c)\Delta_{\tau, 1}
+        \right) & \text{by~\cref{lem:cross-product-basis-conj} again}\\
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}\left(\lambda_{\tau}\tau(c)\right)\right)
+        \pi\left(\Delta_{\tau,1}\right)\\
+      &= \sum_{\tau\in J}
+        \left(\lambda_{\tau}\tau(c)\right)\cdot \pi\left(\Delta_{\tau, 1}\right)\\
+        %%%%
+        %%%%
+      \pi\left(\iota_{\mfa}\left(\sigma \cdot c\right)\right) \pi\left(\Delta_{\sigma, 1}\right)
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}(\sigma\cdot c)\right)
+        \pi\left(\iota_{\mfa}\left(\lambda_{\tau}\right)\right)
+        \pi\left(\Delta_{\tau, 1}\right) \\
+      &= \sum_{\tau\in J}
+        \pi\left(\iota_{\mfa}\left(\sigma(c)\lambda_{\tau}\right)\right)
+        \pi\left(\Delta_{\tau, 1}\right) \\
+      &= \sum_{\tau\in J}
+        \left(\sigma(c)\lambda_{\tau}\right)\cdot \pi\left(\Delta_{\tau, 1}\right).
+    \end{aligned}
+  \]
+  Since, $\{\pi\left(\Delta_{\tau, 1}\right) | \tau \in J\}$ is linearly independent, for all $c \in K$ and $\tau\in J$, we have that $\lambda_{\tau}\tau(c) = \sigma(c)\lambda_{\tau}$. Note that $J' \ne \emptyset$, otherwise, $\pi\left(\Delta_{\sigma, 1}\right) = 0$ implying that $\Delta_{\sigma, 1} \in I$ which by~\cref{lem:cross-product-delta-invertible} is invertible but $I$ does not equal to $\cross_{\mfa}$. Hence for each $\tau \in J'$, we have that for all $c \in K$, since $\lambda_{\tau}$ is not zero, $\sigma(c) = \tau(c)$, i.e. $\sigma = \tau$. Therefore, $\sigma$ is in $J' \subseteq J$ after all.
+\end{proof}
+
+\begin{corollary}\label{cor:cross-product-quot-iso}
+  If $I \ne \cross_{\mfa}$, the quotient ring ${}^{\cross_{\mfa}}/_{I}$ is isomorphic to $\cross_{\mfa}$ as $K$-modules. In particular $\pi$ is a $K$-linear isomorphism between $\cross_{\mfa}$ and the quotient ring ${}^{\cross_{\mfa}}/_{I}$.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple_proofs.π₁}
+  % \uses{lem:cross-product-basis,lem:cross-product-quotient-basis}
+\end{corollary}
+
+\begin{proof}
+  Indeed, by~\cref{lem:cross-product-basis}, $\{\Delta_{\sigma, 1}|\sigma \in \gal(K/F)\}$ is a $K$-basis for $\cross_{\mfa}$; and by~\cref{lem:cross-product-quotient-basis}, $\{\pi\left(\Delta_{\sigma, 1}\right) | \sigma\in\gal(K/F)\}$ is a $K$-basis for ${}^{\cross_{\mfa}}/_{I}$. The two sets obviously biject. Hence we can define a $K$-linear isomorphism by $\Delta_{\sigma, 1} \mapsto \pi\left(\Delta_{\sigma, 1}\right)$. This isomorphism is equal to $\pi$ everywhere.
+\end{proof}
+
+\begin{corollary}[Simple Ring]\label{cor:cross-product-simple}
+  $\cross_{\mfa}$ is a simple ring.
+  \leanok
+  \lean{GoodRep.CrossProduct.is_simple}
+  % \uses{cor:cross-product-quot-iso}
+\end{corollary}
+
+\begin{proof}
+  For any two-sided-ideal $I$ that is not equal to $\cross_{\mfa}$, by~\cref{cor:cross-product-quot-iso}, $\pi : cross_{\mfa} \to {}^{\cross_{\mfa}}/_{I}$ is a $K$-linear isomorphism, therefore $I$ is equal to $0$.
+\end{proof}
+
+\begin{theorem}\label{thm:cross-product-csa}
+  Let $K/F$ be a finite dimensional and Galois field extension and $\mfa$ be a 2-cocycle in $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$, $\cross_{a}$ is a finite dimensional central simple $F$-algebra.
+  \leanok
+  \lean{GoodRep.CrossProduct.asCSA}
+  % \uses{thm:cross-product-central, lem:cross-product-basis, cor:cross-product-simple}
+\end{theorem}
+\begin{proof}
+  \Cref{thm:cross-product-central}, \cref{lem:cross-product-basis} and \cref{cor:cross-product-simple}.
+\end{proof}
+
+\subsection{From $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$}
+
+For every 2-cocycle $\mfa$, we have defined the cross product $\cross_{\mfa}$ and proved that it is indeed a finite dimensional central simple $F$-algebra in~\cref{thm:cross-product-csa}; that is we have a function from $\mathcal{B}^{2}\left(\gal(K/F), K^{\star}\right)$ to $\csa_{F}$. If we want a function from $\HH^{2}\left(\gal(K/F), K^{\star}\right)$ to $\br(K/F)$, we need to show that if $\mfa$ and $\mfb$ are cohomologous, $\cross_{\mfa}$ and $\cross_{\mfb}$ are Brauer equivalent. We state it as a theorem:
+
+\begin{theorem}\label{thm:snd-coh-to-relative-br}
+  If $K/F$ is a finite dimensional and Galois field extension,
+  the function $\cross : \HH^{2}\left(\gal(K/F), K^{\star}\right) \to \br(K/F)$ defined by
+  \[
+    \mfa \mapsto \left[\cross_{\mfa}\right]_{\sim_{\br}}
+  \]
+  is well-defined.
+  \leanok
+  \lean{RelativeBrGroup.fromSnd, RelativeBrGroup.fromSnd_wd}
+  % \uses{def:second-group-coh, con:cross-product-iota, lem:cross-product-basis-mul, lem:cross-product-basis-conj}
+\end{theorem}
+
+\begin{proof}
+  Let $\mfa$ and $\mfb$ be two cohomologous 2-cocycles. By~\cref{def:second-group-coh}, for some $\mfc: \gal(K/F) \to K^{\star}$, for all $\sigma, \tau\in\gal(K/F)$, we have
+    \begin{equation}
+      \label{eq:cross-product-cohomologous}
+    \frac{\sigma(\mfc(\tau))}{\mfc(\sigma\tau)}\mfc(\sigma) = \frac{\mfa(\sigma, \tau)}{\mfb(\sigma, \tau)}.
+    \end{equation}
+    Let us denote $\mathsf{A}$ to be the $K$-basis $\{\Delta^{\mfa}_{\sigma, 1} | \sigma\in\gal(K/F)\}$ for $\cross_{\mfa}$ and $\mathsf{B}$ to be the $K$-basis $\{\mfc(\sigma)\cdot \Delta^{\mfb}_{\sigma, 1}|\sigma\in\gal(K/F)\}$ for $\cross_{\mfb}$. We immediately have a $K$-linear isomorphism $\phi : \cross_{\mfa}\cong \cross_{\mfb}$ by mapping $\mathsf{A}$ to $\mathsf{B}$. Since the $K$-action on $\cross_{a}$ and $\cross_{b}$ agrees with the $F$-action on them (\cref{con:cross-product-iota}), $\phi$ is also an $F$-linear isomorphism. We check that $\phi(1) = 1$ and $\phi(xy) = \phi(x)\phi(y)$ for all $x, y \in \cross_{\mfa}$:
+    \begin{enumerate}
+      \item preservation of one: with $\sigma = \tau =\id$ in \cref{eq:cross-product-cohomologous}, we have $\mfc(\id) = \mfa(\id,\id)\mfb(\id,\id)^{-1}$, thus
+  \[
+    \begin{aligned}
+      \phi(1)
+      &= \phi\left(\Delta^{\mfa}_{\id,\mfa(\id,\id)^{-1}}\right)\\
+      &= \phi\left(
+        \mfa(\id,\id)^{-1}\cdot \Delta^{\mfa}_{\id, 1}
+        \right) \\
+      &= \mfa(\id,\id)^{-1}\cdot \mfc(\id) \cdot \Delta^{\mfb}_{\id, 1} \\
+      &= \mfa(\id,\id)^{-1}\cdot \mfc(\id)\cdot \mfb(\id,\id) \cdot \mfb(\id,\id)^{-1}\cdot \Delta^{\mfb}_{\id, 1} \\
+      &= \left(
+        \mfa(\id,\id)^{-1}\mfc(\id)\mfb(\id,\id)
+        \right)\cdot
+        \left(
+        \mfb(\id,\id)^{-1}\cdot \Delta_{\id, 1}
+        \right) \\
+      &= \left(\mfa(\id,\id)^{-1}\mfa(\id,\id)\right)\cdot \Delta_{\id,\mfb(\id,\id)^{-1}} \\
+      &= \Delta_{\id,\mfb(\id,\id)^{-1}}.
+    \end{aligned}
+  \]
+      \item preservation of multiplication:
+            let $\sigma,\tau\in\gal(K/F)$ and $a, b \in K$, we need to prove that $\phi\left(\Delta^{\mfa}_{\sigma, a}\Delta^{\mfa}_{\tau, b}\right) = \phi\left(\Delta^{\mfa}_{\sigma, a}\right)\phi\left(\Delta^{\mfb}_{\tau, b}\right)$.
+            From~\cref{eq:cross-product-cohomologous}, we see that
+            \[
+            \sigma(\mfc(\tau))\mfc(\sigma)\mfb(\sigma,\tau) = \mfc(\sigma\tau)\mfa(\sigma,\tau).\]
+            Hence, by~\cref{lem:cross-product-basis-mul} and~\cref{lem:cross-product-basis-conj}, we have
+            \[
+            \begin{aligned}
+              \phi\left(\Delta^{\mfa}_{\sigma, a}\Delta^{\mfa}_{\tau, b}\right)
+              &= \phi\left(
+                \Delta^{\mfa}_{\sigma\tau, a \sigma(b) \mfa(\sigma,\tau)}
+                \right)\\
+              &= \phi\left(
+                % \left(
+                a\sigma(b) \mfa(\sigma,\tau) \,
+                % \right)
+                \cdot \,
+                \Delta^{\mfa}_{\sigma\tau, 1}
+                \right)\\
+              &=
+                % \left(
+                a \sigma(b) \mfa(\sigma,\tau)
+                % \right)
+                \, \cdot \,
+                \phi\left(\Delta^{\mfa}_{\sigma\tau, 1}\right) \\
+              &=
+                % \left(
+                a \sigma(b) \mfa(\sigma,\tau) \mfc(\sigma\tau)
+                % \right)
+                \, \cdot \,
+                \Delta^{\mfb}_{\sigma\tau, 1}.\\
+              &=
+                % \left(
+                a\sigma(b)\sigma(\mfc(\tau))\mfc(\sigma)\mfb(\sigma,\tau)
+                % \right)
+                \, \cdot \,
+                \Delta^{\mfb}_{\sigma\tau, 1}\\
+              &=
+                % \left(
+                \mfc(\sigma) \sigma(\mfc(\tau))
+                % \right)
+                \,\cdot\,
+                \Delta^{\mfb}_{\sigma\tau,a\sigma(b)\mfb(\sigma\tau)}\\
+              &=
+                % \left(
+                \mfc(\sigma)\sigma(\mfc(\tau))
+                % \right)
+                \, \cdot \,
+                % \left(
+                \Delta^{\mfb}_{\sigma, a}\Delta^{\mfb}_{\tau, b}
+                % \right)
+              \\
+              %
+              %
+              %
+              \phi\left(\Delta^{\mfa}_{\sigma, a}\right)\phi\left(\Delta^{\mfa}_{\tau, b}\right)
+              &= \phi\left(a \cdot \Delta^{\mfa}_{\sigma, 1}\right) \phi\left(b\cdot \Delta^{\mfa}_{\tau, 1}\right) \\
+              &= \left(a \cdot \phi\left(\Delta^{\mfa}_{\sigma, 1}\right)\right)
+                \left(b \cdot \phi\left(\Delta^{\mfa}_{\tau, 1}\right)\right) \\
+              &= \left(
+                a\mfc(\sigma)
+                \, \cdot \,
+                \Delta^{\mfb}_{\sigma, 1}
+                \right)
+                \left(
+                b \mfc(\tau)
+                \, \cdot \,
+                \Delta^{\mfb}_{\tau, 1}
+                \right)\\
+              &= a\mfc(\sigma) \, \cdot \,
+                \left(\Delta^{\mfb}_{\sigma, 1}
+                \iota_{\mfb}(b\mfc(\tau))\right) \,
+                \Delta^{\mfb}_{\tau, 1} \\
+              &=
+                a\mfc(\sigma) \, \cdot \,
+                \Delta^{\mfb}_{\sigma, \sigma(b\mfc(\tau))}\,
+                \Delta^{\mfb}_{\tau, 1} \\
+              &= a\mfc(\sigma)\sigma(b)\sigma(\mfc(\tau)) \, \cdot \,
+                \Delta^{\mfb}_{\sigma, 1}\Delta_{\tau, 1}^{\mfb}\\
+              &= a\mfc(\sigma)\sigma(b)\sigma(\mfc(\tau))\mfb(\sigma,\tau) \, \cdot \, \Delta^{\mfb}_{\sigma\tau, 1}\\
+              &= \mfc(\sigma)\sigma(\mfc(\tau)) \, \cdot \, \Delta^{\mfb}_{\sigma\tau, a\sigma(b)\mfb(\sigma,\tau)}\\
+              &= \mfc(\sigma)\sigma(\mfc(\tau)) \, \cdot \, \Delta^{\mfb}_{\sigma, a}\Delta^{\mfb}_{\tau, b}.
+            \end{aligned}
+            \]
+    \end{enumerate}
+    Hence $\phi$ is actually an $F$-algebra isomorphism between $\cross_{\mfa}$ and $\cross_{\mfb}$ and isomorphic central simple $F$-algebras are certainly Brauer equivalent.
+  \end{proof}
+
+
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:

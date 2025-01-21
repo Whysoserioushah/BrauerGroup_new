@@ -358,18 +358,13 @@ def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
     simp only [Submodule.comap_coe, Set.mem_preimage, map_sub, lift.tmul,
       LinearMap.coe_mk, AddHom.coe_mk, SetLike.mem_coe]
     rw [← Finset.sum_sub_distrib]
-    refine Submodule.sum_mem _ fun σ _ => ?_
-    rw [show c.val σ • (x_AsBasis hα) σ * k • a = (c.val σ • (x_AsBasis hα) σ * ι hα k) * a by
-      conv_lhs => rw [CrossProduct.smul_def hα k a]
-      simp only [_root_.mul_assoc],
-      show (c.val σ • (x_AsBasis hα) σ * ι hα k) * a = ((c.val σ * σ k) • x_AsBasis hα σ * a) by
-      rw [smul_mul_assoc, x__conj'' hα, mul_smul],
-      mul_comm (c.val σ), smul_mul_assoc, mul_smul,
-      show (x_AsBasis hβ) σ * k • b = σ k • ((x_AsBasis hβ) σ * b) by
-      rw [← smul_mul_assoc (σ k) (x_AsBasis hβ σ) b, ← x__conj'' hβ, _root_.mul_assoc]
-      rfl]
-    refine Submodule.subset_span ⟨⟨σ k, c.1 σ • (x_AsBasis hα σ * a), x_AsBasis hβ σ * b⟩, ?_⟩
-    simp only [smul_mul_assoc])
+    refine Submodule.sum_mem _ fun σ _ =>
+      Submodule.subset_span ⟨⟨σ k, c.1 σ • (x_AsBasis hα σ * a), x_AsBasis hβ σ * b⟩, ?_⟩
+    simp only [← smul_mul_assoc, CrossProduct.smul_def, _root_.mul_assoc, ← map_mul]
+    congr 2 <;>
+    simp only [← _root_.mul_assoc ((x_AsBasis hα) σ), ← _root_.mul_assoc ((x_AsBasis hβ) σ),
+      x_AsBasis_conj''] <;>
+    simp only [← _root_.mul_assoc, ← map_mul, mul_comm (σ k)])
 
 
 lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
@@ -456,12 +451,10 @@ instance : MulAction C (M hα hβ) where
     | tmul a b =>
       rw [show (1 : C) = ((β 1).1⁻¹ * (α 1).1⁻¹) • x_AsBasis (hαβ hα hβ) 1 by
         simp only [CrossProduct.one_def, Pi.mul_apply, Units.val_mul, mul_inv_rev, x_AsBasis_apply,
-          mul_smul], C_smul_calc, mul_smul, ← CrossProduct.one_def, smul_mul_assoc, _root_.one_mul]
-      trans (Submodule.Quotient.mk (a ⊗ₜ[F] ((β 1).1⁻¹ • x_AsBasis hβ 1 * b)) : M hα hβ)
-      · rw [Submodule.Quotient.eq]
-        refine Submodule.subset_span ⟨⟨(β 1).1⁻¹, a, x_AsBasis hβ 1 * b⟩, ?_⟩
-        simp only [sub_right_inj, smul_mul_assoc]
-      rw [← CrossProduct.one_def, _root_.one_mul]
+          mul_smul], C_smul_calc, mul_smul, ← CrossProduct.one_def, smul_mul_assoc, _root_.one_mul,
+          Submodule.Quotient.eq]
+      refine Submodule.subset_span ⟨⟨(β 1).1⁻¹, a, x_AsBasis hβ 1 * b⟩, ?_⟩
+      simp only [← smul_mul_assoc, ← CrossProduct.one_def, _root_.one_mul]
     | add x y hx hy =>
       simp only [Submodule.Quotient.mk_add]
       conv_rhs => rw [← hx, ← hy]
@@ -899,13 +892,14 @@ def isoDagger (m : ℕ) [NeZero m] :
   commutes' := by
     intro f
     ext i j x
-    simp only [endPowEquivMatrix, RingEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe,
-      RingEquiv.coe_mk, Equiv.coe_fn_mk, LinearMap.coe_mk, Module.algebraMap_end_apply,
-      Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_ite, smul_zero, AddHom.coe_mk,
-      Matrix.algebraMap_matrix_apply]
+    simp only [endPowEquivMatrix, endVecAlgEquivMatrixEnd, endVecRingEquivMatrixEnd,
+      RingEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe, AlgEquiv.coe_ringEquiv,
+      AlgEquiv.coe_mk, RingEquiv.coe_mk, Equiv.coe_fn_mk, Pi.smul_apply,
+      LinearMap.coe_mk, AddHom.coe_mk, Matrix.algebraMap_matrix_apply]
     split_ifs with h
-    · rfl
-    · rfl
+    · simp only [h, algebraMap_end_apply, Pi.smul_apply, Pi.single_eq_same]
+    · simp only [algebraMap_end_apply, Pi.smul_apply, Pi.single_eq_of_ne h, smul_zero,
+      LinearMap.zero_apply]
 
 def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C :=
 AlgEquiv.ofRingEquiv (f := mopEquivEnd C) <| by

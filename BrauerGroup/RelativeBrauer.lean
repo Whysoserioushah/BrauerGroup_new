@@ -37,30 +37,14 @@ abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E 
 
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
     BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrGroup (K := K)) :=
-  ⟨fun hA ↦ by
-    let F_bar := AlgebraicClosure F
+  ⟨by
+    rintro ⟨n, m, ⟨iso⟩⟩
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
     change _ = Quotient.mk'' _
     simp only [Quotient.eq'', one_in']
-    change IsBrauerEquivalent _ _
-    refine ⟨⟨1, deg F F_bar A, by
+    exact ⟨⟨1, n, by
       simp only
-      refine dim_one_iso (K ⊗[F] A) |>.trans ?_
-      set n : ℕ := hA.choose with n_eq
-      have iso' := hA.choose_spec.2.some
-      rw [n_eq.symm] at iso'
-      have e : Matrix (Fin n) (Fin n) K ≃ₐ[K] Matrix (Fin (deg F F_bar A))
-          (Fin (deg F F_bar A)) K := by
-        suffices n = deg F F_bar A from Matrix.reindexAlgEquiv K _ (finCongr this)
-        have := deg_sq_eq_dim F F_bar A
-        rw [pow_two] at this
-        have e1 := LinearEquiv.finrank_eq iso'.toLinearEquiv|>.trans $
-          Module.finrank_matrix _ _ (Fin n) (Fin n)
-        simp only [Module.finrank_tensorProduct, Module.finrank_self, _root_.one_mul,
-          Fintype.card_fin, _root_.mul_one] at e1
-        have := this.trans e1
-        exact Nat.mul_self_inj.mp (id this.symm)
-      exact iso'.trans e⟩⟩,
+      refine dim_one_iso (K ⊗[F] A) |>.trans iso⟩⟩,
     fun hA ↦ by
       simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk''] at hA
       change _ = Quotient.mk'' _ at hA

@@ -1,0 +1,220 @@
+\section{Double Centralizer Theorem}\label{sec:double-centralizer}
+
+In this section let $F$ be a field and $A$ an $F$-algebra. Define
+$\McL_{A} \subseteq \End_{F}A$ to be
+\[\left\{f : A \to A|f(x)=ax~\text{for some}~a\in A\right\},\]
+i.e. $F$-linear maps defined by left multiplication; similarly define
+$\McR_{A}$. Note that $\McL_{A}$ and $\McR_A$ are $F$-subalgebras of
+$\End_{F}A$. When we need to stree the underlying field is $F$, we also write
+$\McL_{A}^{F}$ and $\McR_{A}^{F}$. We assume $A$ to be a finite dimensional
+central simple $F$-algebra.
+\begin{lemma}
+  \label{lem:centralizer-mul-left-le}
+  The centralizer of $\McL_{A}$ in $\End_{F}A$ is smaller than or equal to
+  $\McR_{A}$:
+  \[
+    C_{\End_{F}A}\left(\McL_{A}\right) \le \McR_{A}.
+  \]
+  \leanok
+  \lean{centralizer_mulLeft_le_of_isCentralSimple}
+  % \uses{con:self-tensor-opp-iso-end}
+\end{lemma}
+
+\begin{proof}
+  Indeed, let $x \in C_{\End_{F}A}\left(\McL_{A}\right)$. Recall
+  from~\cref{con:self-tensor-opp-iso-end} that
+  $e : A\otimes_{F}A^{\opp}\cong \End_{F}A$ as $F$-algebras. Then $e^{-1}(x)$ is
+  in
+  $C_{A\otimes_{F}A^{\opp}}\left(\im\left(A\to A\otimes_{F}A^{\opp}\right)\right)$
+  (for $e$ sends $a\otimes 1$ to the $F$-linear map $(a\cdot\bullet)$). Since
+  $C_{A\otimes_{F}A^{\opp}}\left(\im\left(A\to A\otimes_{F}A^{\opp}\right)\right) = Z(A)\otimes_{F}A^{\opp}=F\otimes_{F}A^{\opp}=\im\left(A^{\opp}\to A\otimes_{F}A^{\opp}\right)$,
+  we find some $y\in A^{\opp}$ such that $1 \otimes y = e^{-1}(x)$. Therefore
+  $e\left(1\otimes y\right) = x$; but $e\left(1\otimes y\right)$ is in
+  $\McR_{A}$ for it is the linear map $(\bullet\cdot y)$.
+\end{proof}
+
+\begin{remark}\label{rem:mul-left-center-linear}
+  For any $F$-algebra $B$, every element in $C_{\End_{F}B}\left(\McL_{B}\right)$
+  is in fact $Z(B)$-linear. Let $x\in C_{\End_{F}B}\left(\McL_{B}\right)$,
+  $z\in Z(B)$ and $b \in B$, we have $x(z\cdot b) = z\cdot x(b)$ because $x$
+  commutes with the linear map $\left(z\cdot\bullet\right)$.
+\end{remark}
+
+\begin{remark}
+  $A$ is a $Z(A)$-algebra whose algebra structure is given by
+  $Z(A)\hookrightarrow A$. By~\cref{lem:center-simple-ring}, $Z(A)$ is a field.
+  $A$ is finite dimensional as a $Z(A)$-module because of the tower $A/Z(A)/F$.
+\end{remark}
+
+ \begin{lemma}\label{lem:mul-right-iso-opp}
+   As $F$-algebras, we have $\McR_{A}\cong A^{\opp}$. \leanok
+   \lean{Module.End.rightMulEquiv}
+ \end{lemma}
+ \begin{proof}
+   We prove the map $A^{\opp} \to \McR_{A}$ is bijective. It is injective
+   because if $\left(\bullet \cdot a\right) = \left(\bullet\cdot b\right)$, then
+   $a = 1 \cdot a = 1 \cdot b = b$. The map is surjective by the definition of
+   $\McR_{A}$.
+ \end{proof}
+ \begin{lemma}\label{lem:centralizer-mul-left-eq-mul-right}
+   Let $B$ be any simple $F$-algebra ({\em not\/} necessarily central). The
+   centralizer of $\McL_{B}$ in $\End_{F}B$ is equal to $\McR_{B}$.
+   \leanok
+   \lean{centralizer_mulLeft}
+   % \uses{lem:centralizer-mul-left-le, rem:mul-left-center-linear}
+ \end{lemma}
+ \begin{proof}
+   It is straightforward to show
+   $\McR_{B}^{F}\le C_{\End_{F}A}\left(\McL_{B}^{F}\right)$. So we only need to
+   prove $C_{\End_{F}A}\left(\McL_{B}^{F}\right)\le \McR_{B}^{F}$.
+   By~\cref{lem:centralizer-mul-left-le}, since $B$ is a central simple finite
+   dimensional $Z(B)$-algebra, we have that
+   \[
+     C_{\End_{Z(B)}B}\left(\McL_{B}^{Z(B)}\right) \le \McR_{B}^{Z(B)}.
+   \]
+   Suppose $f\in\End_{F}B$ is in $C_{\End_{F}B}B$, by~\cref{rem:mul-left-center-linear}, $f$ is $Z(B)$-linear as well. Then $f$ is
+   in $\McR_{B}^{Z(B)}$; that is $f$ is equal to $\left(\bullet\cdot b\right)$
+   for some $b \in B$ as $Z(B)$-linear maps. Then $f$ is also equal to
+   $\left(\bullet\cdot b\right)$ as $F$-linear maps.
+ \end{proof}
+
+ \begin{construction}
+   Let $B$ be any $F$-algebra and $S\subseteq B$ an $F$-subalgebra. For any
+   $x\in B^{\times}$, we have that $x S x^{-1}:=\{xsx^{-1}|s\in S\}$ is an
+   $F$-subalgebra of $B$ as well. We have the obvious $F$-algebra isomorphism
+   $S \cong xSx^{-1}$ given by $s\mapsto xsx^{-1}$ and $x^{-1}tx\mapsfrom t$.
+   Therefore $\dim_{F}S=\dim_{F}xSx^{-1}$ and $S$ is a simple ring if and only
+   if $xSx^{-1}$ is a simple ring.
+   \leanok
+   \lean{Subalgebra.conj}
+ \end{construction}
+
+ \begin{lemma}
+   \label{lem:centralizer-conj}
+   Let $B$ be any $F$-algebra, $x \in B^{\times}$ and $S\subseteq B$ be an
+   $F$-subalgebra of $B$, then $C_{B}(xSx^{-1})=x\left(C_{B}(S)\right)x^{-1}$.
+   \leanok
+   \lean{Subalgebra.conj_centralizer}
+ \end{lemma}
+ \begin{proof}
+   If $a \in C_{B}\left(xSx^{-1}\right)$, then $x^{-1}ax$ is in $C_{B}(S)$.
+   Conversely if $a$ is equal to $xbx^{-1}$ with $b\in C_{B}(S)$, then it is in
+   $C_{B}\left(xSx^{-1}\right)$ as well.
+ \end{proof}
+
+ \begin{remark}
+   For any finite dimensional $F$-module $B$, we have isomorphism
+   $\End_{F}B \cong \Mat_{\dim_{F}B}F$ as $F$-algebras. Hence $\End_{F} B$ is a
+   finite-dimensional central simple algebra over $F$.
+ \end{remark}
+
+ \begin{lemma}\label{lem:tensor-mul-right-simple}
+   Let $S\subseteq A$ be a simple $F$-subalgebra, then
+   $A \otimes_{F} \McR_{S}$ is a simple ring.
+   \leanok
+   % \uses{thm:tensor-csa, lem:mul-right-iso-opp}
+ \end{lemma}
+
+ \begin{proof}
+   By~\cref{lem:mul-right-iso-opp}, we have
+   $A\otimes \McR_{S}\cong A\otimes S^{\opp}$ as $F$-algebras. The claim follows
+   from~\cref{thm:tensor-csa}.
+ \end{proof}
+
+ \begin{lemma}\label{lem:centralizer-tensor-end-eq-conj-tensor-mul-right}
+   Let $S\subseteq A$ be a simple $F$-subalgebra, then there
+   exists an $x\in \left(A\otimes_{F}\End_{F}S\right)^{\times}$ such that
+   $C_{A}(S)\otimes_{F}\End_{F}S$ is isomorphic to
+   $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$ as $F$-algebras.
+   \leanok
+   \lean{centralizer_isSimple.aux.step1}
+   % \uses{lem:tensor-central,thm:tensor-csa, thm:skolem-noether, lem:centralizer-conj, lem:centralizer-inclusion-tensor,lem:centralizer-mul-left-eq-mul-right}
+ \end{lemma}
+
+ \begin{proof}
+   By~\cref{lem:tensor-central} and~\cref{thm:tensor-csa},
+   $A \otimes_{F}C_{A}(S)$ is a central simple $F$-algebra. Let
+   $f : S \to A\otimes_{F}\End_{F}S$ be an $F$-algebra homomorphism defined by
+   $s \mapsto s \otimes \mathbf{1}_{S}$ and $g : S \to A \otimes_{F}\End_{F}S$
+   be an $F$-algebra homomorphism defined by
+   $\mathbf{1}_{A} \otimes \left(s\cdot\bullet\right)$. Then
+   by~\cref{thm:skolem-noether}, we that there exists some
+   $x\in \left(A\otimes_{F}\End_{F}S\right)^{\times}$ such that $f = xgx^{-1}$.
+   Then we have $S\otimes_{F}\End_{F}S$ is equal to
+   $x\left(A\otimes_{F}\McL_{S}\right)x^{-1}$: indeed the left hand side is
+   $\im f$ while the right handside is $x\left(\im g\right)x^{-1}$. Therefore
+   $C_{A\otimes_{F}\End_{F}S}\left(S\otimes_{F}\End_{F}S\right) = C_{A\otimes_{F}\End_{F}S}\left(x\left(A\otimes_{F}\McR_{S}\right)x^{-1}\right)$.
+   By~\cref{lem:centralizer-conj}, the right hand side is equal to
+   $xC_{A\otimes_{F}\End_{F}S}\left(A\otimes_{F}\McL_{S}\right)x^{-1}$ which is
+   $x\left(A\otimes_{F}C_{\End_{F}S}\left(\McL_{S}\right)\right)x^{-1}$
+   by~\cref{lem:centralizer-inclusion-tensor} which is
+   $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$
+   by~\cref{lem:centralizer-mul-left-eq-mul-right}.
+ \end{proof}
+
+ \begin{lemma}\label{lem:simple-centralizer}
+   Let $S\subseteq A$ be a simple $F$-subalgebra, then
+   $C_{A}(S)$ is simple as well.
+   \leanok
+   \lean{centralizer_isSimple}
+   % \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:tensor-mul-right-simple, thm:tensor-simple-implies-simple}
+ \end{lemma}
+
+ \begin{proof}
+   By~\cref{lem:centralizer-tensor-end-eq-conj-tensor-mul-right},
+   $C_{A}(S) \otimes_{F}\End_{F}S$ is isomorphic to
+   $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$ as $F$-algebras. Then
+   $C(S)\otimes_{F}\End_{F}S$ is simple since $A\otimes_{F}\McR_{S}$ is simple
+   by~\cref{lem:tensor-mul-right-simple}.
+   By~\cref{thm:tensor-simple-implies-simple}, $C_{A}(S)$ is simple.
+ \end{proof}
+
+ \begin{lemma}
+   \label{lem:dim-centralizer}
+   Let $S\subseteq A$ be a simple $F$-subalgebra. Then
+   \[
+     \dim_{F}C_{A}(S)\cdot\dim_{F}S=\dim_{F}A.
+   \]
+   \leanok
+   \lean{dim_centralizer}
+   % \uses{lem:centralizer-tensor-end-eq-conj-tensor-mul-right, lem:mul-right-iso-opp}
+ \end{lemma}
+ \begin{proof}
+   By~\cref{lem:centralizer-tensor-end-eq-conj-tensor-mul-right},
+   $C_{A}(S) \otimes_{F}\End_{F}S$ is isomorphic to
+   $x\left(A\otimes_{F}\McR_{S}\right)x^{-1}$ as $F$-algebras. Hence $\dim_{F}\left(C_{A}(S)\otimes_{F}\End_{F}S\right)=\dim_{F}\left(A\otimes_{F}\McR_{S}\right)$ where the left hand side is $\dim_{F}C_{A}(S)\cdot \dim_{F}\End_{F}S$ and the right hand side is $\dim_{F}A\cdot\dim_{F}\McR_{S}$. Since $\dim_{F}\End_{F}S=\dim_{F}S^{2}$ and $\dim_{F}\McR_{S}=\dim S$ (by~\cref{lem:mul-right-iso-opp}), we proved this lemma.
+ \end{proof}
+
+\begin{corollary}
+  \label{cor:self-tensor-centralizer}
+  Let $S \subseteq A$ be a central simple $F$-subalgebra,
+  \[
+    A \cong B \ox_{F} C_{A}(B).
+  \]
+  \leanok
+  \lean{writeAsTensorProduct}
+  % \uses{lem:simple-centralizer, thm:tensor-csa, cor:alghom-bijective-of-dim-eq, lem:dim-centralizer}
+\end{corollary}
+
+\begin{proof}
+  By~\cref{lem:simple-centralizer}, $C_{A}(B)$ is simple and by~\cref{thm:tensor-csa}, $B \ox_{F} C_{A}(B)$ is simple. Hence the map $B \ox_{F} C_{A}(B) \to A$ induced by $B \hookrightarrow A$ and $C_{A}(B) \hookrightarrow A$ is injective. By~\cref{cor:alghom-bijective-of-dim-eq}, we only need to show $\dim_{F}B\ox_{F}C_{A}(B) =\dim_{F}A$ which is precisely~\cref{lem:dim-centralizer}.
+\end{proof}
+
+ \begin{theorem}[Double Centralizer]\label{thm:double-centralizer}
+   Let $S\subseteq A$ be a simple $F$-subalgebra, we have
+   \[
+     C_{A}\left(C_{A}(S)\right) = S.
+   \]
+   \leanok
+   \lean{double_centralizer}
+   % \uses{lem:simple-centralizer, lem:dim-centralizer}
+ \end{theorem}
+ \begin{proof}
+  It is straightforward that $S \le C_{A}\left(C_{A}(S)\right)$. By~\cref{lem:simple-centralizer}, $C_{A}(S)$ is simple, hence $\dim_{F}C_{A}\left(C_{A}(S)\right)\cdot \dim_{F}C_{A}(S)=\dim_{F}A=\dim_{F}C_{A}(S)\cdot \dim_{F}S$ (by applying~\cref{lem:dim-centralizer} twice), i.e. $\dim_{F}C_{A}\left(C_{A}(S)\right) = \dim_{F}S$. This equality of dimension gives us the desired result.
+\end{proof}
+
+ 
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:

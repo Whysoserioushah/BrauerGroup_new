@@ -1,0 +1,256 @@
+\chapter{Central Simple Algebras}\label{sec:csa}
+
+\section{Basic Theory}
+
+In this chapter we define central simple algebras. We used some results
+in~\cref{sec:unclassified}.
+
+\begin{definition}[Simple Ring] A ring $R$ is simple if the only
+  two-sided-ideals of $R$ are ${0}$ and $R$. An algebra is simple if it is
+  simple as a ring.
+  \leanok
+  \lean{IsSimpleRing}
+\end{definition}
+
+\begin{remark}
+  Division rings are simple.
+\end{remark}
+
+\begin{lemma}
+  \label{lem:center-simple-ring}
+  Let $A$ be a simple ring, then centre of $A$ is a field. \leanok
+  \lean{IsSimpleRing.isField_center}
+\end{lemma}
+\begin{proof}
+  Let $0\ne x$ be an element of centre of $A$. Then $I := \{xy | y\in A\}$ is a
+  two-sided-ideal of $A$. Since $0\ne x\in I$, we have that $I = A$. Therefore
+  $1 \in I$, hence $x$ is invertible.
+\end{proof}
+
+\begin{definition}[Central Algebras]
+  Let $R$ be a ring and $A$ an $R$-algebra, we say $A$ is central if and only if
+  the centre of $A$ is $R$
+  \leanok
+  \lean{Algebra.IsCentral}
+\end{definition}
+
+\begin{remark}
+  Every commutative ring is a central algebra over itself.
+\end{remark}
+
+\begin{remark}
+  Simpleness is invariant under ring isomorphism and centrality is invariant
+  under algebra isomorphism.
+\end{remark}
+
+\begin{lemma}
+  \label{lem:opp-central}
+  If $A$ is a central $R$-algerba, $A^{\opp}$ is also central.
+  \leanok
+  \lean{CSA_op_is_CSA}.
+\end{lemma}
+
+\begin{lemma}\label{lem:simple-ring-iff}
+  $R$ is a simple ring if and only if any ring homomorphism $f : R \to S$ either
+  injective or $S$ is the trivial ring. \leanok
+  \lean{IsSimpleRing.iff_injective_ringHom_or_subsingleton_codomain}
+\end{lemma}
+\begin{proof}
+  If $R$ is simple, then the $\ker f$ is either $\{0\}$ or $R$. The former case
+  implies that $f$ is injective while the latter case implies that $S$ is the
+  trivial ring. Conversely, let $I\subseteq R$ be a two-sided-ideal. Consider
+  $\pi: R \to {}^{R}/_{I}$, either $\pi$ is injective implying that $I = \{0\}$
+  or that ${}^{R}/_{I}$ is the trivial ring implying that $I = R$.
+\end{proof}
+\begin{remark}
+  If $A$ is a simple $R$-algebra, ``ring homomorphism'' in \cref{lem:simple-ring-iff} can be replaced with $R$-algebra homomorphism.
+\end{remark}
+
+\begin{corollary}\label{cor:alghom-bijective-of-dim-eq}
+  Assume $R$ is a field. Let $A, B$ be finite dimensional $R$-algebras where $A$
+  is simple as well. Then any $R$-algebra homomorphism $f:A\to B$ is bijective
+  if $\dim_{R}A=\dim_{R}B$. 
+  \leanok
+  \lean{bijective_of_dim_eq_of_isCentralSimple}
+  % \uses{lem:simple-ring-iff}
+\end{corollary}
+\begin{proof}
+  By~\cref{lem:simple-ring-iff}, $f$is injective. Then
+  $\dim_{K}\im f = \dim_{K} B - \dim_{K}\ker f = \dim_{K}B$ meaning that $f$ is
+  surjective.
+\end{proof}
+
+Let $K$ be a field and $A, B$ be $K$-algebras.
+\begin{lemma}
+  \label{lem:tensor-central}
+  If $A$ and $B$ are central $K$-algebras, $A\otimes_{K}B$ is a central
+  $K$-algebra as well.
+  \leanok
+  \lean{IsCentralSimple.TensorProduct.isCentral}
+  % \uses{cor:center-tensor-center}
+\end{lemma}
+\begin{proof}
+  Assume $A$ and $B$ are central algebras, then
+  by~\cref{cor:center-tensor-center}
+  $Z\left(A\otimes_{R}B\right)=Z\left(A\right)\otimes_{R}Z\left(B\right)=R\otimes_{R}R=R$.
+\end{proof}
+
+\begin{theorem}
+  \label{thm:tensor-csa}
+  If $A$ is a simple $K$-algebra and $B$ is a central simple $K$-algebra,
+  $A\otimes_{K}B$ is a central simple $K$-algebra as well. 
+  \leanok
+  \lean{IsCentralSimple.TensorProduct.simple}
+  % \uses{lem:tensor-central, lem:expand-tensor-in-basis}
+\end{theorem}
+\begin{proof}
+  By~\cref{lem:tensor-central}, we need to prove $A\otimes_{K}B$ is a simple
+  ring. Denote $f$ as the map $A\to A\otimes_{K}B$. It is sufficient to prove
+  that for every two-sided-ideal $I\subseteq A\otimes_{K}B$, we have
+  $I = \left\langle f\left(f^{-1}\left(I\right)\right)\right\rangle$. Indeed,
+  since $A$ is simple $f^{-1}\left(I\right)$ is either $\left\{0\right\}$ or
+  $A$, if it is $\left\{0\right\}$, then $I=\left\{0\right\}$; if it is $A$,
+  then $I$ is $A$ as well.
+
+  We will prove that
+  $I \le \left\langle f\left(f^{-1}\left(I\right)\right)\right\rangle$, the
+  other direction is straightforward. Without loss of generality assume
+  $I\ne\left\{0\right\}$. Let $\McA$ be an arbitrary basis of $A$, by
+  \cref{lem:expand-tensor-in-basis}, we see that every element
+  $x \in A\otimes_{K}B$ can be written as $\sum_{i=0}^{n}\McA_{i}\otimes b_{i}$
+  for some natrual number $n$ and some choice of $b_{i}\in B$ and
+  $\McA_{i}\in \McA$. Since $I$ is not empty, we see there exists a non-zero
+  element $\omega\in I$ such that its expansion
+  $\sum_{i=0}^{n}\McA_{i}\otimes b_{i}$ has the minimal $n$. In particular, all
+  $b_{i}$ are non-zero and $n\ne0$. We have
+  $\omega=\McA_{0}\otimes b_{0}+\sum_{i=1}^{n}\McA_{i}\otimes b_{i}$. Since $B$
+  is simple, $1 \in B = \left\langle\langle b_{0} \right\rangle$; hence we write
+  $1\in\sum_{j=0}^{m}x_{i}b_{0}y_{i}$ for some $x_{i},y_{i}\in B$. Define
+  $\Omega := \sum_{j=0}^{m}(1\otimes x_{i})\omega(1\otimes y_{i})$ which is also
+  in $I$. We write
+  \[
+    \begin{aligned}
+      \Omega &= \McA_{0} \otimes \left(\sum_{j=0}^{m}x_{j}b_{0}y_{j}\right) + \sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}x_{j}b_{i}y_{j}\right) \\
+             &= \McA_{0}\otimes 1 + \sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}x_{j}b_{i}y_{j}\right)
+    \end{aligned}
+  \]
+  For every $\beta\in B$, we have that
+  $\left(1\otimes \beta\right)\Omega - \Omega\left(1\otimes \beta\right)$ is in
+  I and is equal to
+  \[
+    \sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}\beta x_{j}b_{i}y_{j}-x_{j}b_{i}y_{j}\beta\right),
+  \]
+  which is an expansion of $n-1$ terms, thus
+  $\left(1\otimes\beta\right)\Omega-\Omega\left(1\otimes\beta\right)$ must be
+  $0$. Hence we conclude that for all $i=1,\dots,n$,
+  $\sum_{j=0}^{m}x_{j}b_{i}y_{j}\in Z\left(B\right)=K$. Hence for all
+  $i=1,\dots,n$, we find a $\kappa_{i}\in K$ such that
+  $\kappa_{i}=\sum_{j=0}^{m}x_{j}b_{i}y_{j}$. Hence we can calculate $\Omega$ as
+  \[
+    \begin{aligned}
+      \Omega &= \McA_{0}\otimes 1 + \sum_{i=1}^{n}\McA_{i}\otimes\left(\sum_{j=0}^{m}\right) \\
+             &= \McA_{0}\otimes 1 + \sum_{i=1}^{n}\McA_{i}\otimes\kappa_{i} \\
+             &= \left(\McA_{0}+\sum_{i=1}^{n}\kappa_{i}\cdot\McA_{i}\right) \otimes 1
+    \end{aligned}.
+  \]
+  From this, we note that
+  $\McA_{0}+\sum_{i}^{n}\kappa_{i}\cdot\McA_{i}\in f^{-1}\left(I\right)$; since
+  $A$ is simple, we immediately conclude that $f^{-1}\left(I\right) = A$, once
+  we know $\McA_{0}+\sum_{i=1}^{n}\kappa_{i}\cdot \McA_{i}$ is not zero. If it
+  is zero, by the fact that $\McA$ is a linearly independent set, we conclude
+  that $1,\kappa_{1},\dots,\kappa_{n}$ are all zero; which is a contradiction.
+  Since $f^{-1}\left(I\right) = A$, we know
+  $\left\langle f\left(f^{-1}I\right)\right\rangle = A \otimes_{K} B$.
+\end{proof}
+
+\begin{corollary}\label{cor:csa-basechange}
+  Central simple algebras are stable under base change. That is, if $L/K$ is a
+  field extension and $D$ is a central simple algebra over $K$, then
+  $L\otimes_{K} D$ is central simple over $L$. \leanok
+  \lean{IsCentralSimple.baseChange}
+  % \uses{thm:tensor-csa, cor:center-tensor-center}
+\end{corollary}
+
+\begin{proof}
+  By~\cref{thm:tensor-csa}, $L\otimes_{K} D$ is simple. Let
+  $x\in Z\left(L\otimes_{K}D\right)$, by~\cref{cor:center-tensor-center}, we
+  have $x\in Z\left(L\right)\otimes Z\left(D\right)=Z\left(L\right)$. Without
+  loss of generality, we can assume that $x = l \otimes d$ is a pure tensor,
+  then $l \in Z\left(L\right)$ and $d \in K$. Therefore $x = d\cdot l \in L$.
+\end{proof}
+
+\begin{theorem}\label{thm:tensor-simple-implies-simple}
+  If $A\otimes_{K} B$ is a simple ring, then $A$ and $B$ are both simple.
+  \leanok
+  \lean{IsCentralSimple.TensorProduct.simple}
+  % \uses{lem:simple-ring-iff}
+\end{theorem}
+\begin{proof}
+  By symmetry, we only prove that $A$ is simple.
+  If $A$ or $B$ is the trivial ring then $A\otimes_{K} B$ is the trivial ring, a contradiction. Thus we assume both $A$ and $B$ are non-trivial. Suppose $A$ is not simple, by~\cref{lem:simple-ring-iff}, there exists a non-trivial $K$-algebra $A'$ and a $K$-algebra homomorphism $f : A \to A'$ such that $\ker f \not= \{0\}$. Let $F : A \otimes_{K} B\to A'\otimes_{K} B$ be the base change of $f$, then since $A\otimes_{K} B$ is simple and $A'\otimes B$ is non-trivial ($A'$ is non-trivial and $B$ is faithfully flat because $B$ is free), we conclude that $F$ is injective. Then we have that
+  \begin{center}
+    \begin{tikzcd}
+      0 \arrow{r}{0} & A \otimes_{K} B \arrow{r}{F} & A'\otimes_K B
+    \end{tikzcd}
+  \end{center}
+  is exact. Since $B$ is faithfully flat as a $K$-module, tensorig with $B$ reflects exact sequences, therefore
+  \begin{center}
+    \begin{tikzcd}
+      0 \arrow{r}{0} & A \arrow{r}{f} & A'
+    \end{tikzcd}
+  \end{center}
+  is exact as well. This is contradiction since $f$ is not injective.
+\end{proof}
+
+\section{Subfields of Central Simple Algebras}\label{sec:subfield}
+
+\begin{definition}[Subfield]
+  For any field $K$ and $K$-algebra $A$, a subfield $B \subseteq A$ is a commutative $K$-subalgebra of $A$ that is closed under inverse for any non-zero member.
+  \leanok
+  \lean{SubField}
+\end{definition}
+
+\begin{remark}
+  Subfields inherit a natural ordering from subalgebras.
+\end{remark}
+
+Let $K$ be any field and $D$ a finite dimensional central division $K$-algebra and $A$ a finite dimensional central simple algebra of $A$.
+\begin{lemma}\label{lem:dim-maximal-subfield}
+  Let $k$ be a maximal subfield of $D$,
+  \[
+    \dim_{K}D = {\left(\dim_{K}k\right)}^{2}.
+  \]
+  \leanok
+  \lean{dim_max_subfield}
+  % \uses{lem:dim-centralizer}
+\end{lemma}
+
+\begin{proof}
+  By~\cref{lem:dim-centralizer}, we have that $\dim_{K} D = \dim_{K}C_{D}(k)\cdot \dim_{K}k$. Hence it is sufficient to show that $C_{D}(k) = k$. By the commutativity of $k$, we have that $k \le C_{D}(k)$. Suppose $k \ne C_{D}(k)$: let $a \in C_{D}(k)$ that is not in $k$. We see that $L := k(a)$ is another subalgebra of $D$ that is strictly larger than $k$; a contradiction. Therefore $k = C_{D}(k)$ and the theorem is proved.
+\end{proof}
+
+\begin{lemma}\label{lem:tfae-subfield}
+  Suppose $L$ is a subfield of $A$, the following are equivalent:
+  \begin{enumerate}
+    \item $L$ = $C_{A}(L)$
+    \item $\dim_{K}A = {\left(\dim_{K}L\right)}^{2}$
+    \item for any commutative $K$-subalgebra $L' \subseteq A$, $L \subseteq L'$ implies $L = L'$
+  \end{enumerate}
+  \leanok
+  \lean{cor_two_1to2, cor_two_2to3, cor_two_3to1}
+  % \uses{lem:dim-centralizer}
+\end{lemma}
+\begin{proof}
+  We prove the following:
+  \begin{itemize}
+    \item ``1. implies 2.'': this is~\cref{lem:dim-centralizer}.
+    \item ``2. implies 1.'': Since $L$ is commutative, we always have $L \subseteq C_{A}(L)$. Hence we only need to show $\dim_{K}L = \dim_{K}C_{A}(L)$. This is because by~\cref{lem:dim-centralizer}, we have that $\dim_{K}A = \dim_{K}L\cdot \dim_{K}C_{A}(L)$ and by 2. we have $\dim_{K}L\cdot \dim_{K}C_{A}(L)= \dim_{K}L\cdot \dim_{K}L$.
+    \item ``2. implies 3.'': Since 2. implies 1., we assume $L = C_{A}(L)$, therefore all we need is to prove $L' \subseteq C_{A}(L)$. Let $x \in L'$ and $y \in L \subseteq L'$, we need to show $xy = yx$ which is commutativity of $L'$.
+    \item ``3. implies 1.'': By commutativity of $L$, we always have $L \subseteq C_{A}(L)$. For the other direction, suppose $C_{A}(L)\not\subseteq L$, then there exists some $a \in C_{A}(L)$ but not in $L$. Consider $L' = L(a)$, by 3., we have $L' = L$ which is a contradiction.
+  \end{itemize}
+\end{proof}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: "../print"
+%%% End:

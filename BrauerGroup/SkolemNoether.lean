@@ -188,7 +188,7 @@ instance (K A B M : Type u)
     | add x y hx hy =>
       rw [smul_add, add_smul, hx, hy, add_smul, smul_add]
 
-instance (K A B M : Type u)
+instance module_inst_findim (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
@@ -237,12 +237,12 @@ variable (K A B M : Type u)
     [Algebra K B] [hB : IsSimpleRing B] [AddCommGroup M] [Module K M] [Module A M]
     [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A)
 
-set_option linter.unusedVariables false in
+-- set_option linter.unusedVariables false in
 lemma findimB (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Algebra.IsCentral K A] [IsSimpleRing A] [Ring B]
     [Algebra K B] [hB : IsSimpleRing B] [AddCommGroup M] [Module K M] [Module A M]
-    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A) :
+    [IsScalarTower K A M] [IsSimpleModule A M] (f : B →ₐ[K] A) :
     FiniteDimensional K B := FiniteDimensional.of_injective (K := K) (V₂ := A) f (by
     change Function.Injective f
     have H := IsSimpleRing.injective_ringHom_or_subsingleton_codomain f.toRingHom
@@ -254,7 +254,7 @@ lemma findimB (K A B M : Type u)
 omit hB in
 lemma iso_fg [hB1 : IsSimpleRing B]:
   Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
-  haveI := findimB K A B M f g
+  haveI := findimB K A B M f
   rw [linearEquiv_iff_finrank_eq_over_simple_ring K]
   rfl
 

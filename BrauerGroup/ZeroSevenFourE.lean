@@ -754,22 +754,17 @@ def toEndEndAlgHom (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsSc
   commutes' a := by ext; simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, toEndEnd_apply,
     DistribMulAction.toLinearMap_apply, algebraMap_smul]; rfl
 
+instance (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]:
+    Nontrivial (Module.End (Module.End A M) M) where
+  exists_pair_ne := ⟨0, 1, fun eq => gen_ne_zero A M congr($eq (gen A M)).symm⟩
+
 omit [FiniteDimensional k A] in
 lemma toEndEnd_injective
     (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
     [Module k M] [IsScalarTower k A M] :
     Function.Injective (toEndEnd A M) := by
-  apply IsSimpleRing.injective_ringHom_or_subsingleton_codomain
-    (toEndEndAlgHom k A M).toRingHom |>.resolve_right ?_
-  intro h
-  have eq : 1 ∈ TwoSidedIdeal.ker (toEndEndAlgHom k A M) := by
-    simp only [TwoSidedIdeal.mem_ker, map_one]
-    exact Subsingleton.elim _ _
-  simp only [TwoSidedIdeal.mem_ker, map_one] at eq
-  haveI : Nontrivial M := IsSimpleModule.nontrivial A M
-  have eq' := congr($eq (gen A M))
-  simp only [LinearMap.one_apply, LinearMap.zero_apply] at eq'
-  exact gen_ne_zero A M eq'
+  apply IsSimpleRing.injective_ringHom
+    (toEndEndAlgHom k A M).toRingHom
 
 class IsBalanced (M : Type v) [AddCommGroup M] [Module A M] : Prop where
   surj : Function.Surjective (toEndEnd A M)
@@ -816,7 +811,6 @@ lemma IsBalanced.congr {M N : Type v} [AddCommGroup M] [AddCommGroup N] [Module 
   constructor
   · apply IsBalanced.congr_aux; exact l
   · apply IsBalanced.congr_aux; exact l.symm
-
 
 lemma isBalanced_of_simpleMod (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
     [Module k M] [IsScalarTower k A M] : IsBalanced A M := by
