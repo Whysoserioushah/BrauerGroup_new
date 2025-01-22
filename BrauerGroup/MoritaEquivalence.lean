@@ -24,9 +24,9 @@ instance (M : Type*) [AddCommGroup M] [Module R M] : Module M[ι, R] (ι → M) 
     simp_rw [mul_apply, Finset.smul_sum, Finset.sum_smul, MulAction.mul_smul]
     rw [Finset.sum_comm]
   smul_zero v := funext fun i => show ∑ _, _ = _ by simp
-  smul_add N v₁ v₂ := funext fun i => show ∑ _, _ = (∑ _, _) + (∑ _, _) by
+  smul_add N v₁ v₂ := funext fun i => show ∑ j : ι, N i j • (v₁ + v₂) j = (∑ _, _) + (∑ _, _) by
     simp [Finset.sum_add_distrib]
-  add_smul N₁ N₂ v := funext fun i => show ∑ _, _ = (∑ _, _) + (∑ _, _) by
+  add_smul N₁ N₂ v := funext fun i => show ∑ j : ι, (N₁ + N₂) i j • v j = (∑ _, _) + (∑ _, _) by
     simp [add_smul, Finset.sum_add_distrib]
   zero_smul v := funext fun i => show ∑ _, _ = _ by simp
 
@@ -49,10 +49,10 @@ lemma matrix_smul_vec_apply {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι,
 @[simps]
 def toModuleCatOverMatrix : ModuleCat R ⥤ ModuleCat M[ι, R] where
   obj M := ModuleCat.of M[ι, R] (ι → M)
-  map f :=
-  { toFun := fun v i => f $ v i
+  map f := ModuleCat.ofHom {
+    toFun := fun v i => f <| v i
     map_add' := fun x y => funext fun i => show f (x i + y i) = f (x i) + f (y i) from
-      map_add f _ _
+      f.hom.map_add _ _
     map_smul' := fun m v => funext fun i => show f (∑ _, _) = ∑ _, _ by
       simp only [RingHom.id_apply, map_sum, _root_.map_smul] }
   map_id _ := rfl
@@ -134,42 +134,42 @@ set_option maxHeartbeats 400000 in
 @[simps]
 def fromModuleCatOverMatrix : ModuleCat M[ι, R] ⥤ ModuleCat R where
   obj M := .of _ $ α R ι M
-  map f :=
-    { toFun := fun x => ⟨f x.1, by
-        simp only [α, AddSubgroup.coe_set_mk, AddSubgroup.mem_mk, Set.mem_range]
-        obtain ⟨y, hy⟩ := x.2
-        refine ⟨f y, ?_⟩
-        simp only at hy
-        rw [← hy, f.map_smul]⟩
-      map_add' := by
-        rintro ⟨_, ⟨x, rfl⟩⟩ ⟨_, ⟨y, rfl⟩⟩
-        refine Subtype.ext ?_
-        show f ((stdBasisMatrix _ _ _ • x) + (stdBasisMatrix _ _ _ • y)) =
-          f (stdBasisMatrix _ _ _ • x) + f (stdBasisMatrix _ _ _ • y)
-        rw [map_add]
-      map_smul' := by
-          rintro r ⟨_, ⟨x, rfl⟩⟩
-          simp only [RingHom.id_apply, LinearMapClass.map_smul]
-          refine Subtype.ext ?_
-          show f (_ • _) = _ • (_ • f _)
-          simp only [LinearMapClass.map_smul] }
-  map_id X := by ext x; exact Subtype.ext rfl
-  map_comp f g := by ext x; exact Subtype.ext rfl
+  map f := ModuleCat.ofHom {
+    toFun := fun x => ⟨f x.1, by
+      simp only [α, AddSubgroup.coe_set_mk, AddSubgroup.mem_mk, Set.mem_range]
+      obtain ⟨y, hy⟩ := x.2
+      refine ⟨f y, ?_⟩
+      simp only at hy
+      rw [← hy, f.hom.map_smul]⟩
+    map_add' := by
+      rintro ⟨_, ⟨x, rfl⟩⟩ ⟨_, ⟨y, rfl⟩⟩
+      refine Subtype.ext ?_
+      show f ((stdBasisMatrix _ _ _ • x) + (stdBasisMatrix _ _ _ • y)) =
+        f (stdBasisMatrix _ _ _ • x) + f (stdBasisMatrix _ _ _ • y)
+      rw [map_add]
+    map_smul' := by
+      rintro r ⟨_, ⟨x, rfl⟩⟩
+      simp only [RingHom.id_apply, LinearMapClass.map_smul]
+      refine Subtype.ext ?_
+      show f (_ • _) = _ • (_ • f _)
+      simp only [LinearMapClass.map_smul] }
+  map_id _ := by ext; rfl
+  map_comp _ _ := by ext; rfl
 
 @[simps]
 def matrix.unitIsoHom :
     toModuleCatOverMatrix R ι ⋙ fromModuleCatOverMatrix R ι ⟶
     𝟭 (ModuleCat R) where
-  app X :=
+  app X := ModuleCat.ofHom
     { toFun := fun x => ∑ i : ι, x.1 i
       map_add' := by
         rintro ⟨_, ⟨x, rfl⟩⟩ ⟨_, ⟨y, rfl⟩⟩
-        simp only [toModuleCatOverMatrix_obj, AddSubmonoid.coe_add, ← Finset.sum_add_distrib]
-        rfl
+        simp only [toModuleCatOverMatrix_obj_carrier, AddSubmonoid.coe_add,
+          ← Finset.sum_add_distrib]; rfl
       map_smul' := by
         rintro r ⟨_, ⟨x, rfl⟩⟩
-        simp only [Functor.id_obj, toModuleCatOverMatrix_obj, Functor.comp_obj,
-          fromModuleCatOverMatrix_obj, RingHom.id_apply, Finset.smul_sum]
+        simp only [Functor.id_obj, toModuleCatOverMatrix_obj_carrier, Functor.comp_obj,
+          fromModuleCatOverMatrix_obj_carrier, RingHom.id_apply, Finset.smul_sum]
         refine Finset.sum_congr rfl fun i _ => ?_
         rw [fromModuleCatOverMatrix.smul_α_coe, Subtype.coe_mk, ← MulAction.mul_smul]
         change ∑ _, _ = r • ∑ _, _
@@ -177,28 +177,26 @@ def matrix.unitIsoHom :
         simp only [stdBasisMatrix, of_apply, ite_smul, zero_smul, one_smul, Finset.smul_sum,
           smul_ite, smul_zero]}
   naturality {X Y} f := by
-    simp only [Functor.comp_obj, toModuleCatOverMatrix_obj, fromModuleCatOverMatrix_obj,
-      Functor.id_obj, Functor.comp_map, Functor.id_map]
+    simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
+      fromModuleCatOverMatrix_obj_carrier, Functor.id_obj, Functor.comp_map, Functor.id_map]
     ext ⟨_, ⟨x, rfl⟩⟩
     change ∑ _, _ = f _
-    simp only [fromModuleCatOverMatrix_map_apply_coe, LinearMapClass.map_smul, Functor.comp_obj,
-      toModuleCatOverMatrix_obj, fromModuleCatOverMatrix_obj, Functor.id_obj, ModuleCat.coe_comp,
-      Function.comp_apply]
+    simp only [fromModuleCatOverMatrix_map_hom_apply_coe, LinearMapClass.map_smul, Functor.comp_obj,
+      toModuleCatOverMatrix_obj_carrier, fromModuleCatOverMatrix_obj_carrier,
+      Functor.id_obj, Function.comp_apply]
     change _ = f (∑ i : ι, ∑ _, _)
     rw [map_sum]
     refine Finset.sum_congr rfl fun i _ => ?_
+    erw [fromModuleCatOverMatrix_map_hom_apply_coe, toModuleCatOverMatrix_map_hom_apply]
+    change f.hom (∑ _, _) = _
     rw [map_sum]
-    change ∑ _, _ = _
-    refine Finset.sum_congr rfl fun j _ => ?_
-    simp only [LinearMapClass.map_smul]
-    rw [toModuleCatOverMatrix_map_apply]
 
 set_option maxHeartbeats 600000 in
 @[simps]
 def matrix.unitIsoInv :
     𝟭 (ModuleCat R) ⟶
     toModuleCatOverMatrix R ι ⋙ fromModuleCatOverMatrix R ι  where
-  app X :=
+  app X := ModuleCat.ofHom
     { toFun := fun x => (⟨Function.update (0 : ι → X) default x, by
         simp only [α, AddSubgroup.mem_mk, Set.mem_range]
         refine ⟨fun _ => x, ?_⟩
@@ -215,19 +213,19 @@ def matrix.unitIsoInv :
           tauto ⟩ : α R ι (ι → X))
       map_add' := by
         rintro (x : X) (y : X)
-        simp only [Functor.comp_obj, toModuleCatOverMatrix_obj, fromModuleCatOverMatrix_obj,
-          Functor.id_obj]
+        simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
+          fromModuleCatOverMatrix_obj_carrier, Functor.id_obj]
         refine Subtype.ext $ funext fun i => ?_
-        simp only [toModuleCatOverMatrix_obj]
+        simp only [toModuleCatOverMatrix_obj_carrier]
         change _ =
           (Function.update (0 : ι → X) default x + Function.update (0 : ι → X) default y) i
         rw [← Function.update_add, zero_add]
       map_smul' := by
         rintro r (x : X)
-        simp only [Functor.comp_obj, toModuleCatOverMatrix_obj, fromModuleCatOverMatrix_obj,
-          Functor.id_obj, RingHom.id_apply]
+        simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
+          fromModuleCatOverMatrix_obj_carrier, Functor.id_obj, RingHom.id_apply]
         refine Subtype.ext $ funext fun i => ?_
-        simp only [toModuleCatOverMatrix_obj]
+        simp only [toModuleCatOverMatrix_obj_carrier]
         change _ = ∑ _, stdBasisMatrix default default r i _ • _
         simp only [Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite, smul_ite,
           smul_zero, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
@@ -237,16 +235,14 @@ def matrix.unitIsoInv :
         · rw [StdBasisMatrix.apply_of_row_ne, zero_smul]
           exact Ne.symm h }
   naturality {X Y} f := by
-    simp only [Functor.id_obj, Functor.comp_obj, toModuleCatOverMatrix_obj,
-      fromModuleCatOverMatrix_obj, Functor.id_map, Functor.comp_map]
+    simp only [Functor.id_obj, Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
+      fromModuleCatOverMatrix_obj_carrier, Functor.id_map, Functor.comp_map]
     ext x
     refine Subtype.ext $ funext fun i => ?_
-    simp only [Functor.id_obj, Functor.comp_obj, toModuleCatOverMatrix_obj,
-      fromModuleCatOverMatrix_obj, ModuleCat.coe_comp, Function.comp_apply]
-
-    erw [LinearMap.coe_mk]
-    rw [AddHom.coe_mk, Subtype.coe_mk, fromModuleCatOverMatrix_map_apply_coe,
-      toModuleCatOverMatrix_map_apply]
+    simp only [Functor.id_obj, Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
+      fromModuleCatOverMatrix_obj_carrier, Function.comp_apply]
+    erw [LinearMap.coe_mk, AddHom.coe_mk, Subtype.coe_mk, fromModuleCatOverMatrix_map_hom_apply_coe,
+      toModuleCatOverMatrix_map_hom_apply]
     change Function.update (0 : ι → Y) default (f x) i =
       f (Function.update (0 : ι → X) default x i)
 
@@ -263,14 +259,17 @@ def matrix.unitIso :
   inv := matrix.unitIsoInv R ι
   hom_inv_id := by
     ext X ⟨_, ⟨x, rfl⟩⟩
-    simp only [Functor.comp_obj, toModuleCatOverMatrix_obj, fromModuleCatOverMatrix_obj,
-      NatTrans.comp_app, Functor.id_obj, ModuleCat.coe_comp, Function.comp_apply, NatTrans.id_app,
-      ModuleCat.id_apply]
+    simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
+      fromModuleCatOverMatrix_obj_carrier, NatTrans.comp_app, Functor.id_obj,
+      Function.comp_apply, NatTrans.id_app, ModuleCat.id_apply]
     refine Subtype.ext $ funext fun i => ?_
-    simp only [toModuleCatOverMatrix_obj]
-    erw [matrix.unitIsoInv_app_apply_coe]
+    simp only [toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
+      fromModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_carrier,
+      fromModuleCatOverMatrix_obj_isModule, ModuleCat.hom_comp, fromModuleCatOverMatrix_obj_carrier,
+      LinearMap.coe_comp, Function.comp_apply, ModuleCat.hom_id, LinearMap.id_coe, id_eq]
+    erw [matrix.unitIsoInv_app_hom_apply_coe]
     change _ = ∑ _, _
-    erw [matrix.unitIsoHom_app_apply]
+    erw [matrix.unitIsoHom_app_hom_apply]
     simp only [Function.update, Functor.id_obj, eq_rec_constant, Pi.zero_apply, dite_eq_ite]
     split_ifs with h
     · refine Finset.sum_congr rfl fun i _ => ?_
@@ -292,10 +291,10 @@ def matrix.unitIso :
       tauto
   inv_hom_id := by
     ext X (x : X)
-    simp only [Functor.id_obj, NatTrans.comp_app, Functor.comp_obj, toModuleCatOverMatrix_obj,
-      fromModuleCatOverMatrix_obj, ModuleCat.coe_comp, Function.comp_apply, NatTrans.id_app,
-      ModuleCat.id_apply]
-    erw [matrix.unitIsoHom_app_apply]
+    simp only [Functor.id_obj, NatTrans.comp_app, Functor.comp_obj,
+      toModuleCatOverMatrix_obj_carrier, fromModuleCatOverMatrix_obj_carrier,
+      Function.comp_apply, NatTrans.id_app, ModuleCat.id_apply]
+    erw [matrix.unitIsoHom_app_hom_apply]
     change (∑ i : ι, Function.update (0 : ι → X) default x i) = x
     simp [Function.update]
 
@@ -367,7 +366,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
       by_cases hij : i = j
       · subst hij
         change Subtype.val (∑ _, _) = _
-        simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe, Function.update_same]
+        simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe, Function.update_self]
         simp_rw [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one]
         rw [Finset.sum_eq_single_of_mem (a := default), StdBasisMatrix.apply_same]
         pick_goal 2
@@ -382,7 +381,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         obtain ⟨y, hy⟩ := (v i).2
         rw [← hy]
         simp only [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one]
-      · rw [Function.update_noteq]
+      · rw [Function.update_of_ne]
         pick_goal 2
         · exact Ne.symm hij
         change Subtype.val (∑ _, _) = 0
@@ -397,17 +396,20 @@ noncomputable def matrix.counitIsoHom :
     fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι ⟶ 𝟭 (ModuleCat M[ι, R]) where
   app M := (matrix.counitIsoHomMap R ι M).inv
   naturality X Y f := by
-    simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj, toModuleCatOverMatrix_obj,
-      Functor.id_obj, Functor.comp_map, Functor.id_map]
+    simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj_carrier,
+      toModuleCatOverMatrix_obj_carrier, Functor.id_obj, Functor.comp_map, Functor.id_map]
     rw [Iso.eq_inv_comp, ← Category.assoc, Iso.comp_inv_eq]
     ext x
-    simp only [ModuleCat.coe_comp, Function.comp_apply]
+    simp only [toModuleCatOverMatrix_obj_carrier, fromModuleCatOverMatrix_obj_carrier,
+      toModuleCatOverMatrix_obj_isAddCommGroup, fromModuleCatOverMatrix_obj_isAddCommGroup,
+      toModuleCatOverMatrix_obj_isModule, fromModuleCatOverMatrix_obj_isModule, ModuleCat.hom_comp,
+      LinearMap.coe_comp, Function.comp_apply]
     refine funext fun i => ?_
-    rw [toModuleCatOverMatrix_map_apply]
+    erw [toModuleCatOverMatrix_map_hom_apply]
     refine Subtype.ext ?_
-    rw [fromModuleCatOverMatrix_map_apply_coe]
+    erw [fromModuleCatOverMatrix_map_hom_apply_coe]
     change _ = _ • _
-    rw [← f.map_smul]
+    rw [← f.hom.map_smul]
     rfl
 
 @[simps]
@@ -416,16 +418,15 @@ noncomputable def matrix.counitIsoInv :
     fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι where
   app M := (matrix.counitIsoHomMap R ι M).hom
   naturality X Y f := by
-    simp only [Functor.id_obj, Functor.comp_obj, fromModuleCatOverMatrix_obj,
-      toModuleCatOverMatrix_obj, Functor.id_map, Functor.comp_map]
+    simp only [Functor.id_obj, Functor.comp_obj, fromModuleCatOverMatrix_obj_carrier,
+      toModuleCatOverMatrix_obj_carrier, Functor.id_map, Functor.comp_map]
     ext x
-    simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj, toModuleCatOverMatrix_obj,
-      ModuleCat.coe_comp, Function.comp_apply]
+    simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj_carrier,
+      toModuleCatOverMatrix_obj_carrier, Function.comp_apply]
     refine funext fun i => Subtype.ext ?_
-    erw [counitIsoHomMap_hom_apply_coe]
-    rw [toModuleCatOverMatrix_map_apply, fromModuleCatOverMatrix_map_apply_coe]
-    erw [counitIsoHomMap_hom_apply_coe]
-    rw [f.map_smul]
+    erw [counitIsoHomMap_hom_hom_apply_coe, fromModuleCatOverMatrix_map_hom_apply_coe,
+      counitIsoHomMap_hom_hom_apply_coe]
+    rw [f.hom.map_smul]
 
 @[simps]
 noncomputable def matrix.counitIso :
@@ -443,19 +444,19 @@ noncomputable def moritaEquivalentToMatrix : ModuleCat R ≌ ModuleCat M[ι, R] 
   unitIso := matrix.unitIso R ι |>.symm
   counitIso := matrix.counitIso R ι
   functor_unitIso_comp X := by
-    simp only [Functor.id_obj, toModuleCatOverMatrix_obj, Functor.comp_obj,
-      fromModuleCatOverMatrix_obj, Iso.symm_hom, matrix.unitIso_inv, matrix.counitIso_hom]
+    simp only [Functor.id_obj, toModuleCatOverMatrix_obj_carrier, Functor.comp_obj,
+      fromModuleCatOverMatrix_obj_carrier, Iso.symm_hom, matrix.unitIso_inv, matrix.counitIso_hom]
     ext (x : ι → X)
-    simp only [matrix.counitIsoHom_app, Functor.comp_obj, fromModuleCatOverMatrix_obj,
-      toModuleCatOverMatrix_obj, ModuleCat.coe_comp, Function.comp_apply, ModuleCat.id_apply]
+    simp only [matrix.counitIsoHom_app, Functor.comp_obj, fromModuleCatOverMatrix_obj_carrier,
+      toModuleCatOverMatrix_obj_carrier, Function.comp_apply, ModuleCat.id_apply]
     apply_fun (matrix.counitIsoHomMap R ι _).hom using LinearEquiv.injective _
     erw [Iso.inv_hom_id_apply (matrix.counitIsoHomMap R ι _)]
-    simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj, toModuleCatOverMatrix_obj]
+    simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj_carrier,
+      toModuleCatOverMatrix_obj_carrier]
     refine funext fun i => Subtype.ext ?_
-    erw [matrix.counitIsoHomMap_hom_apply_coe]
-    rw [toModuleCatOverMatrix_map_apply]
+    erw [matrix.counitIsoHomMap_hom_hom_apply_coe, toModuleCatOverMatrix_map_hom_apply]
     refine funext fun j => ?_
-    erw [matrix.unitIsoInv_app_apply_coe]
+    erw [matrix.unitIsoInv_app_hom_apply_coe]
     change _ = ∑ _, _
     simp only [Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite, stdBasisMatrix,
       ite_smul, one_smul, zero_smul]
@@ -504,59 +505,45 @@ instance matrix (n : ℕ) : IsMoritaEquivalent.{u, u, v, v} R M[Fin (n + 1), R] 
 lemma matrix' (n : ℕ) [hn : NeZero n] : IsMoritaEquivalent.{u, u, v, v} R M[Fin n, R] :=
   { out := ⟨moritaEquivalentToMatrix R (Fin n)⟩ }
 
+abbrev ofIsoApp1 (e : R ≃+* S) (X : ModuleCat R): X ⟶
+    (ModuleCat.restrictScalars e.symm.toRingHom ⋙ ModuleCat.restrictScalars e.toRingHom).obj X :=
+  ModuleCat.ofHom (Y := (ModuleCat.restrictScalars e.symm.toRingHom ⋙
+    ModuleCat.restrictScalars e.toRingHom).obj X)
+    { toFun := LinearMap.id (R := R)
+      map_add' := fun _ _ ↦ rfl
+      map_smul' := fun r x ↦ by
+        change _ = X.isModule.smul _ x
+        simp; rfl }
+
+abbrev ofIsoApp2 (e : R ≃+* S) (X : ModuleCat R): (ModuleCat.restrictScalars e.symm.toRingHom ⋙
+    ModuleCat.restrictScalars e.toRingHom).obj X ⟶ X :=
+  ModuleCat.ofHom (X := (ModuleCat.restrictScalars e.symm.toRingHom ⋙
+    ModuleCat.restrictScalars e.toRingHom).obj X)
+  { toFun := LinearMap.id (R := R)
+    map_add' := fun _ _ ↦ rfl
+    map_smul' := fun r x ↦ by
+      change X.isModule.smul _ x = _
+      simp; rfl }
+
 lemma ofIso (e : R ≃+* S) : IsMoritaEquivalent.{u, u', v, v} R S where
   out := .intro
     { functor := ModuleCat.restrictScalars e.symm.toRingHom
       inverse := ModuleCat.restrictScalars e.toRingHom
       unitIso :=
       { hom :=
-        { app := fun X =>
-          { toFun := id
-            map_add' := by intros; rfl
-            map_smul' := by
-              rintro r (x : X)
-              change _ = X.isModule.smul _ x
-              simp only [Functor.id_obj, RingEquiv.toRingHom_eq_coe, Functor.comp_obj,
-                RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe,
-                MonoidHom.coe_coe, RingHom.coe_coe, RingHom.id_apply, ZeroHom.coe_mk,
-                RingEquiv.symm_apply_apply]
-              rfl }
+        { app := fun X => ofIsoApp1 R S e X
           naturality := fun _ _ f => rfl }
         inv :=
-        { app := fun X =>
-          { toFun := id
-            map_add' := by intros; rfl
-            map_smul' := by
-              rintro r (x : X)
-              change X.isModule.smul _ x = X.isModule.smul _ x
-              simp only [RingEquiv.toRingHom_eq_coe, RingHom.toMonoidHom_eq_coe,
-                OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe, MonoidHom.coe_coe, RingHom.coe_coe,
-                ZeroHom.coe_mk, RingEquiv.symm_apply_apply, RingHom.id_apply] }
+        { app := fun X => ofIsoApp2 _ _ e X
           naturality := fun _ _ f => rfl }
         hom_inv_id := by ext; rfl
         inv_hom_id := by ext; rfl }
       counitIso :=
       { hom :=
-        { app := fun X =>
-          { toFun := id
-            map_add' := by intros; rfl
-            map_smul' := by
-              rintro r (x : X)
-              change X.isModule.smul _ x = X.isModule.smul _ x
-              simp only [RingEquiv.toRingHom_eq_coe, RingHom.toMonoidHom_eq_coe,
-                OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe, MonoidHom.coe_coe, RingHom.coe_coe,
-                ZeroHom.coe_mk, RingEquiv.apply_symm_apply, RingHom.id_apply] }
+        { app := fun X => ofIsoApp2 _ _ e.symm X
           naturality := fun _ _ f => rfl }
         inv :=
-        { app := fun X =>
-          { toFun := id
-            map_add' := by intros; rfl
-            map_smul' := by
-              rintro r (x : X)
-              change X.isModule.smul _ x = X.isModule.smul _ x
-              simp only [RingEquiv.toRingHom_eq_coe, RingHom.toMonoidHom_eq_coe,
-                OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe, MonoidHom.coe_coe, RingHom.coe_coe,
-                RingHom.id_apply, ZeroHom.coe_mk, RingEquiv.apply_symm_apply] }
+        { app := fun X => ofIsoApp1 _ _ e.symm X
           naturality := fun _ _ f => rfl }
         hom_inv_id := by ext; rfl
         inv_hom_id := by ext; rfl }
@@ -624,16 +611,19 @@ lemma isSimpleModule_iff_injective_or_eq_zero
     · have := inst1.1
       rwa [Submodule.nontrivial_iff] at this
     · intro N f
-      refine inst1.2 (LinearMap.ker f) |>.elim
-        (fun h => Or.inr $ by rwa [LinearMap.ker_eq_bot] at h) $
-        fun h => Or.inl $ LinearMap.ext fun m => show f m = 0 from ?_
-      rw [← LinearMap.mem_ker, h]
-      trivial
+      refine inst1.2 (LinearMap.ker f.hom) |>.elim
+        (fun h => Or.inr <| by rwa [LinearMap.ker_eq_bot] at h) <|
+        fun h => Or.inl <| by
+          simp only [LinearMap.ker_eq_top] at h
+          ext : 1
+          rw [h]; simp
   · rintro ⟨inst1, h⟩
     refine ⟨fun p => ?_⟩
-    refine h (.of R (M ⧸ p)) (Submodule.mkQ p) |>.elim (fun h => Or.inr ?_) $
+    refine h (.of R (M ⧸ p)) (ModuleCat.ofHom (Submodule.mkQ p)) |>.elim (fun h => Or.inr ?_) <|
       fun h => Or.inl $ eq_bot_iff.2 fun x hx => h ?_
-    · rw [← Submodule.ker_mkQ p, h, LinearMap.ker_zero]
+    · rw [ModuleCat.hom_ext_iff] at h
+      simp only [ModuleCat.of_coe, ModuleCat.hom_zero] at h
+      rw [← Submodule.ker_mkQ p, LinearMap.ker_eq_top, h]
     · rw [map_zero]
       exact Submodule.Quotient.mk_eq_zero _ |>.2 hx
 
@@ -647,23 +637,26 @@ instance _root_.CategoryTheory.Equivalence.nontrivial
   by_contra inst1
   rw [not_nontrivial_iff_subsingleton] at inst1
   let iso1 : e.functor.obj M ≅ 0 :=
-  { hom := ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
-    inv := ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
+  { hom := ModuleCat.ofHom ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
+    inv := ModuleCat.ofHom ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
     hom_inv_id := by ext; exact Subsingleton.elim _ _
-    inv_hom_id := by ext; simp only [ModuleCat.coe_comp, Function.comp_apply,
-      Limits.id_zero]; rfl }
+    inv_hom_id := by ext; simp only [Function.comp_apply, Limits.id_zero]; rfl }
   let iso2 : M ≅ 0 := calc M
       _ ≅ e.inverse.obj (e.functor.obj M) := e.unitIso.app M
       _ ≅ e.inverse.obj 0 := e.inverse.mapIso iso1
       _ ≅ 0 := e.inverse.mapZeroObject
-  let iso3 : (0 : ModuleCat R) ≅ ModuleCat.of R PUnit :=
-  { hom := ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
-    inv := ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
-    hom_inv_id := by ext; simp only [ModuleCat.coe_comp, Function.comp_apply,
-      Limits.id_zero]; rfl
-    inv_hom_id := by ext; exact Subsingleton.elim _ _ }
-  refine h $ LinearEquiv.injective iso2.toLinearEquiv $
-    LinearEquiv.injective iso3.toLinearEquiv $ Subsingleton.elim _ _
+  let iso3 : (0 : ModuleCat R) ≅ ModuleCat.of.{v, u} R PUnit.{v + 1} :=
+  { hom := ModuleCat.ofHom ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
+    inv := ModuleCat.ofHom ⟨⟨fun _ => 0, by intros; simp⟩, by intros; simp⟩
+    hom_inv_id := by ext; simp only [Function.comp_apply, Limits.id_zero]; rfl
+    inv_hom_id := rfl }
+  -- have := iso3.toLinearEquiv.injective (by
+  --   have : ∀ x y : ModuleCat.of R PUnit.{1}, x = y := fun x y ↦ by
+  --     exact rfl
+  --   exact this m n
+  --   )
+  refine h <| LinearEquiv.injective iso2.toLinearEquiv <|
+    iso3.toLinearEquiv.injective <| Subsingleton.elim _ _
 
 
 lemma IsSimpleModule.functor
@@ -687,28 +680,32 @@ lemma IsSimpleModule.functor
 
 @[simps]
 def mopToEnd : Rᵐᵒᵖ →+* End (ModuleCat.of R R) where
-  toFun a :=
+  toFun a := ModuleCat.ofHom <|
     { toFun := fun (x : R) ↦ x * a.unop
       map_add' := by simp [add_mul]
       map_smul' := by simp [mul_assoc] }
-  map_zero' := by aesop
+  map_zero' := by simp; rfl
   map_one' := by aesop
-  map_add' := fun x y => LinearMap.ext fun r => by
-    simp only [MulOpposite.unop_add, mul_add, LinearMap.coe_mk, AddHom.coe_mk]; rfl
-  map_mul' := fun (x y) => LinearMap.ext fun (r : R) => by
-    simp only [MulOpposite.unop_mul, LinearMap.coe_mk, AddHom.coe_mk]
-    rw [LinearMap.mul_apply]
-    simp only [LinearMap.coe_mk, AddHom.coe_mk, mul_assoc]
+  map_add' := fun x y => by simp [mul_add]; rfl
+  map_mul' := fun (x y) => by
+    simp only [MulOpposite.unop_mul, End.mul_def]
+    apply ModuleCat.hom_ext
+    simp only [ModuleCat.hom_comp]; ext; simp
 
 noncomputable def mopEquivEnd : Rᵐᵒᵖ ≃+* End (ModuleCat.of R R) :=
   RingEquiv.ofBijective (mopToEnd R) ⟨RingHom.injective_iff_ker_eq_bot _ |>.mpr $
-    SetLike.ext fun (α : Rᵐᵒᵖ) => ⟨fun h => by simpa using LinearMap.congr_fun h (1 : R),
-      by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.toFun (1 : R)), LinearMap.ext fun r => by
-      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, mopToEnd_apply_apply,
-        MulOpposite.unop_op]
-      rw [← smul_eq_mul]
-      convert (φ.map_smul r (1 : R)).symm using 1
-      simp⟩⟩
+    SetLike.ext fun (α : Rᵐᵒᵖ) => ⟨fun (h : _ = _) => by
+      rw [ModuleCat.hom_ext_iff] at h
+      simp only [mopToEnd, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ModuleCat.hom_zero,
+        LinearMap.ext_iff, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply, mul_eq_zero,
+        MulOpposite.unop_eq_zero_iff] at h
+      specialize h (1 : R)
+      simp_all only [one_ne_zero, false_or, Ideal.mem_bot],
+      by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : R)), ModuleCat.hom_ext <|
+      LinearMap.ext fun r => by
+      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, MulOpposite.unop_op,
+        mopToEnd_apply_hom_apply, MulOpposite.unop_op]
+      rw [← smul_eq_mul, ← φ.hom.map_smul, smul_eq_mul, mul_one]⟩⟩
 
 variable {R S} in
 def aux1 : End (ModuleCat.of R R) ≃+* End (e.functor.obj $ ModuleCat.of R R) where

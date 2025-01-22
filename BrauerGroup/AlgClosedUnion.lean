@@ -1,5 +1,5 @@
 import Mathlib.LinearAlgebra.FiniteDimensional
-import Mathlib.RingTheory.Finiteness
+import Mathlib.RingTheory.Finiteness.Basic
 import Mathlib.RingTheory.Flat.Basic
 import Mathlib.FieldTheory.AlgebraicClosure
 import Mathlib.RingTheory.TensorProduct.Free
@@ -106,7 +106,7 @@ lemma intermediateTensor_mono {L1 L2 : IntermediateField K K_bar} (h : L1 ≤ L2
     intermediateTensor K K_bar A L1 ≤ intermediateTensor K K_bar A L2 := by
   have e1 : (LinearMap.rTensor _ (L1.val.toLinearMap) : L1 ⊗[K] A →ₗ[K] K_bar ⊗[K] A) =
     (LinearMap.rTensor _ (L2.val.toLinearMap) : L2 ⊗[K] A →ₗ[K] K_bar ⊗[K] A) ∘ₗ
-    (LinearMap.rTensor A (L1.inclusion h) : L1 ⊗[K] A →ₗ[K] L2 ⊗[K] A) := by
+    (LinearMap.rTensor A (L1.inclusion h).toLinearMap : L1 ⊗[K] A →ₗ[K] L2 ⊗[K] A) := by
     rw [← LinearMap.rTensor_comp]; rfl
   delta intermediateTensor
   rw [e1, LinearMap.range_comp, Submodule.map_le_iff_le_comap]
@@ -342,7 +342,11 @@ lemma comm_square :
   rw [← comm_triangle n k k_bar A iso, ← LinearMap.comp_assoc, comm_square' n k k_bar A iso]
   rfl
 
-set_option synthInstance.maxHeartbeats 40000 in
+-- set_option synthInstance.maxHeartbeats 60000 in
+-- lemma map_one'' : (inclusion n k k_bar A iso) 1 = 1 := by
+--     erw [_root_.map_one (f := inclusion n k k_bar A iso)]
+
+set_option synthInstance.maxHeartbeats 120000 in
 lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   /-
         isoRestrict
@@ -358,9 +362,13 @@ lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   since inclusion' is injective, isoRestrict 1 = 1
   -/
   have eq := congr($(comm_square n k k_bar A iso) 1)
+  -- have : (inclusion n k k_bar A iso) 1 = 1 := by
+  --   erw [_root_.map_one (f := inclusion n k k_bar A iso)]
   conv_rhs at eq =>
     rw [LinearMap.comp_apply]
-    erw [_root_.map_one (f := inclusion n k k_bar A iso), map_one iso]
+    change ((LinearMap.restrictScalars (@Subtype k_bar fun x ↦ x ∈ ℒ)) iso.toLinearEquiv.toLinearMap)
+      ((inclusion n k k_bar A iso) 1)
+    erw [show (inclusion n k k_bar A iso 1) = 1 from rfl, map_one iso]
   refine inclusion'_injective n k k_bar A iso (eq.trans ?_)
   rw [_root_.map_one]
 

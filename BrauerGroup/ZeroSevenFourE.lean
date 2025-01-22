@@ -1,5 +1,5 @@
 import BrauerGroup.Wedderburn
-import BrauerGroup.CoproductModuleCat
+import Mathlib.Algebra.Category.ModuleCat.Products
 
 import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
 import Mathlib.FieldTheory.Finiteness
@@ -412,102 +412,150 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
 
   let e₂ : Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D) ≃ₐ[k] Module.End D D :=
     AlgEquiv.ofAlgHom
-    { toFun := fun (f : End (ModuleCat.of _ _)) => show End (ModuleCat.of D D) from
-        E.unit.app (ModuleCat.of D D) ≫ E.inverse.map f ≫ E.unitInv.app ((ModuleCat.of D D))
+    { toFun := fun f =>
+        (E.unit.app (ModuleCat.of D D) ≫ E.inverse.map (ModuleCat.ofHom f) ≫ E.unitInv.app ((ModuleCat.of D D))).hom
       map_one' := by
         simp only [Functor.comp_obj, smul_eq_mul]
-        rw [show (1 : Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D)) =
+        rw [show ModuleCat.ofHom (1 : Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D)) =
           𝟙 (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → D)) by rfl]
         erw [E.inverse.map_id]
         rw [Category.id_comp]
         simp only [Iso.hom_inv_id_app, Functor.id_obj]
         rfl
-      map_mul' := fun (f g : End (ModuleCat.of _ _)) => by
+      map_mul' := fun f g => by
         simp only [Functor.comp_obj, smul_eq_mul]
-        rw [show f * g = g ≫ f by rfl, E.inverse.map_comp]
+        rw [show ModuleCat.ofHom (f * g) = (ModuleCat.ofHom g) ≫ (ModuleCat.ofHom f) by rfl, E.inverse.map_comp]
         simp only [smul_eq_mul, Category.assoc]
-        change _ = _ ≫ _
+        apply_fun ModuleCat.homEquiv.symm
+        change ModuleCat.ofHom _ = ModuleCat.ofHom _ ≫ ModuleCat.ofHom _
         aesop_cat
       map_zero' := by
-        simp only [Functor.comp_obj, smul_eq_mul, Functor.map_zero, Limits.zero_comp,
-          Limits.comp_zero]
-      map_add' := fun (f g : End (ModuleCat.of _ _)) => by
-        simp only [Functor.comp_obj, smul_eq_mul]
-        rw [E.inverse.map_add]
-        simp only [Preadditive.add_comp, Preadditive.comp_add]
+        ext
+        simp only [Functor.id_obj, moritaEquivalentToMatrix, Functor.comp_obj,
+          Equivalence.Equivalence_mk'_unit, Iso.symm_hom, matrix.unitIso_inv, matrix.unitIsoInv,
+          toModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_isAddCommGroup,
+          toModuleCatOverMatrix_obj_isModule, Fin.default_eq_zero,
+          Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv, matrix.unitIso_hom, ModuleCat.hom_comp,
+          fromModuleCatOverMatrix_obj_carrier, fromModuleCatOverMatrix_obj_isAddCommGroup,
+          fromModuleCatOverMatrix_obj_isModule, LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk,
+          Function.comp_apply, LinearMap.zero_apply, E]
+        erw [matrix.unitIsoHom_app_hom_apply, fromModuleCatOverMatrix_map_hom_apply_coe]
+        simp
+      map_add' := fun f g => by
+        simp only
+        apply_fun ModuleCat.homEquiv.symm
+        change ModuleCat.ofHom _ = ModuleCat.ofHom _ + ModuleCat.ofHom _
+        simp only [Functor.id_obj, Functor.comp_obj, ModuleCat.hom_comp, ModuleCat.ofHom_comp,
+          ModuleCat.of_coe, ModuleCat.ofHom_hom, E]
+        rw [show ModuleCat.ofHom (f + g) = ModuleCat.ofHom f + ModuleCat.ofHom g from rfl, E.inverse.map_add]
+        simp only [Preadditive.add_comp, Preadditive.comp_add]; rfl
       commutes' := fun a => by
         simp only [Functor.comp_obj, smul_eq_mul]
+        apply_fun ModuleCat.homEquiv.symm
+        change ModuleCat.ofHom _ = ModuleCat.ofHom _
+        simp only [ModuleCat.ofHom_hom]
         ext
         rw [Module.algebraMap_end_eq_smul_id, Module.algebraMap_end_eq_smul_id]
         erw [LinearMap.smul_apply]
         rw [LinearMap.id_apply]
         rw [Algebra.smul_def]
         erw [mul_one]
-        erw [comp_apply, comp_apply]
-        simp only [moritaEquivalentToMatrix, fromModuleCatOverMatrix_obj,
+        -- erw [comp_apply, comp_apply]
+        simp only [moritaEquivalentToMatrix, fromModuleCatOverMatrix_obj_carrier,
           Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv, matrix.unitIso_hom,
-          toModuleCatOverMatrix_obj, Equivalence.Equivalence_mk'_unit, Iso.symm_hom,
+          toModuleCatOverMatrix_obj_carrier, Equivalence.Equivalence_mk'_unit, Iso.symm_hom,
           matrix.unitIso_inv, E]
-        erw [matrix.unitIsoHom_app_apply]
-        simp only [toModuleCatOverMatrix_obj, fromModuleCatOverMatrix, Functor.id_obj]
+        erw [ModuleCat.comp_apply, ModuleCat.comp_apply, matrix.unitIsoHom_app_hom_apply]
+        simp only [toModuleCatOverMatrix_obj_carrier, fromModuleCatOverMatrix, Functor.id_obj]
         set lhs := _; change lhs = _
         rw [show lhs = ∑ j : Fin n,
           algebraMap k (Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D)) a
             (((matrix.unitIsoInv D (Fin n)).app (ModuleCat.of D D)) (1 : D)).1 j by rfl]
-        simp only [toModuleCatOverMatrix_obj, Functor.id_obj, Functor.comp_obj,
-          fromModuleCatOverMatrix_obj, Module.algebraMap_end_apply, Pi.smul_apply]
+        simp only [toModuleCatOverMatrix_obj_carrier, Functor.id_obj, Functor.comp_obj,
+          fromModuleCatOverMatrix_obj_carrier, Module.algebraMap_end_apply, Pi.smul_apply]
         rw [← Finset.smul_sum]
         congr 1
         set lhs := _; change lhs = _
         rw [show lhs = ∑ j : Fin n, Function.update (0 : Fin n → D) default 1 j by
           refine Finset.sum_congr rfl fun j _ => ?_
-          erw [matrix.unitIsoInv_app_apply_coe]]
+          erw [matrix.unitIsoInv_app_hom_apply_coe]]
         simp only [Fin.default_eq_zero]
         rw [Finset.sum_eq_single_of_mem (a := 0) (h := Finset.mem_univ _)]
-        · simp only [Function.update_same]
+        · simp only [Function.update_self]
         · intro i _ h
-          rw [Function.update_noteq (h := h)]
+          rw [Function.update_of_ne (h := h)]
           rfl
           }
-    { toFun := fun (f : End (ModuleCat.of _ _)) =>
-        show End (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → D)) from E.functor.map f
+    { toFun := fun f => (E.functor.map <| ModuleCat.ofHom f).hom
       map_one' := by
         simp only [Functor.comp_obj, smul_eq_mul]
-        rw [show (1 : Module.End D D) =
-          𝟙 (ModuleCat.of D D) by rfl]
+        -- rw [show (1 : Module.End D D) =
+        --   (𝟙 (ModuleCat.of D D)).hom by rfl]
         erw [E.functor.map_id]
         rfl
-      map_mul' := fun (f g : End (ModuleCat.of _ _)) => by
+      map_mul' := fun f g => by
         simp only [Functor.comp_obj, smul_eq_mul]
-        rw [show f * g = g ≫ f by rfl, E.functor.map_comp]
+        rw [show ModuleCat.ofHom (f * g) = ModuleCat.ofHom g ≫ ModuleCat.ofHom f by rfl,
+          E.functor.map_comp]
         rfl
       map_zero' := by
-        simp only [Functor.comp_obj, smul_eq_mul, Functor.map_zero, Limits.zero_comp,
-          Limits.comp_zero]
-      map_add' := fun (f g : End (ModuleCat.of _ _)) => by
+        ext dn i
+        simp only [moritaEquivalentToMatrix, toModuleCatOverMatrix_map_hom_apply,
+          LinearMap.zero_apply, Pi.zero_apply, E]
+      map_add' := fun f g => by
         simp only [Functor.comp_obj, smul_eq_mul]
-        rw [E.functor.map_add]
+        rw [show ModuleCat.ofHom (f + g) = ModuleCat.ofHom f + ModuleCat.ofHom g from rfl,
+          E.functor.map_add]; rfl
       commutes' := fun a => by
         simp only [moritaEquivalentToMatrix_functor, toModuleCatOverMatrix, E]
-        ext x
+        ext : 1
         simp only [LinearMap.coe_mk, AddHom.coe_mk]
         refine funext fun j => ?_
         rfl }
     (by
-      simp only [smul_eq_mul, Functor.comp_obj]
+      simp only [Functor.id_obj, Functor.comp_obj, ModuleCat.hom_comp, E]
       ext d
-      simp only [AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
-        Function.comp_apply, Equivalence.inv_fun_map, Functor.comp_obj, Functor.id_obj,
-        Category.assoc, Iso.hom_inv_id_app, Category.comp_id, Iso.hom_inv_id_app_assoc,
-        AlgHom.coe_id, id_eq])
+      simp only [moritaEquivalentToMatrix_inverse, moritaEquivalentToMatrix_functor,
+        fromModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_carrier,
+        toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
+        fromModuleCatOverMatrix_obj_isAddCommGroup, fromModuleCatOverMatrix_obj_isModule,
+        AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
+        Function.comp_apply, ModuleCat.ofHom_hom, LinearMap.coe_comp, AlgHom.coe_id, id_eq, E]
+      simp only [moritaEquivalentToMatrix, Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv,
+        matrix.unitIso_hom, Equivalence.Equivalence_mk'_unit, Iso.symm_hom, matrix.unitIso_inv, E]
+      erw [matrix.unitIsoHom_app_hom_apply, fromModuleCatOverMatrix_map_hom_apply_coe]
+      simp only [toModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_isAddCommGroup,
+        toModuleCatOverMatrix_obj_isModule, toModuleCatOverMatrix_map_hom_apply, E]
+      simp only [matrix.unitIsoInv, toModuleCatOverMatrix_obj_carrier,
+        toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
+        Fin.default_eq_zero, LinearMap.coe_mk, AddHom.coe_mk]
+
+      sorry)
     (by
       simp only [smul_eq_mul, Functor.comp_obj]
       ext f v i
       simp only [AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
         Function.comp_apply, Functor.map_comp, Equivalence.fun_inv_map, Functor.comp_obj,
         Functor.id_obj, Category.assoc, Equivalence.functor_unit_comp_assoc, AlgHom.coe_id, id_eq]
-      erw [E.counitInv_functor_comp (X := ModuleCat.of D D)]
-      rfl)
+      simp only [moritaEquivalentToMatrix, Equivalence.Equivalence_mk'_unit, Iso.symm_hom,
+        matrix.unitIso_inv, Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv, matrix.unitIso_hom,
+        ModuleCat.hom_comp, fromModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_carrier,
+        toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
+        fromModuleCatOverMatrix_obj_isAddCommGroup, fromModuleCatOverMatrix_obj_isModule,
+        ModuleCat.ofHom_comp, ModuleCat.ofHom_hom, Functor.map_comp, LinearMap.coe_comp,
+        Function.comp_apply, toModuleCatOverMatrix_map_hom_apply, E]
+      erw [matrix.unitIsoHom_app_hom_apply, fromModuleCatOverMatrix_map_hom_apply_coe,
+        ModuleCat.hom_ofHom]
+      change ∑ j : Fin n, _ = _
+      simp only [toModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_isAddCommGroup,
+        toModuleCatOverMatrix_obj_isModule, matrix.unitIsoInv, Fin.default_eq_zero,
+        LinearMap.coe_mk, AddHom.coe_mk, E]
+      change (Fin n → D) →ₗ[Matrix (Fin n) (Fin n) D] (Fin n → D) at f
+      change ∑ j : Fin n, (f _) j = (f v) i
+      sorry
+      -- erw [E.counitInv_functor_comp (X := ModuleCat.of D D)]
+      -- rfl
+      )
   refine e₁.trans $ e₂.trans $ AlgEquiv.symm $ AlgEquiv.ofRingEquiv (f := mopEquivEnd _) ?_
   intro a
   simp only [mopEquivEnd, mopToEnd, MulOpposite.algebraMap_apply, RingEquiv.coe_ofBijective,
@@ -640,21 +688,24 @@ noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] 
 
 instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower k A M] :
     Algebra k (Module.End (Module.End A M) M) where
-  toFun a :=
+  algebraMap := {
+    toFun a :=
     { toFun := fun m => a • m
       map_add' := by simp only [smul_add, implies_true]
       map_smul' := by
         simp only [LinearMap.smul_def, RingHom.id_apply, LinearMap.map_smul_of_tower,
           implies_true] }
-  map_one' := by ext; simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply]
-  map_mul' := by
-    intros; ext
-    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearMap.map_smul_of_tower]
-    rw [mul_comm, mul_smul]
-  map_zero' := by ext; simp only [zero_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply]
-  map_add' := by
-    intros; ext
-    simp only [add_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+    map_one' := by ext; simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply]
+    map_mul' := by
+      intros; ext
+      simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearMap.map_smul_of_tower]
+      rw [mul_comm, mul_smul]
+    map_zero' := by ext; simp only [zero_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply]
+    map_add' := by
+      intros; ext
+      simp only [add_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+
+  }
   commutes' := by
     intros r f
     ext m
@@ -763,8 +814,10 @@ lemma toEndEnd_injective
     (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
     [Module k M] [IsScalarTower k A M] :
     Function.Injective (toEndEnd A M) := by
-  apply IsSimpleRing.injective_ringHom
-    (toEndEndAlgHom k A M).toRingHom
+  sorry
+  -- exact?
+  -- apply IsSimpleRing.injective_ringHom
+  --   (toEndEndAlgHom k A M).toRingHom
 
 class IsBalanced (M : Type v) [AddCommGroup M] [Module A M] : Prop where
   surj : Function.Surjective (toEndEnd A M)

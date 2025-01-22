@@ -1,5 +1,5 @@
 import Mathlib.RingTheory.SimpleModule
-import Mathlib.RingTheory.Artinian
+import Mathlib.RingTheory.Artinian.Instances
 import BrauerGroup.Con
 import Mathlib.Algebra.Ring.Equiv
 import Mathlib.Algebra.Central.Basic
@@ -543,7 +543,7 @@ def algebraMapEndIdealMop (I : Ideal B) : K →+* (Module.End B I)ᵐᵒᵖ wher
   map_add' _ _ := unop_injective $ by ext; simp [add_smul]
 
 instance (I : Ideal B) : Algebra K (Module.End B I)ᵐᵒᵖ where
-  __ := algebraMapEndIdealMop K I
+  algebraMap := algebraMapEndIdealMop K I
   commutes' := fun r ⟨x⟩ => MulOpposite.unop_injective $ DFunLike.ext _ _ fun ⟨i, hi⟩ =>
     Subtype.ext $ show (x (r • ⟨i, hi⟩)).1 = r • (x ⟨i, hi⟩).1 by
       convert Subtype.ext_iff.mp (x.map_smul (algebraMap K B r) ⟨i, hi⟩) using 1 <;> aesop

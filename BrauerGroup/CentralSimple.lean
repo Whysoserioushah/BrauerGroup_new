@@ -134,7 +134,7 @@ lemma TensorProduct.submodule_tensor_inf_tensor_submodule
     LinearMap.range (TensorProduct.map b.subtype c.subtype) := by
 
   refine le_antisymm ?_ ?_
-  · letI : Module.Flat K (B ⧸ b) := Module.Flat.of_free _ _
+  · letI : Module.Flat K (B ⧸ b) := Module.Flat.of_free
 
     let u : b ⊗[K] c →ₗ[K] B ⊗[K] c := TensorProduct.map b.subtype LinearMap.id
     let v : B ⊗[K] c →ₗ[K] (B ⧸ b) ⊗[K] c :=
@@ -157,7 +157,7 @@ lemma TensorProduct.submodule_tensor_inf_tensor_submodule
     let β : B ⊗[K] c →ₗ[K] B ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
     let γ : (B ⧸ b) ⊗[K] c →ₗ[K] (B ⧸ b) ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
     have γ_inj : Function.Injective γ :=
-      Module.Flat.iff_lTensor_preserves_injective_linearMap K (B ⧸ b)|>.1 inferInstance
+      Module.Flat.iff_lTensor_preserves_injective_linearMap (R := K) (M := B ⧸ b)|>.1 inferInstance
         c.subtype c.injective_subtype
 
     rintro z (hz : z ∈ LinearMap.range u' ⊓ LinearMap.range β)
@@ -295,6 +295,7 @@ noncomputable def centerTensor
         obtain ⟨y, rfl⟩ := hx
         refine ⟨y, rfl⟩)) rfl rfl)
 
+set_option synthInstance.maxHeartbeats 40000 in
 instance TensorProduct.isCentral
     (A B : Type u) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     [isCentral_A : Algebra.IsCentral K A] [isCentral_B : Algebra.IsCentral K B] :

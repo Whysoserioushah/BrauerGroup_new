@@ -56,7 +56,7 @@ theorem centralSimple_over_extension_iff_nontrivial
     (Algebra.IsCentral k A ∧ IsSimpleRing A) ↔
     (Algebra.IsCentral K (K ⊗[k] A) ∧ IsSimpleRing (K ⊗[k] A)) where
   mp := fun ⟨_, _⟩ ↦ ⟨inferInstance, inferInstance⟩
-  mpr := fun ⟨⟨hAt⟩, _⟩ ↦ ⟨by
+  mpr := fun ⟨hAt, _⟩ ↦ ⟨by
     constructor
     by_contra h
     simp only [le_bot_iff, ne_eq] at h
@@ -90,8 +90,9 @@ theorem centralSimple_over_extension_iff_nontrivial
       rw [Module.finrank_mul_finrank]
 
     have eq4 : Module.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
-      simp only [le_bot_iff] at hAt
-      rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A), hAt]
+      rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A)]
+      have := hAt.center_eq_bot
+      rw [this.symm]
 
     rw [eq4, mul_one] at eq3
     rw [eq3] at eq2
@@ -138,7 +139,14 @@ def extension_inv [FiniteDimensional k A]
       commutes' := fun _ ↦ Algebra.TensorProduct.algebraMap_apply' _|>.symm
     }
     have Isinj : Function.Injective to_ten := by
-      exact IsSimpleRing.injective_ringHom to_ten.toRingHom
+      have := IsSimpleRing.iff_eq_zero_or_injective' A k|>.1 inferInstance (B := K ⊗[k] A) to_ten
+      have nezero : TwoSidedIdeal.ker to_ten ≠ ⊤ := by
+        intro h
+        have : (1 : A) ∈ (⊤ : TwoSidedIdeal A) := by simp
+        rw [h.symm, TwoSidedIdeal.mem_ker] at this
+        simp only [map_one, one_ne_zero] at this
+      simp only [nezero, false_or] at this
+      exact this
     haveI : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
     exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj
 
