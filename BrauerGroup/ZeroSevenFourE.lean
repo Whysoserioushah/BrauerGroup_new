@@ -529,33 +529,19 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
       simp only [matrix.unitIsoInv, toModuleCatOverMatrix_obj_carrier,
         toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
         Fin.default_eq_zero, LinearMap.coe_mk, AddHom.coe_mk]
-
-      sorry)
+      rw [← map_sum]
+      congr 1
+      simp_rw [Function.update_apply]
+      simp only [Pi.zero_apply, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte, E])
     (by
       simp only [smul_eq_mul, Functor.comp_obj]
       ext f v i
-      simp only [AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
-        Function.comp_apply, Functor.map_comp, Equivalence.fun_inv_map, Functor.comp_obj,
-        Functor.id_obj, Category.assoc, Equivalence.functor_unit_comp_assoc, AlgHom.coe_id, id_eq]
-      simp only [moritaEquivalentToMatrix, Equivalence.Equivalence_mk'_unit, Iso.symm_hom,
-        matrix.unitIso_inv, Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv, matrix.unitIso_hom,
-        ModuleCat.hom_comp, fromModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_carrier,
-        toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
-        fromModuleCatOverMatrix_obj_isAddCommGroup, fromModuleCatOverMatrix_obj_isModule,
-        ModuleCat.ofHom_comp, ModuleCat.ofHom_hom, Functor.map_comp, LinearMap.coe_comp,
-        Function.comp_apply, toModuleCatOverMatrix_map_hom_apply, E]
-      erw [matrix.unitIsoHom_app_hom_apply, fromModuleCatOverMatrix_map_hom_apply_coe,
-        ModuleCat.hom_ofHom]
-      change ∑ j : Fin n, _ = _
-      simp only [toModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_isAddCommGroup,
-        toModuleCatOverMatrix_obj_isModule, matrix.unitIsoInv, Fin.default_eq_zero,
-        LinearMap.coe_mk, AddHom.coe_mk, E]
-      change (Fin n → D) →ₗ[Matrix (Fin n) (Fin n) D] (Fin n → D) at f
-      change ∑ j : Fin n, (f _) j = (f v) i
-      sorry
-      -- erw [E.counitInv_functor_comp (X := ModuleCat.of D D)]
-      -- rfl
-      )
+      simp only [Functor.id_obj, AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
+        OneHom.coe_mk, Function.comp_apply, ModuleCat.ofHom_hom, Functor.map_comp,
+        Equivalence.fun_inv_map, Functor.comp_obj, Category.assoc,
+        Equivalence.functor_unit_comp_assoc, AlgHom.coe_id, id_eq, E]
+      erw [E.counitInv_functor_comp (X := ModuleCat.of D D)]
+      rfl)
   refine e₁.trans $ e₂.trans $ AlgEquiv.symm $ AlgEquiv.ofRingEquiv (f := mopEquivEnd _) ?_
   intro a
   simp only [mopEquivEnd, mopToEnd, MulOpposite.algebraMap_apply, RingEquiv.coe_ofBijective,
@@ -814,10 +800,7 @@ lemma toEndEnd_injective
     (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
     [Module k M] [IsScalarTower k A M] :
     Function.Injective (toEndEnd A M) := by
-  sorry
-  -- exact?
-  -- apply IsSimpleRing.injective_ringHom
-  --   (toEndEndAlgHom k A M).toRingHom
+  exact RingHom.injective (toEndEndAlgHom k A M).toRingHom
 
 class IsBalanced (M : Type v) [AddCommGroup M] [Module A M] : Prop where
   surj : Function.Surjective (toEndEnd A M)
