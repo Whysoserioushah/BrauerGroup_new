@@ -1,11 +1,8 @@
 import BrauerGroup.CentralSimple
-import Mathlib.Data.Matrix.Composition
-import Mathlib.LinearAlgebra.Matrix.ToLin
+import BrauerGroup.FieldCat
+import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
-import Mathlib.Analysis.Complex.Polynomial.Basic
-import Mathlib.Algebra.Category.Ring.Basic
-import BrauerGroup.FieldCat
 
 suppress_compilation
 universe u v v₁ v₂ w
@@ -223,9 +220,22 @@ def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
 { Matrix.reindexLinearEquiv K A finProdFinEquiv finProdFinEquiv with
   toFun := Matrix.reindex finProdFinEquiv finProdFinEquiv
   map_mul' := fun m n ↦ by simp only [Matrix.reindex_apply, Matrix.submatrix_mul_equiv]
-  commutes' := fun k ↦ by simp only [algebraMap, Algebra.toRingHom, RingHom.coe_comp,
-    Function.comp_apply, Matrix.scalar_apply, Matrix.reindex_apply, Matrix.submatrix_diagonal_equiv,
-    Matrix.diagonal_eq_diagonal_iff, implies_true]
+  commutes' := fun k ↦ by
+    ext i j
+    simp only [Matrix.reindex_apply, Matrix.submatrix_apply, finProdFinEquiv_symm_apply,
+      Matrix.algebraMap_matrix_apply, Prod.mk.injEq]
+    if h : i = j then aesop
+    else
+    simp only [h, ↓reduceIte, ite_eq_right_iff, and_imp]
+    intro h1 h2
+    have : i = j := by
+      have : (⟨i.divNat, i.modNat⟩ : Fin n × Fin m) = ⟨j.divNat, j.modNat⟩ := Prod.ext h1 h2
+      apply_fun finProdFinEquiv at this
+      rw [show ⟨i.divNat, i.modNat⟩ = finProdFinEquiv.symm i by rfl,
+        show ⟨j.divNat, _⟩ = finProdFinEquiv.symm j by rfl,
+        finProdFinEquiv.apply_symm_apply, finProdFinEquiv.apply_symm_apply] at this
+      exact this
+    tauto
 }
 
 def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivalent B C) :
@@ -289,11 +299,13 @@ def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
     by unfold one_mul_in ; exact matrixEquivTensor K A (Fin n)|>.symm
 
 def dim_1 (R : Type*) [Ring R] [Algebra K R]: Algebra K (Matrix (Fin 1) (Fin 1) R) where
-  toFun k := Matrix.diagonal (λ _ => (Algebra.ofId K R) k)
-  map_one' := by simp only [map_one, Matrix.diagonal_one]
-  map_mul' := by simp only [map_mul, Matrix.diagonal_mul_diagonal, implies_true]
-  map_zero' := by simp only [map_zero, Matrix.diagonal_zero]
-  map_add' := by simp only [map_add, Matrix.diagonal_add, implies_true]
+  algebraMap := {
+    toFun k := Matrix.diagonal (λ _ => (Algebra.ofId K R) k)
+    map_one' := by simp only [map_one, Matrix.diagonal_one]
+    map_mul' := by simp only [map_mul, Matrix.diagonal_mul_diagonal, implies_true]
+    map_zero' := by simp only [map_zero, Matrix.diagonal_zero]
+    map_add' := by simp only [map_add, Matrix.diagonal_add, implies_true]
+  }
   commutes' r m := by ext i j; fin_cases i; fin_cases j; simp only [RingHom.coe_mk,
     MonoidHom.coe_mk, OneHom.coe_mk, Fin.zero_eta, Fin.isValue, Matrix.diagonal_mul,
     Matrix.mul_diagonal]; exact Algebra.commutes r (m 0 0)
@@ -1004,7 +1016,7 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
 
 def Br : FieldCat ⥤ CommGrp where
   obj F := .of $ BrGroup (K := F)
-  map {F K} f := @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f)
+  map {F K} f := @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f.hom)
   map_id F := by
     ext A
     simp only [CommGrp.coe_of, MonoidHom.coe_mk, OneHom.coe_mk, CommGrp.coe_id', id_eq]
@@ -1015,9 +1027,9 @@ def Br : FieldCat ⥤ CommGrp where
     exact ⟨1, 1, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
   map_comp {F K E} f g := by
     apply (config := { allowSynthFailures := true }) baseChange_idem
-    letI : Algebra F E := RingHom.toAlgebra (f ≫ g)
-    letI : Algebra F K := RingHom.toAlgebra f
-    letI : Algebra K E := RingHom.toAlgebra g
-    exact IsScalarTower.of_algebraMap_smul fun r ↦ congrFun rfl
+    letI : Algebra F E := RingHom.toAlgebra (f ≫ g).hom
+    letI : Algebra F K := RingHom.toAlgebra f.hom
+    letI : Algebra K E := RingHom.toAlgebra g.hom
+    exact IsScalarTower.of_algebraMap_smul (R := F) (A := K) (M := E) fun r ↦ congrFun rfl
 
 end BrauerGroupHom

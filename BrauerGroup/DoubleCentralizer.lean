@@ -6,6 +6,7 @@ Authors: Jujian Zhang
 
 import BrauerGroup.SkolemNoether
 import BrauerGroup.LemmasAboutSimpleRing
+import Mathlib.RingTheory.SimpleRing.Field
 
 universe u v
 
@@ -221,6 +222,8 @@ lemma centralizer_mulLeft_le_of_isCentralSimple :
         AddHom.coe_mk, eqv] ]
     ext b
     simp only [LinearMap.mul_apply, LinearMap.mulLeft_apply]
+    -- change y * (eqv (eqv.symm x)) b = (eqv (eqv.symm x)) (y * b)
+    rw [eqv.apply_symm_apply]
     exact congr($(hx (LinearMap.mulLeft F y) (by simp)) b)
 
   have eq : Subalgebra.centralizer F
@@ -301,11 +304,13 @@ noncomputable instance center_field : Field (Subalgebra.center F B) :=
 
 instance center_algebra : Algebra (Subalgebra.center F B) B where
   smul a b := a.1 • b
-  toFun a := a.1
-  map_one' := rfl
-  map_mul' _ _ := rfl
-  map_zero' := rfl
-  map_add' _ _ := rfl
+  algebraMap := {
+    toFun a := a.1
+    map_one' := rfl
+    map_mul' _ _ := rfl
+    map_zero' := rfl
+    map_add' _ _ := rfl
+  }
   commutes' x y := by
     simpa using Subalgebra.mem_center_iff.1 x.2 y |>.symm
   smul_def' _ _ := rfl
@@ -345,6 +350,7 @@ def Module.End.leftMul : Subalgebra F (Module.End F B) where
 variable (F B) in
 def Module.End.rightMul : Subalgebra F (Module.End F B) where
   carrier := Set.range <| LinearMap.mulRight F
+  one_mem' := ⟨1, by ext; simp⟩
   add_mem' := by
     rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩
     refine ⟨x + y, ?_⟩
@@ -823,7 +829,8 @@ lemma dim_centralizer  :
   letI (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
       Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
 
-  haveI : Module.Free F (Module.End.rightMul F B) := Module.Free.of_divisionRing F _
+  haveI : Module.Free F (Module.End.rightMul F B) := Module.Free.of_divisionRing F
+    ↥(Module.End.rightMul F ↥B)
 
   obtain ⟨x, ⟨eqv⟩⟩ := step1 B (Module.finBasis _ _)
   let leqv := eqv.toLinearEquiv

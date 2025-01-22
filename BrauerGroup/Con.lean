@@ -279,7 +279,7 @@ lemma _root_.IsSimpleRing.iff_eq_zero_or_injective'
   · intro h
     refine ⟨⟨fun I => ?_⟩⟩
     letI : Algebra k I.ringCon.Quotient :=
-    { __ := I.ringCon.mk'.comp (algebraMap k A)
+    { algebraMap := I.ringCon.mk'.comp (algebraMap k A)
       smul := fun a => Quotient.map' (fun b => a • b) fun x y (h : I.ringCon x y) =>
         show I.ringCon _ _ by
         simp only

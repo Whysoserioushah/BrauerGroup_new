@@ -2,7 +2,7 @@ import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 import Mathlib.Algebra.DirectSum.Ring
 
 import BrauerGroup.Subfield.Splitting
-
+import Mathlib.Algebra.BigOperators.Finsupp
 import BrauerGroup.Subfield.Subfield
 
 suppress_compilation
@@ -364,7 +364,7 @@ lemma exists_iso :
   haveI : FiniteDimensional F D := is_fin_dim_of_wdb _ _ _ _ isoB
   have : 0 < Module.finrank F D := Module.finrank_pos
   rw [Nat.mul_right_inj, ← pow_two, ← pow_two] at eq3; swap; omega
-  simp only [zero_le, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj] at eq3
+  simp only [zero_le, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj₀] at eq3
   subst eq3
   exact ⟨isoA.trans isoB.symm⟩
 
@@ -514,7 +514,7 @@ lemma compare_toTwoCocycles' (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFa
   · refine fun σ =>
       A.pushConjFactorCoeffAsUnit B (x_ σ) (y_ σ)
   intro σ τ
-  dsimp
+  dsimp only [AlgEquiv.smul_units_def, Pi.div_apply]
   symm
   rw [div_eq_iff_eq_mul, div_eq_mul_inv, mul_comm (Units.map _ _)]
   simp only [_root_.mul_assoc]
@@ -1000,26 +1000,28 @@ lemma smul_val (r : F) (x : CrossProduct ha) :
     (r • x).val = crossProductSMul r x.val := rfl
 
 instance algebra : Algebra F (CrossProduct ha) where
-  toFun r := r • 1
-  map_one' := by
-    ext α
-    simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, one_smul]
-  map_mul' := by
-    intro r r'
-    ext α
-    simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, mul_smul, mul_val,
-      crossProductMul_single_single, map_smul, map_inv₀, AlgEquiv.one_apply, Algebra.mul_smul_comm,
-      Algebra.smul_mul_assoc, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
-      IsUnit.inv_mul_cancel_right]
-    congr 1
-    rw [smul_comm]
-  map_zero' := by
-    ext; simp
-  map_add' := by
-    intro r r'
-    ext α
-    simp only [smul_val, map_add, one_val, Prod.mk_one_one, LinearMap.add_apply,
-      crossProductSMul_single, Pi.add_apply, add_val]
+  algebraMap := {
+    toFun r := r • 1
+    map_one' := by
+      ext α
+      simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, one_smul]
+    map_mul' := by
+      intro r r'
+      ext α
+      simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, mul_smul, mul_val,
+        crossProductMul_single_single, map_smul, map_inv₀, AlgEquiv.one_apply, Algebra.mul_smul_comm,
+        Algebra.smul_mul_assoc, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+        IsUnit.inv_mul_cancel_right]
+      congr 1
+      rw [smul_comm]
+    map_zero' := by
+      ext; simp
+    map_add' := by
+      intro r r'
+      ext α
+      simp only [smul_val, map_add, one_val, Prod.mk_one_one, LinearMap.add_apply,
+        crossProductSMul_single, Pi.add_apply, add_val]
+  }
   commutes' := by
     intro r x
     ext α
@@ -1207,7 +1209,7 @@ def x_ (σ : K ≃ₐ[F] K) : (CrossProduct ha)ˣ :=
       have eq2 (b : K) := calc  ⟨Pi.single σ⁻¹ b⟩ * x_σ
           _ = ⟨Pi.single 1 (b * a (σ⁻¹, σ))⟩ := by
               ext α
-              simp only [mul_val, crossProductMul_single_single, _root_.one_mul, map_one,
+              rw [mul_val, crossProductMul_single_single, map_one,
                 _root_.mul_one]
               rw [inv_mul_cancel]
       specialize eq2  ((a 1)⁻¹ * (a (σ⁻¹, σ))⁻¹)
@@ -1396,10 +1398,10 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
     apply Finset.sum_subset_zero_on_sdiff (Finset.subset_univ _)
     · intro x hx
       simp only [Finset.mem_sdiff, Finset.mem_univ, Finsupp.mem_support_iff, ne_eq, not_not,
-        true_and, Finsupp.sum_ite_self_eq_aux, smul_eq_zero, s] at hx ⊢
+        true_and, Finsupp.if_mem_support, smul_eq_zero, s] at hx ⊢
       exact Or.inl hx
     intro x _
-    simp only [x_AsBasis_apply, Finsupp.mem_support_iff, ne_eq, Finsupp.sum_ite_self_eq_aux, s]
+    simp only [x_AsBasis_apply, Finsupp.mem_support_iff, ne_eq, Finsupp.if_mem_support, s]
   have eq1' (τ : K ≃ₐ[F] K) : z = ∑ σ, s (τ⁻¹ * σ * τ) • ⟨Pi.single (τ⁻¹ * σ * τ) 1⟩ := by
     rw [eq1]
     fapply Finset.sum_bij
@@ -2072,9 +2074,8 @@ lemma toSnd_fromSnd :
     (twoCoboundariesOfIsMulTwoCoboundary H).2
   refine ⟨fun _ => 1, ?_⟩
   intro σ τ
-  simp only [smul_one, div_self', _root_.mul_one, twoCocyclesOfIsMulTwoCocycle, Pi.sub_apply,
-    Function.comp_apply]
-  change _ = _ / _
+  simp only [smul_one, div_self', _root_.mul_one, Pi.sub_apply]
+  change _ = (Additive.toMul b (σ, τ)) / (Additive.toMul _)
   erw [Equiv.symm_apply_apply]
   simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
   change _ = _ / a (σ, τ)
@@ -2085,8 +2086,7 @@ lemma toSnd_fromSnd :
   simp only [AlgEquiv.mul_apply, y_]
   change _ = A.conjFactorCompCoeff (y_ σ) (y_ τ) (y_ (σ * τ))
   apply_fun A.ι using RingHom.injective _
-  rw [conjFactorCompCoeff_spec'']
-  simp only [x__mul ha σ τ, Units.mul_inv_cancel_right]
+  rw [conjFactorCompCoeff_spec'', x__mul ha σ τ, Units.mul_inv_cancel_right]
   rfl
 
 set_option maxHeartbeats 500000 in

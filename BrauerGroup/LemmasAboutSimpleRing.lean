@@ -1,5 +1,5 @@
 import BrauerGroup.CentralSimple
-import Mathlib.RingTheory.Flat.FaithfullyFlat
+import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
 
 universe u
 
@@ -58,7 +58,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
   rcases hF with hF|hF
   · have : Nontrivial (B' ⊗[K] C) := by
       rw [← rank_pos_iff_nontrivial (R := K), rank_tensorProduct]
-      simp only [gt_iff_lt, CanonicallyOrderedCommSemiring.mul_pos, Cardinal.zero_lt_lift_iff]
+      simp only [gt_iff_lt, CanonicallyOrderedAdd.mul_pos, Cardinal.zero_lt_lift_iff]
       rw [rank_pos_iff_nontrivial, rank_pos_iff_nontrivial]
       aesop
     have : 1 ∈ TwoSidedIdeal.ker F := by rw [hF]; trivial

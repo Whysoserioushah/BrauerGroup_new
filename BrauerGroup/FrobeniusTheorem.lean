@@ -1,5 +1,7 @@
 import BrauerGroup.Subfield.Subfield
 import Mathlib.Algebra.QuaternionBasis
+import Mathlib.Data.Complex.FiniteDimensional
+import Mathlib.Tactic
 
 suppress_compilation
 
@@ -230,6 +232,7 @@ lemma IsBasis1 (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z
     (hDD : Module.finrank ℝ D = 4) (hxx : ¬x.1 ^ 2 ∈ Subalgebra.center ℝ D):
     IsBasis _ _ _ hx hDD hxx 1 = ⟨x.1^2, xsq_ink _ _ _ hx hDD⟩ := by simp [IsBasis]
 
+set_option synthInstance.maxHeartbeats 40000 in
 lemma x2_is_real (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (hDD : Module.finrank ℝ D = 4): x.1^2 ∈ (algebraMap ℝ D).range := by
   let hx2 := hx
@@ -517,7 +520,7 @@ abbrev basisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val 
 
 -- instance : NoZeroSMulDivisors ℝ k := inferInstance
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 60000 in
 omit hD [FiniteDimensional ℝ D] in
 lemma linindep1i :
     LinearIndependent ℝ ![(1 : D), ↑(e.symm { re := 0, im := 1 })] := by
@@ -536,7 +539,8 @@ lemma linindep1i :
     simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, zero_ne_one, and_false]
   · exact one_ne_zero
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 60000 in
+set_option maxHeartbeats 400000 in
 lemma linindep1ij (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (hDD : Module.finrank ℝ D = 4):
     LinearIndependent ℝ (Fin.cons ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹ * ↑x)
@@ -617,9 +621,9 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
     set i := e.symm ⟨0, 1⟩ with i_eq
     rw [← k_eq, heq, pow_two, mul_add, mul_add, add_mul, add_mul, add_mul, add_mul, add_mul,
       add_mul] at this
-    simp only [Algebra.mul_smul_comm, mul_one, Algebra.smul_mul_assoc, one_mul, i_mul_i _ _,
-      neg_smul, one_smul, smul_neg, j_mul_i_eq_neg_i_mul_j _ _ _ hx hDD, j_mul_j _ _ _ hx hDD,
-      ← i_eq, ← j_eq] at this
+    simp only [Algebra.mul_smul_comm, mul_one, Algebra.smul_mul_assoc, one_mul] at this
+    rw [j_mul_j _ _ _ hx hDD, j_mul_i_eq_neg_i_mul_j _ _ _ hx hDD, i_mul_i _ _, ← j_eq,
+      ← i_eq, ← k_eq] at this
     replace this : (a * a - b * b - c * c + (1 : ℝ)) • (1 : D) + (2 * a * b) • i +
       (2 * a * c) • j = 0 := by linear_combination (norm := module) this
     have ijindep := linindep1ij _ _ _ hx hDD
@@ -670,7 +674,7 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
       simp only [smul_add, smul_smul, ← add_assoc] at heq
       symm at heq
       rw [eq_neg_iff_add_eq_zero, add_assoc _ _ j] at heq
-      nth_rw 2 [← one_smul ℝ j] at heq; rw [← add_smul, ← neg_smul] at heq
+      nth_rw 2 [← one_smul ℝ j] at heq; rw [← add_smul, i_mul_i _ _] at heq
       have h1 := linindep1ij _ _ _ hx hDD
       rw [Fintype.linearIndependent_iff] at h1
       specialize h1 ![(c * c + 1), -b, (c * b)]
@@ -679,7 +683,7 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
         Matrix.cons_val_two, Matrix.tail_cons, ← j_eq, ← i_eq] at h1
       rw [← Fin.succ_one_eq_two, Fin.cons_succ] at h1
       simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons] at h1
-      rw [add_comm, ← add_assoc] at heq
+      rw [add_comm, ← add_assoc, neg_smul, one_smul, smul_neg, ← neg_smul] at heq
       specialize h1 heq ⟨1, by omega⟩
       simp only [Fin.mk_one, Fin.isValue, Matrix.cons_val_one, Matrix.head_cons, neg_eq_zero] at h1
       exact h1
@@ -853,7 +857,7 @@ abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set
     rintro x hx hx0
     simp only [Subalgebra.coe_toSubsemiring,
       Subsemiring.coe_carrier_toSubmonoid, SetLike.mem_coe] at *
-    letI : Nonempty α := Set.Nonempty.to_subtype (Set.nonempty_of_nonempty_subtype)
+    letI : Nonempty α := Set.Nonempty.to_subtype (Set.Nonempty.of_subtype)
     have := Subalgebra.coe_iSup_of_directed hα.directed
     dsimp at this
     change x ∈ (_ : Set _) at hx

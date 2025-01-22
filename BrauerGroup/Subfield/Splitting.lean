@@ -4,6 +4,7 @@ import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.RelativeBrauer
 import Mathlib.RingTheory.MatrixAlgebra
 import BrauerGroup.SplittingOfCSA
+import Mathlib.RingTheory.SimpleRing.Field
 
 universe u
 
@@ -32,7 +33,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       Algebra.TensorProduct.includeRight (R := F) (A := K) (B := A)
   let B := Subalgebra.centralizer F (AlgHom.range emb : Set (Module.End F (Fin n → K)))
   let e : A ≃ₐ[F] (AlgHom.range emb) :=
-    AlgEquiv.ofInjective _ (IsSimpleRing.injective_ringHom emb.toRingHom)
+    AlgEquiv.ofInjective _ (IsSimpleRing.iff_injective_ringHom A|>.1 inferInstance emb.toRingHom)
   haveI : Algebra.IsCentral F (AlgHom.range emb) := e.isCentral
   haveI : IsSimpleRing (AlgHom.range emb) := by
     constructor

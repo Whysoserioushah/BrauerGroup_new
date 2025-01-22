@@ -71,7 +71,7 @@ instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
 instance : IsSimpleRing (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) := IsCentralSimple.TensorProduct.simple _ _ _
 
 lemma toEnd_bij : Function.Bijective toEnd :=
-  bijective_of_dim_eq_of_isCentralSimple ℝ (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) _ toEnd <| by
+  bijective_of_dim_eq_of_isCentralSimple ℝ (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) (Module.End ℝ ℍ[ℝ]) toEnd <| by
     rw [show Module.finrank ℝ (Module.End ℝ _) =
       Module.finrank ℝ (Matrix (Fin $ Module.finrank ℝ ℍ[ℝ]) (Fin $ Module.finrank ℝ ℍ[ℝ]) ℝ) from
       (algEquivMatrix $ Module.finBasis _ _).toLinearEquiv.finrank_eq]
