@@ -116,7 +116,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
         (writeAsTensorProduct (B := emb.range) |>.trans <|
           Algebra.TensorProduct.congr e.symm AlgEquiv.refl)
     apply Quotient.sound'
-    exact ⟨1, (Module.finrank F (Fin n → K)), AlgEquiv.trans (dim_one_iso _) iso⟩
+    exact ⟨1, (Module.finrank F (Fin n → K)), one_ne_zero, by aesop, ⟨AlgEquiv.trans (dim_one_iso _) iso⟩⟩
   · show Module.finrank F K ^ 2 = Module.finrank F B
     have dim_eq1 : Module.finrank F B * _ = _ := dim_centralizer F emb.range
     rw [Module.finrank_linearMap, show Module.finrank F (Fin n → K) =
@@ -260,7 +260,7 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
           simp only [add_mul, map_add, LinearMap.add_apply, hm, LinearMap.mul_apply, hn])
     haveI : FiniteDimensional K B := FiniteDimensional.right F K B
     let e : Module.End K B ≃ₐ[K] Matrix _ _ _ := algEquivMatrix (Module.finBasis _ _)
-    rw [split_sound' K F A B (Quotient.eq''.1 eq).some]
+    rw [split_sound' K F A B (Quotient.eq''.1 eq)]
     refine ⟨Module.finrank K B, ⟨fun r => by have := Module.finrank_pos (R := K) (M := B); omega⟩,
       ⟨AlgEquiv.trans (AlgEquiv.ofBijective μAlg ?_) e⟩⟩
     apply bijective_of_dim_eq_of_isCentralSimple
@@ -451,7 +451,7 @@ end matrix
 
 theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSplit F A K) :
     isSplit F B K := by
-  obtain ⟨⟨n, m, iso⟩⟩ := hAB
+  obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hAB
   obtain ⟨p, ⟨hp, ⟨e⟩⟩⟩ := hA
   obtain ⟨q, ⟨hq, D, hD1, _, ⟨e'⟩⟩⟩ := Wedderburn_Artin_algebra_version K (K ⊗[F] B)
   haveI := is_fin_dim_of_wdb K (K ⊗[F] B) q D e'
@@ -462,6 +462,8 @@ theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSp
     matrixTensorEquivTensor K F A (Fin n)|>.trans $ e.mapMatrix (m := (Fin n))|>.trans
     $ Matrix.compAlgEquiv (Fin n) (Fin p) K K |>.trans $ Matrix.reindexAlgEquiv K K
     finProdFinEquiv
+  haveI : NeZero (m * q) := ⟨by aesop⟩
+  haveI : NeZero (n * p) := ⟨by aesop⟩
   exact ⟨q, hq, ⟨e'.trans <|
     Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (m * q)) (Fin (m * q)) D) (m * q) (n * p)
       D AlgEquiv.refl K ee |>.some.mapMatrix⟩⟩

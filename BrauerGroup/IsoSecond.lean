@@ -112,7 +112,7 @@ lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 
   have : 0 < Module.finrank F K := Module.finrank_pos
   haveI : NeZero (Module.finrank F K) := ⟨by omega⟩
   change IsBrauerEquivalent _ _
-  refine ⟨1, Module.finrank F K, AlgEquiv.trans ?_ <| φ4 K F⟩
+  refine ⟨1, Module.finrank F K, one_ne_zero, this.1, ⟨AlgEquiv.trans ?_ <| φ4 K F⟩⟩
   exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
 
 lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
@@ -1200,7 +1200,7 @@ lemma isBrauerEquivalent : IsBrauerEquivalent (⟨A ⊗[F] B⟩ : CSA F) ⟨C⟩
   let iso2 := φ4 hα hβ
   let iso3 := iso11.trans iso2.symm
   haveI : NeZero (finrank F K) := ⟨by have : 0 < finrank F K := finrank_pos; omega⟩
-  exact ⟨1, finrank F K, (dim_one_iso (CSA.mk (A ⊗[F] B))).trans iso3.symm⟩
+  exact ⟨1, finrank F K, one_ne_zero, this.1, ⟨(dim_one_iso (CSA.mk (A ⊗[F] B))).trans iso3.symm⟩⟩
 
 end iso
 
@@ -1257,7 +1257,5 @@ def isoSnd :
   __ := toSndAddMonoidHom K F
   __ := fromSndAddMonoidHom K F
   __ := equivSnd
-
-#print axioms isoSnd
 
 end RelativeBrGroup

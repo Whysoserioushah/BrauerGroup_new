@@ -198,22 +198,26 @@ instance (A : CSA K) : FiniteDimensional K A := A.fin_dim
 
 variable {K : Type u} [Field K]
 
-structure BrauerEquivalence (A B : CSA K) where
-(n m : ℕ) [hn: NeZero n] [hm : NeZero m]
-(iso: Matrix (Fin n) (Fin n) A ≃ₐ[K] Matrix (Fin m) (Fin m) B)
+-- structure BrauerEquivalence (A B : CSA K) where
+-- (n m : ℕ) [hn: NeZero n] [hm : NeZero m]
+-- (iso: Matrix (Fin n) (Fin n) A ≃ₐ[K] Matrix (Fin m) (Fin m) B)
 
-instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.n := h.hn
-instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.m := h.hm
+-- instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.n := h.hn
+-- instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.m := h.hm
 
-abbrev IsBrauerEquivalent (A B : CSA K) := Nonempty (BrauerEquivalence A B)
+def IsBrauerEquivalent (A B : CSA K) : Prop :=
+  ∃ n m : ℕ, n ≠ 0 ∧ m ≠ 0 ∧
+    Nonempty (Matrix (Fin n) (Fin n) A ≃ₐ[K] Matrix (Fin m) (Fin m) B)
+  -- Nonempty (BrauerEquivalence A B)
 
 namespace IsBrauerEquivalent
 
-def refl (A : CSA K) : IsBrauerEquivalent A A := ⟨⟨1, 1, AlgEquiv.refl⟩⟩
+def refl (A : CSA K) : IsBrauerEquivalent A A :=
+  ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.refl⟩⟩
 
 def symm {A B : CSA K} (h : IsBrauerEquivalent A B) : IsBrauerEquivalent B A := by
-  obtain ⟨n, m, iso⟩ := h
-  exact ⟨⟨m, n, iso.symm⟩⟩
+  obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := h
+  exact ⟨m, n, hm, hn, ⟨iso.symm⟩⟩
 
 def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
     (Matrix (Fin n × Fin m) (Fin n × Fin m) A) ≃ₐ[K] Matrix (Fin (n * m)) (Fin (n * m)) A :=
@@ -240,17 +244,17 @@ def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
 
 def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivalent B C) :
     IsBrauerEquivalent A C := by
-  obtain ⟨n, m, iso1⟩ := hAB
-  obtain ⟨p, q, iso2⟩ := hBC
-  refine ⟨⟨p * n, m * q,
-    matrix_eqv' _ _ _ |>.symm.trans $ Matrix.compAlgEquiv _ _ _ _|>.symm.trans $
-      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.compAlgEquiv _ _ _ _|>.trans $ ?_⟩⟩
-  exact Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans $
-    Matrix.compAlgEquiv _ _ _ _|>.symm.trans $ iso2.mapMatrix.trans $
-    Matrix.compAlgEquiv _ _ _ _|>.trans $ matrix_eqv' _ _ _
+  obtain ⟨n, m, hn, hm, ⟨iso1⟩⟩  := hAB
+  obtain ⟨p, q, hp, hq, ⟨iso2⟩⟩  := hBC
+  refine ⟨p * n, m * q, by simp_all, by simp_all,
+    ⟨matrix_eqv' _ _ _ |>.symm.trans $ Matrix.compAlgEquiv _ _ _ _|>.symm.trans $
+      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.compAlgEquiv _ _ _ _|>.trans $
+      Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans $
+      Matrix.compAlgEquiv _ _ _ _|>.symm.trans $ iso2.mapMatrix.trans $
+      Matrix.compAlgEquiv _ _ _ _|>.trans $ matrix_eqv' _ _ _⟩⟩
 
-lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B := by
-  exact ⟨⟨1, 1, h.mapMatrix (m := (Fin 1))⟩⟩
+lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B :=
+    ⟨1, 1, one_ne_zero, one_ne_zero, ⟨h.mapMatrix (m := (Fin 1))⟩⟩
 
 theorem Braur_is_eqv : Equivalence (IsBrauerEquivalent (K := K)) where
   refl := refl
@@ -339,9 +343,9 @@ def matrix_comp (n m : ℕ) (A : Type*) [Ring A] [Algebra K A]:
     Matrix.compAlgEquiv _ _ _ _|>.symm
 
 theorem eqv_mat (A : CSA K) (n : ℕ) [hn : NeZero n]: IsBrauerEquivalent A (matrix_A n A) := by
-  refine ⟨⟨n, 1, ?_⟩⟩
+  refine ⟨n, 1, hn.1, one_ne_zero, ?_⟩
   unfold matrix_A one_mul_in eqv_in
-  exact dim_one_iso _ |>.symm
+  exact ⟨dim_one_iso _ |>.symm⟩
 
 def matrixEquivForward (m n : Type*) [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] :
     Matrix m m K ⊗[K] Matrix n n K →ₐ[K] Matrix (m × n) (m × n) K :=
@@ -416,11 +420,11 @@ def matrix_eqv (m n : ℕ): (Matrix (Fin m) (Fin m) K) ⊗[K] (Matrix (Fin n) (F
 
 lemma one_mul (n : ℕ) [hn : NeZero n] (A : CSA K) :
     IsBrauerEquivalent A (one_mul_in n A) :=
-  ⟨⟨n, 1, AlgEquiv.symm $ (dim_one_iso _).trans $ matrixEquivTensor _ _ _ |>.symm⟩⟩
+  ⟨n, 1, hn.1, one_ne_zero, ⟨AlgEquiv.symm $ (dim_one_iso _).trans $ matrixEquivTensor _ _ _ |>.symm⟩⟩
 
 lemma mul_one (n : ℕ) [hn : NeZero n] (A : CSA K) :
     IsBrauerEquivalent A (mul_one_in n A) :=
-  ⟨⟨n, 1, AlgEquiv.symm $ (dim_one_iso _).trans $ AlgEquiv.symm $
+  ⟨n, 1, hn.1, one_ne_zero, ⟨AlgEquiv.symm $ (dim_one_iso _).trans $ AlgEquiv.symm $
     matrixEquivTensor _ _ _ |>.trans $ Algebra.TensorProduct.comm _ _ _⟩⟩
 
 
@@ -455,9 +459,9 @@ def kroneckerMatrixTensor' (A B: Type*) [Ring A] [Ring B] [Algebra K A] [Algebra
 theorem eqv_tensor_eqv
     (A B C D : CSA K) (hAB : IsBrauerEquivalent A B) (hCD : IsBrauerEquivalent C D) :
     IsBrauerEquivalent (mul A C) (mul B D) := by
-  obtain ⟨n, m, e1⟩ := hAB
-  obtain ⟨p, q, e2⟩ := hCD
-  exact ⟨⟨n * p, m * q, kroneckerMatrixTensor' .. |>.symm.trans <|
+  obtain ⟨n, m, hn, hm, ⟨e1⟩⟩ := hAB
+  obtain ⟨p, q, hp, hq, ⟨e2⟩⟩ := hCD
+  exact ⟨n * p, m * q, by simp_all, by simp_all, ⟨kroneckerMatrixTensor' .. |>.symm.trans <|
     Algebra.TensorProduct.congr e1 e2|>.trans <| kroneckerMatrixTensor' ..⟩⟩
 
 abbrev BrGroup := Quotient $ CSA_Setoid (K := K)
@@ -487,7 +491,7 @@ lemma mul_inv (A : CSA.{u, u} K) : IsBrauerEquivalent (mul A (inv (K := K) A)) o
     have := Module.finrank_pos_iff (R := K) (M := A) |>.2 inferInstance
     omega
   have := tensor_self_op K A
-  exact ⟨⟨1, n, dim_one_iso _|>.trans this⟩⟩
+  exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso _|>.trans this⟩⟩
 
 lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) one_in' := by
   unfold mul inv one_in'
@@ -499,7 +503,7 @@ lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) o
     have := Module.finrank_pos_iff (R := K) (M := A) |>.2 $ inferInstance
     omega
   have := tensor_op_self K A
-  exact ⟨⟨1, n, dim_one_iso _|>.trans this⟩⟩
+  exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso _|>.trans this⟩⟩
 
 variable (K R : Type*) [CommSemiring K] [Semiring R] [Algebra K R] in
 open BigOperators Matrix MulOpposite in
@@ -522,8 +526,8 @@ def matrixEquivMatrixMop_algebra (n : ℕ):
 lemma inv_eqv (A B: CSA K) (hAB : IsBrauerEquivalent A B):
     IsBrauerEquivalent (inv (K := K) A) (inv (K := K) B) := by
   unfold inv
-  obtain ⟨n, m, iso⟩ := hAB
-  refine ⟨⟨n, m, (matrixEquivMatrixMop_algebra _ _ _).trans $
+  obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hAB
+  refine ⟨n, m, hn, hm, ⟨(matrixEquivMatrixMop_algebra _ _ _).trans $
     (AlgEquiv.op iso).trans (matrixEquivMatrixMop_algebra _ _ _).symm⟩⟩
 
 instance Inv: Inv (BrGroup (K := K)) := ⟨Quotient.lift (fun A ↦ Quotient.mk (CSA_Setoid) $ inv A)
@@ -559,7 +563,7 @@ instance Bruaer_Group : Group (BrGroup (K := K)) where
 lemma Alg_closed_equiv_one [IsAlgClosed K]: ∀(A : CSA K), IsBrauerEquivalent A one_in' := by
   intro A
   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed K A
-  exact ⟨⟨1, n, dim_one_iso A|>.trans iso⟩⟩
+  exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A|>.trans iso⟩⟩
 
 lemma Alg_closed_eq_one [IsAlgClosed K]: ∀(A : BrGroup (K := K)), A = 1 := by
   intro A ; induction' A using Quotient.inductionOn' with A
@@ -901,17 +905,16 @@ abbrev BaseChange : BrGroup (K := K) →* BrGroup (K := E) where
     { carrier := E ⊗[K] A
       ring := inferInstance
       algebra := inferInstance
-      fin_dim := inferInstance }) $ fun A B => Nonempty.map $ by
-          rintro ⟨m, n, e⟩
-          exact ⟨m, n, (someEquivs.e1 A m).trans $ (someEquivs.e2 A m).trans $
+      fin_dim := inferInstance }) $ fun A B => fun ⟨m, n, hm, hn, ⟨e⟩⟩ =>
+          ⟨m, n, hm, hn, ⟨(someEquivs.e1 A m).trans $ (someEquivs.e2 A m).trans $
             (someEquivs.e3 A m).trans $ (someEquivs.e4 A m).trans $ AlgEquiv.symm $
             (someEquivs.e1 B n).trans $ (someEquivs.e2 B n).trans $
-            (someEquivs.e3 B n).trans $ (someEquivs.e4 B n).trans $ someEquivs.e5 _ _ e.symm⟩
+            (someEquivs.e3 B n).trans $ (someEquivs.e4 B n).trans $ someEquivs.e5 _ _ e.symm⟩⟩
   map_one' := by
     erw [Quotient.eq'']
     letI : Field one_in'.carrier := inferInstanceAs <| Field K
     letI : Algebra one_in'.carrier E := inferInstanceAs <| Algebra K E
-    exact ⟨1, 1, (dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <| someEquivs.e7⟩
+    exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨(dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <| someEquivs.e7⟩⟩
   map_mul' := by
     intro x y
     induction' x using Quotient.inductionOn' with A
@@ -919,8 +922,9 @@ abbrev BaseChange : BrGroup (K := K) →* BrGroup (K := E) where
     simp only [Quotient.map'_mk'']
     erw [Quotient.map'_mk'']
     erw [Quotient.eq'']
-    exact ⟨1, 1, (dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <|
-      someEquivs.e6 A B⟩
+    change IsBrauerEquivalent ⟨E ⊗[K] (A ⊗[K] B)⟩ _
+    exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨(dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <|
+      someEquivs.e6 A B⟩⟩
 
 abbrev BaseChange_Q_to_C := BaseChange (K := ℚ) (E := ℂ)
 
@@ -941,7 +945,7 @@ instance IsAbelBrauer : CommGroup (BrGroup (K := K)) := {
     apply Quotient.sound'
     change IsBrauerEquivalent _ _
     unfold mul
-    exact ⟨⟨1, 1, AlgEquiv.mapMatrix $ Algebra.TensorProduct.comm ..⟩⟩
+    exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix $ Algebra.TensorProduct.comm ..⟩⟩
 }
 
 open CategoryTheory
@@ -1012,7 +1016,7 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
   simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.coe_comp, Function.comp_apply]
   induction' A using Quotient.inductionOn' with A
   simp only [Quotient.map'_mk'', Quotient.eq'']
-  exact ⟨⟨1, 1, AlgEquiv.mapMatrix <| AlgEquiv.symm <| baseChange_idem.Aux' ..⟩⟩
+  exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix <| AlgEquiv.symm <| baseChange_idem.Aux' ..⟩⟩
 
 def Br : FieldCat ⥤ CommGrp where
   obj F := .of $ BrGroup (K := F)
@@ -1024,7 +1028,7 @@ def Br : FieldCat ⥤ CommGrp where
     induction' A using Quotient.inductionOn' with A
     simp only [Quotient.map'_mk'', Quotient.eq'']
     change IsBrauerEquivalent _ _
-    exact ⟨1, 1, AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩
+    exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩⟩
   map_comp {F K E} f g := by
     apply (config := { allowSynthFailures := true }) baseChange_idem
     letI : Algebra F E := RingHom.toAlgebra (f ≫ g).hom

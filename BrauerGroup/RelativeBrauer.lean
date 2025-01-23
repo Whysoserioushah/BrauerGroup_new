@@ -38,20 +38,17 @@ abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E 
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
     BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrGroup (K := K)) :=
   ⟨by
-    rintro ⟨n, m, ⟨iso⟩⟩
+    rintro ⟨n, hn, ⟨iso⟩⟩
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
     change _ = Quotient.mk'' _
     simp only [Quotient.eq'', one_in']
-    exact ⟨⟨1, n, by
-      simp only
-      refine dim_one_iso (K ⊗[F] A) |>.trans iso⟩⟩,
+    exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso (K ⊗[F] A) |>.trans iso⟩⟩,
     fun hA ↦ by
       simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk''] at hA
       change _ = Quotient.mk'' _ at hA
       simp only [Quotient.eq'', one_in'] at hA
       change IsBrauerEquivalent _ _ at hA
-      obtain ⟨⟨n, m, iso⟩⟩ := hA
-      simp only at iso
+      obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hA
       let p : ℕ := Wedderburn_Artin_algebra_version K (K ⊗[F] A)|>.choose
       let hp := Wedderburn_Artin_algebra_version K (K ⊗[F] A)|>.choose_spec.1
       let D := Wedderburn_Artin_algebra_version K (K ⊗[F] A)|>.choose_spec.2.choose
@@ -71,6 +68,8 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
         (finProdFinEquiv)|>.trans $ Matrix.compAlgEquiv _ _  D K|>.trans $
         Matrix.reindexAlgEquiv K _ (finProdFinEquiv)
       have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) p D iso'
+      haveI : NeZero (p * p * n) := ⟨by simp [hn]; exact hp.1⟩
+      haveI : NeZero (p * m) := ⟨by simp [hp.1, hm]; exact hp.1⟩
       have := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (p * p * n)) (Fin (p * p * n)) D)
         (p * p * n) (p * m) D AlgEquiv.refl K e.symm
       exact ⟨p, hp, ⟨iso'.trans <| Wedderburn_Artin_uniqueness₀ K
@@ -82,15 +81,14 @@ lemma mem_relativeBrGroup (A : CSA F) :
     isSplit F A K :=
   BrauerGroup.split_iff K F A |>.symm
 
-lemma split_sound (A B : CSA F) (h0 : BrauerEquivalence A B) (h : isSplit F A K) :
+lemma split_sound (A B : CSA F) (h0 : IsBrauerEquivalent A B) (h : isSplit F A K) :
     isSplit F B K := by
   rw [split_iff] at h ⊢
-  rw [show (Quotient.mk'' B : BrGroup) = Quotient.mk'' A from Eq.symm <| Quotient.sound ⟨h0⟩, h]
+  rw [show (Quotient.mk'' B : BrGroup) = Quotient.mk'' A from Eq.symm <| Quotient.sound h0, h]
 
-lemma split_sound' (A B : CSA F) (h0 : BrauerEquivalence A B) :
+lemma split_sound' (A B : CSA F) (h0 : IsBrauerEquivalent A B) :
     isSplit F A K ↔ isSplit F B K :=
-  ⟨split_sound K F A B h0, split_sound K F B A
-    ⟨h0.m, h0.n, h0.iso.symm⟩⟩
+  ⟨split_sound K F A B h0, split_sound K F B A <| h0.symm⟩
 
 end Defs
 
@@ -112,7 +110,7 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
     Module.Finite.of_injective isoA.symm.toLinearMap isoA.symm.injective
   have : FiniteDimensional K SA :=  is_fin_dim_of_wdb _ _ _ _ isoA
   have eq1 : IsBrauerEquivalent ⟨SA⟩ A :=
-    ⟨n, 1, AlgEquiv.symm <| AlgEquiv.trans (dim_one_iso A) isoA⟩
+    ⟨n, 1, hn.1, one_ne_zero, ⟨AlgEquiv.symm <| AlgEquiv.trans (dim_one_iso A) isoA⟩⟩
   obtain ⟨m, hm, SB, _, _, ⟨isoB⟩⟩ := Wedderburn_Artin_algebra_version K B
   haveI : Algebra.IsCentral K (Matrix (Fin m) (Fin m) SB) := isoB.isCentral
   haveI : Algebra.IsCentral K SB := is_central_of_wdb _ _ _ _ isoB
@@ -123,9 +121,11 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
   have eq2 : IsBrauerEquivalent ⟨SA⟩ B :=
     .trans eq1 h
 
-  obtain ⟨a, a', e⟩ := eq2
+  obtain ⟨a, a', ha, ha', ⟨e⟩⟩ := eq2
   haveI : FiniteDimensional K (Matrix (Fin a') (Fin a') B) :=
     LinearEquiv.finiteDimensional (matrixEquivTensor K B (Fin a')).toLinearEquiv.symm
+  haveI : NeZero a' := ⟨ha'⟩
+  haveI : NeZero a := ⟨ha⟩
   obtain ⟨isoAB⟩ := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin a') (Fin a') B) a (a' * m)
     SA e.symm SB (by
     refine AlgEquiv.trans (AlgEquiv.trans ?_ (Matrix.compAlgEquiv _ _ _ _)) <|

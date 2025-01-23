@@ -82,11 +82,13 @@ def QuaternionTensorEquivMatrix : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] ≃ₐ[ℝ] Matrix 
     (QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ))
 
 lemma QuaternionTensorEquivOne : IsBrauerEquivalent (K := ℝ) ⟨ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]⟩ ⟨ℝ⟩ :=
-  ⟨⟨1, 4, dim_one_iso _ |>.trans QuaternionTensorEquivMatrix⟩⟩
+  ⟨1, 4, one_ne_zero, by omega, ⟨dim_one_iso _ |>.trans QuaternionTensorEquivMatrix⟩⟩
 
 lemma QuaternionNotEquivR : ¬ IsBrauerEquivalent (K := ℝ) ⟨ℍ[ℝ]⟩ ⟨ℝ⟩ := by
   intro h
-  obtain ⟨⟨n, m, e⟩⟩ := h
+  obtain ⟨n, m, hn, hm, ⟨e⟩⟩ := h
+  letI : NeZero n := ⟨hn⟩
+  letI : NeZero m := ⟨hm⟩
   obtain ⟨e'⟩ := Wedderburn_Artin_uniqueness₀ ℝ (Matrix (Fin n) (Fin n) ℍ[ℝ])
     n m ℍ[ℝ] AlgEquiv.refl ℝ e
   have eq2 := e'.toLinearEquiv.finrank_eq
@@ -138,9 +140,9 @@ lemma BrauerOverR (A : CSA.{0, 0} ℝ) : IsBrauerEquivalent A ⟨ℝ⟩ ∨ IsBr
     tauto
   · cases' hD2 with hD2 hD3
     · have : IsBrauerEquivalent A ⟨ℝ⟩ :=
-        ⟨⟨1, n, dim_one_iso A|>.trans <| e.trans hD2.some.mapMatrix⟩⟩
+        ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A|>.trans <| e.trans hD2.some.mapMatrix⟩⟩
       tauto
-    · exact ⟨⟨1, n, dim_one_iso A |>.trans <| e.trans hD3.some.mapMatrix⟩⟩
+    · exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A |>.trans <| e.trans hD3.some.mapMatrix⟩⟩
 
 open scoped Classical in
 abbrev toC2 : Additive (BrauerGroup.BrGroup (K := ℝ)) →+ ZMod 2 where
@@ -159,8 +161,8 @@ abbrev toC2 : Additive (BrauerGroup.BrGroup (K := ℝ)) →+ ZMod 2 where
         simp [this]
   map_zero' := by
     change Quotient.lift _ _ (Quotient.mk'' (BrauerGroup.one_in')) = 0
-    simp only [dite_eq_ite, Quotient.lift_mk, ite_eq_left_iff, not_nonempty_iff, one_ne_zero,
-      imp_false, not_isEmpty_iff]
+    simp only [dite_eq_ite, Quotient.lift_mk, ite_eq_left_iff, one_ne_zero, imp_false,
+      Decidable.not_not]
     exact IsBrauerEquivalent.refl _
   map_add' A B := by
     induction' A using Quotient.inductionOn' with A
@@ -172,8 +174,8 @@ abbrev toC2 : Additive (BrauerGroup.BrGroup (K := ℝ)) →+ ZMod 2 where
     simp
     if hA : IsBrauerEquivalent A one_in' then
       if hB : IsBrauerEquivalent B one_in' then
-        simp only [hA, ↓reduceIte, hB, add_zero, ite_eq_left_iff, not_nonempty_iff, one_ne_zero,
-          imp_false, not_isEmpty_iff]
+        simp only [hA, ↓reduceIte, hB, add_zero, ite_eq_left_iff, one_ne_zero, imp_false,
+          Decidable.not_not]
         have := eqv_tensor_eqv _ _ _ _ hA hB
         refine this.trans ?_
         change IsBrauerEquivalent ⟨ℝ ⊗[ℝ] ℝ⟩ ⟨ℝ⟩
@@ -181,8 +183,8 @@ abbrev toC2 : Additive (BrauerGroup.BrGroup (K := ℝ)) →+ ZMod 2 where
       else
       simp only [hA, ↓reduceIte, hB, zero_add, ite_eq_right_iff, zero_ne_one, imp_false]
       have : IsBrauerEquivalent (mul A B) B := by
-        obtain ⟨⟨n, m, e⟩⟩ := hA
-        exact ⟨⟨n * 1, m * 1, ((kroneckerMatrixTensor' A B n 1).symm.trans
+        obtain ⟨n, m, hn, hm, ⟨e⟩⟩ := hA
+        exact ⟨n * 1, m * 1, by omega, by omega, ⟨((kroneckerMatrixTensor' A B n 1).symm.trans
           <| (Algebra.TensorProduct.congr e AlgEquiv.refl).trans
           <| (kroneckerMatrixTensor' ℝ B m 1).trans <| AlgEquiv.mapMatrix (
             Algebra.TensorProduct.lid _ _) : Matrix _ _ (A ⊗[ℝ] B) ≃ₐ[ℝ] Matrix _ _ B)⟩⟩
@@ -192,16 +194,16 @@ abbrev toC2 : Additive (BrauerGroup.BrGroup (K := ℝ)) →+ ZMod 2 where
       tauto
     else
     if hB : IsBrauerEquivalent B one_in' then
-      simp only [hA, ↓reduceIte, hB, add_zero, ite_eq_right_iff, zero_ne_one, imp_false]
-      have : IsBrauerEquivalent (mul A B) A := by
-        obtain ⟨⟨n, m, e⟩⟩ := hB
-        exact ⟨⟨1 * n, 1 * m, ((kroneckerMatrixTensor' A B 1 n).symm.trans
-          <| (Algebra.TensorProduct.congr AlgEquiv.refl e).trans
-          <| (kroneckerMatrixTensor' A ℝ 1 m).trans <| AlgEquiv.mapMatrix (
-            Algebra.TensorProduct.rid _ _ _) : Matrix _ _ (A ⊗[ℝ] B) ≃ₐ[ℝ] Matrix _ _ A)⟩⟩
-      by_contra! hAA
-      haveI := this.symm.trans hAA
-      tauto
+    simp only [hA, ↓reduceIte, hB, add_zero, ite_eq_right_iff, zero_ne_one, imp_false]
+    have : IsBrauerEquivalent (mul A B) A := by
+      obtain ⟨n, m, hn, hm, ⟨e⟩⟩ := hB
+      exact ⟨1 * n, 1 * m, by omega, by omega, ⟨(kroneckerMatrixTensor' A B 1 n).symm.trans <|
+        (Algebra.TensorProduct.congr AlgEquiv.refl e).trans <|
+        (kroneckerMatrixTensor' A ℝ 1 m).trans <| AlgEquiv.mapMatrix <|
+        Algebra.TensorProduct.rid _ _ _⟩⟩
+    by_contra! hAA
+    haveI := this.symm.trans hAA
+    tauto
     else
     simp only [hA, ↓reduceIte, hB]
     change _ = 0
@@ -210,13 +212,13 @@ abbrev toC2 : Additive (BrauerGroup.BrGroup (K := ℝ)) →+ ZMod 2 where
     have hB1 := BrauerOverR B
     simp only [hA, false_or] at hA1
     simp only [hB, false_or] at hB1
-    obtain ⟨⟨n1, m1, e1⟩⟩ := hA1
-    obtain ⟨⟨n2, m2, e2⟩⟩ := hB1
+    obtain ⟨n1, m1, hn1, hm1, ⟨e1⟩⟩ := hA1
+    obtain ⟨n2, m2, hn2, hm2, ⟨e2⟩⟩ := hB1
     have : IsBrauerEquivalent (mul A B) one_in' :=
-      ⟨⟨n1 * n2, m1 * m2 * 4, (kroneckerMatrixTensor' _ _ _ _ |>.symm.trans <|
-        Algebra.TensorProduct.congr e1 e2 |>.trans <| kroneckerMatrixTensor' _ _ _ _ |>.trans <|
-        QuaternionTensorEquivMatrix.mapMatrix.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
-        IsBrauerEquivalent.matrix_eqv' _ _ _ : Matrix _ _ (A ⊗[ℝ] B) ≃ₐ[ℝ] Matrix _ _ ℝ)⟩⟩
+      ⟨n1 * n2, m1 * m2 * 4, by aesop, by aesop, ⟨kroneckerMatrixTensor' _ _ _ _ |>.symm.trans <|
+      Algebra.TensorProduct.congr e1 e2|>.trans <| kroneckerMatrixTensor' _ _ _ _ |>.trans <|
+      QuaternionTensorEquivMatrix.mapMatrix.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
+      IsBrauerEquivalent.matrix_eqv' _ _ _ ⟩⟩
     simp [this]
 
 -- lemma toC2_surjective : Function.Surjective toC2 := fun x ↦ by
