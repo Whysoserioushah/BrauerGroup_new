@@ -1,7 +1,9 @@
+import BrauerGroup.Morita.ChangOfRings
+import BrauerGroup.BrauerGroup
+import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
 import BrauerGroup.Azumaya.Defs
-import BrauerGroup
-import Mathlib.Algebra.Central.Basic
 import Mathlib.Algebra.Central.Matrix
+import BrauerGroup.LemmasAboutSimpleRing
 
 universe u v
 
@@ -114,3 +116,48 @@ theorem IsAzumaya_iff_CentralSimple [Nontrivial A]: IsAzumaya K A ↔ FiniteDime
       bij := bijective_of_dim_eq_of_isCentralSimple K _ _
         (AlgHom.mulLeftRight K A) <| tensor_self_op.dim_eq _ _
     }⟩
+
+def finswap {n m : ℕ}: Fin (n * m) ≃ Fin (m * n) where
+  toFun i := ⟨i.1, by rw [mul_comm m n]; exact i.2⟩
+  invFun i := ⟨i.1, by rw [mul_comm n m]; exact i.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+open ModuleCat in
+lemma IsMorita_iff_IsBrauer' (R : Type u) [CommRing R] (A B : Type v) [Ring A] [Ring B]
+    [IsSimpleRing A] [IsSimpleRing B] [IsArtinianRing A] [IsArtinianRing B] [Algebra R A]
+    [Algebra R B]:
+    IsMoritaEquivalent R A B ↔ ∃(n m : ℕ), n ≠ 0 ∧ m ≠ 0 ∧ (Nonempty <|
+    Matrix (Fin n) (Fin n) A ≃ₐ[R] Matrix (Fin m) (Fin m) B) := ⟨fun hAB ↦
+  by
+    obtain ⟨n, hn, D, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version' R A
+    obtain ⟨m, hm, E, _, _, ⟨e'⟩⟩ := Wedderburn_Artin_algebra_version' R B
+    letI e1 := MoritaEquivalence.ofAlgEquiv e
+    letI e2 := MoritaEquivalence.ofAlgEquiv e'
+    haveI := MoritaEquivalence.matrix' R D n |>.symm
+    have ww := MoritaEquivalence.trans R e1 this |>.symm
+    haveI := MoritaEquivalence.matrix' R E m |>.symm
+    have ww' := MoritaEquivalence.trans R e2 this
+    haveI h := MoritaEquivalence.trans R ww hAB.cond.some
+    haveI h' := MoritaEquivalence.trans R h ww'
+    have := MoritaEquivalence.algEquivOfDivisionRing R D E h'
+    refine ⟨m, n, hm.1, hn.1, ⟨e.mapMatrix.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
+      Matrix.reindexAlgEquiv _ _ finProdFinEquiv |>.trans <| this.mapMatrix.trans <|
+      Matrix.reindexAlgEquiv _ _ finswap|>.trans <| Matrix.reindexAlgEquiv _ _
+      finProdFinEquiv.symm |>.trans <| Matrix.compAlgEquiv _ _ _ _|>.symm.trans
+      e'.symm.mapMatrix⟩⟩,
+  fun ⟨n, m, hn, hm, ⟨e⟩⟩ ↦
+  letI : NeZero n := ⟨hn⟩
+  letI : NeZero m := ⟨hm⟩
+  ⟨⟨MoritaEquivalence.trans R (MoritaEquivalence.trans R
+    (MoritaEquivalence.matrix' R A n) (MoritaEquivalence.ofAlgEquiv e))
+      (MoritaEquivalence.matrix' R B m).symm⟩⟩⟩
+
+open ModuleCat in
+theorem IsMorita_iff_IsBrauer (A B : CSA.{u, v} K):
+    IsMoritaEquivalent K A B ↔ IsBrauerEquivalent (K := K) A B :=
+  haveI : IsArtinianRing A := .of_finite K A
+  haveI : IsArtinianRing B := .of_finite K B
+  IsMorita_iff_IsBrauer' K A B
+
+#print axioms IsMorita_iff_IsBrauer

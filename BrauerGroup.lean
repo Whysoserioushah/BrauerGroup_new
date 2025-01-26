@@ -1,4 +1,6 @@
 import BrauerGroup.AlgClosedUnion
+import BrauerGroup.Azumaya.Basic
+import BrauerGroup.Azumaya.Defs
 import BrauerGroup.BrauerGroup
 import BrauerGroup.BrauerOverR
 import BrauerGroup.CentralSimple
@@ -12,6 +14,9 @@ import BrauerGroup.FrobeniusTheorem
 import BrauerGroup.IsoSecond
 import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.MatrixCenterEquiv
+import BrauerGroup.Morita.Basic
+import BrauerGroup.Morita.ChangOfRings
+import BrauerGroup.Morita.Defs
 import BrauerGroup.MoritaEquivalence
 import BrauerGroup.RelativeBrauer
 import BrauerGroup.SkolemNoether

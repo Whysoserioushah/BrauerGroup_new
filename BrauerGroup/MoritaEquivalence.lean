@@ -466,89 +466,7 @@ noncomputable def moritaEquivalentToMatrix : ModuleCat R ≌ ModuleCat M[ι, R] 
       simp only [of_apply, ite_smul, one_smul, zero_smul, ite_eq_right_iff, and_imp]
       tauto
 
-class IsMoritaEquivalent
-  (R : Type u) (S : Type u') [Ring R] [Ring S] : Prop where
-out : Nonempty $ ModuleCat.{v} R ≌ ModuleCat.{v'} S
-
 namespace IsMoritaEquivalent
-
-variable (R : Type u) (S : Type u') (T : Type u'') [Ring R] [Ring S] [Ring T]
-
-noncomputable def equiv [IsMoritaEquivalent R S] : ModuleCat R ≌ ModuleCat S :=
-  (inferInstance : IsMoritaEquivalent R S) |>.out.some
-
-
-instance [IsMoritaEquivalent R S] : (equiv R S).functor.Additive :=
-Functor.additive_of_preserves_binary_products _
-
-instance [IsMoritaEquivalent R S] : (equiv R S).inverse.Additive :=
-inferInstance
-
-@[refl]
-lemma refl : IsMoritaEquivalent.{u, u, v, v} R R :=
-⟨⟨CategoryTheory.Equivalence.refl (C := ModuleCat.{v} R)⟩⟩
-
-instance : IsMoritaEquivalent.{u, u, v, v} R R := refl R
-
-@[symm]
-lemma symm [IsMoritaEquivalent.{u, u', v, v'} R S] : IsMoritaEquivalent.{u', u, v', v} S R where
-  out := ⟨equiv R S |>.symm⟩
-
-@[trans]
-lemma trans [IsMoritaEquivalent.{u, u', v, v'} R S] [IsMoritaEquivalent.{u', u'', v', v''} S T] :
-    IsMoritaEquivalent.{u, u'', v, v''} R T where
-  out := ⟨(equiv R S).trans $ equiv S T⟩
-
-instance matrix (n : ℕ) : IsMoritaEquivalent.{u, u, v, v} R M[Fin (n + 1), R] where
-  out := ⟨moritaEquivalentToMatrix R (Fin (n + 1))⟩
-
-lemma matrix' (n : ℕ) [hn : NeZero n] : IsMoritaEquivalent.{u, u, v, v} R M[Fin n, R] :=
-  { out := ⟨moritaEquivalentToMatrix R (Fin n)⟩ }
-
-abbrev ofIsoApp1 (e : R ≃+* S) (X : ModuleCat R): X ⟶
-    (ModuleCat.restrictScalars e.symm.toRingHom ⋙ ModuleCat.restrictScalars e.toRingHom).obj X :=
-  ModuleCat.ofHom (Y := (ModuleCat.restrictScalars e.symm.toRingHom ⋙
-    ModuleCat.restrictScalars e.toRingHom).obj X)
-    { toFun := LinearMap.id (R := R)
-      map_add' := fun _ _ ↦ rfl
-      map_smul' := fun r x ↦ by
-        change _ = X.isModule.smul _ x
-        simp; rfl }
-
-abbrev ofIsoApp2 (e : R ≃+* S) (X : ModuleCat R): (ModuleCat.restrictScalars e.symm.toRingHom ⋙
-    ModuleCat.restrictScalars e.toRingHom).obj X ⟶ X :=
-  ModuleCat.ofHom (X := (ModuleCat.restrictScalars e.symm.toRingHom ⋙
-    ModuleCat.restrictScalars e.toRingHom).obj X)
-  { toFun := LinearMap.id (R := R)
-    map_add' := fun _ _ ↦ rfl
-    map_smul' := fun r x ↦ by
-      change X.isModule.smul _ x = _
-      simp; rfl }
-
-lemma ofIso (e : R ≃+* S) : IsMoritaEquivalent.{u, u', v, v} R S where
-  out := .intro
-    { functor := ModuleCat.restrictScalars e.symm.toRingHom
-      inverse := ModuleCat.restrictScalars e.toRingHom
-      unitIso :=
-      { hom :=
-        { app := fun X => ofIsoApp1 R S e X
-          naturality := fun _ _ f => rfl }
-        inv :=
-        { app := fun X => ofIsoApp2 _ _ e X
-          naturality := fun _ _ f => rfl }
-        hom_inv_id := by ext; rfl
-        inv_hom_id := by ext; rfl }
-      counitIso :=
-      { hom :=
-        { app := fun X => ofIsoApp2 _ _ e.symm X
-          naturality := fun _ _ f => rfl }
-        inv :=
-        { app := fun X => ofIsoApp1 _ _ e.symm X
-          naturality := fun _ _ f => rfl }
-        hom_inv_id := by ext; rfl
-        inv_hom_id := by ext; rfl }
-      functor_unitIso_comp := by intros; ext; rfl }
-
 namespace division_ring -- auxilaries for division rings, don't use
 
 variable (R : Type u) (S : Type u) [DivisionRing R] [DivisionRing S]
@@ -658,6 +576,8 @@ instance _root_.CategoryTheory.Equivalence.nontrivial
   refine h <| LinearEquiv.injective iso2.toLinearEquiv <|
     iso3.toLinearEquiv.injective <| Subsingleton.elim _ _
 
+variable (K : Type u) [Field K]
+
 
 lemma IsSimpleModule.functor
     (R S : Type u) [Ring R] [Ring S] (e : ModuleCat.{v} R ≌ ModuleCat.{v} S)
@@ -678,88 +598,6 @@ lemma IsSimpleModule.functor
       Equivalence.functor_unit_comp_assoc] at m1
     exact mono_of_mono f (e.counitInv.app N)
 
-@[simps]
-def mopToEnd : Rᵐᵒᵖ →+* End (ModuleCat.of R R) where
-  toFun a := ModuleCat.ofHom <|
-    { toFun := fun (x : R) ↦ x * a.unop
-      map_add' := by simp [add_mul]
-      map_smul' := by simp [mul_assoc] }
-  map_zero' := by simp; rfl
-  map_one' := by aesop
-  map_add' := fun x y => by simp [mul_add]; rfl
-  map_mul' := fun (x y) => by
-    simp only [MulOpposite.unop_mul, End.mul_def]
-    apply ModuleCat.hom_ext
-    simp only [ModuleCat.hom_comp]; ext; simp
-
-noncomputable def mopEquivEnd : Rᵐᵒᵖ ≃+* End (ModuleCat.of R R) :=
-  RingEquiv.ofBijective (mopToEnd R) ⟨RingHom.injective_iff_ker_eq_bot _ |>.mpr $
-    SetLike.ext fun (α : Rᵐᵒᵖ) => ⟨fun (h : _ = _) => by
-      rw [ModuleCat.hom_ext_iff] at h
-      simp only [mopToEnd, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ModuleCat.hom_zero,
-        LinearMap.ext_iff, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply, mul_eq_zero,
-        MulOpposite.unop_eq_zero_iff] at h
-      specialize h (1 : R)
-      simp_all only [one_ne_zero, false_or, Ideal.mem_bot],
-      by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : R)), ModuleCat.hom_ext <|
-      LinearMap.ext fun r => by
-      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, MulOpposite.unop_op,
-        mopToEnd_apply_hom_apply, MulOpposite.unop_op]
-      rw [← smul_eq_mul, ← φ.hom.map_smul, smul_eq_mul, mul_one]⟩⟩
-
-variable {R S} in
-def aux1 : End (ModuleCat.of R R) ≃+* End (e.functor.obj $ ModuleCat.of R R) where
-  toFun f := e.functor.map f
-  invFun g := e.unit.app _ ≫ e.inverse.map g ≫ e.unitInv.app _
-  left_inv := by
-    intro f
-    simp only [Functor.comp_obj, Equivalence.inv_fun_map, Functor.id_obj, Category.assoc,
-      Iso.hom_inv_id_app, Category.comp_id]
-    rw [← Category.assoc]
-    change (e.unit ≫ e.unitInv).app _ ≫ _ = _
-    simp
-  right_inv := by
-    intro g
-    simp only [Functor.comp_obj, Functor.map_comp, Equivalence.fun_inv_map, Functor.id_obj,
-      Category.assoc, Equivalence.counitInv_functor_comp, Category.comp_id]
-    exact e.functor_unit_comp_assoc (ModuleCat.of R R) g
-  map_mul' x y := by simp
-  map_add' x y := by simp only; rw [e.functor.map_add]
-
-
-noncomputable def aux20 : (e.functor.obj (ModuleCat.of R R)) ≅ ModuleCat.of S S := by
-  have :  IsSimpleModule R (ModuleCat.of R R) := inferInstanceAs $ IsSimpleModule R R
-  have : IsSimpleModule S (e.functor.obj (ModuleCat.of R R)) :=
-    IsSimpleModule.functor R S e (ModuleCat.of R R)
-  have := division_ring_exists_unique_isSimpleModule S (e.functor.obj $ ModuleCat.of R R)
-  exact this.some.toModuleIso
-
-def aux2 (M N : ModuleCat S) (f : M ≅ N) : End M ≃+* End N where
-  toFun x := f.inv ≫ x ≫ f.hom
-  invFun x := f.hom ≫ x ≫ f.inv
-  left_inv x := by simp
-  right_inv x := by simp
-  map_mul' x y := by simp
-  map_add' x y := by simp only; rw [Preadditive.add_comp, Preadditive.comp_add]
-
-noncomputable def toRingMopEquiv : Rᵐᵒᵖ ≃+* Sᵐᵒᵖ :=
-  mopEquivEnd R |>.trans $
-    aux1 e |>.trans $
-    aux2 S _ _ (aux20 R S e) |>.trans $
-    mopEquivEnd S |>.symm
-
-noncomputable def toRingEquiv : R ≃+* S where
-  toFun r := toRingMopEquiv R S e (.op r) |>.unop
-  invFun s := toRingMopEquiv R S e |>.symm (.op s) |>.unop
-  left_inv r := by simp only [MulOpposite.op_unop, RingEquiv.symm_apply_apply, MulOpposite.unop_op]
-  right_inv s := by simp only [MulOpposite.op_unop, RingEquiv.apply_symm_apply, MulOpposite.unop_op]
-  map_mul' a b := by simp only [MulOpposite.op_mul, _root_.map_mul, MulOpposite.unop_mul]
-  map_add' a b := by simp only [MulOpposite.op_add, map_add, MulOpposite.unop_add]
-
 end division_ring
-
-noncomputable def ringEquivOfDivisionRing
-    (R S : Type u) [DivisionRing R] [DivisionRing S] [IsMoritaEquivalent R S] :
-    R ≃+* S := division_ring.toRingEquiv R S (equiv R S)
 
 end IsMoritaEquivalent

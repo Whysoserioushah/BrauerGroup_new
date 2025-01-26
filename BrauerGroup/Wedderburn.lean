@@ -477,14 +477,14 @@ theorem Wedderburn_Artin'
   obtain ⟨n, hn, I, inst, e⟩ := Wedderburn_Artin A
   exact ⟨n, hn, (Module.End A I)ᵐᵒᵖ, inferInstance, e⟩
 
-theorem Wedderburn_Artin_divisionRing_unique
-    (D E : Type u) [DivisionRing D] [DivisionRing E] (m n : ℕ) [hm : NeZero m] [hn : NeZero n]
-    (iso : M[Fin m, D] ≃+* M[Fin n, E]) : Nonempty $ D ≃+* E := by
-  classical
-  have i1 : IsMoritaEquivalent D E := @IsMoritaEquivalent.trans _ _ _ _ _ _
-      (@IsMoritaEquivalent.trans _ _ _ _ _ _ (.matrix' D m) (.ofIso _ _ iso))
-      (IsMoritaEquivalent.matrix' E n).symm
-  exact ⟨i1.ringEquivOfDivisionRing⟩
+-- theorem Wedderburn_Artin_divisionRing_unique
+--     (D E : Type u) [DivisionRing D] [DivisionRing E] (m n : ℕ) [hm : NeZero m] [hn : NeZero n]
+--     (iso : M[Fin m, D] ≃+* M[Fin n, E]) : Nonempty $ D ≃+* E := by
+--   classical
+--   have i1 : IsMoritaEquivalent D E := @IsMoritaEquivalent.trans _ _ _ _ _ _
+--       (@IsMoritaEquivalent.trans _ _ _ _ _ _ (.matrix' D m) (.ofIso _ _ iso))
+--       (IsMoritaEquivalent.matrix' E n).symm
+--   exact ⟨i1.ringEquivOfDivisionRing⟩
 
 end simple_ring
 
@@ -556,16 +556,14 @@ omit [FiniteDimensional K B] in
 lemma algebraEndIdealMop.algebraMap_eq (I : Ideal B) :
     algebraMap K (Module.End B I)ᵐᵒᵖ = algebraMapEndIdealMop K I := rfl
 
-set_option maxHeartbeats 800000 in
-lemma Wedderburn_Artin_algebra_version
-    [sim : IsSimpleRing B]:
-    ∃ (n : ℕ) (_ : NeZero n) (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
-    Nonempty (B ≃ₐ[K] (M[Fin n, S])) := by
+lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [Ring A]
+  [sim : IsSimpleRing A] [Algebra R A] [hA : IsArtinianRing A] :
+    ∃ (n : ℕ) (_ : NeZero n) (S : Type v) (_ : DivisionRing S) (_ : Algebra R S),
+    Nonempty (A ≃ₐ[R] (M[Fin n, S])) := by
   classical
-  have hB : IsArtinianRing B := .of_finite K B
-  obtain ⟨n, hn, I, inst_I, ⟨e⟩⟩ := Wedderburn_Artin_ideal_version B
+  obtain ⟨n, hn, I, inst_I, ⟨e⟩⟩ := Wedderburn_Artin_ideal_version A
 
-  let endEquiv : Module.End B B ≃+* Module.End B (Fin n → I) :=
+  let endEquiv : Module.End A A ≃+* Module.End A (Fin n → I) :=
   { toFun := fun f ↦ e.symm ∘ₗ f ∘ₗ e
     invFun := fun f ↦ e ∘ₗ f ∘ₗ e.symm
     left_inv := by intro f; ext; simp
@@ -573,26 +571,26 @@ lemma Wedderburn_Artin_algebra_version
     map_add' := by intros f g; ext; simp
     map_mul' := by intros f g; ext; simp }
 
-  refine ⟨n, hn, (Module.End B I)ᵐᵒᵖ, inferInstance, inferInstance, ⟨AlgEquiv.ofRingEquiv
-    (f := equivEndMop B |>.trans $ endEquiv.op.trans $ (endPowEquivMatrix B I n).op.trans
-    (matrixEquivMatrixMop n (Module.End B ↥I)).symm) ?_⟩⟩
+  refine ⟨n, hn, (Module.End A I)ᵐᵒᵖ, inferInstance, inferInstance, ⟨AlgEquiv.ofRingEquiv
+    (f := equivEndMop A |>.trans $ endEquiv.op.trans $ (endPowEquivMatrix A I n).op.trans
+    (matrixEquivMatrixMop n (Module.End A I)).symm) ?_⟩⟩
   intro r
   rw [Matrix.algebraMap_eq_diagonal]
   ext i j
   apply MulOpposite.unop_injective
   simp only [endPowEquivMatrix, RingEquiv.coe_trans, Function.comp_apply, equivEndMop_apply,
-    RingEquiv.op_apply_apply, unop_op, RingEquiv.coe_mk, Equiv.coe_fn_mk, LinearMap.coe_comp,
-    LinearEquiv.coe_coe, LinearMap.coe_mk, AddHom.coe_mk, matrixEquivMatrixMop_symm_apply,
-    map_apply, transpose_apply, diagonal, Pi.algebraMap_apply, algebraEndIdealMop.algebraMap_eq,
-    algebraMapEndIdealMop_apply, of_apply, endEquiv]
+    RingEquiv.op_apply_apply, unop_op, RingEquiv.coe_mk, Equiv.coe_fn_mk, AlgEquiv.coe_ringEquiv,
+    matrixEquivMatrixMop_symm_apply, map_apply, transpose_apply, diagonal, Pi.algebraMap_apply,
+    algebraMap_apply, of_apply, endEquiv]
   split_ifs with h
   · subst h
     ext x : 1
-    simp only [LinearMap.coe_mk, AddHom.coe_mk, MulOpposite.unop_op]
+    simp only [endVecAlgEquivMatrixEnd_apply_apply, LinearMap.coe_comp, LinearEquiv.coe_coe,
+      LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, unop_op, Module.algebraMap_end_apply,
+      endEquiv]
     rw [show r • x = Function.update (0 : Fin n → I) i (r • x) i by simp]
     refine congr_fun (e.injective ?_) i
-    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, LinearMap.coe_mk, AddHom.coe_mk,
-      Function.comp_apply, LinearEquiv.apply_symm_apply]
+    simp only [LinearEquiv.apply_symm_apply, endEquiv]
     rw [show Function.update (0 : Fin n → I) i (r • x) = r • Function.update (0 : Fin n → I) i x
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
@@ -608,6 +606,16 @@ lemma Wedderburn_Artin_algebra_version
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
     exact congr_arg e $ by ext; simp [Pi.single]
+
+
+set_option maxHeartbeats 800000 in
+lemma Wedderburn_Artin_algebra_version
+    [sim : IsSimpleRing B]:
+    ∃ (n : ℕ) (_ : NeZero n) (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
+    Nonempty (B ≃ₐ[K] (M[Fin n, S])) := by
+  classical
+  have hB : IsArtinianRing B := .of_finite K B
+  exact Wedderburn_Artin_algebra_version' K B
 
 omit [FiniteDimensional K B] in
 theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]
