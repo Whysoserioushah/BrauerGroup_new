@@ -116,7 +116,7 @@ end MoritaEquivalence
 /--
 Two rings are Morita equivalent if their module categories are equivalent.
 -/
-structure IsMoritaEquivalent
+structure _root_.IsMoritaEquivalent
     (A : Type u₁) [Ring A] [Algebra R A]
     (B : Type u₂) [Ring B] [Algebra R B] : Prop where
   cond : Nonempty <| MoritaEquivalence R A B
