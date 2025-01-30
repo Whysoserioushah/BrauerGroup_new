@@ -159,5 +159,3 @@ theorem IsMorita_iff_IsBrauer (A B : CSA.{u, v} K):
   haveI : IsArtinianRing A := .of_finite K A
   haveI : IsArtinianRing B := .of_finite K B
   IsMorita_iff_IsBrauer' K A B
-
-#print axioms IsMorita_iff_IsBrauer
