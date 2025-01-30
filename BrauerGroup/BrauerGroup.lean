@@ -332,15 +332,6 @@ def dim_one_iso (R : Type*) [Ring R] [Algebra K R]: (Matrix (Fin 1) (Fin 1) R) �
     rw [Matrix.smul_apply]; rfl
 
 open IsBrauerEquivalent
--- def Matrix.swapAlgEquiv (n m : ℕ) (A : Type*) [Ring A] [Algebra K A]:
---     Matrix (Fin n × Fin m) (Fin n × Fin m) A ≃ₐ[K] Matrix (Fin m × Fin n) (Fin m × Fin n) A := by
---   exact Matrix.reindexAlgEquiv K (.prodComm (Fin n) (Fin m))
-
-def matrix_comp (n m : ℕ) (A : Type*) [Ring A] [Algebra K A]:
-    Matrix (Fin n) (Fin n) (Matrix (Fin m) (Fin m) A) ≃ₐ[K]
-    Matrix (Fin m) (Fin m) (Matrix (Fin n) (Fin n) A) :=
-  Matrix.compAlgEquiv _ _ _ _|>.trans $ Matrix.reindexAlgEquiv _ _ (.prodComm _ _) |>.trans $
-    Matrix.compAlgEquiv _ _ _ _|>.symm
 
 theorem eqv_mat (A : CSA K) (n : ℕ) [hn : NeZero n]: IsBrauerEquivalent A (matrix_A n A) := by
   refine ⟨n, 1, hn.1, one_ne_zero, ?_⟩
