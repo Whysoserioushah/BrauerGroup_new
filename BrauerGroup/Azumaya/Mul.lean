@@ -13,314 +13,9 @@ variable (R : Type u) [CommRing R]
 
 open scoped TensorProduct
 
-open MulOpposite
-
-structure Azumaya (R : Type u) [CommRing R] extends AlgebraCat R where
-  isAzumaya : IsAzumaya R carrier
-
-@[coe]
-instance : CoeSort (Azumaya R) (Type v) where
-  coe s := s.carrier
-
-attribute [instance] Azumaya.isAzumaya
-
-def Azumaya.IsMoritaEquivalent : Azumaya R → Azumaya R → Prop :=
-    fun A B ↦ _root_.IsMoritaEquivalent R A.carrier B.carrier
-
-lemma Azumaya.IsMoritaEquivalent.iff {A B : Azumaya R} :
-  Azumaya.IsMoritaEquivalent R A B ↔ _root_.IsMoritaEquivalent R A.carrier B.carrier :=
-  Iff.rfl
-
-abbrev AzuMorita.equiv : Equivalence (Azumaya.IsMoritaEquivalent R) where
-  refl _ := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.refl R
-  symm h := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.symm R
-    <| Azumaya.IsMoritaEquivalent.iff R|>.1 h
-  trans h1 h2 := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.trans R
-    (Azumaya.IsMoritaEquivalent.iff R|>.2 h1) <| Azumaya.IsMoritaEquivalent.iff R|>.2 h2
-
-abbrev AzumayaSetoid : Setoid (Azumaya R) where
-  r := Azumaya.IsMoritaEquivalent R
-  iseqv := AzuMorita.equiv R
-
-namespace Azumaya
-
-variable (A B : Type v) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
-instance [Module.Finite R A] [Module.Finite R B] :
-    Module.Finite R (A ⊗[R] B) := by exact Module.Finite.tensorProduct R A B
-
-variable {R A B} in
-instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
-    [FaithfulSMul R A] [FaithfulSMul R B] :
-    FaithfulSMul R (A ⊗[R] B) where
-  eq_of_smul_eq_smul {r1 r2} eq := by
-    specialize eq 1
-    rw [Algebra.TensorProduct.one_def, TensorProduct.smul_tmul',
-      TensorProduct.smul_tmul'] at eq
-    have := Algebra.TensorProduct.includeLeft_injective (R := R) (S := R)
-      (fun r1 r2 h ↦ by
-        rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one] at h
-        exact eq_of_smul_eq_smul (M := R) (α := B) (m₁ := r1) (m₂ := r2) (by
-          intro b
-          rw [← one_mul b, ← smul_mul_assoc, h, smul_mul_assoc, one_mul])) eq
-    exact eq_of_smul_eq_smul (M := R) (α := A) (m₁ := r1) (m₂ := r2) <|
-      fun a ↦ by rw [← one_mul a, ← smul_mul_assoc, this, smul_mul_assoc, one_mul]
-
-abbrev u (n : ℕ) : Fin n → (Fin n → R) := fun i ↦ Function.update (0 : Fin n → R) i 1
-
-abbrev v (n : ℕ): Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
-  rw [Fintype.linearIndependent_iff]
-  refine fun f hf j ↦ ?_
-  apply congrFun at hf
-  specialize hf j
-  change (∑ _, _ • Function.update _ _ _) _ = _ at hf
-  simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
-    mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
-  exact hf) <| fun x _ ↦ by
-  refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
-  change ∑ i : Fin n, _ • Function.update _ _ _ = x
-  ext j
-  simp [Function.update_apply]
-
-abbrev End_basis' (n : ℕ) : Fin n × Fin n → (Module.End R (Fin n → R)) := fun ⟨i, r⟩ ↦
-  Basis.constr (v R n) R <| fun j ↦ if i = r then v R n j else 0
-
--- lemma End_basis'_apply (n : ℕ) (i r : Fin n) :
---   (End_basis' R n) (i, r) =
---     Basis.constr (v R n) R (fun j ↦ if i = r then v R n j else 0) := rfl
-
--- abbrev _root_.Module.End_basis (n : ℕ): Basis (Fin n × Fin n) R (Module.End R (Fin n → R)) :=
---   Basis.mk (v := End_basis' R n) (by
---   rw [Fintype.linearIndependent_iff]
---   intro f hf ⟨i0, r0⟩
---   rw [Fintype.sum_prod_type] at hf
---   simp [End_basis'_apply R n] at hf
---   rw [LinearMap.ext_iff] at hf
---   specialize hf (v R n i0)
---   simp only [Basis.coe_mk, LinearMap.coeFn_sum, Finset.sum_apply, LinearMap.smul_apply,
---     Basis.constr_apply_fintype, Basis.equivFun_apply, Basis.mk_repr, smul_ite, smul_zero,
---     Finset.sum_ite_irrel, Finset.sum_const_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte,
---     LinearMap.zero_apply] at hf
---   -- rw [LinearMap.pi_ext_iff] at hf
---   -- simp only [LinearMap.coeFn_sum, Finset.sum_apply, LinearMap.smul_apply,
---   --   Basis.constr_apply_fintype, Basis.equivFun_apply, Basis.mk_repr, smul_ite, smul_zero,
---   --   Finset.sum_ite_irrel, Finset.sum_const_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte,
---   --   LinearMap.zero_apply] at hf
-
-
---   sorry
---   ) sorry
-
--- def eqqq (n : ℕ): Module.End R (Fin n → R) ≃ₐ[R] Matrix (Fin n) (Fin n) R :=
---   algEquivMatrix'
-
-abbrev Endtensor_algHom : Module.End R A ⊗[R] Module.End R B →ₐ[R] Module.End R (A ⊗[R] B) :=
-    Module.endTensorEndAlgHom
-
-open Algebra.TensorProduct in
-variable {R A B} in
-abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
-  (Algebra.TensorProduct.assoc R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
-  (congr (AlgEquiv.refl) (Algebra.TensorProduct.assoc R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
-  Algebra.TensorProduct.congr AlgEquiv.refl (congr (Algebra.TensorProduct.comm R _ _) AlgEquiv.refl) |>.trans
-  <| Algebra.TensorProduct.congr AlgEquiv.refl (Algebra.TensorProduct.assoc R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
-  <| Algebra.TensorProduct.assoc R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
-  <| congr AlgEquiv.refl <| opAlgEquiv R R A B
-
-lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
-  e ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) = (a ⊗ₜ b) ⊗ₜ op (a'.unop ⊗ₜ[R] b'.unop) := rfl
-
-lemma top_sqaure_comm' (A B : Azumaya R) (a : A) (a' : Aᵐᵒᵖ) (b : B) (b' : Bᵐᵒᵖ) :
-    ((TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
-    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
-    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) =
-    ((AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) := by
-  ext a0 b0
-  simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
-
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1000000 in
-lemma top_sqaure_comm (A B : Azumaya R) :
-    (TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
-    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
-    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))
-    = (AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e := by
-  ext aabb : 1
-  induction aabb using TensorProduct.induction_on with
-  | zero => rfl
-  | tmul aa bb =>
-    induction aa using TensorProduct.induction_on with
-    | zero => simp [TensorProduct.zero_tmul]
-    | tmul a1 a2 =>
-      induction bb using TensorProduct.induction_on with
-      | zero => simp [TensorProduct.zero_tmul]
-      | tmul b1 b2 => rw [top_sqaure_comm']
-      | add _ _ _ _ => simp_all [TensorProduct.tmul_add]
-    | add _ _ _ _ => simp_all [TensorProduct.add_tmul]
-  | add _ _ _ _ => simp_all [map_add]
-
-
-/--
-A ⊗ Aᵐᵒᵖ ⊗ B ⊗ B ᵐᵒᵖ --------> (A ⊗ B) ⊗ (A ⊗ B)ᵐᵒᵖ
-        |                              |
-        |                              |
-        |                              |
-        |                              |
-      f ⊗ g            ---->         f ⊗ g
-End R A ⊗ End R B ---------------> End R (A ⊗ B)
-    |     |                           |   |
-  i |     | j                     i'  |   |  j'
-    |     |                           |   |
-    |     |   `homTensorHomEquiv`     |   |
-End R Rⁿ ⊗ End R Rᵐ -------------> End R (Rⁿ ⊗ Rᵐ)
--/
-abbrev Endtensor_equiv [Module.Finite R A] [Module.Finite R B] [Module.Projective R A]
-  [Module.Projective R B]: Module.End R A ⊗[R] Module.End R B ≃ₐ[R] Module.End R (A ⊗[R] B) := sorry
-
-def EndRn_tensorequiv (n m : Type*) [Fintype m] [Fintype n]:
-  Module.End R (n → R) ⊗[R] Module.End R (m → R) ≃ₐ[R] Module.End R ((n → R) ⊗[R] (m → R)) :=
-  AlgEquiv.ofLinearEquiv (homTensorHomEquiv R (n → R) (m → R) (n → R) (m → R))
-  (by simp [Algebra.TensorProduct.one_def]) <| fun fg1 fg2 ↦ by
-  induction fg1 using TensorProduct.induction_on with
-  | zero => simp
-  | tmul f1 g1 =>
-    induction fg2 using TensorProduct.induction_on with
-    | zero => simp
-    | tmul f2 g2 => ext; simp
-    | add _ _ _ _ => simp_all [mul_add]
-  | add _ _ _ _ => simp_all [add_mul]
-
-lemma EndRn_tensorequiv_apply (n m : Type*) [Fintype m] [Fintype n] (f : Module.End R (n → R))
-    (g : Module.End R (m → R)): EndRn_tensorequiv R n m (f ⊗ₜ[R] g) = TensorProduct.map f g := by
-  simp [EndRn_tensorequiv]
-
--- open Module in
--- theorem Projective.exists_fin_free (P : Type v) [AddCommGroup P] [Module R P]
---     [Module.Projective R P] [fin : Module.Finite R P]: ∃(S : Finset P)
---     (i : P →ₗ[R] (S → R)) (s : (S → R) →ₗ[R] P) (_ : Function.Surjective s)
---     (_ : Function.Injective i), s.comp i = LinearMap.id := by
---   obtain ⟨S, hS⟩ := fin.fg_top
---   use S
---   have e1 := LinearEquiv.ofEq _ _ hS
---   have e2 := (Submodule.topEquiv (R := R) (M := P)).symm
---   use {
---     toFun := fun ⟨m, hm⟩ ↦ (fun ⟨i, hi⟩ ↦ mem_span_finset.1 hm|>.choose i)
---     map_add' := sorry
---     map_smul' := sorry
---   } ∘ₗ (e2.trans e1.symm).toLinearMap
-
-theorem exists_comp_eq_id_of_projective (M : Type v) [AddCommGroup M] [Module R M]
-    [Module.Finite R M] [Module.Projective R M] :
-    ∃ (n : ℕ) (f : (Fin n → R) →ₗ[R] M) (g : M →ₗ[R] Fin n → R),
-      Function.Surjective f ∧ Function.Injective g ∧ f ∘ₗ g = .id :=
-  have ⟨n, f, surj⟩ := Module.Finite.exists_fin' R M
-  have ⟨g, hfg⟩ := Module.projective_lifting_property f .id surj
-  ⟨n, f, g, surj, LinearMap.injective_of_comp_eq_id _ _ hfg, hfg⟩
-
-abbrev nn [Module.Finite R A] [Module.Projective R A]: ℕ :=
-  (Module.Finite.exists_comp_eq_id_of_projective R A).choose
-
-abbrev f0 [Module.Finite R A] [Module.Projective R A]: (Fin (nn R A) → R) →ₗ[R] A :=
-  (Module.Finite.exists_comp_eq_id_of_projective R A).choose_spec.choose
-
-abbrev g0 [Module.Finite R A] [Module.Projective R A]: A →ₗ[R] Fin (nn R A) → R :=
-  (Module.Finite.exists_comp_eq_id_of_projective R A).choose_spec.choose_spec.choose
-
-lemma f0_inj [Module.Finite R A] [Module.Projective R A]: Function.Surjective (f0 R A) :=
-  (Module.Finite.exists_comp_eq_id_of_projective R A).choose_spec.choose_spec.choose_spec|>.1
-
-lemma g0_inj [Module.Finite R A] [Module.Projective R A]: Function.Injective (g0 R A) :=
-  (Module.Finite.exists_comp_eq_id_of_projective R A).choose_spec.choose_spec.choose_spec|>.2.1
-
-lemma fg [Module.Finite R A] [Module.Projective R A]: (f0 R A) ∘ₗ (g0 R A) = LinearMap.id :=
-  (Module.Finite.exists_comp_eq_id_of_projective R A).choose_spec.choose_spec.choose_spec|>.2.2
-
-abbrev inclusion1 [Module.Finite R A] [Module.Projective R A]:
-  Module.End R A →ₗ[R] Module.End R ((Fin (nn R A)) → R) where
-    toFun := fun f ↦ (g0 R A) ∘ₗ f ∘ₗ (f0 R A)
-    map_add' := by simp [LinearMap.add_comp, LinearMap.comp_add]
-    map_smul' := by simp [LinearMap.smul_comp, LinearMap.comp_smul]
-
-abbrev projection1 [Module.Finite R A] [Module.Projective R A]:
-  Module.End R ((Fin (nn R A)) → R) →ₗ[R] Module.End R A where
-    toFun := fun f ↦ (f0 R A) ∘ₗ f ∘ₗ (g0 R A)
-    map_add' := by simp [LinearMap.add_comp, LinearMap.comp_add]
-    map_smul' := by simp [LinearMap.smul_comp, LinearMap.comp_smul]
-
-lemma inclusion1_projection1 [Module.Finite R A] [Module.Projective R A]:
-    (projection1 R A).comp (inclusion1 R A) = LinearMap.id := by
-  ext f : 1
-  simp [LinearMap.comp_assoc, fg]
-  rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp]
-
-lemma Tensor_include_project [Module.Finite R A] [Module.Projective R A] [Module.Finite R B]
-    [Module.Projective R B]:
-    (TensorProduct.map (projection1 R A) (projection1 R B)).comp (TensorProduct.map (inclusion1 R A)
-      (inclusion1 R B)) = LinearMap.id := by
-    simp [← TensorProduct.map_comp, inclusion1_projection1]
-
--- lemma TensorAB_is_directsummand [Module.Finite R A] [Module.Projective R A] [Module.Finite R B]
---     [Module.Projective R B]:
---     ∃(s1 : Module.End R (A ⊗[R] B) →ₗ[R] Module.End R ((nn R A → R) ⊗[R] (nn R B → R)))
---       (s2 : Module.End R ((nn R A → R) ⊗[R] (nn R B → R)) →ₗ[R] Module.End R (A ⊗[R] B)),
-
-abbrev inclusiononLeft [Module.Finite R A] [Module.Projective R A] [Module.Finite R B]
-    [Module.Projective R B]: Module.End R A ⊗[R] Module.End R B →ₗ[R]
-    Module.End R (Fin (nn R A) → R) ⊗[R] Module.End R (Fin (nn R B) → R):=
-  TensorProduct.map (inclusion1 R A) (inclusion1 R B)
-
-
--- lemma tensor_bij (A B : Azumaya R): Function.Bijective (AlgHom.mulLeftRight R (A ⊗[R] B)) :=
---   ⟨fun abab1 abab2 h ↦ by
---   induction abab1 using TensorProduct.induction_on with
---   | zero =>
---     induction abab2 using TensorProduct.induction_on with
---     | zero => rfl
---     | tmul ab2 ab2' =>
---       rw [DFunLike.ext_iff] at h
---       specialize h 1
---       simp only [map_zero, Algebra.TensorProduct.one_def, LinearMap.zero_apply,
---         AlgHom.mulLeftRight_apply] at h
---       induction ab2 using TensorProduct.induction_on with
---       | zero => exact zero_tmul _ _ |>.symm
---       | tmul a1 b1 =>
---         -- set ab22 := unop ab2'
---         -- change 0 = _ ⊗ₜ op ab22
---         -- induction ab2' using TensorProduct.induction_on with
---         -- | zero => rw [op_zero, tmul_zero]
---         -- | tmul a' b' =>
---         --   rw [Algebra.TensorProduct.tmul_mul_tmul, mul_one, mul_one] at h
---         --   -- change 0 = (a1 ⊗ₜ b1) * (a' ⊗ₜ b') at h
-
-
---         --   sorry
---         -- | add _ _ _ _ =>
---         sorry
---       | add _ _ _ _ => sorry
---     | add _ _ _ _ => sorry
---   | tmul ab ab' => sorry
---   | add _ _ _ _ => sorry
---   , sorry⟩
-
-def mul (A B : Azumaya R) : Azumaya R := {
-  __ := AlgebraCat.of R (A.carrier ⊗[R] B.carrier)
-  isAzumaya := {
-    out := Module.Projective.tensorProduct|>.out
-    eq_of_smul_eq_smul := Azumaya.FathfulSMul.tensor|>.eq_of_smul_eq_smul
-    fg_top := Module.Finite.tensorProduct R A B|>.fg_top
-    bij := by
-      sorry
-  }}
-
-
-
-
-
-
-end Azumaya
-
 section formathlib
 
-variable (R : Type u) [CommRing R] (M N P Q: Type v) [AddCommGroup M] [AddCommGroup N]
+variable (R : Type u) [CommRing R] (M N P Q: Type*) [AddCommGroup M] [AddCommGroup N]
   [Module R M] [Module R N] [Module.Finite R M] [Module.Finite R N] [Module.Projective R M]
   [Module.Projective R N] [AddCommGroup P] [AddCommGroup Q] [Module R P] [Module R Q]
 
@@ -414,6 +109,14 @@ lemma tensor_inclusion2_inj : Function.Injective (tensor_inclusion2 R (M := M) (
   exact Function.LeftInverse.injective (g := tensor_projection2 R P Q)
     <| DFunLike.congr_fun <| tensor_projection2_inclusion2 R M N P Q
 
+/--          `TensorProduct.homTensorHomMap`
+Hom(M, P) ⊗ Hom(N, Q) ---------------> Hom(M ⊗ N, P ⊗ Q)
+    |       |                             |      |
+ i  |       |  j                       i' |      |  j'
+    |       |                             |      |
+    |       |                             |      |
+Hom(Rⁿ, P) ⊗ Hom(Rᵐ, Q) -------------> Hom(Rⁿ ⊗ Rᵐ, P ⊗ Q)
+-/
 lemma comm_square2: (homTensorHomEquiv R (Fin (nn R M) → R) (Fin (nn R N) → R) P Q).toLinearMap ∘ₗ
     tensor_inclusion1 R M N P Q =
     tensor_inclusion2 R P Q ∘ₗ TensorProduct.homTensorHomMap R M N P Q := by
@@ -478,14 +181,449 @@ lemma homTensorHomMap_surj: Function.Surjective (TensorProduct.homTensorHomMap R
   exact CharacterModule.surjective_of_dual_injective LinearMap.id fun ⦃a₁ a₂⦄ a ↦ a
 
 
-/--          `TensorProduct.homTensorHomMap`
-Hom(M, P) ⊗ Hom(N, Q) ---------------> Hom(M ⊗ N, P ⊗ Q)
-    |       |                             |      |
- i  |       |  j                       i' |      |  j'
-    |       |                             |      |
-    |       |                             |      |
-Hom(Rⁿ, P) ⊗ Hom(Rᵐ, Q) -------------> Hom(Rⁿ ⊗ Rᵐ, P ⊗ Q)
--/
-theorem todo : 1 = 1 := rfl
-
 end formathlib
+
+open MulOpposite
+
+-- @[ext]
+-- structure Azumaya (R : Type u) [CommRing R] where
+--   carrier : Type v
+--   [isRing : Ring carrier]
+--   [isAlgebra : Algebra R carrier]
+--   isAzumaya : IsAzumaya R carrier
+
+structure Azumaya (R : Type u) [CommRing R] extends AlgebraCat R where
+  isAzumaya : IsAzumaya R carrier
+
+@[coe]
+instance : CoeSort (Azumaya R) (Type v) where
+  coe s := s.carrier
+
+attribute [instance] Azumaya.isAzumaya
+
+def Azumaya.IsMoritaEquivalent : Azumaya R → Azumaya R → Prop :=
+    fun A B ↦ _root_.IsMoritaEquivalent R A.carrier B.carrier
+
+lemma Azumaya.IsMoritaEquivalent.iff {A B : Azumaya R} :
+  Azumaya.IsMoritaEquivalent R A B ↔ _root_.IsMoritaEquivalent R A.carrier B.carrier :=
+  Iff.rfl
+
+abbrev AzuMorita.equiv : Equivalence (Azumaya.IsMoritaEquivalent R) where
+  refl _ := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.refl R
+  symm h := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.symm R
+    <| Azumaya.IsMoritaEquivalent.iff R|>.1 h
+  trans h1 h2 := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.trans R
+    (Azumaya.IsMoritaEquivalent.iff R|>.2 h1) <| Azumaya.IsMoritaEquivalent.iff R|>.2 h2
+
+abbrev AzumayaSetoid : Setoid (Azumaya R) where
+  r := Azumaya.IsMoritaEquivalent R
+  iseqv := AzuMorita.equiv R
+
+namespace Azumaya
+
+lemma ext : ∀ {A B : Azumaya R} (h : A.carrier = B.carrier), A = B := by
+  intros
+  sorry
+
+variable (A B : Type v) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
+instance [Module.Finite R A] [Module.Finite R B] :
+    Module.Finite R (A ⊗[R] B) := by exact Module.Finite.tensorProduct R A B
+
+variable {R A B} in
+instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
+    [FaithfulSMul R A] [FaithfulSMul R B] :
+    FaithfulSMul R (A ⊗[R] B) where
+  eq_of_smul_eq_smul {r1 r2} eq := by
+    specialize eq 1
+    rw [Algebra.TensorProduct.one_def, TensorProduct.smul_tmul',
+      TensorProduct.smul_tmul'] at eq
+    have := Algebra.TensorProduct.includeLeft_injective (R := R) (S := R)
+      (fun r1 r2 h ↦ by
+        rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one] at h
+        exact eq_of_smul_eq_smul (M := R) (α := B) (m₁ := r1) (m₂ := r2) (by
+          intro b
+          rw [← one_mul b, ← smul_mul_assoc, h, smul_mul_assoc, one_mul])) eq
+    exact eq_of_smul_eq_smul (M := R) (α := A) (m₁ := r1) (m₂ := r2) <|
+      fun a ↦ by rw [← one_mul a, ← smul_mul_assoc, this, smul_mul_assoc, one_mul]
+
+abbrev u (n : ℕ) : Fin n → (Fin n → R) := fun i ↦ Function.update (0 : Fin n → R) i 1
+
+abbrev v (n : ℕ): Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
+  rw [Fintype.linearIndependent_iff]
+  refine fun f hf j ↦ ?_
+  apply congrFun at hf
+  specialize hf j
+  change (∑ _, _ • Function.update _ _ _) _ = _ at hf
+  simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
+    mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
+  exact hf) <| fun x _ ↦ by
+  refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
+  change ∑ i : Fin n, _ • Function.update _ _ _ = x
+  ext j
+  simp [Function.update_apply]
+
+abbrev End_basis' (n : ℕ) : Fin n × Fin n → (Module.End R (Fin n → R)) := fun ⟨i, r⟩ ↦
+  Basis.constr (v R n) R <| fun j ↦ if i = r then v R n j else 0
+
+-- lemma End_basis'_apply (n : ℕ) (i r : Fin n) :
+--   (End_basis' R n) (i, r) =
+--     Basis.constr (v R n) R (fun j ↦ if i = r then v R n j else 0) := rfl
+
+-- abbrev _root_.Module.End_basis (n : ℕ): Basis (Fin n × Fin n) R (Module.End R (Fin n → R)) :=
+--   Basis.mk (v := End_basis' R n) (by
+--   rw [Fintype.linearIndependent_iff]
+--   intro f hf ⟨i0, r0⟩
+--   rw [Fintype.sum_prod_type] at hf
+--   simp [End_basis'_apply R n] at hf
+--   rw [LinearMap.ext_iff] at hf
+--   specialize hf (v R n i0)
+--   simp only [Basis.coe_mk, LinearMap.coeFn_sum, Finset.sum_apply, LinearMap.smul_apply,
+--     Basis.constr_apply_fintype, Basis.equivFun_apply, Basis.mk_repr, smul_ite, smul_zero,
+--     Finset.sum_ite_irrel, Finset.sum_const_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte,
+--     LinearMap.zero_apply] at hf
+--   -- rw [LinearMap.pi_ext_iff] at hf
+--   -- simp only [LinearMap.coeFn_sum, Finset.sum_apply, LinearMap.smul_apply,
+--   --   Basis.constr_apply_fintype, Basis.equivFun_apply, Basis.mk_repr, smul_ite, smul_zero,
+--   --   Finset.sum_ite_irrel, Finset.sum_const_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte,
+--   --   LinearMap.zero_apply] at hf
+
+
+--   sorry
+--   ) sorry
+
+-- def eqqq (n : ℕ): Module.End R (Fin n → R) ≃ₐ[R] Matrix (Fin n) (Fin n) R :=
+--   algEquivMatrix'
+
+abbrev Endtensor_algHom : Module.End R A ⊗[R] Module.End R B →ₐ[R] Module.End R (A ⊗[R] B) :=
+    Module.endTensorEndAlgHom
+
+open Algebra.TensorProduct in
+variable {R A B} in
+abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
+  (Algebra.TensorProduct.assoc R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
+  (congr (AlgEquiv.refl) (Algebra.TensorProduct.assoc R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
+  Algebra.TensorProduct.congr AlgEquiv.refl (congr (Algebra.TensorProduct.comm R _ _) AlgEquiv.refl) |>.trans
+  <| Algebra.TensorProduct.congr AlgEquiv.refl (Algebra.TensorProduct.assoc R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
+  <| Algebra.TensorProduct.assoc R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
+  <| congr AlgEquiv.refl <| opAlgEquiv R R A B
+
+lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
+  e ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) = (a ⊗ₜ b) ⊗ₜ op (a'.unop ⊗ₜ[R] b'.unop) := rfl
+
+lemma top_square_comm' (A B : Azumaya R) (a : A) (a' : Aᵐᵒᵖ) (b : B) (b' : Bᵐᵒᵖ) :
+    ((TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) =
+    ((AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) := by
+  ext a0 b0
+  simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
+
+set_option synthInstance.maxHeartbeats 80000 in
+set_option maxHeartbeats 1000000 in
+lemma top_square_comm (A B : Azumaya R) :
+    (TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))
+    = (AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e := by
+  ext aabb : 1
+  induction aabb using TensorProduct.induction_on with
+  | zero => rfl
+  | tmul aa bb =>
+    induction aa using TensorProduct.induction_on with
+    | zero => simp [TensorProduct.zero_tmul]
+    | tmul a1 a2 =>
+      induction bb using TensorProduct.induction_on with
+      | zero => simp [TensorProduct.zero_tmul]
+      | tmul b1 b2 => rw [top_square_comm']
+      | add _ _ _ _ => simp_all [TensorProduct.tmul_add]
+    | add _ _ _ _ => simp_all [TensorProduct.add_tmul]
+  | add _ _ _ _ => simp_all [map_add]
+
+
+/--
+A ⊗ Aᵐᵒᵖ ⊗ B ⊗ B ᵐᵒᵖ --------> (A ⊗ B) ⊗ (A ⊗ B)ᵐᵒᵖ
+        |                              |
+        |                              |
+        |                              |
+        |                              |
+      f ⊗ g            ---->         f ⊗ g
+End R A ⊗ End R B ---------------> End R (A ⊗ B)
+    |     |                           |   |
+  i |     | j                     i'  |   |  j'
+    |     |                           |   |
+    |     |   `homTensorHomEquiv`     |   |
+End R Rⁿ ⊗ End R Rᵐ -------------> End R (Rⁿ ⊗ Rᵐ)
+-/
+lemma bij_homtensorhom (A B : Azumaya.{u, v} R):
+    Function.Bijective (TensorProduct.homTensorHomMap R A B A B) :=
+  ⟨homTensorHomMap_inj R A B A B, homTensorHomMap_surj R A B A B⟩
+
+abbrev e1 (A B : Azumaya.{u, v} R): (Module.End R A ⊗[R] Module.End R B) ≃ₗ[R]
+    (Module.End R (A ⊗[R] B)) :=
+  LinearEquiv.ofBijective (TensorProduct.homTensorHomMap R A B A B) <|
+    bij_homtensorhom R A B
+
+abbrev e2 (A B : Azumaya R) := (Algebra.TensorProduct.congr
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))
+
+lemma top_square_comm_apply (A B : Azumaya R) (x : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] (B ⊗[R] Bᵐᵒᵖ)):
+    (e1 R A B) (e2 R A B x) = (AlgHom.mulLeftRight R (A ⊗[R] B)) (e.toAlgHom x) := by
+  erw [← AlgHom.comp_apply, AlgHom.coe_comp, ← top_square_comm]
+  rfl
+
+lemma bij_mulLeftRight (A B : Azumaya.{u, v} R):
+    Function.Bijective (AlgHom.mulLeftRight R (A ⊗[R] B)) :=
+  Function.Bijective.of_comp_iff (AlgHom.mulLeftRight R (A ⊗[R] B))
+    (e (R := R) (A := A) (B := B)).bijective|>.1 <| by
+  rw [← top_square_comm]
+  change Function.Bijective (e1 R A B ∘ e2 R A B)
+  exact (e1 R A B).bijective.comp (e2 R A B).bijective
+
+abbrev mul (A B : Azumaya R) : Azumaya R := {
+  __ := AlgebraCat.of R (A.carrier ⊗[R] B.carrier)
+  isAzumaya := {
+    out := Module.Projective.tensorProduct|>.out
+    eq_of_smul_eq_smul := Azumaya.FathfulSMul.tensor|>.eq_of_smul_eq_smul
+    fg_top := Module.Finite.tensorProduct R A B|>.fg_top
+    bij := bij_mulLeftRight R A B
+  }}
+
+instance : Mul (Azumaya R) where
+  mul A B := mul R A B
+
+lemma mul_coe (A B : Azumaya R): (A * B) =
+    ⟨AlgebraCat.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
+
+instance : One (Azumaya R) where
+  one := ⟨.of R R, IsAzumaya_R R⟩
+
+-- lemma mul_one' (A : Azumaya R): A * 1 = A := by
+--   change mul R A 1 = A
+--   simp [mul]
+--   change ⟨.of R (A ⊗[R] R), _⟩ = A
+
+--   sorry
+
+-- instance : Monoid (Azumaya R) where
+--   mul_assoc := sorry
+--   one_mul := sorry
+--   mul_one := sorry
+
+instance : FaithfulSMul R Rᵐᵒᵖ where
+  eq_of_smul_eq_smul {r1 r2} hr := by
+    specialize hr 1
+    change op _ = op _ at hr
+    simp only [unop_one, smul_eq_mul, mul_one, op_inj] at hr
+    exact hr
+
+variable {R A B} in
+lemma _root_.FaithfulSMul.ofAlgEquiv [FaithfulSMul R A] (e : A ≃ₐ[R] B) :
+    FaithfulSMul R B where
+  eq_of_smul_eq_smul {r1 r2} h12 := by
+    specialize h12 1
+    rw [← e.apply_symm_apply 1, ← map_smul, map_one e.symm, ← map_smul] at h12
+    have : ∀ (a : A), r1 • a = r2 • a := fun a ↦ by
+      rw [← one_mul a, ← smul_mul_assoc, e.injective h12, smul_mul_assoc]
+    exact eq_of_smul_eq_smul this
+
+example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N):
+  Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
+/--
+A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
+  |                        |
+  |                        |
+  |                        |
+  |                        |
+End R A   ------------> End R B
+
+-/
+lemma small_comm_square (e : A ≃ₐ[R] B):
+    (AlgHom.mulLeftRight R B).comp (Algebra.TensorProduct.congr e e.op).toAlgHom =
+    (e.toLinearEquiv.algConj).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
+  apply AlgHom.ext
+  intro a
+  induction a using TensorProduct.induction_on with
+  | zero => simp
+  | tmul a a' =>
+    ext
+    simp [AlgHom.mulLeftRight_apply, LinearEquiv.algConj, LinearEquiv.conj]
+  | add _ _ _ _ => simp_all [map_add]
+
+lemma _root_.IsAzumaya.ofAlgEquiv (e : A ≃ₐ[R] B) (hA : IsAzumaya R A) : IsAzumaya R B :=
+  let _ : Module.Projective R B := .of_equiv e.toLinearEquiv
+  let _ : FaithfulSMul R B := .ofAlgEquiv e
+  let _ : Module.Finite R B := .equiv e.toLinearEquiv
+  ⟨Function.Bijective.of_comp_iff (AlgHom.mulLeftRight R B)
+    (Algebra.TensorProduct.congr e e.op).bijective |>.1 <| by
+    erw [← AlgHom.coe_comp, small_comm_square]
+    simp [hA.bij]⟩
+
+abbrev inclusion' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M]: Module.End R M →ₗ[R] Module.End R (Fin (nn R M) → R) where
+  toFun := fun f ↦ g0 R M ∘ₗ f ∘ₗ f0 R M
+  map_add' := fun _ _ ↦ by simp [LinearMap.add_comp, LinearMap.comp_add]
+  map_smul' := fun _ _ ↦ by simp [LinearMap.smul_comp, LinearMap.comp_smul]
+
+abbrev projection' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M]: Module.End R (Fin (nn R M) → R) →ₗ[R] Module.End R M where
+  toFun := fun f ↦ f0 R M ∘ₗ f ∘ₗ g0 R M
+  map_add' := fun _ _ ↦ by simp [LinearMap.add_comp, LinearMap.comp_add]
+  map_smul' := fun _ _ ↦ by simp [LinearMap.smul_comp, LinearMap.comp_smul]
+
+lemma projection'_inclusion' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M]: projection' R M ∘ₗ inclusion' R M = LinearMap.id := by
+  ext f : 1
+  simp [LinearMap.comp_assoc, fg]
+  rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp]
+
+lemma projection'_surj (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M]: Function.Surjective (projection' R M) :=
+  Function.Surjective.of_comp (g := inclusion' R M) <| by
+  rw [← LinearMap.coe_comp, projection'_inclusion']
+  exact CharacterModule.surjective_of_dual_injective LinearMap.id fun ⦃a₁ a₂⦄ a ↦ a
+
+lemma _root_.Module.Projective.ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M]: Module.Projective R (Module.End R M) :=
+  .of_split (M := Module.End R (Fin (nn R M) → R)) (inclusion' R M) (projection' R M)
+    <| projection'_inclusion' R M
+
+instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M]:
+    FaithfulSMul R (Module.End R M) where
+  eq_of_smul_eq_smul {r1 r2} h12 := by
+    specialize h12 1
+    rw [LinearMap.ext_iff] at h12
+    simp only [LinearMap.smul_apply, LinearMap.one_apply] at h12
+    exact eq_of_smul_eq_smul h12
+
+/--
+End R M ⊗ (End R M)ᵐᵒᵖ ------------> End R (End R M)
+    |         |                        |      |
+    |         |                        |      |
+    |         |                        |      |
+    |         |                        |      |
+End R Rⁿ ⊗ (End R Rⁿ)ᵐᵒᵖ ----------> End R (End R Rⁿ)
+-/
+lemma comm_square_endend (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M]:
+  1 = 1 := sorry
+
+
+#check Basis.map
+
+/-
+E_ij ⊗ E_pqᵐᵒᵖ ↦ (E_mn ↦ E_ij * E_mn * E_pq = ?_)
+
+End R (M_n R) index by (a, b, c, d)
+
+E_ab ↦ _
+-/
+-- def test (n : ℕ) : Matrix (Fin n) (Fin n) R ⊗[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ →ₗ[R] Module.End R (Matrix (Fin n) (Fin n) R) :=
+--   Basis.constr (Basis.tensorProduct (Matrix.stdBasis R (Fin n) (Fin n))
+--   (Matrix.stdBasis R (Fin n) (Fin n) |>.map <| (opLinearEquiv ..)))
+--   (Module.End R (Matrix (Fin n) (Fin n) R)) _
+-- -- Basis.equiv (Basis.tensorProduct (Matrix.stdBasis R (Fin n) (Fin n))
+-- --   (Matrix.stdBasis R (Fin n) (Fin n) |>.map <| (Matrix.transposeLinearEquiv _ _ R R ≪≫ₗ opLinearEquiv ..)))
+-- --   (Basis.map (Matrix.stdBasis R _ _) (LinearMap.toMatrix (Matrix.stdBasis R _ _) (Matrix.stdBasis R _ _)).symm)
+-- --   (Equiv.refl _)
+
+-- example (n : ℕ) : (test R n).toLinearMap = (AlgHom.mulLeftRight R _).toLinearMap := by
+--   apply Basis.ext (Basis.tensorProduct (Matrix.stdBasis R (Fin n) (Fin n))
+--   (Matrix.stdBasis R (Fin n) (Fin n) |>.map <| (Matrix.transposeLinearEquiv _ _ R R ≪≫ₗ opLinearEquiv ..)))
+--   rintro ⟨⟨a, b⟩, c, d⟩
+--   simp only [LinearEquiv.coe_coe, AlgHom.toLinearMap_apply]
+--   erw [Basis.equiv_apply]
+--   simp only [LinearMap.toMatrix_symm, Equiv.refl_apply, Basis.map_apply, Basis.tensorProduct_apply,
+--     LinearEquiv.trans_apply, Matrix.transposeLinearEquiv_apply, AddEquiv.toEquiv_eq_coe,
+--     Equiv.toFun_as_coe, EquivLike.coe_coe, Matrix.transposeAddEquiv_apply, coe_opLinearEquiv]
+--   ext M i j
+--   rw [AlgHom.mulLeftRight_apply]
+--   simp? [Matrix.mul_apply, Finset.mul_sum, Finset.sum_mul]
+--   simp? [Matrix.toLin_apply, Matrix.stdBasis_eq_stdBasisMatrix, Matrix.mulVec_stdBasisMatrix]
+--   -- simp? [Matrix.StdBasisBasisMatrix.mul_left_apply]
+--   rw [Finset.sum_comm]
+--   rw [← Fintype.sum_prod_type', Matrix.sum_apply]
+--   refine Finset.sum_congr rfl fun ⟨p,q⟩ _ => ?_
+--   simp? [Function.update]
+--   split_ifs with H
+--   · rcases H with ⟨rfl, rfl⟩
+--     simp? [Matrix.stdBasis, Matrix.stdBasisMatrix, Pi.single, Function.update]
+--     sorry
+-- #exit
+--   erw [Basis.equiv_apply]
+--   erw [Basis.equiv_apply]
+--   simp only [LinearMap.toMatrix_symm, Equiv.refl_apply, Basis.map_apply, AlgHom.toLinearMap_apply]
+--   ext M a b
+--   simp only [Matrix.toLin_apply]
+--   rw [Basis.tensorProduct_apply, Basis.map_apply, AlgHom.mulLeftRight_apply]
+--   simp? [Matrix.mul_apply, Finset.sum_mul, Finset.mul_sum]
+--   rw [Finset.sum_comm]
+--   rw [← Fintype.sum_prod_type']
+--   rw [Matrix.sum_apply]
+--   refine Finset.sum_congr rfl fun j _ => ?_
+--   simp only [Matrix.smul_apply, smul_eq_mul]
+--   rw [Matrix.stdBasis_eq_stdBasisMatrix]
+
+--   rw [Matrix.mulVec_stdBasisMatrix]
+--   simp only [one_mul]
+--   by_cases eq : j = i.1
+--   · subst eq
+--     simp only [Function.update_self]
+--     rw [Matrix.stdBasis_eq_stdBasisMatrix, Matrix.stdBasis_eq_stdBasisMatrix]
+--     simp only [Matrix.stdBasis, Basis.map_repr, LinearEquiv.trans_apply,
+--       Matrix.coe_ofLinearEquiv_symm, Basis.repr_reindex, Finsupp.mapDomain_equiv_apply,
+--       Equiv.sigmaEquivProd_symm_apply, Pi.basis_repr, Pi.basisFun_repr, Matrix.of_symm_apply,
+--       Matrix.stdBasisMatrix, Matrix.of_apply, mul_ite, mul_one, mul_zero, ite_mul, one_mul,
+--       zero_mul]
+
+--     erw [Matrix.mulVec_stdBasisMatrix]
+--     simp only [one_mul]
+--     by_cases eq' : i.1 = (a, b)
+--     · rw [eq']
+--       simp only [Function.update_self]
+--       rw [Matrix.stdBasis_eq_stdBasisMatrix, Matrix.StdBasisMatrix.apply_same]
+--       simp only [mul_one, one_mul]
+--     sorry
+--   -- simp_rw [Matrix.mulVec_stdBasis_apply]
+--   sorry
+
+
+def test2 (n : ℕ): Matrix (Fin n) (Fin n) (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ ≃ₐ[R]
+    Module.End R (Matrix (Fin n) (Fin n) R) :=
+
+  sorry
+#check matrixEquivMatrixMop
+/--
+End R Rⁿ ⊗ (End R Rⁿ)ᵐᵒᵖ -----------> End R (End R Rⁿ)
+    |         |                        |
+    |         |                        |
+    |         |                        |
+    |         |                        |
+    |         |                        |
+   MnR ⊗ (MnR)ᵐᵒᵖ     ------------->  End R (MnR)
+
+-/
+lemma matrix_bij (n : ℕ): Function.Bijective <| AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R) := sorry
+
+
+
+abbrev ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M] [Module.Projective R M]
+  [FaithfulSMul R M]: Azumaya R := {
+  __ := AlgebraCat.of R (Module.End R M)
+  isAzumaya := {
+    out := Module.Projective.ofEnd R M|>.out
+    fg_top := Module.Finite.of_surjective (projection' R M)
+      (projection'_surj R M) |>.fg_top
+    bij := by
+      simp
+      sorry
+  }}
+
+abbrev RequivEnd : R ≃ₐ[R] Module.End R R := AlgEquiv.ofBijective (Algebra.lsmul _ _ _)
+  ⟨fun r1 r2 h ↦ by
+    rw [LinearMap.ext_iff] at h
+    specialize h 1
+    simp only [Algebra.lsmul_coe, smul_eq_mul, mul_one] at h
+    exact h, fun f ↦ ⟨f 1, by ext; simp⟩⟩
+
+end Azumaya

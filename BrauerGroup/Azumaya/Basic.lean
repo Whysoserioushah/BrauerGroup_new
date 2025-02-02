@@ -4,14 +4,13 @@ import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
 import BrauerGroup.Azumaya.Defs
 import Mathlib.Algebra.Central.Matrix
 import BrauerGroup.LemmasAboutSimpleRing
+import BrauerGroup.matrixkronecker
 
 universe u v
 
+section Field
+
 open TensorProduct
-
-section Morita
-
-end Morita
 
 variable (K : Type u) [Field K]
 
@@ -159,3 +158,95 @@ theorem IsMorita_iff_IsBrauer (A B : CSA.{u, v} K):
   haveI : IsArtinianRing A := .of_finite K A
   haveI : IsArtinianRing B := .of_finite K B
   IsMorita_iff_IsBrauer' K A B
+
+end Field
+
+section Matrix
+
+open scoped TensorProduct
+
+variable (R : Type u) [CommRing R]
+
+instance (n : ℕ) [NeZero n]: FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
+  eq_of_smul_eq_smul {r1 r2} h12 := by
+    specialize h12 (1 : Matrix _ _ _)
+    rw [← Matrix.ext_iff] at h12
+    specialize h12 ⟨0, Nat.pos_of_neZero n⟩ ⟨0, Nat.pos_of_neZero _⟩
+    simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one] at h12
+    exact h12
+
+open MulOpposite in
+abbrev matrixAlgEquivMatrixMop (n : ℕ):
+  Matrix (Fin n) (Fin n) R ≃ₐ[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ :=
+  (AlgEquiv.toOpposite R R).mapMatrix.trans <| AlgEquiv.ofRingEquiv
+  (f := matrixEquivMatrixMop n R) <|
+  fun r ↦ by
+    simp [matrixEquivMatrixMop_apply]
+    ext i j
+    simp [Matrix.algebraMap_matrix_apply]
+    split_ifs with h1 h2 h3 <;> tauto
+
+variable (n : ℕ) in
+noncomputable abbrev e1 : Module.End R (Matrix (Fin n) (Fin n) R) ≃ₐ[R]
+    Matrix (Fin n × Fin n) (Fin n × Fin n) R := LinearMap.toMatrixAlgEquiv
+  (M₁ := Matrix (Fin n) (Fin n) R) (Matrix.stdBasis _ _ _)
+
+noncomputable abbrev e2 (n : ℕ) : (Matrix (Fin n) (Fin n) R) ⊗[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ
+    ≃ₐ[R] (Matrix (Fin n) (Fin n) R) ⊗[R] (Matrix (Fin n) (Fin n) R) :=
+  Algebra.TensorProduct.congr (AlgEquiv.refl) <| (matrixAlgEquivMatrixMop R n).symm
+
+noncomputable abbrev e3 (n : ℕ): Matrix (Fin n) (Fin n) R ⊗[R] Matrix (Fin n) (Fin n) R ≃ₐ[R]
+    Matrix (Fin n × Fin n) (Fin n × Fin n) R :=
+  (MatrixAlgebra.TensorEquiv R R R _ _).trans <| Algebra.TensorProduct.lid R R|>.mapMatrix
+
+/--
+          `AlgHom.mulLeftRight`
+MₙR ⊗ MₙRᵐᵒᵖ -------------> End R (MₙR)
+  |                          ^
+  | `e2`                     | `e1.symm`
+  V                          |
+MnR ⊗ MnR  ---------------> M\_{n × n} R
+              `e3`
+-/
+lemma comm_matrix_square (n : ℕ):
+    (e1 R n).toAlgHom.comp (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)) =
+    ((e2 R n).trans (e3 R n)).toAlgHom := by
+
+  · sorry
+  -- · sorry
+
+
+
+abbrev matrix (n : ℕ) [NeZero n]:
+  IsAzumaya R (Matrix (Fin n) (Fin n) R) :=
+  ⟨sorry⟩
+
+noncomputable abbrev mopAlgEquivEnd: Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
+  AlgEquiv.ofRingEquiv (f := mopEquivEnd R) <| fun r ↦ by
+    ext; simp [mopEquivEnd]
+
+noncomputable abbrev tensorEquivEnd : R ⊗[R] Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
+  Algebra.TensorProduct.lid R Rᵐᵒᵖ|>.trans <| mopAlgEquivEnd R
+
+lemma equal_mulLeftRight: tensorEquivEnd R = AlgHom.mulLeftRight R R := by
+  ext r
+  simp [mopEquivEnd, AlgHom.mulLeftRight_apply]
+
+lemma bij_Rtensor: Function.Bijective (AlgHom.mulLeftRight R R) := by
+  rw [← equal_mulLeftRight]
+  exact (tensorEquivEnd R).bijective
+
+instance : FaithfulSMul R R where
+  eq_of_smul_eq_smul {r1 r2} hr := by
+    specialize hr 1
+    simp only [smul_eq_mul, mul_one] at hr
+    exact hr
+
+theorem IsAzumaya_R: IsAzumaya R R where
+  bij := bij_Rtensor R
+
+end Matrix
+
+/-!
+Mn(MnR)ᵐᵒᵖ ≃ End R (MnR)
+-/
