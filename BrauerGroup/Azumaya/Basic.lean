@@ -186,41 +186,6 @@ abbrev matrixAlgEquivMatrixMop (n : ℕ):
     simp [Matrix.algebraMap_matrix_apply]
     split_ifs with h1 h2 h3 <;> tauto
 
-variable (n : ℕ) in
-noncomputable abbrev e1 : Module.End R (Matrix (Fin n) (Fin n) R) ≃ₐ[R]
-    Matrix (Fin n × Fin n) (Fin n × Fin n) R := LinearMap.toMatrixAlgEquiv
-  (M₁ := Matrix (Fin n) (Fin n) R) (Matrix.stdBasis _ _ _)
-
-noncomputable abbrev e2 (n : ℕ) : (Matrix (Fin n) (Fin n) R) ⊗[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ
-    ≃ₐ[R] (Matrix (Fin n) (Fin n) R) ⊗[R] (Matrix (Fin n) (Fin n) R) :=
-  Algebra.TensorProduct.congr (AlgEquiv.refl) <| (matrixAlgEquivMatrixMop R n).symm
-
-noncomputable abbrev e3 (n : ℕ): Matrix (Fin n) (Fin n) R ⊗[R] Matrix (Fin n) (Fin n) R ≃ₐ[R]
-    Matrix (Fin n × Fin n) (Fin n × Fin n) R :=
-  (MatrixAlgebra.TensorEquiv R R R _ _).trans <| Algebra.TensorProduct.lid R R|>.mapMatrix
-
-/--
-          `AlgHom.mulLeftRight`
-MₙR ⊗ MₙRᵐᵒᵖ -------------> End R (MₙR)
-  |                          ^
-  | `e2`                     | `e1.symm`
-  V                          |
-MnR ⊗ MnR  ---------------> M\_{n × n} R
-              `e3`
--/
-lemma comm_matrix_square (n : ℕ):
-    (e1 R n).toAlgHom.comp (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)) =
-    ((e2 R n).trans (e3 R n)).toAlgHom := by
-
-  · sorry
-  -- · sorry
-
-
-
-abbrev matrix (n : ℕ) [NeZero n]:
-  IsAzumaya R (Matrix (Fin n) (Fin n) R) :=
-  ⟨sorry⟩
-
 noncomputable abbrev mopAlgEquivEnd: Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
   AlgEquiv.ofRingEquiv (f := mopEquivEnd R) <| fun r ↦ by
     ext; simp [mopEquivEnd]
@@ -245,8 +210,53 @@ instance : FaithfulSMul R R where
 theorem IsAzumaya_R: IsAzumaya R R where
   bij := bij_Rtensor R
 
-end Matrix
+noncomputable section
 
-/-!
-Mn(MnR)ᵐᵒᵖ ≃ End R (MnR)
--/
+open MulOpposite Matrix
+
+abbrev Mat.inv (n : ℕ): Module.End R (Matrix (Fin n) (Fin n) R) →ₗ[R]
+    Matrix (Fin n) (Fin n) R ⊗[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
+  toFun := fun f ↦ ∑ ⟨⟨i, j⟩, k, l⟩ : (Fin n × Fin n) × Fin n × Fin n,
+    f (stdBasisMatrix j k 1) i l • (stdBasisMatrix i j 1) ⊗ₜ[R] op (stdBasisMatrix k l 1)
+  map_add' := fun f1 f2 ↦ by
+    simp [add_smul, Finset.sum_add_distrib]
+  map_smul' := fun r f ↦ by
+    simp [MulAction.mul_smul, Finset.smul_sum]
+
+lemma stdBasisMatrix.eq (n : ℕ) (i j : Fin n): stdBasisMatrix i j (1 : R) = of (fun i' j' => if i = i' ∧ j = j' then 1 else 0) := rfl
+
+lemma Mat.inv_toFun1' (n : ℕ):
+    (Mat.inv R n).comp (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)).toLinearMap = .id :=
+  Basis.ext (Basis.tensorProduct (Matrix.stdBasis _ _ _) ((Matrix.stdBasis _ _ _).map (opLinearEquiv ..)))
+  fun ⟨⟨i0, j0⟩, k0, l0⟩ ↦  by
+    simp [stdBasis_eq_stdBasisMatrix, AlgHom.mulLeftRight_apply,
+      stdBasisMatrix, ite_and, mul_apply, Fintype.sum_prod_type]
+
+lemma Mat.inv_toFun2' (n : ℕ) :
+    (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)).toLinearMap.comp (Mat.inv R n) = .id := by
+  ext f : 1
+  apply Basis.ext (Matrix.stdBasis _ _ _)
+  intro ⟨i, j⟩
+  simp [AlgHom.mulLeftRight_apply, stdBasis_eq_stdBasisMatrix]
+  ext k l
+  simp [sum_apply, mul_apply, Finset.sum_mul, Finset.mul_sum, stdBasisMatrix,
+    Fintype.sum_prod_type, ite_and]
+
+lemma Mat.bij (n : ℕ): Function.Bijective (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)) :=
+  ⟨Function.HasLeftInverse.injective ⟨Mat.inv R n, DFunLike.congr_fun (Mat.inv_toFun1' R n)⟩,
+  Function.HasRightInverse.surjective ⟨Mat.inv R n, DFunLike.congr_fun (Mat.inv_toFun2' R n)⟩⟩
+
+end
+
+instance (n : ℕ) [NeZero n]: FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
+  eq_of_smul_eq_smul {r1 r2} h := by
+    specialize h 1
+    rw [← Matrix.ext_iff] at h
+    specialize h ⟨0, Nat.pos_of_neZero n⟩ ⟨0, Nat.pos_of_neZero n⟩
+    simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one] at h
+    exact h
+
+abbrev IsAzumaya.matrix (n : ℕ) [NeZero n]: IsAzumaya R (Matrix (Fin n) (Fin n) R) where
+  bij := Mat.bij R n
+
+end Matrix

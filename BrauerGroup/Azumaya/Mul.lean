@@ -221,10 +221,6 @@ abbrev AzumayaSetoid : Setoid (Azumaya R) where
 
 namespace Azumaya
 
-lemma ext : ∀ {A B : Azumaya R} (h : A.carrier = B.carrier), A = B := by
-  intros
-  sorry
-
 variable (A B : Type v) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
 instance [Module.Finite R A] [Module.Finite R B] :
     Module.Finite R (A ⊗[R] B) := by exact Module.Finite.tensorProduct R A B
@@ -398,18 +394,6 @@ lemma mul_coe (A B : Azumaya R): (A * B) =
 instance : One (Azumaya R) where
   one := ⟨.of R R, IsAzumaya_R R⟩
 
--- lemma mul_one' (A : Azumaya R): A * 1 = A := by
---   change mul R A 1 = A
---   simp [mul]
---   change ⟨.of R (A ⊗[R] R), _⟩ = A
-
---   sorry
-
--- instance : Monoid (Azumaya R) where
---   mul_assoc := sorry
---   one_mul := sorry
---   mul_one := sorry
-
 instance : FaithfulSMul R Rᵐᵒᵖ where
   eq_of_smul_eq_smul {r1 r2} hr := by
     specialize hr 1
@@ -488,6 +472,10 @@ lemma _root_.Module.Projective.ofEnd (M : Type v) [AddCommGroup M] [Module R M] 
   .of_split (M := Module.End R (Fin (nn R M) → R)) (inclusion' R M) (projection' R M)
     <| projection'_inclusion' R M
 
+instance _root_.Module.Finite.End (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M]: Module.Finite R (Module.End R M) :=
+  Module.Finite.of_surjective (projection' R M) (projection'_surj R M)
+
 instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M]:
     FaithfulSMul R (Module.End R M) where
   eq_of_smul_eq_smul {r1 r2} h12 := by
@@ -496,6 +484,66 @@ instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M]:
     simp only [LinearMap.smul_apply, LinearMap.one_apply] at h12
     exact eq_of_smul_eq_smul h12
 
+abbrev MatrixAlg (n : ℕ) [NeZero n]: Azumaya R := {
+  __ := AlgebraCat.of R (_root_.Matrix (Fin n) (Fin n) R)
+  isAzumaya := IsAzumaya.matrix R n }
+
+abbrev EndRn (n : ℕ) [NeZero n]: Azumaya R := {
+  __ := AlgebraCat.of R (Module.End R (Fin n → R))
+  isAzumaya := IsAzumaya.ofAlgEquiv R _ _
+    LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R n
+}
+
+variable (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M] [Nontrivial M]
+
+open MulOpposite
+
+abbrev tensor_inclusion1' : (Module.End R M) ⊗[R] (Module.End R M)ᵐᵒᵖ →ₗ[R]
+    (Module.End R (Fin (nn R M) → R)) ⊗[R] (Module.End R (Fin (nn R M) → R))ᵐᵒᵖ :=
+  TensorProduct.map (inclusion' R M) <|
+    (opLinearEquiv R).toLinearMap ∘ₗ (inclusion' R M) ∘ₗ (opLinearEquiv R).symm.toLinearMap
+
+abbrev tensor_projection1': (Module.End R (Fin (nn R M) → R)) ⊗[R] (Module.End R (Fin (nn R M) → R))ᵐᵒᵖ →ₗ[R]
+    (Module.End R M) ⊗[R] (Module.End R M)ᵐᵒᵖ :=
+  TensorProduct.map (projection' R M) <|
+    (opLinearEquiv R).toLinearMap ∘ₗ (projection' R M) ∘ₗ (opLinearEquiv R).symm.toLinearMap
+
+omit [Nontrivial M] in
+lemma tensor_projection_inclusion1': tensor_projection1' R M ∘ₗ tensor_inclusion1' R M = .id := by
+  ext f g
+  simp [LinearMap.comp_assoc, fg]
+  rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp, ← LinearMap.comp_assoc,
+    fg, LinearMap.id_comp, op_unop]
+
+omit [Nontrivial M] in
+lemma tensor_inclusion1'_inj: Function.Injective (tensor_inclusion1' R M) := by
+  exact Function.LeftInverse.injective (g := tensor_projection1' R M)
+    <| DFunLike.congr_fun <| tensor_projection_inclusion1' R M
+
+abbrev inclusion2': Module.End R (Module.End R M) →ₗ[R]
+    Module.End R (Module.End R (Fin (nn R M) → R)) where
+  toFun f := inclusion' R M ∘ₗ f ∘ₗ projection' R M
+  map_add' _ _ := by simp [LinearMap.add_comp, LinearMap.comp_add]
+  map_smul' := by simp [LinearMap.smul_comp, LinearMap.comp_smul]
+
+abbrev projection2': Module.End R (Module.End R (Fin (nn R M) → R)) →ₗ[R]
+    Module.End R (Module.End R M) where
+  toFun f := projection' R M ∘ₗ f ∘ₗ inclusion' R M
+  map_add' _ _ := by simp [LinearMap.add_comp, LinearMap.comp_add]
+  map_smul' := by simp [LinearMap.smul_comp, LinearMap.comp_smul]
+
+omit [Nontrivial M] in
+lemma projection2'_inclusion2': projection2' R M ∘ₗ inclusion2' R M = LinearMap.id := by
+  ext f g : 2
+  simp [LinearMap.comp_assoc, fg]
+  simp [← LinearMap.comp_assoc, fg]
+
+omit [Nontrivial M] in
+lemma projection2'_surj: Function.Surjective (projection2' R M) := by
+  exact Function.RightInverse.surjective <| DFunLike.congr_fun <| projection2'_inclusion2' R M
+
+omit [Nontrivial M] in
 /--
 End R M ⊗ (End R M)ᵐᵒᵖ ------------> End R (End R M)
     |         |                        |      |
@@ -504,126 +552,69 @@ End R M ⊗ (End R M)ᵐᵒᵖ ------------> End R (End R M)
     |         |                        |      |
 End R Rⁿ ⊗ (End R Rⁿ)ᵐᵒᵖ ----------> End R (End R Rⁿ)
 -/
-lemma comm_square_endend (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]:
-  1 = 1 := sorry
+lemma comm_square_endend :
+    inclusion2' R M ∘ₗ (AlgHom.mulLeftRight R (Module.End R M)).toLinearMap =
+    (AlgHom.mulLeftRight R _).toLinearMap ∘ₗ (tensor_inclusion1' R M) := by
+  ext f1 g1 : 3
+  apply LinearMap.ext
+  intro f2
+  simp only [TensorProduct.AlgebraTensorModule.curry_apply, LinearMap.restrictScalars_comp,
+    TensorProduct.curry_apply, LinearMap.coe_comp, LinearMap.coe_restrictScalars, LinearMap.coe_mk,
+    AddHom.coe_mk, Function.comp_apply, AlgHom.toLinearMap_apply,
+    TensorProduct.map_tmul, LinearEquiv.coe_coe, coe_opLinearEquiv, coe_opLinearEquiv_symm,
+    AlgHom.mulLeftRight_apply, unop_op]
+  ext i j
+  simp
 
+omit [Nontrivial M] in
+lemma comm_square_endend' :
+    (AlgHom.mulLeftRight R (Module.End R M)).toLinearMap ∘ₗ tensor_projection1' R M =
+    projection2' R M ∘ₗ (AlgHom.mulLeftRight _ _).toLinearMap := by
+  ext f1 g1 : 3
+  apply LinearMap.ext
+  intro f2
+  simp only [TensorProduct.AlgebraTensorModule.curry_apply, LinearMap.restrictScalars_comp,
+    TensorProduct.curry_apply, LinearMap.coe_comp, LinearMap.coe_restrictScalars,
+    Function.comp_apply, TensorProduct.map_tmul, LinearMap.coe_mk, AddHom.coe_mk,
+    LinearEquiv.coe_coe, coe_opLinearEquiv, coe_opLinearEquiv_symm, AlgHom.toLinearMap_apply,
+    AlgHom.mulLeftRight_apply, unop_op]
+  ext m
+  simp
 
-#check Basis.map
+instance: NeZero (nn R M) := ⟨by
+  by_contra! hn
+  have : Subsingleton (Fin (nn R M) → R) := by
+    rw [hn]
+    exact Unique.instSubsingleton
+  have : Subsingleton M := Function.Surjective.subsingleton (f0_surj R M)
+  have : ¬ (Subsingleton M) := not_subsingleton_iff_nontrivial.2 inferInstance
+  tauto⟩
 
-/-
-E_ij ⊗ E_pqᵐᵒᵖ ↦ (E_mn ↦ E_ij * E_mn * E_pq = ?_)
+lemma inj_endM: Function.Injective (AlgHom.mulLeftRight R (Module.End R M)) :=
+  Function.Injective.of_comp (f := inclusion2' R M) <| by
+    suffices Function.Injective ((inclusion2' R M) ∘ₗ (AlgHom.mulLeftRight _ _).toLinearMap) by
+      rw [LinearMap.coe_comp] at this; exact this
+    rw [comm_square_endend, LinearMap.coe_comp]
+    exact Function.Injective.of_comp_iff (EndRn R (nn R M)).isAzumaya.bij.injective _ |>.2
+      <| tensor_inclusion1'_inj R M
 
-End R (M_n R) index by (a, b, c, d)
+lemma surj_endM: Function.Surjective (AlgHom.mulLeftRight R (Module.End R M)) :=
+    Function.Surjective.of_comp (g := tensor_projection1' R M) <| by
+  change Function.Surjective
+    ((AlgHom.mulLeftRight R (Module.End R M)).toLinearMap ∘ₗ tensor_projection1' R M)
+  rw [comm_square_endend', LinearMap.coe_comp]
+  exact Function.Surjective.of_comp_iff _ (EndRn R (nn R M)).isAzumaya.bij.surjective |>.2
+    <| projection2'_surj R M
 
-E_ab ↦ _
--/
--- def test (n : ℕ) : Matrix (Fin n) (Fin n) R ⊗[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ →ₗ[R] Module.End R (Matrix (Fin n) (Fin n) R) :=
---   Basis.constr (Basis.tensorProduct (Matrix.stdBasis R (Fin n) (Fin n))
---   (Matrix.stdBasis R (Fin n) (Fin n) |>.map <| (opLinearEquiv ..)))
---   (Module.End R (Matrix (Fin n) (Fin n) R)) _
--- -- Basis.equiv (Basis.tensorProduct (Matrix.stdBasis R (Fin n) (Fin n))
--- --   (Matrix.stdBasis R (Fin n) (Fin n) |>.map <| (Matrix.transposeLinearEquiv _ _ R R ≪≫ₗ opLinearEquiv ..)))
--- --   (Basis.map (Matrix.stdBasis R _ _) (LinearMap.toMatrix (Matrix.stdBasis R _ _) (Matrix.stdBasis R _ _)).symm)
--- --   (Equiv.refl _)
+lemma bij_endM :
+  Function.Bijective (AlgHom.mulLeftRight R (Module.End R M)) :=
+  ⟨inj_endM R M, surj_endM R M⟩
 
--- example (n : ℕ) : (test R n).toLinearMap = (AlgHom.mulLeftRight R _).toLinearMap := by
---   apply Basis.ext (Basis.tensorProduct (Matrix.stdBasis R (Fin n) (Fin n))
---   (Matrix.stdBasis R (Fin n) (Fin n) |>.map <| (Matrix.transposeLinearEquiv _ _ R R ≪≫ₗ opLinearEquiv ..)))
---   rintro ⟨⟨a, b⟩, c, d⟩
---   simp only [LinearEquiv.coe_coe, AlgHom.toLinearMap_apply]
---   erw [Basis.equiv_apply]
---   simp only [LinearMap.toMatrix_symm, Equiv.refl_apply, Basis.map_apply, Basis.tensorProduct_apply,
---     LinearEquiv.trans_apply, Matrix.transposeLinearEquiv_apply, AddEquiv.toEquiv_eq_coe,
---     Equiv.toFun_as_coe, EquivLike.coe_coe, Matrix.transposeAddEquiv_apply, coe_opLinearEquiv]
---   ext M i j
---   rw [AlgHom.mulLeftRight_apply]
---   simp? [Matrix.mul_apply, Finset.mul_sum, Finset.sum_mul]
---   simp? [Matrix.toLin_apply, Matrix.stdBasis_eq_stdBasisMatrix, Matrix.mulVec_stdBasisMatrix]
---   -- simp? [Matrix.StdBasisBasisMatrix.mul_left_apply]
---   rw [Finset.sum_comm]
---   rw [← Fintype.sum_prod_type', Matrix.sum_apply]
---   refine Finset.sum_congr rfl fun ⟨p,q⟩ _ => ?_
---   simp? [Function.update]
---   split_ifs with H
---   · rcases H with ⟨rfl, rfl⟩
---     simp? [Matrix.stdBasis, Matrix.stdBasisMatrix, Pi.single, Function.update]
---     sorry
--- #exit
---   erw [Basis.equiv_apply]
---   erw [Basis.equiv_apply]
---   simp only [LinearMap.toMatrix_symm, Equiv.refl_apply, Basis.map_apply, AlgHom.toLinearMap_apply]
---   ext M a b
---   simp only [Matrix.toLin_apply]
---   rw [Basis.tensorProduct_apply, Basis.map_apply, AlgHom.mulLeftRight_apply]
---   simp? [Matrix.mul_apply, Finset.sum_mul, Finset.mul_sum]
---   rw [Finset.sum_comm]
---   rw [← Fintype.sum_prod_type']
---   rw [Matrix.sum_apply]
---   refine Finset.sum_congr rfl fun j _ => ?_
---   simp only [Matrix.smul_apply, smul_eq_mul]
---   rw [Matrix.stdBasis_eq_stdBasisMatrix]
-
---   rw [Matrix.mulVec_stdBasisMatrix]
---   simp only [one_mul]
---   by_cases eq : j = i.1
---   · subst eq
---     simp only [Function.update_self]
---     rw [Matrix.stdBasis_eq_stdBasisMatrix, Matrix.stdBasis_eq_stdBasisMatrix]
---     simp only [Matrix.stdBasis, Basis.map_repr, LinearEquiv.trans_apply,
---       Matrix.coe_ofLinearEquiv_symm, Basis.repr_reindex, Finsupp.mapDomain_equiv_apply,
---       Equiv.sigmaEquivProd_symm_apply, Pi.basis_repr, Pi.basisFun_repr, Matrix.of_symm_apply,
---       Matrix.stdBasisMatrix, Matrix.of_apply, mul_ite, mul_one, mul_zero, ite_mul, one_mul,
---       zero_mul]
-
---     erw [Matrix.mulVec_stdBasisMatrix]
---     simp only [one_mul]
---     by_cases eq' : i.1 = (a, b)
---     · rw [eq']
---       simp only [Function.update_self]
---       rw [Matrix.stdBasis_eq_stdBasisMatrix, Matrix.StdBasisMatrix.apply_same]
---       simp only [mul_one, one_mul]
---     sorry
---   -- simp_rw [Matrix.mulVec_stdBasis_apply]
---   sorry
-
-
-def test2 (n : ℕ): Matrix (Fin n) (Fin n) (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ ≃ₐ[R]
-    Module.End R (Matrix (Fin n) (Fin n) R) :=
-
-  sorry
-#check matrixEquivMatrixMop
-/--
-End R Rⁿ ⊗ (End R Rⁿ)ᵐᵒᵖ -----------> End R (End R Rⁿ)
-    |         |                        |
-    |         |                        |
-    |         |                        |
-    |         |                        |
-    |         |                        |
-   MnR ⊗ (MnR)ᵐᵒᵖ     ------------->  End R (MnR)
-
--/
-lemma matrix_bij (n : ℕ): Function.Bijective <| AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R) := sorry
-
-
-
-abbrev ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M] [Module.Projective R M]
-  [FaithfulSMul R M]: Azumaya R := {
+abbrev ofEnd (M : Type v) [Nontrivial M] [AddCommGroup M] [Module R M] [Module.Finite R M]
+    [Module.Projective R M] [FaithfulSMul R M]: Azumaya R := {
   __ := AlgebraCat.of R (Module.End R M)
   isAzumaya := {
     out := Module.Projective.ofEnd R M|>.out
-    fg_top := Module.Finite.of_surjective (projection' R M)
-      (projection'_surj R M) |>.fg_top
-    bij := by
-      simp
-      sorry
-  }}
-
-abbrev RequivEnd : R ≃ₐ[R] Module.End R R := AlgEquiv.ofBijective (Algebra.lsmul _ _ _)
-  ⟨fun r1 r2 h ↦ by
-    rw [LinearMap.ext_iff] at h
-    specialize h 1
-    simp only [Algebra.lsmul_coe, smul_eq_mul, mul_one] at h
-    exact h, fun f ↦ ⟨f 1, by ext; simp⟩⟩
+    bij := bij_endM R M }}
 
 end Azumaya
