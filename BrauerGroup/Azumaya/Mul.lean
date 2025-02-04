@@ -1,9 +1,7 @@
 import BrauerGroup.Azumaya.Basic
 import Mathlib.Algebra.Category.AlgebraCat.Basic
-import Mathlib.LinearAlgebra.TensorProduct.Opposite
-import BrauerGroup.matrixkronecker
 import Mathlib.LinearAlgebra.Contraction
-import Mathlib.RingTheory.Finiteness.Projective
+import Mathlib.LinearAlgebra.TensorProduct.Opposite
 
 suppress_compilation
 
@@ -257,41 +255,6 @@ abbrev v (n : ℕ): Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
   change ∑ i : Fin n, _ • Function.update _ _ _ = x
   ext j
   simp [Function.update_apply]
-
-abbrev End_basis' (n : ℕ) : Fin n × Fin n → (Module.End R (Fin n → R)) := fun ⟨i, r⟩ ↦
-  Basis.constr (v R n) R <| fun j ↦ if i = r then v R n j else 0
-
--- lemma End_basis'_apply (n : ℕ) (i r : Fin n) :
---   (End_basis' R n) (i, r) =
---     Basis.constr (v R n) R (fun j ↦ if i = r then v R n j else 0) := rfl
-
--- abbrev _root_.Module.End_basis (n : ℕ): Basis (Fin n × Fin n) R (Module.End R (Fin n → R)) :=
---   Basis.mk (v := End_basis' R n) (by
---   rw [Fintype.linearIndependent_iff]
---   intro f hf ⟨i0, r0⟩
---   rw [Fintype.sum_prod_type] at hf
---   simp [End_basis'_apply R n] at hf
---   rw [LinearMap.ext_iff] at hf
---   specialize hf (v R n i0)
---   simp only [Basis.coe_mk, LinearMap.coeFn_sum, Finset.sum_apply, LinearMap.smul_apply,
---     Basis.constr_apply_fintype, Basis.equivFun_apply, Basis.mk_repr, smul_ite, smul_zero,
---     Finset.sum_ite_irrel, Finset.sum_const_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte,
---     LinearMap.zero_apply] at hf
---   -- rw [LinearMap.pi_ext_iff] at hf
---   -- simp only [LinearMap.coeFn_sum, Finset.sum_apply, LinearMap.smul_apply,
---   --   Basis.constr_apply_fintype, Basis.equivFun_apply, Basis.mk_repr, smul_ite, smul_zero,
---   --   Finset.sum_ite_irrel, Finset.sum_const_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte,
---   --   LinearMap.zero_apply] at hf
-
-
---   sorry
---   ) sorry
-
--- def eqqq (n : ℕ): Module.End R (Fin n → R) ≃ₐ[R] Matrix (Fin n) (Fin n) R :=
---   algEquivMatrix'
-
-abbrev Endtensor_algHom : Module.End R A ⊗[R] Module.End R B →ₐ[R] Module.End R (A ⊗[R] B) :=
-    Module.endTensorEndAlgHom
 
 open Algebra.TensorProduct in
 variable {R A B} in
