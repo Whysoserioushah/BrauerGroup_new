@@ -364,15 +364,11 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
     simp only [unop_one, smul_eq_mul, mul_one, op_inj] at hr
     exact hr
 
-variable {R A B} in
-lemma _root_.FaithfulSMul.ofAlgEquiv [FaithfulSMul R A] (e : A ≃ₐ[R] B) :
-    FaithfulSMul R B where
-  eq_of_smul_eq_smul {r1 r2} h12 := by
-    specialize h12 1
-    rw [← e.apply_symm_apply 1, ← map_smul, map_one e.symm, ← map_smul] at h12
-    have : ∀ (a : A), r1 • a = r2 • a := fun a ↦ by
-      rw [← one_mul a, ← smul_mul_assoc, e.injective h12, smul_mul_assoc]
-    exact eq_of_smul_eq_smul this
+lemma _root_.FaithfulSMul.of_injective {M' X Y F : Type*} [SMul M' X] [SMul M' Y] [FunLike F X Y]
+    [FaithfulSMul M' X] [MulActionHomClass F M' X Y] (f : F)
+    (hf : Function.Injective f) :
+    FaithfulSMul M' Y where
+  eq_of_smul_eq_smul {_ _} h := eq_of_smul_eq_smul fun m ↦ hf <| by simp_rw [map_smul, h]
 
 example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N):
   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
@@ -399,7 +395,7 @@ lemma small_comm_square (e : A ≃ₐ[R] B):
 
 lemma _root_.IsAzumaya.ofAlgEquiv (e : A ≃ₐ[R] B) (hA : IsAzumaya R A) : IsAzumaya R B :=
   let _ : Module.Projective R B := .of_equiv e.toLinearEquiv
-  let _ : FaithfulSMul R B := .ofAlgEquiv e
+  let _ : FaithfulSMul R B := .of_injective e e.injective
   let _ : Module.Finite R B := .equiv e.toLinearEquiv
   ⟨Function.Bijective.of_comp_iff (AlgHom.mulLeftRight R B)
     (Algebra.TensorProduct.congr e e.op).bijective |>.1 <| by
