@@ -81,6 +81,32 @@ abbrev Azumaya.Inv (A : Azumaya R): Azumaya R :=
     }
   }
 
+private abbrev ee : Module.End R R ≃ₐ[R] R where
+  toFun f := f 1
+  invFun r := Algebra.lsmul R R R r
+  left_inv r := by ext; simp
+  right_inv r := by simp
+  map_mul' _ _ := by simp
+  map_add' _ _ := rfl
+  commutes' _ := by simp
+
+lemma Azumaya.inv_mul (A : Azumaya R): IsMoritaEquivalent R (Azumaya.mul R (Azumaya.Inv R A) A) 1 := by
+
+  sorry
+
+/--
+The proof of this is by:
+(1) On a commutative ring, `M` is progenerator iff `M` is fg faithful projective.
+(2) Let `S = End R (P)`, this makes `P` an `S`-mod
+(3) `tr(P) := ⊔ f : Module.Dual R P, imf` is equal to `R` if `P` is generator which
+    induces the equation `(1 : R) = ∑ qᵢ (pⱼ)` for some `qᵢ ∈ Module.Dual R P , pⱼ ∈ P`.
+
+-/
+lemma inv_eqv (A B : Azumaya R) (e : IsMoritaEquivalent R A B):
+    IsMoritaEquivalent R (Azumaya.Inv R A) (Azumaya.Inv R B) := by
+
+  sorry
+
 end Inv
 
 instance: Mul (Azumaya.BrauerGroup R) where
@@ -111,6 +137,13 @@ instance: Monoid (Azumaya.BrauerGroup R) where
 instance: Inv (Azumaya.BrauerGroup R) :=
   ⟨Quotient.lift (fun A ↦ Quotient.mk'' (Azumaya.Inv R A)) (fun A B h ↦ by
     simp only [Quotient.eq]
+    change IsMoritaEquivalent R A B at h
+    exact inv_eqv R _ _ h)⟩
 
-    sorry)⟩
+instance: Group (Azumaya.BrauerGroup R) where
+  inv_mul_cancel A := by
+    induction' A using Quotient.inductionOn' with A
+    apply Quotient.sound
+    exact Azumaya.inv_mul R A
+
 end
