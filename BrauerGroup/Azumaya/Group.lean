@@ -95,6 +95,10 @@ lemma Azumaya.inv_mul (A : Azumaya R): IsMoritaEquivalent R (Azumaya.mul R (Azum
   sorry
 
 /--
+
+A-Mod ≃ B-Mod => Mod-A ≃ Mod-B?
+
+
 The proof of this is by:
 (1) On a commutative ring, `M` is progenerator iff `M` is fg faithful projective.
 (2) Let `S = End R (P)`, this makes `P` an `S`-mod
