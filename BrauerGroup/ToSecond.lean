@@ -354,10 +354,10 @@ lemma exists_iso :
       (Quotient.eq''.1 (A.quot_eq.trans B.quot_eq.symm))
   have eq1 := isoA.toLinearEquiv.finrank_eq
   have eq2 := isoB.toLinearEquiv.finrank_eq
-  simp only [A.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin m)).toLinearEquiv,
+  simp only [A.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor (Fin m) F D).toLinearEquiv,
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq1
-  simp only [B.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin n)).toLinearEquiv,
+  simp only [B.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor (Fin n) F D).toLinearEquiv,
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq2
   have eq3 := eq1.symm.trans eq2
@@ -574,11 +574,13 @@ def RelativeBrGroup.toSnd :  RelativeBrGroup K F → groupCohomology.H2 (galAct 
 lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
     (A : GoodRep K X.1) (x_ : Π σ, A.conjFactor σ) :
     toSnd X = A.toH2 x_ := by
-  erw [Submodule.Quotient.eq]
+  simp only [toSnd, GoodRep.toH2]
+  change H2π _ _ = H2π _ _
+  rw [← sub_eq_zero, ← map_sub]
+  rw [H2π_eq_zero_iff]
   set lhs := _; change lhs ∈ _
-  have : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (lhs.1) := by
+  have : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (lhs) := by
     apply GoodRep.compare_toTwoCocycles'
-
   exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
 
 namespace GoodRep
@@ -1876,25 +1878,31 @@ open GoodRep.CrossProduct
 variable [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
 
 def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
-⟨Quotient.mk'' ⟨asCSA (isMulTwoCocycle_of_twoCocycles a)⟩, by
+⟨Quotient.mk'' ⟨asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)⟩, by
   rw [mem_relativeBrGroup_iff_exists_goodRep]
-  exact ⟨⟨⟨asCSA (isMulTwoCocycle_of_twoCocycles a)⟩, rfl,
-    ι (isMulTwoCocycle_of_twoCocycles a),
-    dim_eq_square (isMulTwoCocycle_of_twoCocycles a)⟩⟩⟩
+  exact ⟨⟨⟨asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)⟩, rfl,
+    ι (isMulTwoCocycle_of_mem_twoCocycles _ a.2),
+    dim_eq_square (isMulTwoCocycle_of_mem_twoCocycles _ a.2)⟩⟩⟩
 
 variable (F K) in
 set_option maxHeartbeats 500000 in
 def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
   Quotient.lift fromTwoCocycles <| by
-    rintro ⟨(a : _ → Kˣ), ha⟩ ⟨(b : _ → Kˣ), hb⟩ hab
-    have ha : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) a := isMulTwoCocycle_of_twoCocycles ⟨a, ha⟩
-    have hb : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) b := isMulTwoCocycle_of_twoCocycles ⟨b, hb⟩
+    rintro ⟨(a : _ → Kˣ), ha⟩ ⟨(b : _ → Kˣ), hb⟩ (hab : Submodule.quotientRel _ _ _)
+    have H' : H2π (galAct F K) ⟨a, ha⟩ - H2π (galAct F K) ⟨b, hb⟩ = 0 := by
+      rw [← map_sub, H2π_eq_zero_iff]
+      simp only [Submodule.quotientRel_def, LinearMap.mem_range] at hab
+      obtain ⟨y, hy⟩ := hab
+      use y
+      rw [← hy]
+      rfl
+    rw [← map_sub, H2π_eq_zero_iff] at H'
+
+    have ha : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) a := isMulTwoCocycle_of_mem_twoCocycles a ha
+    have hb : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) b := isMulTwoCocycle_of_mem_twoCocycles b hb
     have hc : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (a / b) := by
-      exact isMulTwoCoboundary_of_twoCoboundaries (G := K ≃ₐ[F] K) (M := Kˣ)
-        ⟨_, by
-          change (twoCoboundaries (galAct F K)).quotientRel.r ⟨a, _⟩ ⟨b, _⟩ at hab
-          rw [Submodule.quotientRel_def] at hab
-          exact hab⟩
+      exact isMulTwoCoboundary_of_mem_twoCoboundaries (G := K ≃ₐ[F] K) (M := Kˣ)
+        _ H'
 
     obtain ⟨c, hc⟩ := hc
     simp only [fromTwoCocycles, Subtype.mk.injEq, Quotient.eq'']
@@ -2047,7 +2055,7 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
 
 lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
     (fromSnd F K <| Quotient.mk'' a) =
-    ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_twoCocycles a)),
+    ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)),
       mem_relativeBrGroup_iff_exists_goodRep _ |>.2 ⟨_, rfl, ι _, dim_eq_square _⟩⟩ := by
   rfl
 
@@ -2057,7 +2065,7 @@ lemma toSnd_fromSnd :
   ext a
   induction a using Quotient.inductionOn' with | h a =>
   rcases a with ⟨(a : _ → Kˣ), ha'⟩
-  have ha : IsMulTwoCocycle a := isMulTwoCocycle_of_twoCocycles ⟨a, ha'⟩
+  have ha : IsMulTwoCocycle a := isMulTwoCocycle_of_mem_twoCocycles _ ha'
   simp only [Function.comp_apply, fromSnd_wd, id_eq]
   let A : GoodRep K (Quotient.mk'' <| asCSA ha) :=
     ⟨asCSA ha, rfl, ι ha, dim_eq_square ha⟩
@@ -2067,10 +2075,11 @@ lemma toSnd_fromSnd :
   let b : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ := A.toTwoCocycles y_
 
   rw [show A.toH2 y_ = Quotient.mk'' ⟨b, _⟩ by rfl]
-  rw [Quotient.eq'']
-  change (twoCoboundaries (galAct F K)).quotientRel.r _ _
-  rw [Submodule.quotientRel_def]
+  change H2π _ _ = H2π _ _
+  rw [← sub_eq_zero, ← map_sub, H2π_eq_zero_iff]
+
   suffices H : IsMulTwoCoboundary _ from
+
     (twoCoboundariesOfIsMulTwoCoboundary H).2
   refine ⟨fun _ => 1, ?_⟩
   intro σ τ

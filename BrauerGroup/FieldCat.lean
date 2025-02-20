@@ -5,7 +5,7 @@ Authors: Yunzhou Xie
 -/
 import Mathlib.Algebra.Category.Ring.Basic
 import Mathlib.CategoryTheory.ConcreteCategory.ReflectsIso
-import Mathlib.FieldTheory.PurelyInseparable
+import Mathlib.Algebra.Field.Defs
 
 /-!
 # Category instances for `Field`.

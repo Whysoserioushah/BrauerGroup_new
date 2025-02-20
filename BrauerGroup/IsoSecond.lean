@@ -11,115 +11,118 @@ open groupCohomology FiniteDimensional BrauerGroup DirectSum GoodRep
 
 open scoped TensorProduct
 
-namespace map_one_proof
-section map_one
+-- namespace map_one_proof
+-- section map_one
 
-variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+-- variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
 
-def φ0 :
-    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[K]
-    Module.End F K :=
-  (CrossProduct.x_AsBasis (F := F) (K := K) (a := 1) (isMulTwoCocycle_of_twoCocycles 0)).constr F
-    fun σ => σ.toLinearMap
+-- set_option maxHeartbeats 1000000 in
+-- def φ0 :
+--     CrossProduct (F := F) (K := K) (a := 1)
+--       (ha := isMulTwoCocycle_of_mem_twoCocycles 0 <| Submodule.zero_mem _) →ₗ[K]
+--     Module.End F K :=
+--   (CrossProduct.x_AsBasis (F := F) (K := K) (a := 1)
+--     (ha := isMulTwoCocycle_of_mem_twoCocycles 0 <| Submodule.zero_mem _)).constr F
+--     fun σ => σ.toLinearMap
 
-def φ1 :
-    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[F]
-    Module.End F K :=
-  φ0 K F |>.restrictScalars F
+-- def φ1 :
+--     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[F]
+--     Module.End F K :=
+--   φ0 K F |>.restrictScalars F
 
-def φ2 :
-    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₐ[F]
-    Module.End F K :=
-  AlgHom.ofLinearMap (φ1 K F)
-    (by
-      generalize_proofs h
-      rw [show (1 : CrossProduct h) = .x_AsBasis h 1 by
-        ext1
-        simp]
-      delta φ1 φ0
-      rw [LinearMap.restrictScalars_apply, Basis.constr_basis]
-      rfl)
-    (by
-      rintro x y
-      change φ0 K F _ = φ0 K F _ * φ0 K F _
-      generalize_proofs h
-      induction x using CrossProduct.single_induction h with
-      | single x c =>
-        rw [show (⟨Pi.single x c⟩ : CrossProduct h) =
-          c • .x_AsBasis h x by
-          ext : 1
-          simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
-            CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
-            crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
-        rw [map_smul]
-        induction y using CrossProduct.single_induction h with
-        | single y d =>
-          rw [show (⟨Pi.single y d⟩ : CrossProduct h) =
-            d • .x_AsBasis h y by
-            ext : 1
-            simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
-              CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
-              crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
-          rw [show (c • CrossProduct.x_AsBasis h x) * (d • .x_AsBasis h y) =
-            (c * x d) • .x_AsBasis h (x * y) by
-            ext : 1
-            simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
-              CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
-              crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply, map_mul]]
-          rw [map_smul, map_smul]
-          delta φ0
-          rw [Basis.constr_basis, Basis.constr_basis, Basis.constr_basis]
-          ext α
-          simp only [LinearMap.smul_apply, AlgEquiv.toLinearMap_apply, AlgEquiv.mul_apply,
-            smul_eq_mul, _root_.mul_assoc, LinearMap.mul_apply, map_mul]
-        | add y y' hy hy' =>
-          erw [mul_add]
-          rw [map_add, hy, hy']
-          erw [map_add]
-          rw [mul_add]
-        | zero =>
-          erw [mul_zero]
-          rw [map_zero]
-          erw [map_zero]
-          rw [mul_zero]
-      | add x x' hx hx' =>
-        erw [add_mul]
-        rw [map_add, hx, hx']
-        erw [map_add]
-        rw [add_mul]
-      | zero =>
-        erw [zero_mul]
-        rw [map_zero]
-        erw [map_zero]
-        rw [zero_mul])
+-- def φ2 :
+--     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₐ[F]
+--     Module.End F K :=
+--   AlgHom.ofLinearMap (φ1 K F)
+--     (by
+--       generalize_proofs h
+--       rw [show (1 : CrossProduct h) = .x_AsBasis h 1 by
+--         ext1
+--         simp]
+--       delta φ1 φ0
+--       rw [LinearMap.restrictScalars_apply, Basis.constr_basis]
+--       rfl)
+--     (by
+--       rintro x y
+--       change φ0 K F _ = φ0 K F _ * φ0 K F _
+--       generalize_proofs h
+--       induction x using CrossProduct.single_induction h with
+--       | single x c =>
+--         rw [show (⟨Pi.single x c⟩ : CrossProduct h) =
+--           c • .x_AsBasis h x by
+--           ext : 1
+--           simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
+--             CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+--             crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
+--         rw [map_smul]
+--         induction y using CrossProduct.single_induction h with
+--         | single y d =>
+--           rw [show (⟨Pi.single y d⟩ : CrossProduct h) =
+--             d • .x_AsBasis h y by
+--             ext : 1
+--             simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
+--               CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+--               crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
+--           rw [show (c • CrossProduct.x_AsBasis h x) * (d • .x_AsBasis h y) =
+--             (c * x d) • .x_AsBasis h (x * y) by
+--             ext : 1
+--             simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
+--               CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+--               crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply, map_mul]]
+--           rw [map_smul, map_smul]
+--           delta φ0
+--           rw [Basis.constr_basis, Basis.constr_basis, Basis.constr_basis]
+--           ext α
+--           simp only [LinearMap.smul_apply, AlgEquiv.toLinearMap_apply, AlgEquiv.mul_apply,
+--             smul_eq_mul, _root_.mul_assoc, LinearMap.mul_apply, map_mul]
+--         | add y y' hy hy' =>
+--           erw [mul_add]
+--           rw [map_add, hy, hy']
+--           erw [map_add]
+--           rw [mul_add]
+--         | zero =>
+--           erw [mul_zero]
+--           rw [map_zero]
+--           erw [map_zero]
+--           rw [mul_zero]
+--       | add x x' hx hx' =>
+--         erw [add_mul]
+--         rw [map_add, hx, hx']
+--         erw [map_add]
+--         rw [add_mul]
+--       | zero =>
+--         erw [zero_mul]
+--         rw [map_zero]
+--         erw [map_zero]
+--         rw [zero_mul])
 
-def φ3 :
-    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
-    Module.End F K :=
-  AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
-    rw [CrossProduct.dim_eq_square]
-    rw [Module.finrank_linearMap, pow_two])
+-- def φ3 :
+--     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+--     Module.End F K :=
+--   AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
+--     rw [CrossProduct.dim_eq_square]
+--     rw [Module.finrank_linearMap, pow_two])
 
-def φ4 :
-    CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
-    Matrix (Fin <| Module.finrank F K) (Fin <| Module.finrank F K) F :=
-  φ3 K F |>.trans <| LinearMap.toMatrixAlgEquiv <| Module.finBasis F K
+-- def φ4 :
+--     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+--     Matrix (Fin <| Module.finrank F K) (Fin <| Module.finrank F K) F :=
+--   φ3 K F |>.trans <| LinearMap.toMatrixAlgEquiv <| Module.finBasis F K
 
-lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 := by
-  ext1
-  change Quotient.mk'' _ = Quotient.mk'' _
-  erw [Quotient.eq'']
-  have : 0 < Module.finrank F K := Module.finrank_pos
-  haveI : NeZero (Module.finrank F K) := ⟨by omega⟩
-  change IsBrauerEquivalent _ _
-  refine ⟨1, Module.finrank F K, AlgEquiv.trans ?_ <| φ4 K F⟩
-  exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
+-- lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 := by
+--   ext1
+--   change Quotient.mk'' _ = Quotient.mk'' _
+--   erw [Quotient.eq'']
+--   have : 0 < Module.finrank F K := Module.finrank_pos
+--   haveI : NeZero (Module.finrank F K) := ⟨by omega⟩
+--   change IsBrauerEquivalent _ _
+--   refine ⟨1, Module.finrank F K, AlgEquiv.trans ?_ <| φ4 K F⟩
+--   exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
 
-lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
+-- lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
 
-end map_one
+-- end map_one
 
-end map_one_proof
+-- end map_one_proof
 
 namespace map_mul_proof
 section map_mul
@@ -130,8 +133,8 @@ variable (hα : IsMulTwoCocycle α) (hβ : IsMulTwoCocycle β)
 variable {K F α β}
 
 include hα hβ in
-lemma hαβ : IsMulTwoCocycle (α * β) := isMulTwoCocycle_of_twoCocycles <|
-  (twoCocyclesOfIsMulTwoCocycle hα) + (twoCocyclesOfIsMulTwoCocycle hβ)
+lemma hαβ : IsMulTwoCocycle (α * β) := isMulTwoCocycle_of_mem_twoCocycles _ <|
+  ((twoCocyclesOfIsMulTwoCocycle hα) + (twoCocyclesOfIsMulTwoCocycle hβ)).2
 
 local notation "A" => CrossProduct hα
 local notation "B" => CrossProduct hβ
@@ -955,7 +958,7 @@ lemma dim_endCSM : (finrank F K)^2 =
         invFun := op
         left_inv := unop_op
         right_inv := fun _ => rfl }, CrossProduct.dim_eq_square] at eq1
-  rw [eq1, matrixEquivTensor F (Module.End C SM) (Fin (Fintype.card ι)) |>.toLinearEquiv.finrank_eq,
+  rw [eq1, matrixEquivTensor (Fin (Fintype.card ι)) F (Module.End C SM)  |>.toLinearEquiv.finrank_eq,
     finrank_tensorProduct, finrank_matrix]
   simp only [Fintype.card_fin, finrank_self, _root_.mul_one, pow_two]
   group
@@ -1135,7 +1138,7 @@ lemma dim_endCM :
     finrank F (Module.End C (M hα hβ)) = (finrank F K)^4 := by
   have := LinearEquiv.finrank_eq (endCMIso' hα hβ).toLinearEquiv
   rw [this]
-  have := matrixEquivTensor F (Module.End C SM) (Fin (finrank F K * Fintype.card ι))
+  have := matrixEquivTensor (Fin (finrank F K * Fintype.card ι)) F (Module.End C SM)
     |>.toLinearEquiv.finrank_eq
   rw [this, finrank_tensorProduct, finrank_matrix]
   simp only [Fintype.card_fin]
@@ -1212,51 +1215,69 @@ namespace RelativeBrGroup
 
 variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
 
-@[simps]
-def fromSndAddMonoidHom :
-    H2 (galAct F K) →+ Additive (RelativeBrGroup K F) where
-  toFun := Additive.ofMul ∘ RelativeBrGroup.fromSnd _ _
-  map_zero' := by
-    simpa only [Function.comp_apply, ofMul_eq_zero] using map_one_proof.fromSnd_zero K F
-  map_add' := by
+-- @[simps]
+-- def fromSndAddMonoidHom :
+--     H2 (galAct F K) →+ Additive (RelativeBrGroup K F) where
+--   toFun := Additive.ofMul ∘ RelativeBrGroup.fromSnd _ _
+--   map_zero' := by
+--     simpa only [Function.comp_apply, ofMul_eq_zero] using map_one_proof.fromSnd_zero K F
+--   map_add' := by
+--     intro x y
+--     induction x using Quotient.inductionOn' with | h x =>
+--     induction y using Quotient.inductionOn' with | h y =>
+--     simp only [Function.comp_apply]
+--     rcases x with ⟨x, hx'⟩
+--     have hx := isMulTwoCocycle_of_twoCocycles ⟨x, hx'⟩
+--     rcases y with ⟨y, hy'⟩
+--     have hy := isMulTwoCocycle_of_twoCocycles ⟨y, hy'⟩
+--     rw [fromSnd_wd, fromSnd_wd]
+--     erw [fromSnd_wd]
+--     apply_fun Additive.toMul
+--     simp only [AddMemClass.mk_add_mk, toMul_ofMul, toMul_add, MulMemClass.mk_mul_mk,
+--       Subtype.mk.injEq]
+--     change _ = Quotient.mk'' _
+--     rw [Quotient.eq'']
+--     exact map_mul_proof.isBrauerEquivalent hx hy |>.symm
+
+-- def toSndAddMonoidHom : Additive (RelativeBrGroup K F) →+ H2 (galAct F K) where
+--   toFun := RelativeBrGroup.toSnd ∘ Additive.toMul
+--   map_zero' := by
+--     simp only [Function.comp_apply, toMul_zero]
+--     apply_fun fromSnd F K using equivSnd.symm.injective
+--     rw [map_one_proof.fromSnd_zero]
+--     exact congr_fun fromSnd_toSnd 1
+--   map_add' := by
+--     intro x y
+--     dsimp only
+--     apply_fun fromSndAddMonoidHom K F using equivSnd.symm.injective
+--     rw [map_add]
+--     simp only [Function.comp_apply, toMul_add, fromSndAddMonoidHom_apply,
+--       show ∀ x, fromSnd F K (toSnd x) = x by intro x; exact congr_fun fromSnd_toSnd x, ofMul_mul,
+--       ofMul_toMul]
+
+def isoSnd :
+    Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) :=
+  AddEquiv.symm <|
+  AddEquiv.mk' (equivSnd (F := F) (K := K)).symm <| by
     intro x y
     induction x using Quotient.inductionOn' with | h x =>
     induction y using Quotient.inductionOn' with | h y =>
     simp only [Function.comp_apply]
     rcases x with ⟨x, hx'⟩
-    have hx := isMulTwoCocycle_of_twoCocycles ⟨x, hx'⟩
+    have hx := isMulTwoCocycle_of_mem_twoCocycles _ hx'
     rcases y with ⟨y, hy'⟩
-    have hy := isMulTwoCocycle_of_twoCocycles ⟨y, hy'⟩
-    rw [fromSnd_wd, fromSnd_wd]
+    have hy := isMulTwoCocycle_of_mem_twoCocycles _ hy'
+    change fromSnd F K (Quotient.mk'' _) =
+      fromSnd F K (Quotient.mk'' _) * fromSnd F K (Quotient.mk'' _)
+    erw [fromSnd_wd, fromSnd_wd]
     erw [fromSnd_wd]
     apply_fun Additive.toMul
-    simp only [AddMemClass.mk_add_mk, toMul_ofMul, toMul_add, MulMemClass.mk_mul_mk,
-      Subtype.mk.injEq]
+    simp only [AddMemClass.mk_add_mk, twoCocycles.val_eq_coe, MulMemClass.mk_mul_mk,
+      EmbeddingLike.apply_eq_iff_eq]
+    refine Subtype.ext ?_
     change _ = Quotient.mk'' _
     rw [Quotient.eq'']
     exact map_mul_proof.isBrauerEquivalent hx hy |>.symm
-
-def toSndAddMonoidHom : Additive (RelativeBrGroup K F) →+ H2 (galAct F K) where
-  toFun := RelativeBrGroup.toSnd ∘ Additive.toMul
-  map_zero' := by
-    simp only [Function.comp_apply, toMul_zero]
-    apply_fun fromSnd F K using equivSnd.symm.injective
-    rw [map_one_proof.fromSnd_zero]
-    exact congr_fun fromSnd_toSnd 1
-  map_add' := by
-    intro x y
-    dsimp only
-    apply_fun fromSndAddMonoidHom K F using equivSnd.symm.injective
-    rw [map_add]
-    simp only [Function.comp_apply, toMul_add, fromSndAddMonoidHom_apply,
-      show ∀ x, fromSnd F K (toSnd x) = x by intro x; exact congr_fun fromSnd_toSnd x, ofMul_mul,
-      ofMul_toMul]
-
-def isoSnd :
-    Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) where
-  __ := toSndAddMonoidHom K F
-  __ := fromSndAddMonoidHom K F
-  __ := equivSnd
 
 #print axioms isoSnd
 

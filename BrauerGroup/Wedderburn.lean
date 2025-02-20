@@ -1,4 +1,4 @@
-import Mathlib.RingTheory.SimpleModule
+import Mathlib.RingTheory.SimpleModule.Basic
 import Mathlib.RingTheory.Artinian.Instances
 import BrauerGroup.Con
 import Mathlib.Algebra.Ring.Equiv

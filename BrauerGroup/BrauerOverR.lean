@@ -79,7 +79,7 @@ lemma toEnd_bij : Function.Bijective toEnd :=
 
 def QuaternionTensorEquivMatrix : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] ≃ₐ[ℝ] Matrix (Fin 4) (Fin 4) ℝ :=
   (AlgEquiv.ofBijective toEnd toEnd_bij).trans <| algEquivMatrix
-    (QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ))
+    (QuaternionAlgebra.basisOneIJK (-1 : ℝ) 0 (-1 : ℝ))
 
 lemma QuaternionTensorEquivOne : IsBrauerEquivalent (K := ℝ) ⟨ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]⟩ ⟨ℝ⟩ :=
   ⟨⟨1, 4, dim_one_iso _ |>.trans QuaternionTensorEquivMatrix⟩⟩

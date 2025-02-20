@@ -366,13 +366,13 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
         ext i
         simp only [matrix_smul_vec_apply, Matrix.smul_apply, smul_eq_mul, Algebra.smul_mul_assoc,
           Pi.smul_apply, Finset.smul_sum] }
-    letI _ : IsScalarTower k A (Fin n → D) :=
+    haveI _ : IsScalarTower k A (Fin n → D) :=
     { smul_assoc := fun a b x => by
         change wdb (a • b) • x = _
         rw [map_smul, Algebra.smul_def, mul_smul]
         rw [algebraMap_smul]
         rfl }
-    letI _ : SMulCommClass A k (Fin n → D) :=
+    haveI _ : SMulCommClass A k (Fin n → D) :=
       { smul_comm := fun a b x => by
           change wdb a • b • x = b • wdb a • x
           ext i
@@ -386,13 +386,13 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
       ext i
       simp only [matrix_smul_vec_apply, Matrix.smul_apply, smul_eq_mul, Algebra.smul_mul_assoc,
         Pi.smul_apply, Finset.smul_sum] }
-  letI _ : IsScalarTower k A (Fin n → D) :=
+  haveI _ : IsScalarTower k A (Fin n → D) :=
   { smul_assoc := fun a b x => by
       change wdb (a • b) • x = _
       rw [map_smul, Algebra.smul_def, mul_smul]
       rw [algebraMap_smul]
       rfl }
-  letI _ : SMulCommClass A k (Fin n → D) :=
+  haveI _ : SMulCommClass A k (Fin n → D) :=
     { smul_comm := fun a b x => by
         change wdb a • b • x = b • wdb a • x
         ext i
@@ -426,21 +426,22 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
         simp only [Functor.comp_obj, smul_eq_mul]
         rw [show ModuleCat.ofHom (f * g) = (ModuleCat.ofHom g) ≫ (ModuleCat.ofHom f) by rfl, E.inverse.map_comp]
         simp only [smul_eq_mul, Category.assoc]
+        change ModuleCat.Hom.hom _ = ModuleCat.Hom.hom _ ∘ₗ ModuleCat.Hom.hom _
         apply_fun ModuleCat.homEquiv.symm
-        change ModuleCat.ofHom _ = ModuleCat.ofHom _ ≫ ModuleCat.ofHom _
-        aesop_cat
+        simp only [Functor.id_obj, ModuleCat.homEquiv, ModuleCat.hom_comp, Equiv.coe_fn_symm_mk,
+          ModuleCat.ofHom_comp, ModuleCat.of_coe, ModuleCat.ofHom_hom, Category.assoc,
+          Iso.inv_hom_id_app_assoc]
       map_zero' := by
         ext
         simp only [Functor.id_obj, moritaEquivalentToMatrix, Functor.comp_obj,
           Equivalence.Equivalence_mk'_unit, Iso.symm_hom, matrix.unitIso_inv, matrix.unitIsoInv,
           toModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_isAddCommGroup,
-          toModuleCatOverMatrix_obj_isModule, Fin.default_eq_zero,
-          Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv, matrix.unitIso_hom, ModuleCat.hom_comp,
+          toModuleCatOverMatrix_obj_isModule, Fin.default_eq_zero, fromModuleCatOverMatrix_map,
+          ModuleCat.hom_ofHom, LinearMap.zero_apply, Equivalence.Equivalence_mk'_unitInv,
+          Iso.symm_inv, matrix.unitIso_hom, matrix.unitIsoHom_app, ModuleCat.hom_comp,
           fromModuleCatOverMatrix_obj_carrier, fromModuleCatOverMatrix_obj_isAddCommGroup,
           fromModuleCatOverMatrix_obj_isModule, LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk,
-          Function.comp_apply, LinearMap.zero_apply, E]
-        erw [matrix.unitIsoHom_app_hom_apply, fromModuleCatOverMatrix_map_hom_apply_coe]
-        simp
+          Function.comp_apply, Pi.zero_apply, Finset.sum_const_zero, E]
       map_add' := fun f g => by
         simp only
         apply_fun ModuleCat.homEquiv.symm
@@ -465,7 +466,7 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
           Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv, matrix.unitIso_hom,
           toModuleCatOverMatrix_obj_carrier, Equivalence.Equivalence_mk'_unit, Iso.symm_hom,
           matrix.unitIso_inv, E]
-        erw [ModuleCat.comp_apply, ModuleCat.comp_apply, matrix.unitIsoHom_app_hom_apply]
+        erw [ModuleCat.comp_apply, ModuleCat.comp_apply, matrix.unitIsoHom_app]
         simp only [toModuleCatOverMatrix_obj_carrier, fromModuleCatOverMatrix, Functor.id_obj]
         set lhs := _; change lhs = _
         rw [show lhs = ∑ j : Fin n,
@@ -478,7 +479,11 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
         set lhs := _; change lhs = _
         rw [show lhs = ∑ j : Fin n, Function.update (0 : Fin n → D) default 1 j by
           refine Finset.sum_congr rfl fun j _ => ?_
-          erw [matrix.unitIsoInv_app_hom_apply_coe]]
+          erw [matrix.unitIsoInv_app]
+          simp only [toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
+            fromModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_carrier,
+            fromModuleCatOverMatrix_obj_isModule, Fin.default_eq_zero, ModuleCat.hom_ofHom,
+            LinearMap.coe_mk, AddHom.coe_mk, Function.update_apply, Pi.zero_apply, E]]
         simp only [Fin.default_eq_zero]
         rw [Finset.sum_eq_single_of_mem (a := 0) (h := Finset.mem_univ _)]
         · simp only [Function.update_self]
@@ -500,7 +505,7 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
         rfl
       map_zero' := by
         ext dn i
-        simp only [moritaEquivalentToMatrix, toModuleCatOverMatrix_map_hom_apply,
+        simp [moritaEquivalentToMatrix, toModuleCatOverMatrix_map,
           LinearMap.zero_apply, Pi.zero_apply, E]
       map_add' := fun f g => by
         simp only [Functor.comp_obj, smul_eq_mul]
@@ -523,12 +528,12 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
         Function.comp_apply, ModuleCat.ofHom_hom, LinearMap.coe_comp, AlgHom.coe_id, id_eq, E]
       simp only [moritaEquivalentToMatrix, Equivalence.Equivalence_mk'_unitInv, Iso.symm_inv,
         matrix.unitIso_hom, Equivalence.Equivalence_mk'_unit, Iso.symm_hom, matrix.unitIso_inv, E]
-      erw [matrix.unitIsoHom_app_hom_apply, fromModuleCatOverMatrix_map_hom_apply_coe]
+      erw [matrix.unitIsoHom_app, fromModuleCatOverMatrix_map]
       simp only [toModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_isAddCommGroup,
-        toModuleCatOverMatrix_obj_isModule, toModuleCatOverMatrix_map_hom_apply, E]
-      simp only [matrix.unitIsoInv, toModuleCatOverMatrix_obj_carrier,
-        toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
-        Fin.default_eq_zero, LinearMap.coe_mk, AddHom.coe_mk]
+        toModuleCatOverMatrix_obj_isModule, toModuleCatOverMatrix_map, E]
+      simp only [ModuleCat.hom_ofHom, LinearMap.coe_mk, AddHom.coe_mk, matrix.unitIsoInv,
+        toModuleCatOverMatrix_obj_carrier, toModuleCatOverMatrix_obj_isAddCommGroup,
+        toModuleCatOverMatrix_obj_isModule, Fin.default_eq_zero, E]
       rw [← map_sum]
       congr 1
       simp_rw [Function.update_apply]

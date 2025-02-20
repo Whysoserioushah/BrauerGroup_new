@@ -15,7 +15,7 @@ open FiniteDimensional MulOpposite BrauerGroup BigOperators TensorProduct
 section CSA
 
 set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 100000 in
 set_option maxSynthPendingDepth 2 in
 lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : isSplit F A K) :
     ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) * (Quotient.mk'' B) = 1 ∧

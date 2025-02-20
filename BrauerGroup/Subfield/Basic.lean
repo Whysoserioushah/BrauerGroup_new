@@ -28,7 +28,7 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempt
       suffices Function.Injective (Algebra.ofId K A) from
         (AlgHom.injective_codRestrict (Algebra.ofId K A) (Algebra.ofId K A).range
           (AlgHom.mem_range_self (Algebra.ofId K A))).2 this
-      exact NoZeroSMulDivisors.algebraMap_injective K A,
+      exact FaithfulSMul.algebraMap_injective K A,
       AlgHom.rangeRestrict_surjective (Algebra.ofId K A)⟩
   ⟨⟨⊥, fun x y hx hy ↦ by
     change x ∈ (Algebra.ofId K A).range at hx

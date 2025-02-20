@@ -1,7 +1,7 @@
 import Mathlib.RingTheory.TwoSidedIdeal.BigOperators
 import Mathlib.RingTheory.TwoSidedIdeal.Operations
 import Mathlib.RingTheory.SimpleRing.Basic
-import Mathlib.Algebra.BigOperators.Ring
+-- import Mathlib.Algebra.BigOperators.Ring
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.RingTheory.Ideal.Basic
 import Mathlib.Algebra.Algebra.Hom

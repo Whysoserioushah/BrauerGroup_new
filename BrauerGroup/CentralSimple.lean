@@ -346,7 +346,7 @@ structure is_obtainable_by_sum_tmul
   mem : x ∈ I
   ne_zero : x ≠ 0
   rep : ∃ (s : Finset ιA) (_ : s.card = n) (f : ιA → B),
-    x = ∑ i in s, 𝒜 i ⊗ₜ[K] f i
+    x = ∑ i ∈ s, 𝒜 i ⊗ₜ[K] f i
 
 variable {K} in
 lemma is_obtainable_by_sum_tmul.exists_minimal_element

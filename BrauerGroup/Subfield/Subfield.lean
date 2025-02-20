@@ -70,7 +70,7 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     have : IsField (Algebra.adjoin K (insert a k) : Subalgebra K D) := by
       rw [ ← Algebra.IsIntegral.isField_iff_isField (R := K)]
       · exact Semifield.toIsField K
-      · exact NoZeroSMulDivisors.algebraMap_injective K _
+      · exact FaithfulSMul.algebraMap_injective K _
 
     let L : SubField K D := {
       __ := Algebra.adjoin K (insert a k.1)
