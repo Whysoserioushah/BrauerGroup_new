@@ -14,11 +14,11 @@ open FiniteDimensional MulOpposite BrauerGroup BigOperators TensorProduct
 
 section CSA
 
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 40000 in
+set_option maxHeartbeats 1200000 in
+set_option synthInstance.maxHeartbeats 60000 in
 set_option maxSynthPendingDepth 2 in
 lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : isSplit F A K) :
-    ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) * (Quotient.mk'' B) = 1 ∧
+    ∃ (B : CSA F), (Quotient.mk'' A : BrauerGroup F) * (Quotient.mk'' B) = 1 ∧
       ∃ (_ : K →ₐ[F] B), (Module.finrank F K)^2 = Module.finrank F B := by
   obtain ⟨n, hn, ⟨iso⟩⟩ := split
   let iso' := iso.trans (algEquivMatrix' (R := K) (n := Fin n)).symm
@@ -76,7 +76,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       rw [Subtype.ext_iff, ← hr]
       rfl }
   haveI : IsSimpleRing B := centralizer_isSimple _ (Module.Free.chooseBasis _ _)
-  refine ⟨⟨B⟩, ?_,
+  refine ⟨⟨.of F B⟩, ?_,
     { toFun := fun r =>
         ⟨{
           toFun := fun a => r • a
@@ -107,7 +107,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       commutes' := by intros; ext; simp only [algebraMap_smul, LinearMap.coe_comp, LinearMap.coe_mk,
         AddHom.coe_mk, LinearMap.coe_single, Function.comp_apply, Pi.smul_apply,
         SubalgebraClass.coe_algebraMap, Module.algebraMap_end_apply] }, ?_⟩
-  · change Quotient.mk'' _ = Quotient.mk'' (CSA.mk F)
+  · change Quotient.mk'' _ = Quotient.mk'' (⟨AlgebraCat.of F F⟩ : CSA F)
     have := writeAsTensorProduct (B := emb.range)
     have iso : A ⊗[F] B ≃ₐ[F] Matrix (Fin (Module.finrank F (Fin n → K)))
       (Fin (Module.finrank F (Fin n → K))) F :=
@@ -150,12 +150,12 @@ theorem 3.3
 -/
 theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
     isSplit F A K ↔
-    ∃ (B : CSA F), (Quotient.mk'' A : BrGroup) = (Quotient.mk'' B) ∧
+    ∃ (B : CSA F), (Quotient.mk'' A : BrauerGroup F) = (Quotient.mk'' B) ∧
       ∃ (_ : K →ₐ[F] B), (Module.finrank F K)^2 = Module.finrank F B := by
   constructor
   · intro split
     obtain ⟨B, eq1, ι, eq2⟩ := exists_embedding_of_isSplit K F A split
-    refine ⟨⟨B.1ᵐᵒᵖ⟩, ?_, {
+    refine ⟨⟨.of F B.1ᵐᵒᵖ⟩, ?_, {
       toFun := fun k => op <| ι k
       map_one' := by simp
       map_mul' := by intros; simp [← op_mul, ← map_mul, mul_comm]
@@ -163,7 +163,7 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
       map_add' := by intros; simp
       commutes' := by intros; simp
     }, eq2.trans ?_⟩
-    · rw [show (Quotient.mk'' A : BrGroup) = (Quotient.mk'' B)⁻¹ by
+    · rw [show (Quotient.mk'' A : BrauerGroup F) = (Quotient.mk'' B)⁻¹ by
         rwa [eq_inv_iff_mul_eq_one]]
       rfl
     · refine LinearEquiv.finrank_eq (opLinearEquiv F)
@@ -476,7 +476,7 @@ variable (D : Type u) [DivisionRing D] [Algebra F D] [FiniteDimensional F D]
   [Algebra.IsCentral F D] [IsSimpleRing D]
 
 theorem maxOfDivision (L : SubField F D) (hL : IsMaximalSubfield F D L): isSplit F D L := by
-  rw [isSplit_iff_dimension L F ⟨D⟩]
-  exact ⟨⟨D⟩, ⟨rfl, ⟨L.val, by rw [pow_two]; exact dim_max_subfield F D L hL|>.symm ⟩⟩⟩
+  rw [isSplit_iff_dimension L F ⟨.of F D⟩]
+  exact ⟨⟨.of F D⟩, ⟨rfl, ⟨L.val, by rw [pow_two]; exact dim_max_subfield F D L hL|>.symm ⟩⟩⟩
 
 end  DivisionRing

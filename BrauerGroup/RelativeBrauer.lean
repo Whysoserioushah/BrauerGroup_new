@@ -36,7 +36,7 @@ The relative Brauer group `Br(K/F)` is the kernel of the map `Br F -> Br K`
 abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E := K)
 
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
-    BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrGroup (K := K)) :=
+    BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrauerGroup K) :=
   ⟨by
     rintro ⟨n, hn, ⟨iso⟩⟩
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
@@ -84,7 +84,7 @@ lemma mem_relativeBrGroup (A : CSA F) :
 lemma split_sound (A B : CSA F) (h0 : IsBrauerEquivalent A B) (h : isSplit F A K) :
     isSplit F B K := by
   rw [split_iff] at h ⊢
-  rw [show (Quotient.mk'' B : BrGroup) = Quotient.mk'' A from Eq.symm <| Quotient.sound h0, h]
+  rw [show (Quotient.mk'' B : BrauerGroup F) = Quotient.mk'' A from Eq.symm <| Quotient.sound h0, h]
 
 lemma split_sound' (A B : CSA F) (h0 : IsBrauerEquivalent A B) :
     isSplit F A K ↔ isSplit F B K :=
@@ -109,7 +109,7 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
   have : FiniteDimensional K (Matrix (Fin n) (Fin n) SA) :=
     Module.Finite.of_injective isoA.symm.toLinearMap isoA.symm.injective
   have : FiniteDimensional K SA :=  is_fin_dim_of_wdb _ _ _ _ isoA
-  have eq1 : IsBrauerEquivalent ⟨SA⟩ A :=
+  have eq1 : IsBrauerEquivalent ⟨.of K SA⟩ A :=
     ⟨n, 1, hn.1, one_ne_zero, ⟨AlgEquiv.symm <| AlgEquiv.trans (dim_one_iso A) isoA⟩⟩
   obtain ⟨m, hm, SB, _, _, ⟨isoB⟩⟩ := Wedderburn_Artin_algebra_version K B
   haveI : Algebra.IsCentral K (Matrix (Fin m) (Fin m) SB) := isoB.isCentral
@@ -118,8 +118,7 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
     Module.Finite.of_injective isoB.symm.toLinearMap isoB.symm.injective
   have : FiniteDimensional K SB := is_fin_dim_of_wdb _ _ _ _ isoB
 
-  have eq2 : IsBrauerEquivalent ⟨SA⟩ B :=
-    .trans eq1 h
+  have eq2 : IsBrauerEquivalent ⟨.of K SA⟩ B := .trans eq1 h
 
   obtain ⟨a, a', ha, ha', ⟨e⟩⟩ := eq2
   haveI : FiniteDimensional K (Matrix (Fin a') (Fin a') B) :=

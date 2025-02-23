@@ -1,7 +1,5 @@
 import BrauerGroup.Subfield.Subfield
-import Mathlib.Algebra.QuaternionBasis
-import Mathlib.Data.Complex.FiniteDimensional
-import Mathlib.Tactic
+import Mathlib
 
 suppress_compilation
 
@@ -24,7 +22,7 @@ lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensio
     Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
   let CC := AlgebraicClosure K
   letI : Algebra ℝ CC := AlgebraicClosure.instAlgebra K
-  haveI : IsAlgClosure ℝ CC := ⟨inferInstance, Algebra.IsAlgebraic.trans (L := K)⟩
+  haveI : IsAlgClosure ℝ CC := ⟨inferInstance, Algebra.IsAlgebraic.trans ℝ K CC⟩
   haveI : IsAlgClosure ℝ ℂ := ⟨inferInstance, inferInstance⟩
   let e : ℂ ≃ₐ[ℝ] CC := IsAlgClosure.equiv ℝ _ _
   have dim_eq1 : Module.finrank ℝ CC = 2 := by
@@ -366,7 +364,7 @@ lemma r_pos (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.val z)
     simp only [Pi.neg_apply] at hr2
     have := eq2.trans hr2
     simp only [← map_neg] at this
-    exact NoZeroSMulDivisors.algebraMap_injective _ _ this|>.symm
+    exact FaithfulSMul.algebraMap_injective _ _ this|>.symm
   rw [← this]
   simp only [Left.neg_pos_iff, hr1]
 
@@ -506,10 +504,11 @@ abbrev toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
   i := e.symm ⟨0, 1⟩
   j := (algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx hDD).choose)⁻¹) * x.1
   k := e.symm ⟨0, 1⟩ * ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx hDD).choose)⁻¹) * x.1)
-  i_mul_i := i_mul_i _ _
+  i_mul_i := by rw [i_mul_i _ e, zero_smul, add_zero]
   j_mul_j := j_mul_j _ _ _ hx hDD
   i_mul_j := by rfl
-  j_mul_i := j_mul_i_eq_neg_i_mul_j _ _ _ hx hDD
+  j_mul_i := by
+    rw [j_mul_i_eq_neg_i_mul_j _ _ _ hx hDD, zero_smul, zero_sub]
 }
 
 abbrev basisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
@@ -716,7 +715,7 @@ abbrev isBasisijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
 
 abbrev linEquivH (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (h : Module.finrank ℝ D = 4): ℍ[ℝ] ≃ₗ[ℝ] D :=
-  Basis.equiv (QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ)) (isBasisijk _ _ _ hx h)
+  Basis.equiv (QuaternionAlgebra.basisOneIJK (-1 : ℝ) 0 (-1 : ℝ)) (isBasisijk _ _ _ hx h)
     $ {
       toFun := ![2, 3, 1, 0]
       invFun := ![3, 2, 0, 1]
@@ -726,7 +725,7 @@ abbrev linEquivH (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val
 
 lemma toFun_i_eq (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (h : Module.finrank ℝ D = 4):
-    toFun _ _ _ hx h ((QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ)) 1) = e.symm ⟨0, 1⟩ := by
+    toFun _ _ _ hx h ((QuaternionAlgebra.basisOneIJK (-1 : ℝ) 0 (-1 : ℝ)) 1) = e.symm ⟨0, 1⟩ := by
   simp only [QuaternionAlgebra.lift_apply, QuaternionAlgebra.Basis.liftHom, map_inv₀,
     QuaternionAlgebra.basisOneIJK, Fin.isValue, Basis.coe_ofEquivFun,
     QuaternionAlgebra.coe_linearEquivTuple_symm, QuaternionAlgebra.equivTuple_symm_apply, ne_eq,
@@ -738,7 +737,7 @@ lemma toFun_i_eq (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val
 
 lemma linEquivH_eq_toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (h : Module.finrank ℝ D = 4) : (linEquivH _ _ _ hx h).toLinearMap = toFun _ _ _ hx h := by
-  apply Basis.ext (QuaternionAlgebra.basisOneIJK (-1 : ℝ) (-1 : ℝ))
+  apply Basis.ext (QuaternionAlgebra.basisOneIJK (-1 : ℝ) 0 (-1 : ℝ))
   intro i
   change (linEquivH _ _ _ hx h) _ = (toFun _ _ _ hx h) _
   fin_cases i
@@ -821,8 +820,7 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
     change r • a = (e (algebraMap ℝ ℂ r)) * a
     rw [Algebra.algebraMap_eq_smul_one, _root_.map_smul e, map_one, Subalgebra.coe_smul,
       Subalgebra.coe_one, smul_mul_assoc, one_mul]
-  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 $ by
-    rw [this] at fin ; exact fin
+  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 $ fin
   haveI : FiniteDimensional ℂ A := Module.Finite.right ℝ ℂ A
   have bij := bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed ℂ A
   exact ⟨(AlgEquiv.ofBijective {

@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yunzhou Xie
 -/
 import Mathlib.Algebra.Category.Ring.Basic
-import Mathlib.CategoryTheory.ConcreteCategory.ReflectsIso
-import Mathlib.FieldTheory.PurelyInseparable
+import Mathlib.Algebra.EuclideanDomain.Field
+import Mathlib.Algebra.Ring.CompTypeclasses
+import Mathlib.Combinatorics.Quiver.ReflQuiver
 
 /-!
 # Category instances for `Field`.

@@ -1,7 +1,4 @@
 import BrauerGroup.Morita.ChangOfRings
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.CategoryTheory.Limits.Shapes.Countable
-import Mathlib.Combinatorics.Quiver.ReflQuiver
 
 universe u v w
 
@@ -360,13 +357,13 @@ abbrev MoritaTensorAux1 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [
   (equivModuleOverTensor R A C).symm.trans ((MoritaTensorAux0 R A B C e).trans
       (equivModuleOverTensor R B C))
 
-instance MoritaTensorAux1_additive (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
-    (MoritaTensorAux1 R A B C e).functor.Additive := by
-  exact Functor.additive_of_preserves_binary_products _
+-- instance MoritaTensorAux1_additive (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
+--     (MoritaTensorAux1 R A B C e).functor.Additive := by
+--   exact Functor.additive_of_preserves_binary_products _
 
-instance: Functor.Additive (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
-    Algebra.TensorProduct.includeLeftRingHom) where
-  map_add := rfl
+-- instance: Functor.Additive (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
+--     Algebra.TensorProduct.includeLeftRingHom) where
+--   map_add := rfl
 
 instance: Functor.Linear R (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
     Algebra.TensorProduct.includeLeftRingHom) where
@@ -388,7 +385,7 @@ instance MoritaTensorAux1_linear (e : ModuleCat A ≌ ModuleCat B) [e.functor.Ad
 
 abbrev MoritaTensorLeft (e : IsMoritaEquivalent R A B):
     IsMoritaEquivalent R (A ⊗[R] C) (B ⊗[R] C) where
-  cond := ⟨⟨MoritaTensorAux1 R A B C e.cond.some.eqv, inferInstance, inferInstance⟩⟩
+  cond := ⟨⟨MoritaTensorAux1 R A B C e.cond.some.eqv, inferInstance⟩⟩
 
 open ModuleCat in
 abbrev MoritaTensor (e1 : IsMoritaEquivalent R A B) (e2 : IsMoritaEquivalent R C D):

@@ -1,10 +1,8 @@
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Order.CompletePartialOrder
 import Mathlib.RingTheory.TwoSidedIdeal.BigOperators
+import Mathlib.RingTheory.TwoSidedIdeal.Instances
 import Mathlib.RingTheory.TwoSidedIdeal.Operations
-import Mathlib.RingTheory.SimpleRing.Basic
-import Mathlib.Algebra.BigOperators.Ring
-import Mathlib.Data.Fintype.BigOperators
-import Mathlib.RingTheory.Ideal.Basic
-import Mathlib.Algebra.Algebra.Hom
 
 variable {M : Type*} [AddCommMonoid M] (r : AddCon M) {ι : Type*} (s : Finset ι)
 variable {R : Type*} [Ring R] (t : TwoSidedIdeal R)

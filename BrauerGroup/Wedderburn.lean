@@ -1,12 +1,9 @@
-import Mathlib.RingTheory.SimpleModule
-import Mathlib.RingTheory.Artinian.Instances
 import BrauerGroup.Con
-import Mathlib.Algebra.Ring.Equiv
-import Mathlib.Algebra.Central.Basic
-import Mathlib.LinearAlgebra.Matrix.IsDiag
 import BrauerGroup.MatrixCenterEquiv
-import BrauerGroup.MoritaEquivalence
+import Mathlib.Algebra.Azumaya.Basic
+import Mathlib.Algebra.Central.Defs
 import Mathlib.FieldTheory.IsAlgClosed.Basic
+import Mathlib.RingTheory.HopkinsLevitzki
 
 variable (A : Type*) [Ring A]
 
@@ -581,7 +578,7 @@ lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [
   simp only [endPowEquivMatrix, RingEquiv.coe_trans, Function.comp_apply, equivEndMop_apply,
     RingEquiv.op_apply_apply, unop_op, RingEquiv.coe_mk, Equiv.coe_fn_mk, AlgEquiv.coe_ringEquiv,
     matrixEquivMatrixMop_symm_apply, map_apply, transpose_apply, diagonal, Pi.algebraMap_apply,
-    algebraMap_apply, of_apply, endEquiv]
+    MulOpposite.algebraMap_apply, of_apply, endEquiv]
   split_ifs with h
   · subst h
     ext x : 1

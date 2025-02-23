@@ -73,8 +73,9 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       · rintro rfl; simp
 
     have : Function.Exact (0 : PUnit.{u + 1} →ₗ[K] _) f :=
-      Module.FaithfullyFlat.exact_iff_rTensor_exact (fl := h) (l12 := (0 : PUnit →ₗ[K] _) )
-        (l23 := f.toLinearMap) |>.2 fun x ↦ show F x = 0 ↔ _ by aesop
+      Module.FaithfullyFlat.iff_exact_iff_rTensor_exact K C|>.1 inferInstance
+        (l12 := (0 : PUnit →ₗ[K] _) ) (l23 := f.toLinearMap) |>.2
+          fun x ↦ show F x = 0 ↔ _ by aesop
 
     refine h2 fun x y hxy => ?_
     specialize this (x - y)

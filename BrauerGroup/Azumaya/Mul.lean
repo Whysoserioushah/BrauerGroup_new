@@ -278,7 +278,7 @@ lemma top_square_comm' (A B : Azumaya R) (a : A) (a' : Aᵐᵒᵖ) (b : B) (b' :
   simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
 
 set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 1200000 in
 lemma top_square_comm (A B : Azumaya R) :
     (TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
@@ -364,14 +364,10 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
     simp only [unop_one, smul_eq_mul, mul_one, op_inj] at hr
     exact hr
 
-lemma _root_.FaithfulSMul.of_injective {M' X Y F : Type*} [SMul M' X] [SMul M' Y] [FunLike F X Y]
-    [FaithfulSMul M' X] [MulActionHomClass F M' X Y] (f : F)
-    (hf : Function.Injective f) :
-    FaithfulSMul M' Y where
-  eq_of_smul_eq_smul {_ _} h := eq_of_smul_eq_smul fun m ↦ hf <| by simp_rw [map_smul, h]
 
-example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N):
-  Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
+-- example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N):
+--   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
+
 /--
 A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
@@ -445,12 +441,12 @@ instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M]:
 
 abbrev MatrixAlg (n : ℕ) [NeZero n]: Azumaya R := {
   __ := AlgebraCat.of R (_root_.Matrix (Fin n) (Fin n) R)
-  isAzumaya := IsAzumaya.matrix R n }
+  isAzumaya := IsAzumaya.matrix R (Fin n) }
 
 abbrev EndRn (n : ℕ) [NeZero n]: Azumaya R := {
   __ := AlgebraCat.of R (Module.End R (Fin n → R))
   isAzumaya := IsAzumaya.ofAlgEquiv R _ _
-    LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R n
+    LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R (Fin n)
 }
 
 variable (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]

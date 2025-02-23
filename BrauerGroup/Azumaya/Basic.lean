@@ -1,7 +1,6 @@
 import BrauerGroup.Morita.ChangOfRings
 import BrauerGroup.BrauerGroup
-import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
-import BrauerGroup.Azumaya.Defs
+import Mathlib
 import Mathlib.Algebra.Central.Matrix
 import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.matrixkronecker
@@ -110,7 +109,7 @@ theorem IsAzumaya_iff_CentralSimple [Nontrivial A]: IsAzumaya K A ↔ FiniteDime
       eq_of_smul_eq_smul {k1} {k2} ha := by
         specialize ha (1 : A)
         rw [← Algebra.algebraMap_eq_smul_one, ← Algebra.algebraMap_eq_smul_one] at ha
-        exact NoZeroSMulDivisors.algebraMap_injective _ _ ha
+        exact FaithfulSMul.algebraMap_injective _ _ ha
       fg_top := fin.1
       bij := bijective_of_dim_eq_of_isCentralSimple K _ _
         (AlgHom.mulLeftRight K A) <| tensor_self_op.dim_eq _ _
@@ -255,8 +254,5 @@ instance (n : ℕ) [NeZero n]: FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
     specialize h ⟨0, Nat.pos_of_neZero n⟩ ⟨0, Nat.pos_of_neZero n⟩
     simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one] at h
     exact h
-
-abbrev IsAzumaya.matrix (n : ℕ) [NeZero n]: IsAzumaya R (Matrix (Fin n) (Fin n) R) where
-  bij := Mat.bij R n
 
 end Matrix

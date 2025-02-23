@@ -113,7 +113,7 @@ lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 
   haveI : NeZero (Module.finrank F K) := ⟨by omega⟩
   change IsBrauerEquivalent _ _
   refine ⟨1, Module.finrank F K, one_ne_zero, this.1, ⟨AlgEquiv.trans ?_ <| φ4 K F⟩⟩
-  exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
+  exact dim_one_iso (CrossProduct.asCSA _)
 
 lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
 
@@ -971,13 +971,21 @@ def C_iso_aux'' : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card
     simp only [op_unop, AlgEquiv.apply_symm_apply]
   map_mul' := by
     intro c c'
-    simp only [op_mul, map_mul]
+    simp only [op_mul]
+    conv_rhs => rw [← op_mul]
+    congr 1
+    exact map_mul (C_iso_aux' hα hβ).toAlgHom (op c') (op c)
   map_add' := by
     intro c c'
-    simp only [op_add, map_add]
+    simp only [op_add]
+    nth_rw 2 [← op_add]
+    congr 1
+    exact map_add (C_iso_aux' hα hβ).toLinearMap (op c) (op c')
   commutes' := by
     intro f
-    simp only [algebraMap_val, op_smul, op_one, map_smul, map_one, MulOpposite.algebraMap_apply]
+    simp only [algebraMap_val, op_smul, op_one]
+    erw [map_smul (C_iso_aux' hα hβ).toLinearMap f 1]
+    simp [map_one, MulOpposite.algebraMap_apply]
     rw [Algebra.smul_def]
     simp only [MulOpposite.algebraMap_apply, _root_.mul_one]
 
@@ -1193,14 +1201,15 @@ instance [DecidableEq (Module.End C SM)] : DivisionRing ((Module.End C SM)ᵐᵒ
   letI : DivisionRing (Module.End C SM) := Module.End.divisionRing
   infer_instance
 
-lemma isBrauerEquivalent : IsBrauerEquivalent (⟨A ⊗[F] B⟩ : CSA F) ⟨C⟩ := by
+lemma isBrauerEquivalent : IsBrauerEquivalent (⟨.of F (A ⊗[F] B)⟩ : CSA F) ⟨.of F C⟩ := by
   let iso1 := C_iso hα hβ |>.mapMatrix (m := Fin (finrank F K))
   let iso11 := iso1.trans (Matrix.compAlgEquiv _ _ _ _) |>.trans
     (Matrix.reindexAlgEquiv _ _ finProdFinEquiv)
   let iso2 := φ4 hα hβ
   let iso3 := iso11.trans iso2.symm
   haveI : NeZero (finrank F K) := ⟨by have : 0 < finrank F K := finrank_pos; omega⟩
-  exact ⟨1, finrank F K, one_ne_zero, this.1, ⟨(dim_one_iso (CSA.mk (A ⊗[F] B))).trans iso3.symm⟩⟩
+  exact ⟨1, finrank F K, one_ne_zero, this.1, ⟨(dim_one_iso
+    (⟨AlgebraCat.of F (A ⊗[F] B)⟩ : CSA F)).trans iso3.symm⟩⟩
 
 end iso
 

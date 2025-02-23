@@ -3,13 +3,12 @@ Copyright (c) 2022 Jujian Zhang. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jujian Zhang
 -/
--- import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
-import Mathlib.CategoryTheory.Linear.LinearFunctor
-import BrauerGroup.Morita.Basic
-import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
-import Mathlib.Data.Matrix.Basic
 import BrauerGroup.MoritaEquivalence
-import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
+import Mathlib.Algebra.Category.ModuleCat.Abelian
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.RingTheory.HopkinsLevitzki
+import Mathlib.RingTheory.Morita.Basic
+import Mathlib.RingTheory.SimpleModule.Rank
 
 open CategoryTheory Limits
 
@@ -20,106 +19,10 @@ universe v u₁ u₂ u₃ w
 instance {R₀ S} [CommRing R₀] [Ring S] [Algebra R₀ S]:
     Linear R₀ (ModuleCat S) := Algebra.instLinear
 
-instance restrictScalarsEquivalenceOfRingEquiv_additive {R S} [Ring R] [Ring S] (e : R ≃+* S) :
-    (restrictScalarsEquivalenceOfRingEquiv e).functor.Additive where
-
-scoped instance restrictScalarsEquivalenceOfRingEquiv_linear
-      {R₀ R S} [CommRing R₀] [Ring R] [Ring S] [Algebra R₀ R] [Algebra R₀ S]
-      (e : R ≃ₐ[R₀] S) :
-    (restrictScalarsEquivalenceOfRingEquiv e.toRingEquiv).functor.Linear R₀ where
-  map_smul {M N} f r₀ := by
-    ext m
-    simp only [AlgEquiv.toRingEquiv_eq_coe, restrictScalarsEquivalenceOfRingEquiv,
-      RingEquiv.toRingHom_eq_coe, AlgEquiv.toRingEquiv_toRingHom, AddEquiv.toEquiv_eq_coe,
-      Equiv.toFun_as_coe, EquivLike.coe_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm,
-      AddEquiv.coe_refl, AddEquiv.refl_symm, restrictScalars.map_apply, hom_smul,
-      LinearMap.smul_apply]
-    letI : Module R₀ N := Algebra.instModuleCarrier_brauerGroup
-    show (algebraMap R₀ R₀) r₀ • _ = e (algebraMap _ _ r₀) • f.hom m
-    rw [AlgEquiv.commutes]
-    rfl
-
-
 universe u₀ u u' u''  v'
 
 variable (R : Type u₀) [CommRing R]
 
-instance (priority := low) {R₀ S} [CommRing R₀] [Ring S] [Algebra R₀ S]:
-    Linear R₀ (ModuleCat S) := Algebra.instLinear
-/--
-Let `A` and `B` be `R`-algebras. We say that `A` and `B` are Morita equivalent if the categories of
-`A`-modules and `B`-modules are equivalent as `R`-linear categories.
--/
-@[ext]
-structure MoritaEquivalence
-    (R : Type u) [CommRing R]
-    (A : Type u₁) [Ring A] [Algebra R A]
-    (B : Type u₂) [Ring B] [Algebra R B] where
-  /--the underlying equivalence of categories-/
-  eqv : ModuleCat.{max u₁ u₂} A ≌ ModuleCat.{max u₁ u₂} B
-  additive : eqv.functor.Additive := by infer_instance
-  linear : eqv.functor.Linear R := by infer_instance
-
-namespace MoritaEquivalence
-
-attribute [instance] MoritaEquivalence.additive MoritaEquivalence.linear
-
-/--
-For any `R`-algebra `A`, `A` is Morita equivalent to itself.
--/
-def refl (A : Type u₁) [Ring A] [Algebra R A] : MoritaEquivalence R A A where
-  eqv := CategoryTheory.Equivalence.refl
-  additive := CategoryTheory.Functor.instAdditiveId
-  linear := CategoryTheory.Functor.instLinearId
-
-/--
-For any `R`-algebras `A` and `B`, if `A` is Morita equivalent to `B`, then `B` is Morita equivalent
-to `A`.
--/
-def symm {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
-    (e : MoritaEquivalence R A B) : MoritaEquivalence R B A where
-  eqv := e.eqv.symm
-  additive := e.eqv.inverse_additive
-  linear := e.eqv.inverseLinear R
-
--- TODO: We have restricted all the rings to the same universe here because of the complication
--- `max u₁ u₂`, `max u₂ u₃` vs `max u₁ u₃`. But once we proved the definition of Morita
--- equivalence is equivalent to the existence of a full idempotent element, we can remove this
--- restriction in the universe.
--- Or alternatively, @alreadydone has sketched an argument on how the universe restriction can be
--- removed via a categorical argument,
--- see [here](https://github.com/leanprover-community/mathlib4/pull/20640#discussion_r1912189931)
-/--
-For any `R`-algebras `A`, `B`, and `C`, if `A` is Morita equivalent to `B` and `B` is Morita
-equivalent to `C`, then `A` is Morita equivalent to `C`.
--/
-def trans {A B C : Type u₁}
-    [Ring A] [Algebra R A] [Ring B] [Algebra R B] [Ring C] [Algebra R C]
-    (e : MoritaEquivalence R A B) (e' : MoritaEquivalence R B C) :
-    MoritaEquivalence R A C where
-  eqv := e.eqv.trans e'.eqv
-  additive := Functor.instAdditiveComp e.eqv.functor e'.eqv.functor
-  linear := Functor.instLinearComp e.eqv.functor e'.eqv.functor
-
-variable {R} in
-/--
-Isomorphic `R`-algebras are Morita equivalent.
--/
-noncomputable def ofAlgEquiv {A : Type u₁} {B : Type u₂}
-    [Ring A] [Algebra R A] [Ring B] [Algebra R B] (f : A ≃ₐ[R] B) :
-    MoritaEquivalence R A B where
-  eqv := ModuleCat.restrictScalarsEquivalenceOfRingEquiv f.symm.toRingEquiv
-  linear := restrictScalarsEquivalenceOfRingEquiv_linear f.symm
-
-end MoritaEquivalence
-
-/--
-Two rings are Morita equivalent if their module categories are equivalent.
--/
-structure _root_.IsMoritaEquivalent
-    (A : Type u₁) [Ring A] [Algebra R A]
-    (B : Type u₂) [Ring B] [Algebra R B] : Prop where
-  cond : Nonempty <| MoritaEquivalence R A B
 
 namespace IsMoritaEquivalent
 
@@ -190,26 +93,45 @@ variable (A B : Type u) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
 instance (n : ℕ) [NeZero n]: Functor.Additive (moritaEquivalentToMatrix A (Fin n)).functor :=
   Functor.additive_of_preserves_binary_products _
 
+-- instance (N : ModuleCat A): Module R N := Module.compHom N (algebraMap R A)
+
+-- instance (N : ModuleCat A): SMulCommClass A R N := sorry
+
+-- instance (n : ℕ) [NeZero n] (N : ModuleCat A): SMulCommClass (Matrix (Fin n) (Fin n) A) R (Fin n → N) where
+--   smul_comm M r v := by
+--     ext i
+--     simp only [Pi.smul_apply]
+--     change ∑ _, _ = r • (∑ _, _)
+--     simp
+--     rw [Finset.smul_sum]
+--     refine Finset.sum_congr rfl fun j _ ↦ by
+--       exact smul_comm _ _ _
+
+set_option maxHeartbeats 400000 in
 instance (n : ℕ) [NeZero n] : Functor.Linear R (moritaEquivalentToMatrix A (Fin n)).functor where
   map_smul {M N} f r := by
     ext m
     simp [toModuleCatOverMatrix]
     ext i
+    rw [moritaEquivalentToMatrix_functor_map_hom_apply]
+    simp only [hom_smul, LinearMap.smul_apply, moritaEquivalentToMatrix,
+      toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
+      toModuleCatOverMatrix_map, hom_ofHom, LinearMap.coe_mk, AddHom.coe_mk]
+    -- simp? [moritaEquivalentToMatrix, toModuleCatOverMatrix]
+
     -- rw [LinearMap.smul_apply]
     -- simp only [moritaEquivalentToMatrix] at m
     -- erw [toModuleCatOverMatrix_obj_carrier] at m
-    change (algebraMap R A r) • (f.hom _) = ((algebraMap R (Matrix (Fin (n)) (Fin (n)) A) r) • (fun i ↦  _)) i
+    -- change (algebraMap R A r) • (f.hom _) = ((algebraMap R (Matrix (Fin (n)) (Fin (n)) A) r) • (fun i ↦  _)) i
     -- erw [Matrix.matrix_smul_vec_apply]
-    change _ = ∑ _, _
-    simp only [Matrix.algebraMap_matrix_apply, ite_smul, zero_smul, Finset.sum_ite_eq,
-      Finset.mem_univ, ↓reduceIte]
+    change (algebraMap R A r) • (f.hom _) = ∑ j : Fin n, (algebraMap R (Matrix (Fin n) (Fin n) A) r) _ _ • _
+    simp [Matrix.algebraMap_matrix_apply]
 
 -- attribute [-instance] Linear.preadditiveIntLinear Linear.preadditiveNatLinear in
 def matrix (n : ℕ) : MoritaEquivalence R A (Matrix (Fin (n+1)) (Fin (n + 1)) A) :=
   letI : NeZero (n + 1) := ⟨by omega⟩
   { eqv :=
       moritaEquivalentToMatrix A _
-    additive := inferInstance
     linear := inferInstance}
   -- additive := inferIns
   -- linear := _
@@ -329,8 +251,8 @@ lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
       simp_all [one_ne_zero, false_or, Ideal.mem_bot],
       by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : A)), ModuleCat.hom_ext <|
       LinearMap.ext fun r => by
-      simp only [AlgHom.toRingHom_eq_coe, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
-        RingHom.coe_coe, mopToEnd_apply_hom_apply, MulOpposite.unop_op]
+      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, mopToEnd_apply, MulOpposite.unop_op,
+        hom_ofHom, LinearMap.coe_mk, AddHom.coe_mk]
       rw [← smul_eq_mul, ← φ.hom.map_smul, smul_eq_mul, mul_one]⟩⟩
 
 -- noncomputable def mopEquivEnd : Rᵐᵒᵖ ≃+* End (ModuleCat.of R R) :=

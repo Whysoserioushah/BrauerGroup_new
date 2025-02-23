@@ -1,8 +1,6 @@
 import BrauerGroup.CentralSimple
 import BrauerGroup.FieldCat
-import Mathlib.Analysis.Complex.Polynomial.Basic
-import Mathlib.LinearAlgebra.FreeModule.PID
-import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
+import Mathlib
 
 suppress_compilation
 universe u v v₁ v₂ w
@@ -175,49 +173,10 @@ def tensor_op_self
 -/
 
 
-structure CSA (K : Type u) [Field K] where
-  (carrier : Type v)
-  [ring : Ring carrier]
-  [algebra : Algebra K carrier]
-  [isCentral : Algebra.IsCentral K carrier]
-  [isSimple : IsSimpleRing carrier]
-  [fin_dim : FiniteDimensional K carrier]
-
-instance : CoeSort (CSA.{u, v} K) (Type v) where
-  coe A := A.carrier
-
-instance (A : CSA K) : Ring A := A.ring
-
-instance (A : CSA K) : Algebra K A := A.algebra
-
-instance (A : CSA K) : Algebra.IsCentral K A := A.isCentral
-
-instance (A : CSA K) : IsSimpleRing A := A.isSimple
-
-instance (A : CSA K) : FiniteDimensional K A := A.fin_dim
-
 variable {K : Type u} [Field K]
 
--- structure BrauerEquivalence (A B : CSA K) where
--- (n m : ℕ) [hn: NeZero n] [hm : NeZero m]
--- (iso: Matrix (Fin n) (Fin n) A ≃ₐ[K] Matrix (Fin m) (Fin m) B)
-
--- instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.n := h.hn
--- instance (A B : CSA K) (h : BrauerEquivalence A B) : NeZero h.m := h.hm
-
-def IsBrauerEquivalent (A B : CSA K) : Prop :=
-  ∃ n m : ℕ, n ≠ 0 ∧ m ≠ 0 ∧
-    Nonempty (Matrix (Fin n) (Fin n) A ≃ₐ[K] Matrix (Fin m) (Fin m) B)
-  -- Nonempty (BrauerEquivalence A B)
 
 namespace IsBrauerEquivalent
-
-def refl (A : CSA K) : IsBrauerEquivalent A A :=
-  ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.refl⟩⟩
-
-def symm {A B : CSA K} (h : IsBrauerEquivalent A B) : IsBrauerEquivalent B A := by
-  obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := h
-  exact ⟨m, n, hm, hn, ⟨iso.symm⟩⟩
 
 def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
     (Matrix (Fin n × Fin m) (Fin n × Fin m) A) ≃ₐ[K] Matrix (Fin (n * m)) (Fin (n * m)) A :=
@@ -242,17 +201,6 @@ def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
     tauto
 }
 
-def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivalent B C) :
-    IsBrauerEquivalent A C := by
-  obtain ⟨n, m, hn, hm, ⟨iso1⟩⟩  := hAB
-  obtain ⟨p, q, hp, hq, ⟨iso2⟩⟩  := hBC
-  refine ⟨p * n, m * q, by simp_all, by simp_all,
-    ⟨matrix_eqv' _ _ _ |>.symm.trans $ Matrix.compAlgEquiv _ _ _ _|>.symm.trans $
-      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.compAlgEquiv _ _ _ _|>.trans $
-      Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans $
-      Matrix.compAlgEquiv _ _ _ _|>.symm.trans $ iso2.mapMatrix.trans $
-      Matrix.compAlgEquiv _ _ _ _|>.trans $ matrix_eqv' _ _ _⟩⟩
-
 lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B :=
     ⟨1, 1, one_ne_zero, one_ne_zero, ⟨h.mapMatrix (m := (Fin 1))⟩⟩
 
@@ -269,34 +217,34 @@ def CSA_Setoid : Setoid (CSA K) where
   r := IsBrauerEquivalent
   iseqv := IsBrauerEquivalent.Braur_is_eqv
 
-def mul (A B : CSA K) : CSA K where
-  carrier := A ⊗[K] B
-  fin_dim := Module.Finite.tensorProduct K A B
+def mul (A B : CSA K) : CSA K :=
+  { __ := AlgebraCat.of K (A ⊗[K] B)
+    fin_dim := Module.Finite.tensorProduct K A B}
 
 def is_fin_dim_of_mop (A : Type*) [Ring A] [Algebra K A] [FiniteDimensional K A] :
     FiniteDimensional K Aᵐᵒᵖ := by
   have f:= MulOpposite.opLinearEquiv K (M:= A)
   exact Module.Finite.of_surjective (M:= A) (N:= Aᵐᵒᵖ) f (LinearEquiv.surjective _)
 
-instance inv (A : CSA K) : CSA K where
-  carrier := Aᵐᵒᵖ
-  fin_dim := is_fin_dim_of_mop A
+instance inv (A : CSA K) : CSA K := {
+  __ := AlgebraCat.of K Aᵐᵒᵖ
+  fin_dim := is_fin_dim_of_mop A }
 
-def one_in (n : ℕ) [hn : NeZero n] : CSA K := ⟨Matrix (Fin n) (Fin n) K⟩
+def one_in (n : ℕ) [hn : NeZero n] : CSA K := ⟨.of K (Matrix (Fin n) (Fin n) K)⟩
 
-def one_in' : CSA K := ⟨K⟩
+def one_in' : CSA K := ⟨.of K K⟩
 
 def one_mul_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
-  ⟨A ⊗[K] (Matrix (Fin n) (Fin n) K)⟩
+  ⟨.of K (A ⊗[K] (Matrix (Fin n) (Fin n) K))⟩
 
 def mul_one_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
-  ⟨(Matrix (Fin n) (Fin n) K) ⊗[K] A⟩
+  ⟨.of K ((Matrix (Fin n) (Fin n) K) ⊗[K] A)⟩
 
-def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A'): CSA K where
-  carrier := A'
+def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A'): CSA K := {
+  __ := AlgebraCat.of K A'
   isCentral := AlgEquiv.isCentral e
   isSimple := ⟨TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv.symm |>.isSimpleOrder⟩
-  fin_dim := LinearEquiv.finiteDimensional e.toLinearEquiv
+  fin_dim := LinearEquiv.finiteDimensional e.toLinearEquiv }
 
 def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
   eqv_in (one_mul_in n A) (Matrix (Fin n) (Fin n) A) $
@@ -455,18 +403,16 @@ theorem eqv_tensor_eqv
   exact ⟨n * p, m * q, by simp_all, by simp_all, ⟨kroneckerMatrixTensor' .. |>.symm.trans <|
     Algebra.TensorProduct.congr e1 e2|>.trans <| kroneckerMatrixTensor' ..⟩⟩
 
-abbrev BrGroup := Quotient $ CSA_Setoid (K := K)
-
-instance Mul: Mul $ BrGroup (K := K) :=
+instance Mul: Mul $ BrauerGroup (K := K) :=
   ⟨Quotient.lift₂ (fun A B ↦ Quotient.mk (CSA_Setoid) $ BrauerGroup.mul A B)
   (by
     simp only [Quotient.eq]
     intro A B C D hAB hCD
     exact eqv_tensor_eqv A C B D hAB hCD)⟩
 
-instance One: One (BrGroup (K := K)) := ⟨Quotient.mk (CSA_Setoid) one_in'⟩
+instance One: One (BrauerGroup (K := K)) := ⟨Quotient.mk (CSA_Setoid) one_in'⟩
 
-theorem mul_assoc' (A B C : BrGroup (K := K)) : A * B * C = A * (B * C) := by
+theorem mul_assoc' (A B C : BrauerGroup (K := K)) : A * B * C = A * (B * C) := by
   induction' A using Quotient.inductionOn' with A
   induction' B using Quotient.inductionOn' with B
   induction' C using Quotient.inductionOn' with C
@@ -521,31 +467,31 @@ lemma inv_eqv (A B: CSA K) (hAB : IsBrauerEquivalent A B):
   refine ⟨n, m, hn, hm, ⟨(matrixEquivMatrixMop_algebra _ _ _).trans $
     (AlgEquiv.op iso).trans (matrixEquivMatrixMop_algebra _ _ _).symm⟩⟩
 
-instance Inv: Inv (BrGroup (K := K)) := ⟨Quotient.lift (fun A ↦ Quotient.mk (CSA_Setoid) $ inv A)
+instance Inv: Inv (BrauerGroup (K := K)) := ⟨Quotient.lift (fun A ↦ Quotient.mk (CSA_Setoid) $ inv A)
 (by
   intro A B hAB
   change IsBrauerEquivalent _ _ at hAB
   simp only [Quotient.eq]; change IsBrauerEquivalent _ _
   exact inv_eqv (K := K) A B hAB)⟩
 
-theorem mul_left_inv' (A : BrGroup (K := K)) : A⁻¹ * A = 1 := by
+theorem mul_left_inv' (A : BrauerGroup (K := K)) : A⁻¹ * A = 1 := by
   induction' A using Quotient.inductionOn' with A
   change _ = Quotient.mk'' one_in'
   apply Quotient.sound ; exact inv_mul A
 
-theorem one_mul' (A : BrGroup (K := K)) : 1 * A = A := by
+theorem one_mul' (A : BrauerGroup (K := K)) : 1 * A = A := by
   induction' A using Quotient.inductionOn' with A
   change Quotient.mk'' one_in' * _ = _ ; apply Quotient.sound
   exact (mul_one 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     (dim_one_iso _) AlgEquiv.refl))|>.symm
 
-theorem mul_one' (A : BrGroup (K := K)) : A * 1 = A := by
+theorem mul_one' (A : BrauerGroup (K := K)) : A * 1 = A := by
   induction' A using Quotient.inductionOn' with A
   change _ * Quotient.mk'' one_in' = _ ; apply Quotient.sound
   exact (one_mul 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     AlgEquiv.refl (dim_one_iso _)))|>.symm
 
-instance Bruaer_Group : Group (BrGroup (K := K)) where
+instance Bruaer_Group : Group (BrauerGroup (K := K)) where
   mul_assoc := mul_assoc'
   one_mul := one_mul'
   mul_one := mul_one'
@@ -556,17 +502,17 @@ lemma Alg_closed_equiv_one [IsAlgClosed K]: ∀(A : CSA K), IsBrauerEquivalent A
   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed K A
   exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A|>.trans iso⟩⟩
 
-lemma Alg_closed_eq_one [IsAlgClosed K]: ∀(A : BrGroup (K := K)), A = 1 := by
+lemma Alg_closed_eq_one [IsAlgClosed K]: ∀(A : BrauerGroup (K := K)), A = 1 := by
   intro A ; induction' A using Quotient.inductionOn' with A
   change _ = Quotient.mk'' one_in' ; apply Quotient.sound
   change IsBrauerEquivalent _ _; exact Alg_closed_equiv_one A
 
-instance [IsAlgClosed K]: Unique (BrGroup (K := K)) where
+instance [IsAlgClosed K]: Unique (BrauerGroup (K := K)) where
   default := 1
   uniq := Alg_closed_eq_one
 
-theorem Alg_closed_Brauer_trivial [IsAlgClosed K]: (⊤ : Subgroup BrGroup) =
-    (⊥ : Subgroup $ BrGroup (K := K)) :=
+theorem Alg_closed_Brauer_trivial [IsAlgClosed K]: (⊤ : Subgroup (BrauerGroup K)) =
+    (⊥ : Subgroup $ BrauerGroup (K := K)) :=
   Subgroup.ext fun _ => ⟨fun _ ↦ Alg_closed_eq_one _, fun _ ↦ ⟨⟩⟩
 
 end BrauerGroup
@@ -889,13 +835,11 @@ end someEquivs
 
 section Q_to_C
 
-abbrev BaseChange : BrGroup (K := K) →* BrGroup (K := E) where
+abbrev BaseChange : BrauerGroup (K := K) →* BrauerGroup (K := E) where
   toFun :=
     Quotient.map'
     (fun A =>
-    { carrier := E ⊗[K] A
-      ring := inferInstance
-      algebra := inferInstance
+    { __ := AlgebraCat.of E (E ⊗[K] A)
       fin_dim := inferInstance }) $ fun A B => fun ⟨m, n, hm, hn, ⟨e⟩⟩ =>
           ⟨m, n, hm, hn, ⟨(someEquivs.e1 A m).trans $ (someEquivs.e2 A m).trans $
             (someEquivs.e3 A m).trans $ (someEquivs.e4 A m).trans $ AlgEquiv.symm $
@@ -913,7 +857,7 @@ abbrev BaseChange : BrGroup (K := K) →* BrGroup (K := E) where
     simp only [Quotient.map'_mk'']
     erw [Quotient.map'_mk'']
     erw [Quotient.eq'']
-    change IsBrauerEquivalent ⟨E ⊗[K] (A ⊗[K] B)⟩ _
+    change IsBrauerEquivalent ⟨.of E (E ⊗[K] (A ⊗[K] B))⟩ _
     exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨(dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <|
       someEquivs.e6 A B⟩⟩
 
@@ -928,7 +872,7 @@ lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
 
 end Q_to_C
 
-instance IsAbelBrauer : CommGroup (BrGroup (K := K)) := {
+instance IsAbelBrauer : CommGroup (BrauerGroup (K := K)) := {
   __ := BrauerGroup.Bruaer_Group
   mul_comm := fun A B ↦ by
     induction' A using Quotient.inductionOn' with A
@@ -1010,17 +954,20 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
   exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix <| AlgEquiv.symm <| baseChange_idem.Aux' ..⟩⟩
 
 def Br : FieldCat ⥤ CommGrp where
-  obj F := .of $ BrGroup (K := F)
-  map {F K} f := @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f.hom)
+  obj F := .of $ BrauerGroup (K := F)
+  map {F K} f := CommGrp.ofHom <| @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f.hom)
   map_id F := by
     ext A
-    simp only [CommGrp.coe_of, MonoidHom.coe_mk, OneHom.coe_mk, CommGrp.coe_id', id_eq]
+    simp only [CommGrp.coe_of, MonoidHom.coe_mk, OneHom.coe_mk, CommGrp.coe_id, id_eq]
     simp only [CommGrp.coe_of] at A
     induction' A using Quotient.inductionOn' with A
-    simp only [Quotient.map'_mk'', Quotient.eq'']
+    simp only [FieldCat.hom_id, CommGrp.hom_ofHom, MonoidHom.coe_mk, OneHom.coe_mk,
+      Quotient.map'_mk'', CommGrp.hom_id, MonoidHom.id_apply, Quotient.eq]
     change IsBrauerEquivalent _ _
     exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩⟩
   map_comp {F K E} f g := by
+    simp only [FieldCat.hom_comp, ← CommGrp.ofHom_comp]
+    congr 1
     apply (config := { allowSynthFailures := true }) baseChange_idem
     letI : Algebra F E := RingHom.toAlgebra (f ≫ g).hom
     letI : Algebra F K := RingHom.toAlgebra f.hom

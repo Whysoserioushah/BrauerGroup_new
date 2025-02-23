@@ -50,7 +50,8 @@ theorem isSimple_over_extension_iff_subsingleton
     rw [← not_subsingleton_iff_nontrivial] at this
     contradiction
 
--- set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 60000 in
+set_option maxHeartbeats 400000 in
 theorem centralSimple_over_extension_iff_nontrivial
     [Nontrivial A] [FiniteDimensional k A] [FiniteDimensional k K] :
     (Algebra.IsCentral k A ∧ IsSimpleRing A) ↔
@@ -116,15 +117,15 @@ theorem centralsimple_over_extension_iff
     · rwa [isSimple_over_extension_iff_subsingleton k A K]
   · apply centralSimple_over_extension_iff_nontrivial
 
-def extension_CSA (A : CSA k) [FiniteDimensional k K]: CSA K where
-  carrier := K ⊗[k] A
-  fin_dim := Module.Finite.base_change k K A.carrier
+def extension_CSA (A : CSA k) [FiniteDimensional k K]: CSA K := {
+  __ := AlgebraCat.of K (K ⊗[k] A)
+  fin_dim := Module.Finite.base_change k K A.carrier }
 
 def extension_inv [FiniteDimensional k A]
     [Algebra.IsCentral K (K ⊗[k] A)] [IsSimpleRing (K ⊗[k] A)]
     [FiniteDimensional K (K ⊗[k] A)]
-    [FiniteDimensional k K]: CSA k where
-  carrier := A
+    [FiniteDimensional k K]: CSA k := {
+  __ := AlgebraCat.of k A
   isCentral := centralsimple_over_extension_iff k A K |>.2 ⟨inferInstance, inferInstance⟩ |>.1
   isSimple := centralsimple_over_extension_iff k A K |>.2 ⟨inferInstance, inferInstance⟩ |>.2
   fin_dim := by
@@ -148,7 +149,7 @@ def extension_inv [FiniteDimensional k A]
       simp only [nezero, false_or] at this
       exact this
     haveI : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
-    exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj
+    exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj }
 
 theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
     [hk_bar : IsAlgClosure k k_bar] [hA : FiniteDimensional k A]:

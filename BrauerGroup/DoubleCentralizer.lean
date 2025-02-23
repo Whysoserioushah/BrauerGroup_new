@@ -278,6 +278,7 @@ variable {F B : Type u}
 variable [Field F] [Ring B] [Algebra F B] [IsSimpleRing B] [FiniteDimensional F B]
 
 variable (F B) in
+set_option synthInstance.maxHeartbeats 40000 in
 def centralizerMulLeftCopy :
     (Subalgebra.centralizer F (Set.range (LinearMap.mulLeft F) : Set <| Module.End F B)) →ₗ[F]
     (B →ₗ[Subalgebra.center F B] B) where
@@ -672,6 +673,8 @@ noncomputable def auxRight (B : Subalgebra F A) (C : Type u) [Ring C] [Algebra F
       rw [map_mul]
       rfl)
 
+set_option synthInstance.maxHeartbeats 120000 in
+set_option maxHeartbeats 400000 in
 instance : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
   constructor
   let eqv : (A ⊗[F] Module.End.rightMul F B) ≃ₐ[F] (Bᵐᵒᵖ  ⊗[F] A):=

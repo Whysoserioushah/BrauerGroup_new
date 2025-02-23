@@ -10,7 +10,7 @@ suppress_compilation
 open FiniteDimensional BrauerGroup
 
 variable {F K : Type} [Field K] [Field F] [Algebra F K]
-variable (X : BrGroup (K := F))
+variable (X : BrauerGroup (K := F))
 
 variable (K) in
 structure GoodRep where
@@ -21,7 +21,7 @@ dim_eq_square : Module.finrank F carrier = (Module.finrank F K) ^ 2
 
 namespace GoodRep
 
-variable {X : BrGroup (K := F)} (A B : GoodRep K X)
+variable {X : BrauerGroup (K := F)} (A B : GoodRep K X)
 
 section basic
 
@@ -539,7 +539,7 @@ noncomputable def galAct : Rep ℤ (K ≃ₐ[F] K) :=
 
 variable [FiniteDimensional F K]
 
-lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrGroup (K := F)) :
+lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrauerGroup (K := F)) :
     X ∈ RelativeBrGroup K F ↔
     Nonempty (GoodRep K X) := by
   induction X using Quotient.inductionOn' with | h X =>
@@ -560,7 +560,7 @@ open groupCohomology
 
 namespace GoodRep
 
-variable {X : BrGroup (K := F)} (A : GoodRep K X)
+variable {X : BrauerGroup (K := F)} (A : GoodRep K X)
 
 def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
   Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles x_)
@@ -585,7 +585,7 @@ namespace GoodRep
 
 section galois
 
-variable {X : BrGroup (K := F)} (A : GoodRep K X)
+variable {X : BrauerGroup (K := F)} (A : GoodRep K X)
 
 omit [FiniteDimensional F K] in
 lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
@@ -1859,7 +1859,7 @@ instance [IsGalois F K] : FiniteDimensional F (CrossProduct ha) :=
     omega)
 
 def asCSA [IsGalois F K] : CSA F :=
-⟨CrossProduct ha⟩
+  ⟨.of F (CrossProduct ha)⟩
 
 end CrossProduct
 
@@ -1876,9 +1876,9 @@ open GoodRep.CrossProduct
 variable [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
 
 def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
-⟨Quotient.mk'' ⟨asCSA (isMulTwoCocycle_of_twoCocycles a)⟩, by
+⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_twoCocycles a)), by
   rw [mem_relativeBrGroup_iff_exists_goodRep]
-  exact ⟨⟨⟨asCSA (isMulTwoCocycle_of_twoCocycles a)⟩, rfl,
+  exact ⟨⟨(asCSA (isMulTwoCocycle_of_twoCocycles a)), rfl,
     ι (isMulTwoCocycle_of_twoCocycles a),
     dim_eq_square (isMulTwoCocycle_of_twoCocycles a)⟩⟩⟩
 
