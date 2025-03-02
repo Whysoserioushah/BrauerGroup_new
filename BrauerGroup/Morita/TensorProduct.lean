@@ -137,7 +137,8 @@ lemma TensorModule.hom_comp {M N K : TensorModule R A C} (f : M ⟶ N) (g : N �
 @[ext]
 lemma TensorModule.hom_ext {M N : TensorModule R A C} (f g : M ⟶ N) (h : f.hom = g.hom):
   f = g := by
-  cases f; cases g
+  rcases f
+  rcases g
   simp_all
 
 @[simps]

@@ -122,7 +122,7 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
 
   obtain ⟨a, a', ha, ha', ⟨e⟩⟩ := eq2
   haveI : FiniteDimensional K (Matrix (Fin a') (Fin a') B) :=
-    LinearEquiv.finiteDimensional (matrixEquivTensor K B (Fin a')).toLinearEquiv.symm
+    LinearEquiv.finiteDimensional (matrixEquivTensor (Fin a') K B).toLinearEquiv.symm
   haveI : NeZero a' := ⟨ha'⟩
   haveI : NeZero a := ⟨ha⟩
   obtain ⟨isoAB⟩ := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin a') (Fin a') B) a (a' * m)

@@ -277,26 +277,25 @@ lemma top_square_comm' (A B : Azumaya R) (a : A) (a' : Aᵐᵒᵖ) (b : B) (b' :
   ext a0 b0
   simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
+-- set_option synthInstance.maxHeartbeats 100000 in
+set_option maxHeartbeats 400000 in
+open TensorProduct.AlgebraTensorModule in
+lemma top_square_comm'' (A B : Azumaya R) :
+    (TensorProduct.homTensorHomMap R A B A B) ∘ₗ (Algebra.TensorProduct.congr
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
+    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij)).toLinearMap
+    = (AlgHom.mulLeftRight R (A ⊗[R] B)).toLinearMap ∘ₗ
+    (e (R := R) (A := A) (B := B)).toLinearEquiv.toLinearMap := by
+  ext a b c d a' b'
+  dsimp
+  simp only [AlgHom.mulLeftRight_apply, Algebra.TensorProduct.tmul_mul_tmul, unop_op]
+
 lemma top_square_comm (A B : Azumaya R) :
     (TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))
-    = (AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e := by
-  ext aabb : 1
-  induction aabb using TensorProduct.induction_on with
-  | zero => rfl
-  | tmul aa bb =>
-    induction aa using TensorProduct.induction_on with
-    | zero => simp [TensorProduct.zero_tmul]
-    | tmul a1 a2 =>
-      induction bb using TensorProduct.induction_on with
-      | zero => simp [TensorProduct.zero_tmul]
-      | tmul b1 b2 => rw [top_square_comm']
-      | add _ _ _ _ => simp_all [TensorProduct.tmul_add]
-    | add _ _ _ _ => simp_all [TensorProduct.add_tmul]
-  | add _ _ _ _ => simp_all [map_add]
+    = (AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e :=
+  congr_arg DFunLike.coe <| top_square_comm'' R A B
 
 
 /--

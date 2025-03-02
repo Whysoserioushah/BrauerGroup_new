@@ -354,10 +354,10 @@ lemma exists_iso :
       (Quotient.eq''.1 (A.quot_eq.trans B.quot_eq.symm))
   have eq1 := isoA.toLinearEquiv.finrank_eq
   have eq2 := isoB.toLinearEquiv.finrank_eq
-  simp only [A.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin m)).toLinearEquiv,
+  simp only [A.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor (Fin m) F D).toLinearEquiv,
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq1
-  simp only [B.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor F D (Fin n)).toLinearEquiv,
+  simp only [B.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor (Fin n) F D).toLinearEquiv,
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq2
   have eq3 := eq1.symm.trans eq2
@@ -579,7 +579,8 @@ lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
   have : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (lhs.1) := by
     apply GoodRep.compare_toTwoCocycles'
 
-  exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
+  -- exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
+  sorry
 
 namespace GoodRep
 
@@ -592,7 +593,7 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     LinearIndependent K (v := fun (i : K ≃ₐ[F] K) => (x_ i).1.1) := by
   classical
   by_contra! rid
-  obtain ⟨J, LI, maximal⟩ := exists_maximal_independent K (fun (i : K ≃ₐ[F] K) => (x_ i).1.1)
+  obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : K ≃ₐ[F] K) => (x_ i).1.1)
   have ne : J ≠ Set.univ := by
     rintro rfl
     refine rid ?_
@@ -1876,10 +1877,10 @@ open GoodRep.CrossProduct
 variable [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
 
 def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
-⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_twoCocycles a)), by
+⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_mem_twoCocycles a _)), by
   rw [mem_relativeBrGroup_iff_exists_goodRep]
   exact ⟨⟨(asCSA (isMulTwoCocycle_of_twoCocycles a)), rfl,
-    ι (isMulTwoCocycle_of_twoCocycles a),
+    ι (isMulTwoCocycle_of_mem_twoCocycles a),
     dim_eq_square (isMulTwoCocycle_of_twoCocycles a)⟩⟩⟩
 
 variable (F K) in

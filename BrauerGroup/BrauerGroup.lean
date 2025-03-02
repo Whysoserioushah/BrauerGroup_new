@@ -224,7 +224,8 @@ def mul (A B : CSA K) : CSA K :=
 def is_fin_dim_of_mop (A : Type*) [Ring A] [Algebra K A] [FiniteDimensional K A] :
     FiniteDimensional K Aᵐᵒᵖ := by
   have f:= MulOpposite.opLinearEquiv K (M:= A)
-  exact Module.Finite.of_surjective (M:= A) (N:= Aᵐᵒᵖ) f (LinearEquiv.surjective _)
+  exact Module.Finite.equiv f
+    -- Module.Finite.of_surjective f (LinearEquiv.surjective _)
 
 instance inv (A : CSA K) : CSA K := {
   __ := AlgebraCat.of K Aᵐᵒᵖ
@@ -248,7 +249,7 @@ def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A'
 
 def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
   eqv_in (one_mul_in n A) (Matrix (Fin n) (Fin n) A) $
-    by unfold one_mul_in ; exact matrixEquivTensor K A (Fin n)|>.symm
+    by unfold one_mul_in ; exact matrixEquivTensor _ K A |>.symm
 
 def dim_1 (R : Type*) [Ring R] [Algebra K R]: Algebra K (Matrix (Fin 1) (Fin 1) R) where
   algebraMap := {
@@ -388,12 +389,11 @@ def huarongdao (A B C D : Type*) [Ring A] [Ring B] [Ring C] [Ring D] [Algebra K 
 def kroneckerMatrixTensor' (A B: Type*) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
     (n m : ℕ) :
       (Matrix (Fin n) (Fin n) A) ⊗[K] (Matrix (Fin m) (Fin m) B) ≃ₐ[K]
-      (Matrix (Fin (n*m)) (Fin (n*m)) (A ⊗[K] B)) := by
-    have := matrixEquivTensor K A (Fin n)
-    refine AlgEquiv.trans (Algebra.TensorProduct.congr (matrixEquivTensor K A (Fin n))
-      $ matrixEquivTensor K B (Fin m)) <| AlgEquiv.trans (huarongdao ..) <| AlgEquiv.trans
-      (Algebra.TensorProduct.congr AlgEquiv.refl $ (matrix_eqv ..).trans $ matrix_eqv' ..) ?_
-    exact (matrixEquivTensor ..).symm
+      (Matrix (Fin (n*m)) (Fin (n*m)) (A ⊗[K] B)) :=
+    AlgEquiv.trans (Algebra.TensorProduct.congr (matrixEquivTensor (Fin n) K A)
+      $ matrixEquivTensor (Fin m) K B) <| AlgEquiv.trans (huarongdao ..) <| AlgEquiv.trans
+      (Algebra.TensorProduct.congr AlgEquiv.refl $ (matrix_eqv ..).trans $ matrix_eqv' ..)
+      (matrixEquivTensor ..).symm
 
 theorem eqv_tensor_eqv
     (A B C D : CSA K) (hAB : IsBrauerEquivalent A B) (hCD : IsBrauerEquivalent C D) :
@@ -530,13 +530,13 @@ variable (m : ℕ)
 def e1 :
     Matrix (Fin m) (Fin m) (E ⊗[K] A) ≃ₐ[E]
     (E ⊗[K] A) ⊗[E] Matrix (Fin m) (Fin m) E :=
-  matrixEquivTensor E (E ⊗[K] A) (Fin m)
+  matrixEquivTensor (Fin m) E (E ⊗[K] A)
 
 def e2 :
     (E ⊗[K] A) ⊗[E] Matrix (Fin m) (Fin m) E ≃ₐ[E]
     (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) :=
   Algebra.TensorProduct.congr AlgEquiv.refl $
-    { __ := matrixEquivTensor K E (Fin m)
+    { __ := matrixEquivTensor (Fin m) K E
       commutes' := fun e => by
         simp only [AlgEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe,
           matrixEquivTensor_apply, Fintype.sum_prod_type,
@@ -731,7 +731,7 @@ def e3 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A] :
 def e4 :
     E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K) ≃ₐ[E]
     E ⊗[K] (Matrix (Fin m) (Fin m) A) :=
-  Algebra.TensorProduct.congr AlgEquiv.refl $ (matrixEquivTensor K A (Fin m)).symm
+  Algebra.TensorProduct.congr AlgEquiv.refl $ (matrixEquivTensor (Fin m) K A).symm
 
 def e5 (e : A ≃ₐ[K] B) : (E ⊗[K] A) ≃ₐ[E] (E ⊗[K] B) :=
   Algebra.TensorProduct.congr AlgEquiv.refl e
