@@ -1,4 +1,5 @@
 import Mathlib
+import BrauerGroup.examples.«ShortComplex.LeftHomologyMapData»
 
 universe u
 
@@ -125,44 +126,94 @@ def CyclicCoh.homotopy_aux [CommGroup G]: Action.Hom (Rep.trivial k G k)
     ext
     simp
 
--- def CyclicCoh.homotopyEquiv [CommGroup G]: HomotopyEquiv (ChainComplexAbel G k σ)
---     ((ChainComplex.single₀ (Rep k G)).obj (Rep.trivial k G k)) where
---   hom := π G k σ
---   inv := (ChainComplex.fromSingle₀Equiv _ _).symm <| CyclicCoh.homotopy_aux G k _
---   homotopyHomInvId := {
---     hom i j := sorry
---       -- ChainComplexAbel G k σ|>.d j i
---     zero :=  sorry
---     -- simp +contextual
+lemma im_sigmainus1_eq_ker_π [CommGroup G]:
+    LinearMap.ker ((CyclicCoh.π G k σ).f 0).1.hom ≤
+    LinearMap.range (sigmaminus1 G k σ).1.hom := by
+  sorry
 
---     comm i := by
---       -- ext (x : MonoidAlgebra k G)
---       -- simp [ChainComplexAbel, π, π_aux, homotopy_aux]
---       -- cases i with
---       -- | zero =>
---       --   ext g g'
---       --   simp [Rep.trivial, Representation.trivial, ChainComplex.fromSingle₀Equiv,
---       --     Finsupp.linearEquivFunOnFinite, Finsupp.equivFunOnFinite]
---         -- erw [@dNext_eq ℕ (Rep k G) _ _ {
---         --   Rel i j := (j = i + 1)
---         --   next_eq := by simp
---         --   prev_eq := by simp
---         -- } _ (ChainComplexAbel G k σ) _ 0 1 (by sorry)]
+lemma N_ker_eq_im_sigmainus1 [CommGroup G]: LinearMap.ker (N G k).1.hom = LinearMap.range (sigmaminus1 G k σ).1.hom := by
+  sorry
 
+lemma sigmaminus1_ker_eq_N_im [CommGroup G]: LinearMap.ker (sigmaminus1 G k σ).1.hom = LinearMap.range (N G k).1.hom := by
+  sorry
 
+instance (V : ModuleCat k) [Subsingleton V]: Subsingleton (End V) where
+  allEq _ _ := ModuleCat.hom_ext <| LinearMap.ext (fun _ ↦ Subsingleton.allEq _ _)
 
+def singletonVasRep [Group G] (V : ModuleCat k) [Subsingleton V]: CategoryTheory.Limits.IsZero
+    (⟨V, ⟨⟨0, Subsingleton.elim _ _⟩, fun _ _ ↦ rfl⟩⟩ : Rep k G) where
+  unique_to W := ⟨⟨⟨0, fun _ ↦ by simp⟩, fun _ ↦ by ext (x : V); simp [Subsingleton.elim x 0]⟩⟩
+  unique_from W := ⟨⟨⟨ModuleCat.ofHom 0, fun _ ↦ rfl⟩, fun f ↦ by ext x; simp; rw [Subsingleton.elim (f.1.hom x) 0]⟩⟩
 
---         sorry
+omit [Fintype G] in
+lemma singleton_isZero [Group G] : ∀ X : Rep k G, Limits.IsZero X → Subsingleton X := by
+  intro X h
+  have := CategoryTheory.Limits.IsZero.iso (singletonVasRep G k (.of k (⊥ : Submodule k k))) h
+  have : (⊥ : Submodule k k) ≃ₗ[k] X.V := Iso.toLinearEquiv ({
+    hom := this.1.hom
+    inv := this.2.hom
+    hom_inv_id := by rw [← Action.comp_hom, this.3]; rfl
+    inv_hom_id := by rw [← Action.comp_hom, this.4]; rfl
+  } : ModuleCat.of k _ ≅ X.V)
+  exact Equiv.subsingleton.symm this.toEquiv
 
---   }
---   homotopyInvHomId := sorry
+open ZeroObject in
+instance singleton_zero [Group G]: Subsingleton (0 : Rep k G) :=
+  singleton_isZero G k 0 (Limits.isZero_zero (Rep k G))
 
+open ZeroObject in
+instance [Group G]: Subsingleton ((forget₂ (Rep k G) (ModuleCat k)).obj 0) :=
+  singleton_zero G k
 
+open ZeroObject HomologicalComplex in
 instance CyclicCoh.quasiIso [CommGroup G]: QuasiIso (CyclicCoh.π G k σ) where
   quasiIsoAt i := by
     cases i with
-    | zero => sorry
-    | succ n => sorry
+    | zero =>
+      rw [ChainComplex.quasiIsoAt₀_iff,
+        ← ShortComplex.quasiIso_map_iff_of_preservesLeftHomology
+          (forget₂ (Rep k G) (ModuleCat k))]
+      refine ShortComplex.IsQuasiIsoAt_iff_moduleCat k _ _ _ |>.2 ⟨by
+        simpa [eq_comm (a := (0 : (forget₂ (Rep k G) (ModuleCat k)).obj _)),
+          ChainComplexAbel, -map_sub] using im_sigmainus1_eq_ker_π G k σ, by
+        simp
+        intro (a : k)
+        change ∃ (x : MonoidAlgebra k G), (0 : k) = _ - _
+        change ∃ (x : MonoidAlgebra k G), _ = ((π G k σ).1 0).1.hom x - _
+        simp [π, π_aux]
+        exact ⟨Finsupp.single 1 a, by
+          rw [eq_comm, sub_eq_zero]; exact Finsupp.lsum_single _ _ _ _⟩⟩
+
+    | succ n =>
+      rw [quasiIsoAt_iff_exactAt]
+      · rw [HomologicalComplex.exactAt_iff,
+          ← ShortComplex.exact_map_iff_of_faithful _ (forget₂ (Rep k G) (ModuleCat k)),
+          ShortComplex.moduleCat_exact_iff]
+        intro x hx
+        -- change ((forget₂ (Rep k G) (ModuleCat k)).obj (@OfNat.ofNat (Rep k G) 0 (@Zero.toOfNat0 (Rep k G) (Limits.HasZeroObject.zero' (Rep k G)) : OfNat (Rep k G) 0) : Rep k G)) at x
+        simp at *
+        change (forget₂ (Rep k G) (ModuleCat k)).obj 0 at x
+        exact Subsingleton.elim 0 x
+      · rw [HomologicalComplex.exactAt_iff,
+          ← ShortComplex.exact_map_iff_of_faithful _ (forget₂ (Rep k G) (ModuleCat k)),
+          ShortComplex.moduleCat_exact_iff]
+        intro x hx
+        simp [ChainComplexAbel, Nat.even_add_one] at *
+        split_ifs with h
+        · rw [← Nat.not_odd_iff_even] at h
+          simp [h] at hx
+          change (sigmaminus1 G k σ).1.hom x = 0 at hx
+          change MonoidAlgebra k G at x
+          -- simp? at hx
+          change ∃ (y : MonoidAlgebra k G), (N G k).1.hom _ = x
+          rw [← LinearMap.mem_ker, sigmaminus1_ker_eq_N_im] at hx
+          exact hx
+        · rw [Nat.not_even_iff_odd] at h
+          simp [h] at hx
+          change (N G k).1.hom x = 0 at hx
+          rw [← LinearMap.mem_ker, N_ker_eq_im_sigmainus1 G k σ] at hx
+          exact hx
+
 --   instQuasiIsoHom (CyclicCoh.homotopyEquiv G k σ)
 
 def ProjectResolCyclic [CommGroup G]: ProjectiveResolution (Rep.trivial k G k) where
@@ -193,16 +244,35 @@ def ProjectResolCyclic [CommGroup G]: ProjectiveResolution (Rep.trivial k G k) w
           | hsmul r f _ => simp_all
   π := CyclicCoh.π G k σ
 
-variable [Group G] (hσ : Submonoid.powers σ = ⊤)
-
 open groupCohomology
 
-abbrev CyclicCoh.fromTwoCocycles (a : twoCocycles (Rep.ofMulAction ℤ G G)) :
-    H0 (Rep.ofMulAction ℤ G G) where
-  val := (a ⟨σ, σ⟩: MonoidAlgebra ℤ G)
-  property g := by
-    ext g'
-    simp [Representation.ofMulAction_def, Finsupp.mapDomain]
-    sorry
+def CyclicCoh.groupCoh [CommGroup G] (A : Rep k G) : groupCohomology A n ≅
+   ((ChainComplexAbel G k σ).linearYonedaObj k A).homology n :=
+  groupCohomologyIsoExt A n ≪≫ (ProjectResolCyclic G k σ).isoExt n A
 
-abbrev cyclicEquiv:  H2 (Rep.ofMulAction ℤ G G) ≃+ Additive G := sorry
+abbrev CyclicCoh.groupCoh0 [CommGroup G] (A : Rep k G) : groupCohomology A 0 ≅
+  ModuleCat.of k A.ρ.invariants := groupCohomology.isoH0 A
+
+example [CommGroup G] (A : Rep k G):
+  ((ChainComplexAbel G k σ).linearYonedaObj k A).X n =
+  ((Rep.ofMulAction k G G) ⟶ A) := rfl
+
+abbrev CyclicCoh.groupCohEven (hn : Even n) [NeZero n] [CommGroup G] (A : Rep k G):
+    groupCohomology A n ≅ sorry := sorry
+    -- (A.ρ.invariants ⧸ LinearMap.range (N G k).1.hom) := sorry
+
+-- example [CommGroup G] (A : Rep k G):
+--   ((ChainComplexAbel G k σ).linearYonedaObj k A).homology n =
+--   .of k (LinearMap.ker ((ChainComplexAbel G k σ).d (n + 1) (n + 2)).1.hom ⧸
+--     LinearMap.range ((ChainComplexAbel G k σ).d n (n + 1)).1.hom) := sorry
+
+
+  -- abbrev CyclicCoh.fromTwoCocycles (a : twoCocycles (Rep.ofMulAction ℤ G G)) :
+--     H0 (Rep.ofMulAction ℤ G G) where
+--   val := (a ⟨σ, σ⟩: MonoidAlgebra ℤ G)
+--   property g := by
+--     ext g'
+--     simp [Representation.ofMulAction_def, Finsupp.mapDomain]
+--     sorry
+
+-- abbrev cyclicEquiv:  H2 (Rep.ofMulAction ℤ G G) ≃+ Additive G := sorry
