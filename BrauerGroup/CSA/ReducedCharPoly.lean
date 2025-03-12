@@ -89,7 +89,4 @@ lemma over_extension [Algebra F E] [IsScalarTower K F E] (a : A):
     Polynomial.mapAlgHom (Algebra.ofId F E) (ReducedCharPoly A e a) := sorry
 
 
-
-#check AlgHom.mapMatrix
-
 end ReducedCharPoly
