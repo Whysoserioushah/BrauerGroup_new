@@ -160,12 +160,38 @@ lemma ele_is_preim [CommGroup G] (x : MonoidAlgebra k G) (hσ : Submonoid.powers
 --   simp
 --   --rw [show x.support = Finset.range (Fintype.card G) from sorry]
 --   sorry
+omit [Fintype G] in
+@[simp]
+lemma MonoidAlgebra.sub_apply [Group G] (x y : MonoidAlgebra k G) (g : G) :
+    (x - y) g = x g - y g := rfl
 
-lemma im_sigmainus1_eq_ker_π [CommGroup G]:
+omit [Fintype G] in
+@[simp]
+lemma MonoidAlgebra.sum_apply [Group G] {α : Type*} (s : Finset α)
+    (f : α → MonoidAlgebra k G) (g : G) :
+    (∑ i ∈ s, f i) g = ∑ i ∈ s, f i g := by
+  -- have := Finset.sum_apply (γ := G) g s
+  sorry
+
+
+lemma im_sigmainus1_eq_ker_π [CommGroup G] (hσ : Submonoid.powers σ = ⊤):
     LinearMap.ker ((CyclicCoh.π G k σ).f 0).1.hom ≤
     LinearMap.range (sigmaminus1 G k σ).1.hom := fun (x : MonoidAlgebra k G) hx ↦ by
   simp [CyclicCoh.π] at hx ⊢
   change _ = (0 : k) at hx
+
+  let r' : ℕ → k := fun m ↦ - (∑ i : Fin (m + 1), x.2 (σ^i.1))
+  use ∑ i ∈ Finset.range (Fintype.card G), .single (σ^i) (r' i)
+  erw [map_sum]
+  simp [Representation.ofMulAction_single, ← pow_succ']
+  -- rw [← Finset.sum_sub_distrib]
+  change (∑ i ∈ _, _ - ∑ i ∈ _, _ : MonoidAlgebra k G) = _
+  ext g
+  simp
+  -- have := Equiv.mulLeft σ
+  -- rw [← Finset.sum_equiv (Equiv.mulLeft σ) _ (fun _ _ ↦ rfl)]
+  -- calc _
+  -- _ = _ := sorry
 
   -- use (Finsupp.equivFunOnFinite.symm _)
   -- erw [Finsupp.lsum_apply] at hx
@@ -210,7 +236,8 @@ instance [Group G]: Subsingleton ((forget₂ (Rep k G) (ModuleCat k)).obj 0) :=
   singleton_zero G k
 
 open ZeroObject HomologicalComplex in
-instance CyclicCoh.quasiIso [CommGroup G]: QuasiIso (CyclicCoh.π G k σ) where
+instance CyclicCoh.quasiIso [CommGroup G] (hσ : Submonoid.powers σ = ⊤):
+    QuasiIso (CyclicCoh.π G k σ) where
   quasiIsoAt i := by
     cases i with
     | zero =>
@@ -219,7 +246,7 @@ instance CyclicCoh.quasiIso [CommGroup G]: QuasiIso (CyclicCoh.π G k σ) where
           (forget₂ (Rep k G) (ModuleCat k))]
       refine ShortComplex.IsQuasiIsoAt_iff_moduleCat k _ _ _ |>.2 ⟨by
         simpa [eq_comm (a := (0 : (forget₂ (Rep k G) (ModuleCat k)).obj _)),
-          ChainComplexAbel, -map_sub] using im_sigmainus1_eq_ker_π G k σ, by
+          ChainComplexAbel, -map_sub] using im_sigmainus1_eq_ker_π G k σ hσ, by
         simp
         intro (a : k)
         change ∃ (x : MonoidAlgebra k G), (0 : k) = _ - _
@@ -260,7 +287,8 @@ instance CyclicCoh.quasiIso [CommGroup G]: QuasiIso (CyclicCoh.π G k σ) where
 
 --   instQuasiIsoHom (CyclicCoh.homotopyEquiv G k σ)
 
-def ProjectResolCyclic [CommGroup G]: ProjectiveResolution (Rep.trivial k G k) where
+def ProjectResolCyclic [CommGroup G] (hσ : Submonoid.powers σ = ⊤):
+    ProjectiveResolution (Rep.trivial k G k) where
   complex := ChainComplexAbel G k σ
   projective n := by
     classical
@@ -287,6 +315,7 @@ def ProjectResolCyclic [CommGroup G]: ProjectiveResolution (Rep.trivial k G k) w
           | hadd f g _ _ => simp_all [mul_add]
           | hsmul r f _ => simp_all
   π := CyclicCoh.π G k σ
+  quasiIso := CyclicCoh.quasiIso G k σ hσ
 
 open groupCohomology
 
@@ -376,10 +405,10 @@ abbrev equiv_Acomplex [CommGroup G] (A : Rep k G): (ChainComplexAbel G k σ).lin
     rw [← Rep.hom_comm_apply]
     simp [Representation.ofMulAction_single]
 
-def CyclicCoh.groupCoh [CommGroup G] (A : Rep k G) : groupCohomology A n ≅
+def CyclicCoh.groupCoh [CommGroup G] (A : Rep k G) (hσ : Submonoid.powers σ = ⊤): groupCohomology A n ≅
     (((forget₂ (Rep k G) (ModuleCat k)).mapHomologicalComplex _|>.obj
     (Acomplex G k σ A))).homology n :=
-  groupCohomologyIsoExt A n ≪≫ (ProjectResolCyclic G k σ).isoExt n A ≪≫
+  groupCohomologyIsoExt A n ≪≫ (ProjectResolCyclic G k σ hσ).isoExt n A ≪≫
   (HomologicalComplex.homologyFunctor _ _ n).mapIso (equiv_Acomplex G k σ A)
 
 abbrev CyclicCoh.groupCoh0 [CommGroup G] (A : Rep k G) : groupCohomology A 0 ≅
@@ -428,7 +457,7 @@ abbrev CyclicCoh.groupCohEven (hn : Even n) [h : NeZero n] [CommGroup G] (A : Re
     (hσ : Submonoid.powers σ = ⊤):
     groupCohomology A n ≅ .of k (A.ρ.invariants ⧸ (LinearMap.range (N' G k A).1.hom).comap
     A.ρ.invariants.subtype) :=
-  (CyclicCoh.groupCoh n G k σ A) ≪≫ (moduleCatLeftHomologyData k _ _
+  (CyclicCoh.groupCoh n G k σ A hσ) ≪≫ (moduleCatLeftHomologyData k _ _
   (by
     simp [Acomplex, Nat.even_add_one, hn]
     ext x
@@ -453,11 +482,12 @@ abbrev CyclicCoh.groupCohEven (hn : Even n) [h : NeZero n] [CommGroup G] (A : Re
         conv_rhs => rw [← Equiv.sum_comp (Equiv.mulLeft g) _]
         rfl)).homologyIso
 
-abbrev CyclicCoh.groupCohOdd (hn : Odd n) [h : NeZero n] [CommGroup G] (A : Rep k G):
+abbrev CyclicCoh.groupCohOdd (hn : Odd n) [h : NeZero n] [CommGroup G] (A : Rep k G)
+  (hσ : Submonoid.powers σ = ⊤):
     groupCohomology A n ≅ .of k (LinearMap.ker (N' G k A).1.hom ⧸
       (LinearMap.range (sigmaminus1' G k σ A).1.hom).comap
       (LinearMap.ker (N' G k A).1.hom).subtype) :=
-  (CyclicCoh.groupCoh n G k σ A) ≪≫ (moduleCatLeftHomologyData k _ _
+  (CyclicCoh.groupCoh n G k σ A hσ) ≪≫ (moduleCatLeftHomologyData k _ _
   (by simp [Acomplex, Nat.even_add_one, hn]) _ (by
     cases n with
     | zero => aesop

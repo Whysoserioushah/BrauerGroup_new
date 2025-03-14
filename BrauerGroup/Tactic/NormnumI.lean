@@ -9,6 +9,7 @@ import Mathlib.Tactic.LinearCombination
 
 open Lean Meta Elab Qq Tactic Complex
 open Mathlib.Meta.NormNum
+open ComplexConjugate
 
 namespace Mathlib.Tactic.NormNumI
 
@@ -30,7 +31,7 @@ theorem split_mul {z₁ z₂ : ℂ} {a₁ a₂ b₁ b₂ : ℝ} (h₁ : z₁ = �
     z₁ * z₂ = ⟨(a₁ * a₂ - b₁ * b₂), (a₁ * b₂ + b₁ * a₂)⟩ :=
   Ring.mul_congr h₁ h₂ rfl
 
-open ComplexConjugate in
+
 theorem split_inv {z : ℂ} {x y : ℝ} (h : z = ⟨x, y⟩) :
     z⁻¹ = ⟨x / (x * x + y * y), - y / (x * x + y * y)⟩ := by
   subst h
@@ -42,6 +43,16 @@ theorem eq_of_eq_re_im {z a a' b b' : ℂ} (h : z = a + b * I) (ha : a = a') (hb
   simp [h, ha, hb]
 
 theorem eq_of_eq_of_eq {a b c : ℂ} (ha : a = c) (hb : b = c) : a = b := by simp [ha, hb]
+
+-- theorem
+
+theorem extracted_1 (z : ℂ) (n : ℤ) (d : ℕ) (pf : IsRat z n d) :
+    z = { re := @Rat.cast ℝ Real.instRatCast ((n : ℚ) / (d : ℚ)), im := 0 } := by
+  sorry
+
+theorem extracted_2 (w : ℂ) :
+  let z := (starRingEnd ℂ) w
+  ∀ (a b : ℝ), w = { re := a, im := b} → z = { re := a, im := -b } := sorry
 
 /-- Record `norm_num` normalization of `(0:ℂ)`. -/
 def rz : Result q((0:ℝ)) :=
@@ -77,11 +88,11 @@ def evalNormSq.core {x y : Q(ℝ)} (rx : Result (u := 0) x) (ry : Result (u := 0
   let Y ← evalMul.core q($y * $y) q(HMul.hMul) _ _ i' ry ry
   evalAdd.core q($x * $x + $y * $y) q(HAdd.hAdd) q($x * $x) q($y * $y) X Y
 
--- #synth CharZero ℂ
+#check pow_succ
 def evalReInv.core {x y : Q(ℝ)} (rx : Result (u := 0) x) (ry : Result (u := 0) y) :
     Option (Result (u := 0) q($x / ($x * $x + $y * $y))) := do
   let i' : Q(Semiring ℝ) := q(Real.semiring)
-  let i'' : Q(DivisionRing ℂ) := q(Field.toDivisionRing)
+  let i'' : Q(DivisionRing ℝ) := q(Field.toDivisionRing)
   let i''' : Q(CharZero ℝ) := q(StrictOrderedSemiring.toCharZero)
   let D ← evalNormSq.core rx ry
   let D' ← evalInv.core q(($x * $x + $y * $y)⁻¹) _ D i'' (some i''')
@@ -114,13 +125,6 @@ partial def parse (z : Q(ℂ)) :
     let some A := evalReMul.core r₁ r₂ s₁ s₂ | throwError "zz"
     let some B := evalImMul.core r₁ r₂ s₁ s₂ | throwError "zz"
     pure ⟨q($a₁ * $a₂ - $b₁ * $b₂), q($a₁ * $b₂ + $b₁ * $a₂), A, B, q(split_mul $pf₁ $pf₂)⟩
-  /- parse a subtraction `z₁ - z₂` -/
-  | ~q($z₁ - $z₂) =>
-    let ⟨a₁, b₁, r₁, s₁, pf₁⟩ ← parse z₁
-    let ⟨a₂, b₂, r₂, s₂, pf₂⟩ ← parse z₂
-    let some ra := evalSub.core q($a₁ - $a₂) q(HSub.hSub) a₁ a₂ q(Real.instRing) r₁ r₂ | throwError "zz"
-    let some rb := evalSub.core q($b₁ - $b₂) q(HSub.hSub) b₁ b₂ q(Real.instRing) s₁ s₂ | throwError "zz"
-    pure ⟨q($a₁ - $a₂), q($b₁ - $b₂), ra, rb, q(split_sub $pf₁ $pf₂)⟩
   /- parse an inversion: `z⁻¹` -/
   | ~q($z⁻¹) =>
     let ⟨x, y, r, s, pf⟩ ← parse z
@@ -128,6 +132,28 @@ partial def parse (z : Q(ℂ)) :
     let some B := evalImInv.core r s | throwError "zz"
     pure ⟨q($x / ($x * $x + $y * $y)), q(-$y / ($x * $x + $y * $y)), A, B,
       q(show (_)⁻¹ = _ from split_inv $pf)⟩
+  /- parse `z₁/z₂` -/
+  | ~q($z₁ / $z₂) => parse q($z₁ * $z₂⁻¹)
+  /- parse `-z` -/
+  | ~q(-$z) =>
+    let ⟨a, b, r, s, pf⟩ ← parse z
+    let some A := evalNeg.core q(-$a) q(Neg.neg) a r q(Real.instRing) | throwError "zz"
+    let some B := evalNeg.core q(-$b) q(Neg.neg) b s q(Real.instRing) | throwError "zz"
+    pure ⟨q(-$a), q(-$b), A, B, q(Complex.ext (by simp; sorry) sorry)⟩
+  /- parse a subtraction `z₁ - z₂` -/
+  | ~q($z₁ - $z₂) => parse q($z₁ + -$z₂)
+  /- parse conjugate `conj z` -/
+  | ~q(conj $w) =>
+    let ⟨a, b, r, s, pf⟩ ← parse w
+    let some B := evalNeg.core q(-$b) q(Neg.neg) b s q(Real.instRing) | throwError "zz"
+    return ⟨q($a), q(-$b), r, B, q(extracted_2 _ _ _ $pf)⟩
+  | ~q(@HPow.hPow ℂ ℕ ℂ instHPow $w $n) =>
+    match n.nat? with
+    | some 0 =>
+      return ⟨q(1), q(0), ro, rz, (q(pow_zero $w) :)⟩
+    | _ =>
+      parse q((@HPow.hPow ℂ ℕ ℂ instHPow $w ($n - 1)) * $w)
+
   /- parse `(I:ℂ)` -/
   | ~q(Complex.I) =>
     pure ⟨q(0), q(1), rz, ro, q(split_I)⟩
@@ -135,19 +161,34 @@ partial def parse (z : Q(ℂ)) :
   | _ =>
     -- let some n := Expr.nat? z | throwError "not natural"
     -- let ⟨rn, _⟩ ←  mkOfNat q(ℝ) q(inferInstance) q($n)
-    let ⟨q, n, d, pf⟩ ← Mathlib.Meta.NormNum.deriveRat (α := q(ℂ)) (u := 0) (_inst := q(inferInstance)) z
-      <|> throwError "found the atom {z} which is not a rational numeral"
-    let r : Q(ℝ) := q(Rat.cast ($n/$d))
-    let a ← Mathlib.Meta.NormNum.derive (u := 0) r
-    pure ⟨r, q(0), a, rz, q(by
-      obtain ⟨hd, hz⟩ := $pf
-      -- obtain ⟨c, hc⟩ := isUnit_of_invertible (Nat.cast $d : ℂ)
-      -- rw [hc.symm] at hz
-      rw [invOf_units ⟨Nat.cast $d, (Nat.cast $d)⁻¹, by simp, by simp⟩ ] at hz
-      simp at hz
-      rw [← div_eq_mul_inv] at hz
-      rw [hz]
-      exact Complex.ext (by simp) (by simp))⟩
+    try
+      let ⟨q, n, d, pf⟩ ← Mathlib.Meta.NormNum.deriveRat (α := q(ℂ)) (u := 0) (_inst := q(inferInstance)) z
+        <|> throwError "found the atom {z} which is not a rational numeral"
+
+      let r : Q(ℝ) := q(Rat.cast ($n/$d : ℚ))
+      let a ← Mathlib.Meta.NormNum.derive (u := 0) r
+      trace[debug] "{a}"
+      pure ⟨r, q(0), a, rz, q(extracted_1 $z $n $d $pf)⟩
+        -- extract_goal
+        -- obtain ⟨hd, hz⟩ := $pf
+        -- -- obtain ⟨c, hc⟩ := isUnit_of_invertible (Nat.cast $d : ℂ)
+        -- -- rw [hc.symm] at hz
+        -- rw [invOf_units ⟨Nat.cast $d, (Nat.cast $d)⁻¹, by simp, by simp⟩ ] at hz
+        -- simp at hz
+        -- rw [← div_eq_mul_inv] at hz
+        -- rw [hz]
+        -- exact Complex.ext (by simp) (by simp)
+
+    catch _ =>
+      /- parse a constructor type -/
+      match z with
+      |~q(Complex.mk $a $b) =>
+        trace[debug] "term {z} : we are in ⟨{a}, {b}⟩ constructor parsing"
+        let ra ← derive (α := q(ℝ)) a
+        let rb ← derive (α := q(ℝ)) b
+        pure ⟨a, b, ra, rb, q(rfl)⟩
+      | _ => throwError "found the atom {z} which is not a numeral"
+
 
 def normalize (z : Q(ℂ)) : MetaM (Σ a b : Q(ℝ), Q($z = ⟨$a, $b⟩)) := do
   let ⟨_a, _b, ra, rb, pf⟩ ← parse z
@@ -167,9 +208,11 @@ def proveEq (g : MVarId) : MetaM Unit := do
   guard (← withReducibleAndInstances (isDefEq α q(ℂ))) <|> throwError "type of equality is not ℂ"
   let ⟨a₁, a₂, pf_a⟩ := ← normalize a
   let ⟨b₁, b₂, pf_b⟩ := ← normalize b
-  guard (← withReducibleAndInstances (isDefEq a₁ b₁)) <|>
+  trace[debug] "{a} simplifies to ⟨{a₁}, {a₂}⟩, {b} to {b₁}, {b₂}"
+  trace[debug] "comparing {a₁} and {b₁}: {← withReducibleAndInstances (isDefEq a₁ b₁)}"
+  guard (← (isDefEq a₁ b₁)) <|>
     throwError "Real-part disagreement: LHS normalizes to {a₁}, RHS normalizes to {b₁}"
-  guard (← withReducibleAndInstances (isDefEq a₁ b₁)) <|>
+  guard (← withReducibleAndInstances (isDefEq a₂ b₂)) <|>
     throwError "Imaginary-part disagreement: LHS normalizes to {a₂}, RHS normalizes to {b₂}"
   g.assign (← mkAppM ``eq_of_eq_of_eq #[pf_a, pf_b])
 
@@ -180,10 +223,10 @@ end Mathlib.Tactic.NormNumI
 set_option trace.debug true
 
 open Complex
-
-example : (1:ℂ) = ⟨1, 0⟩ := by conv_lhs => norm_numI
+#synth HPow ℂ ℕ ℂ
+example : (1:ℂ) = ⟨1, 0⟩ := by norm_numI
 example : (I:ℂ) = 0 + 1 * I := by norm_numI
-example : (1.5:ℂ) = 3 / 2 + 0 * I := by norm_numI
+example : (1.5:ℂ) = ⟨3 / 2, 0⟩ := by conv_lhs => norm_numI
 
 example : 0 + (1:ℂ) = 1 := by norm_numI
 example : (1.0:ℂ) + 0 = 1 := by norm_numI
@@ -196,21 +239,23 @@ example : (1 + I) * (1 + I * I * I) = 2 := by norm_numI
 
 example : (1 + 3.5 + I) * (1 + I) = 7 / 2 + 11 / 2 * I := by norm_numI
 
-example : (3 + 4.5 * I)⁻¹ * (3 + 4.5 * I) = 1 := by
-  conv_rhs => norm_numI
+example : (3 + 4 * I)⁻¹ * (3 + 4 * I) = 1 := by norm_numI
+
+-- example : (3 + I : ℂ)^2 = sorry := by conv_lhs => norm_numI
   -- conv_lhs => norm_numI
-  exact Complex.ext (by simp; congr!; sorry) (by simp; congr!; sorry)
+  -- exact Complex.ext (by simp; congr!; sorry) (by simp; congr!; sorry)
   -- conv_lhs => norm_numI
   -- exact Complex.ext (by simp; congr!; sorry) (by simp; congr!; sorry)
 
-example : -1 / (1 + I) = (I - 1) / 2 := by
+example : -1 / (1 + I) = (I - 1) / 2 := by norm_numI
   -- conv =>
   --   enter [2, 1]
-  conv_lhs =>
-    enter [2]; norm_numI
+  -- conv_lhs =>
+  --   enter [2]; norm_numI
 
-  sorry
-
+  -- sorry
 example : (1 + I) * (1 - I) = 2 := by norm_numI
 
 example : (1 + 2 * I) - (1 + 2 * I) = 0 := by norm_numI
+
+example : (conj (3 + 4 * I) : ℂ) * (3 + 4 * I) = 25 := by norm_numI

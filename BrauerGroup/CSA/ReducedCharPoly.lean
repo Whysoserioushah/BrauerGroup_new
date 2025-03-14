@@ -42,6 +42,13 @@ instance [Algebra F E] [IsScalarTower K F E]: IsScalarTower K (Algebra.ofId F E)
     rw [map_smul]
     simp
 
+def matrixEquivTensor'.{u_1, u_2, u_3} (n : Type u_1) (R : Type u_2) (A : Type u_3) [CommSemiring R] [CommSemiring A]
+    [Algebra R A] [Fintype n] [DecidableEq n] :
+    Matrix n n A ≃ₐ[A] A ⊗[R] Matrix n n R :=
+  (AlgEquiv.ofRingEquiv (f := (matrixEquivTensor n R A).symm) <| fun a ↦ by
+    ext i j
+    simp [matrixEquivTensor, Matrix.algebraMap_eq_diagonal, Matrix.diagonal_apply, Matrix.one_apply] ).symm
+
 set_option maxSynthPendingDepth 3 in
 set_option maxHeartbeats 400000 in
 lemma mat_over_extension [Algebra F E] [IsScalarTower K F E] (a : A):
