@@ -7,7 +7,7 @@ noncomputable def MatrixAlgebra.TensorEquiv (K A B : Type*) [CommSemiring K] [Se
     [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] :
     Matrix m m A ⊗[K] Matrix n n B ≃ₐ[K] Matrix (m × n) (m × n) (A ⊗[K] B) :=
   Algebra.TensorProduct.congr (matrixEquivTensor _ _ _) (matrixEquivTensor _ _ _)
-    |>.trans <| (Algebra.TensorProduct.tensorTensorTensorComm K _ _ _ _)
+    |>.trans <| (Algebra.TensorProduct.tensorTensorTensorComm K _ _ _ _ _)
     |>.trans <|
       .trans (Algebra.TensorProduct.congr .refl <|
         Algebra.TensorProduct.comm K _ _

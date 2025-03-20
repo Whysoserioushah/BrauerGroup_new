@@ -1,8 +1,6 @@
 import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
-import Mathlib.Algebra.DirectSum.Ring
-
 import BrauerGroup.Subfield.Splitting
-import Mathlib.Algebra.BigOperators.Finsupp
+import Mathlib
 import BrauerGroup.Subfield.Subfield
 
 suppress_compilation
@@ -1664,12 +1662,13 @@ instance : Module K (I.ringCon.Quotient) :=
 lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) : c • x =
   (⟨π I (ι ha c), by simpa using ⟨ι ha c, ⟨c, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := rfl
 
+set_option maxHeartbeats 400000 in
 def basis (ne_top : I ≠ ⊤) : Basis (K ≃ₐ[F] K) K I.ringCon.Quotient :=
   .mk (v := fun σ => I.ringCon.mk' (x_ ha σ))
     (by
       classical
       by_contra rid
-      obtain ⟨J, LI, maximal⟩ := exists_maximal_independent K (fun (i : K ≃ₐ[F] K) =>
+      obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : K ≃ₐ[F] K) =>
         I.ringCon.mk' (x_ ha i))
       have ne : J ≠ Set.univ := by
         rintro rfl
@@ -1886,6 +1885,7 @@ def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
 
 variable (F K) in
 set_option maxHeartbeats 500000 in
+set_option synthInstance.maxHeartbeats 40000 in
 def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
   Quotient.lift fromTwoCocycles <| by
     rintro ⟨(a : _ → Kˣ), ha⟩ ⟨(b : _ → Kˣ), hb⟩ (hab : Submodule.quotientRel _ _ _)

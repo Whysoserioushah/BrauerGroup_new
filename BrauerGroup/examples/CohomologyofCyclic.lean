@@ -78,13 +78,15 @@ abbrev π_aux [CommGroup G]: Action.Hom ((ChainComplexAbel G k σ).X Nat.zero)
   hom := ModuleCat.ofHom (Finsupp.lsum ℕ 1 : _ →ₗ[k] k)
   comm g := by
     ext x
-    simp [ChainComplexAbel, ModuleCat.endRingEquiv]
+    simp only [Nat.zero_eq, ChainComplex.single₀_obj_zero, ChainComplexAbel, ModuleCat.endRingEquiv,
+      RingEquiv.symm_mk, RingHom.toMonoidHom_eq_coe, RingEquiv.toRingHom_eq_coe, MonoidHom.coe_comp,
+      MonoidHom.coe_coe, RingHom.coe_coe, RingEquiv.coe_mk, Equiv.coe_fn_mk, Function.comp_apply,
+      ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp, Representation.isTrivial_def,
+      ModuleCat.ofHom_id, Category.comp_id]
     erw [Finsupp.lsum_apply, Finsupp.lsum_apply]
     induction x using MonoidAlgebra.induction_on with
     | hM a =>
       simp
-      rw [Representation.ofMulAction_single, Finsupp.sum_single_index rfl]
-      rfl
     | hadd f g _ _ =>
       classical
       simp
@@ -105,7 +107,11 @@ def CyclicCoh.π [CommGroup G] : (ChainComplexAbel G k σ) ⟶
     simp
     simp [ChainComplexAbel, ModuleCat.endRingEquiv]
     ext g
-    simp [Representation.ofMulAction_single]
+    simp only [Action.zero_hom, ModuleCat.hom_zero, LinearMap.zero_comp, LinearMap.zero_apply,
+      Action.comp_hom, map_sub, Representation.asAlgebraHom_single, one_smul, map_one,
+      ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp, Pi.one_apply,
+      Function.comp_apply, Finsupp.lsingle_apply, LinearMap.sub_apply,
+      Representation.ofMulAction_single, smul_eq_mul, LinearMap.one_apply]
     erw [Finsupp.lsum_single, Finsupp.lsum_single]
     simp
 
@@ -119,11 +125,11 @@ def CyclicCoh.homotopy_aux [CommGroup G]: Action.Hom (Rep.trivial k G k)
   comm _ := by
     ext
     simp only [ChainComplexAbel, Rep.trivial, ModuleCat.endRingEquiv, RingEquiv.symm_mk,
-      RingHom.toMonoidHom_eq_coe, RingEquiv.toRingHom_eq_coe, MonoidHom.coe_comp,
-      MonoidHom.coe_coe, RingHom.coe_coe, RingEquiv.coe_mk, Equiv.coe_fn_mk, Function.comp_apply,
-      Finsupp.linearEquivFunOnFinite, Equiv.invFun_as_coe, LinearEquiv.coe_symm_mk,
-      ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp, LinearMap.coe_mk,
-      AddHom.coe_mk, Representation.apply_eq_self, Function.const_one]
+      RingHom.toMonoidHom_eq_coe, RingEquiv.toRingHom_eq_coe, MonoidHom.coe_comp, MonoidHom.coe_coe,
+      RingHom.coe_coe, RingEquiv.coe_mk, Equiv.coe_fn_mk, Function.comp_apply,
+      Representation.isTrivial_def, ModuleCat.ofHom_id, Finsupp.linearEquivFunOnFinite,
+      Equiv.invFun_as_coe, LinearEquiv.coe_symm_mk, Category.id_comp, ModuleCat.hom_ofHom,
+      LinearMap.coe_mk, AddHom.coe_mk, Function.const_one, ModuleCat.hom_comp, LinearMap.coe_comp]
     ext
     simp
 
@@ -334,8 +340,8 @@ abbrev N' [Group G] (A : Rep k G): A ⟶ A where
     ext g2
     simp
     -- Note: Add `MonoidAlgebra.finset_sum_apply`
-    rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
-    simp
+    -- rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
+    -- simp
 
 abbrev sigmaminus1' [CommGroup G] (A : Rep k G): A ⟶ A where
   hom := ModuleCat.ofHom (A.ρ.asAlgebraHom (.single σ 1 - 1))
@@ -366,8 +372,8 @@ def Acomplex [CommGroup G] (A : Rep k G): CochainComplex (Rep k G) ℕ where
       rw [sub_mul, sub_eq_zero]
       ext
       simp
-      rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
-      simp
+      -- rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
+      -- simp
     · ext : 2
       simp only [Action.comp_hom, one_smul,
         ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
@@ -377,8 +383,8 @@ def Acomplex [CommGroup G] (A : Rep k G): CochainComplex (Rep k G) ℕ where
       rw [mul_sub, sub_eq_zero]
       ext
       simp
-      rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
-      simp
+      -- rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
+      -- simp
 
 omit [Fintype G] in
 @[simp]
@@ -414,8 +420,8 @@ def CyclicCoh.groupCoh [CommGroup G] (A : Rep k G) (hσ : Submonoid.powers σ = 
 abbrev CyclicCoh.groupCoh0 [CommGroup G] (A : Rep k G) : groupCohomology A 0 ≅
   ModuleCat.of k A.ρ.invariants := groupCohomology.isoH0 A
 
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 80000 in
+set_option maxHeartbeats 1200000 in
+set_option synthInstance.maxHeartbeats 120000 in
 open Limits in
 -- @[simps K H i π]
 def moduleCatLeftHomologyData (S : ShortComplex (ModuleCat k)) (P : Submodule k S.X₂)
@@ -437,7 +443,7 @@ def moduleCatLeftHomologyData (S : ShortComplex (ModuleCat k)) (P : Submodule k 
       rw [hQ, ← LinearMap.range_comp]
       rfl
     simp_all only [Fork.ofι_pt, ModuleCat.hom_comp, ModuleCat.hom_ofHom, ModuleCat.hom_zero]
-    ext x : 2
+    ext x
     simp_all only [ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp, Function.comp_apply,
       Submodule.mkQ_apply, ModuleCat.hom_zero, LinearMap.zero_apply, Submodule.Quotient.mk_eq_zero, LinearMap.mem_range]
     apply Exists.intro
@@ -510,6 +516,7 @@ variable (F K : Type) [Field F] [Field K] [Algebra F K] [IsGalois F K] (τ : K �
 
 open scoped Classical in
 set_option maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 40000 in
 /-- For K/F a finite cyclic extension, `Br(K/F)` is isomorphic to `(ℤ[Gal(K/F)])ᴳ/N(ℤ[Gal(K/F)])` where
   `N : ℤ[Gal(K/F)] → ℤ[Gal(K/F)]` sends `a` to ∑ σⁱa, σ is the generator of `Gal(K/F)`. -/
 abbrev BrauerOverCyclic'  :
@@ -525,6 +532,7 @@ abbrev BrauerOverCyclic'  :
 abbrev invariants_eq : ((galAct F K).ρ.invariants : Submodule ℤ
   (Rep.ofMulDistribMulAction (K ≃ₐ[F] K) Kˣ).V) = sorry := sorry
 
+set_option synthInstance.maxHeartbeats 40000 in
 abbrev BrauerOverCyclic : Additive (RelativeBrGroup K F) ≃+
     Additive (Fˣ⧸(Units.map (Algebra.norm (S := K) F)).range) :=
   BrauerOverCyclic' F K τ hτ|>.toAddEquiv.trans

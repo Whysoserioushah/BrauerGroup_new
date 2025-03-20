@@ -1,5 +1,4 @@
-import BrauerGroup
-import Mathlib
+import BrauerGroup.BrauerGroup
 
 variable (K : Type*) [Field K] [Finite K]
 

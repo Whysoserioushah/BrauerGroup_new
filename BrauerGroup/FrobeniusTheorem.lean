@@ -252,7 +252,8 @@ lemma x2_is_real (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val
           rw [Subalgebra.coe_smul, mul_smul_comm, smul_mul_assoc, Subalgebra.coe_one,
             one_mul, mul_one, add_right_inj, Subalgebra.coe_smul, mul_smul_comm,
             show ((⟨x.1^2, xink⟩ : k) : D) = x.1^2 by rfl, pow_two, ← mul_assoc, smul_mul_assoc]
-        · simp
+        · exact fun _ ↦ Subtype.ext_iff.2 <| zero_smul _ _
+
       specialize x_commutes_k $ e.symm ⟨0,1⟩
       specialize hx $ e.symm ⟨0,1⟩
       -- apply_fun (x.1⁻¹ * ·) at x_commutes_k

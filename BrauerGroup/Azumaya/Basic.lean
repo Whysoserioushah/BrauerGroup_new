@@ -192,6 +192,7 @@ noncomputable abbrev mopAlgEquivEnd: Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
 noncomputable abbrev tensorEquivEnd : R ⊗[R] Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
   Algebra.TensorProduct.lid R Rᵐᵒᵖ|>.trans <| mopAlgEquivEnd R
 
+set_option synthInstance.maxHeartbeats 40000 in
 lemma equal_mulLeftRight: tensorEquivEnd R = AlgHom.mulLeftRight R R := by
   ext r
   simp [mopEquivEnd, AlgHom.mulLeftRight_apply]

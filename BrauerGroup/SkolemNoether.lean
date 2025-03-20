@@ -181,7 +181,10 @@ instance (K A B M : Type u)
     IsScalarTower K (B ⊗[K] Module.End A M) (module_inst K A B M f) where
   smul_assoc a x y := by
     induction x using TensorProduct.induction_on with
-    | zero => simp
+    | zero =>
+      -- simp
+      change smul1 K A B M f _ _ = _ • smul1 K A B M f _ _
+      rw [map_zero, smul_zero, smul_zero, map_zero]
     | tmul b z =>
       change (smul1 K A B M f _ _) = _ • smul1 K A B M f _ _
       simp

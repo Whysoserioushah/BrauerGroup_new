@@ -445,6 +445,7 @@ lemma C_smul_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
     Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) :=
   C_smul_aux_calc hα hβ k σ a b
 
+set_option maxHeartbeats 400000 in
 instance : MulAction C (M hα hβ) where
   one_smul := by
     intro x
