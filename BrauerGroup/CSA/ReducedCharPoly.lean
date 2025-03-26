@@ -213,29 +213,52 @@ lemma _root_.AlgHom.toMatrix_of_split (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (
 --     simp; rfl
 -- WHY IS THE PROOF NOT RFL???
 
+abbrev h (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F) [NeZero m]:
+    F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F where
+  toFun ta :=
+    let r := AlgHom.toMatrix_of_split K F F_bar A n m e g|>.choose
+    Matrix.reindexAlgEquiv F _ (finProdFinEquiv.trans (by
+    rw [AlgHom.toMatrix_of_split K F F_bar A n m e g|>.choose_spec, mul_comm]))
+    (Matrix.blockDiagonalRingHom (Fin n) (Fin r) _ (fun i ↦ e ta))
+  map_one' := by
+    simp only [eq_mpr_eq_cast, cast_cast, map_one, Matrix.blockDiagonalRingHom_apply]
+    erw [Matrix.blockDiagonal_one (m := Fin n) (o := Fin _) (α := F)]
+    exact map_one _
+  map_mul' := by simp
+  map_zero' := by
+      simp only [Matrix.blockDiagonalRingHom_apply, map_zero]
+      change Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal 0) = _
+      simp
+  map_add' fa1 fa2 := by
+    simp only [map_add, Matrix.blockDiagonalRingHom_apply]
+    change Matrix.reindexAlgEquiv _ _ _
+      (Matrix.blockDiagonal ((fun i ↦ e fa1) + (fun i ↦ e fa2))) = _
+    rw [Matrix.blockDiagonal_add, map_add]
+  commutes' k := by
+    simp only [eq_mpr_eq_cast, cast_cast, Algebra.TensorProduct.algebraMap_apply,
+      Algebra.id.map_eq_id, RingHom.id_apply, Matrix.blockDiagonalRingHom_apply]
+    rw [← mul_one k, ← smul_eq_mul k 1, ← TensorProduct.smul_tmul', map_smul]
+    change Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal (k • _)) = _
+    rw [Matrix.blockDiagonal_smul, map_smul, ← Algebra.TensorProduct.one_def, map_one]
+    change k • (Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal 1)) = _
+    simp [Algebra.algebraMap_eq_smul_one]
+
+lemma _root_.Matrix.charpoly.similar_eq (n : ℕ) (u : (Matrix (Fin n) (Fin n) F)ˣ)
+    (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹):
+    A.charpoly = B.charpoly := sorry
+
 include F_bar in
 theorem eq_pow_reducedPoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F) [NeZero m] (a : A):
     ∃(r : ℕ), Matrix.charpoly (g (1 ⊗ₜ a)) = (ReducedCharPoly A e a)^r := ⟨
   AlgHom.toMatrix_of_split K F F_bar A n m e g|>.choose, by
   set r := AlgHom.toMatrix_of_split K F F_bar A n m e g|>.choose with r_eq
-  let h : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F :=
-    {
-    toFun ta := Matrix.reindexAlgEquiv F _ (finProdFinEquiv.trans (by
-      rw [AlgHom.toMatrix_of_split K F F_bar A n m e g|>.choose_spec, mul_comm]))
-      (Matrix.blockDiagonalRingHom (Fin n) (Fin r) _ (fun i ↦ e ta)),
-    map_one' := by
-      simp only [eq_mpr_eq_cast, cast_cast, map_one, Matrix.blockDiagonalRingHom_apply]
-      erw [Matrix.blockDiagonal_one (m := Fin n) (o := Fin r) (α := F)]
-      exact map_one _
-    map_mul' := sorry
-    map_zero' := sorry
-    map_add' := sorry
-    commutes' := sorry
-    }
+  have mul_eq := AlgHom.toMatrix_of_split K F F_bar A n m e g|>.choose_spec
+  obtain ⟨u, hu⟩ := SkolemNoether' F _ _ (h K F F_bar A _ _ e g) g
+  specialize hu (1 ⊗ₜ a)
+  delta ReducedCharPoly
+  rw [Matrix.charpoly.similar_eq _ m u _ _ hu]
+  simp only [h, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
 
-    -- {__ := Matrix.blockDiagonalRingHom (Fin n) (Fin r),
-    -- }
   sorry⟩
--- #check Matrix.blockDiagonal (_ : Fin r → _)
 
 end ReducedCharPoly
