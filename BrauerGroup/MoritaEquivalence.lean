@@ -596,7 +596,6 @@ instance _root_.CategoryTheory.Equivalence.nontrivial
 
 variable (K : Type u) [Field K]
 
-
 lemma IsSimpleModule.functor
     (R S : Type u) [Ring R] [Ring S] (e : ModuleCat.{v} R ≌ ModuleCat.{v} S)
     (M : ModuleCat.{v} R) [simple_module : IsSimpleModule R M] : IsSimpleModule S (e.functor.obj M) := by

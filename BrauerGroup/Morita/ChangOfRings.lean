@@ -24,25 +24,25 @@ universe u₀ u u' u''  v'
 variable (R : Type u₀) [CommRing R]
 
 
-namespace IsMoritaEquivalent
+-- namespace IsMoritaEquivalent
 
-lemma refl {A : Type u₁} [Ring A] [Algebra R A] : IsMoritaEquivalent R A A where
-  cond := ⟨.refl R A⟩
+-- lemma refl {A : Type u₁} [Ring A] [Algebra R A] : IsMoritaEquivalent R A A where
+--   cond := ⟨.refl R A⟩
 
-lemma symm {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
-    (h : IsMoritaEquivalent R A B) : IsMoritaEquivalent R B A where
-  cond := h.cond.map <| .symm R
+-- lemma symm {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
+--     (h : IsMoritaEquivalent R A B) : IsMoritaEquivalent R B A where
+--   cond := h.cond.map <| .symm R
 
-lemma trans {A B C : Type u₁} [Ring A] [Ring B] [Ring C] [Algebra R A] [Algebra R B] [Algebra R C]
-    (h : IsMoritaEquivalent R A B) (h' : IsMoritaEquivalent R B C) :
-    IsMoritaEquivalent R A C where
-  cond := Nonempty.map2 (.trans R) h.cond h'.cond
+-- lemma trans {A B C : Type u₁} [Ring A] [Ring B] [Ring C] [Algebra R A] [Algebra R B] [Algebra R C]
+--     (h : IsMoritaEquivalent R A B) (h' : IsMoritaEquivalent R B C) :
+--     IsMoritaEquivalent R A C where
+--   cond := Nonempty.map2 (.trans R) h.cond h'.cond
 
-lemma of_algEquiv {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
-    (f : A ≃ₐ[R] B) : IsMoritaEquivalent R A B where
-  cond := ⟨.ofAlgEquiv f⟩
+-- lemma of_algEquiv {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
+--     (f : A ≃ₐ[R] B) : IsMoritaEquivalent R A B where
+--   cond := ⟨.ofAlgEquiv f⟩
 
-end IsMoritaEquivalent
+-- end IsMoritaEquivalent
 -- class IsMoritaEquivalent
 --   (R : Type u) (S : Type u') [Ring R] [Ring S] : Prop where
 -- out : Nonempty $ ModuleCat.{v} R ≌ ModuleCat.{v'} S

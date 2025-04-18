@@ -652,12 +652,9 @@ theorem is_fin_dim_of_wdb
       } : S →ₗ[K] Matrix (Fin n) (Fin n) S) fun x y h => Matrix.ext_iff.2 h 0 0
 
 lemma bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed
-    (K D : Type*) [Field K] [IsAlgClosed K] [DivisionRing D] [alg : Algebra K D]
-    [FiniteDimensional K D] : Function.Bijective (algebraMap K D) := by
-  letI ins1 := Algebra.IsIntegral.of_finite K D
-  have surj : Function.Surjective (algebraMap K D) :=
-    IsAlgClosed.algebraMap_surjective_of_isIntegral
-  exact ⟨(algebraMap K D).injective, surj⟩
+    (K D : Type*) [Field K] [IsAlgClosed K] [Ring D] [IsSimpleRing D] [IsDomain D] [Algebra K D]
+    [FiniteDimensional K D] : Function.Bijective (algebraMap K D) := 
+  ⟨(algebraMap K D).injective, IsAlgClosed.algebraMap_surjective_of_isIntegral⟩
 
 theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :
     ∃ (n : ℕ) (_ : NeZero n), Nonempty (B ≃ₐ[K] M[Fin n, K]) := by

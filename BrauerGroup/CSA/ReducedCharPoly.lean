@@ -88,58 +88,65 @@ def φ_m (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F →ₐ[K] Matrix (Fin n
     split_ifs with h <;>  simp
 
 omit [NeZero n] in
+variable {K F E} in
 lemma φ_m_inj (φ : F →ₐ[K] E): Function.Injective (φ_m n φ) := fun M N h ↦ funext fun i ↦
   funext fun j ↦ by simp [← Matrix.ext_iff] at h; exact (injective_φ _ _ _ φ) (h i j)
 
-abbrev e1 (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F ≃ₐ[K] Matrix (Fin n) (Fin n) φ.range :=
-  AlgEquiv.ofInjective φ (injective_φ K F E _)|>.mapMatrix
+variable {K F E} in
+abbrev e1Aux (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) φ.range ≃ₐ[K] (φ_m n φ).range where
+  toFun M := ⟨fun i j ↦ M i j|>.1, ⟨fun i j ↦ M i j|>.2.choose, funext fun i ↦ funext fun j ↦ M i j|>.2.choose_spec⟩⟩
+  invFun := fun ⟨M, (h : ∃ _, _ = _)⟩ ↦ fun i j ↦ ⟨M i j, ⟨h.choose i j, Matrix.ext_iff.2 h.choose_spec i j ⟩⟩
+  left_inv _ := by simp
+  right_inv _ := by simp
+  map_mul' _ _ := by ext; simp [Matrix.mul_apply]
+  map_add' _ _ := rfl
+  commutes' k := by
+    ext
+    simp only [Matrix.algebraMap_matrix_apply, SubalgebraClass.coe_algebraMap]
+    exact apply_ite Subtype.val _ ((algebraMap K ↥φ.range) k) 0
+
+abbrev e1 (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F ≃ₐ[K] φ_m n φ|>.range :=
+  AlgEquiv.ofBijective (φ_m n φ).rangeRestrict ⟨AlgHom.injective_codRestrict _ _
+    (φ_m n φ).mem_range_self|>.2 <| φ_m_inj n φ, AlgHom.rangeRestrict_surjective _⟩
 
 abbrev e1' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[K] Matrix (Fin n) (Fin n) φ.range :=
-  Algebra.TensorProduct.congr (AlgEquiv.ofInjective _ (injective_φ _ _ _ _)).symm AlgEquiv.refl|>.trans <|
+  Algebra.TensorProduct.congr (AlgEquiv.ofInjectiveField φ).symm AlgEquiv.refl|>.trans <|
   ({__ := e, commutes' r := by simpa using (e.commutes (algebraMap K F r))} : _ ≃ₐ[K] Matrix (Fin n) (Fin n) F).trans
-  <| e1 _ _ _ _ φ
+  <| e1 _ _ _ _ φ|>.trans (e1Aux n φ).symm
 
+variable {K F E} in
+abbrev e1'' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[φ.range] Matrix (Fin n) (Fin n) φ.range := {
+  e1' K F E A n e φ with
+  commutes' := fun ⟨x, ⟨y, eq⟩⟩ ↦ Matrix.ext_iff.1 <| fun i j ↦ by
+    simp [AlgEquiv.ofInjectiveField]
+    rw [← mul_one ((AlgEquiv.ofInjective φ _).symm ⟨x, _⟩), ← smul_eq_mul, ← TensorProduct.smul_tmul',
+      map_smul, ← Algebra.TensorProduct.one_def, map_one]
+    simp [Matrix.algebraMap_matrix_apply]
+    split_ifs with h
+    · subst h
+      simp only [AlgEquiv.ofInjective, AlgEquiv.ofLeftInverse_symm_apply, Matrix.one_apply_eq,
+        map_one, mul_one, Subtype.mk.injEq]
+      set ψ := Classical.choose _ with ψ_eq
+      let hψ := Classical.choose_spec φ.injective.hasLeftInverse
+      simp only [Function.LeftInverse, ← ψ_eq] at hψ
+      rw [← eq, hψ y]
+      rfl
 
-
-#exit
-variable {F E} in
-abbrev e1 : (Algebra.ofId F E).range ≃ₐ[F] F := (AlgEquiv.ofInjectiveField (Algebra.ofId F E)).symm
-
-abbrev e1' : (Algebra.ofId F E).range ≃ₐ[(Algebra.ofId F E).range] F :=
-  AlgEquiv.ofRingEquiv (f := e1 (F := F) (E := E)) (fun ⟨x, hx⟩ ↦ by
-    simp [e1, AlgEquiv.ofInjectiveField, Algebra.algebraMap_eq_smul_one, RingHom.smul_toAlgebra]
-    rfl)
-
-variable [IsScalarTower K F E]
-
-abbrev e' : F ⊗[K] A ≃ₐ[(Algebra.ofId F E).range] Matrix (Fin n) (Fin n) F :=
-  AlgEquiv.ofRingEquiv (f := e) <| fun ⟨x, hx⟩ ↦ by
-    simp [Algebra.TensorProduct.one_def]
-    simp [Algebra.algebraMap_eq_smul_one, RingHom.smul_toAlgebra]
-    conv_lhs => erw [← mul_one ((AlgEquiv.ofInjectiveField (Algebra.ofId F E)).symm ⟨x, hx⟩),
-      ← smul_eq_mul, ← TensorProduct.smul_tmul', map_smul, map_one]
-    rfl
-
-abbrev e2 : E ≃ₐ[E] E ⊗[(Algebra.ofId F E).range] (Algebra.ofId F E).range :=
-  Algebra.TensorProduct.rid (Algebra.ofId F E).range E E|>.symm
-
-abbrev e3 : (Algebra.ofId F E).range ⊗[K] A ≃ₐ[(Algebra.ofId F E).range]
-    Matrix (Fin n) (Fin n) (Algebra.ofId F E).range :=
-  Algebra.TensorProduct.congr (e1' F E) AlgEquiv.refl |>.trans <|
-  (e' K F E A n e).trans (e1' F E).mapMatrix.symm
+    · simp [h]
+      exact Subtype.ext rfl
+  }
 
 set_option maxSynthPendingDepth 2 in
 variable {K F E A n} in
-abbrev g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
-  Algebra.TensorProduct.congr (Algebra.TensorProduct.rid (Algebra.ofId F E).range E E|>.symm)
-    AlgEquiv.refl |>.trans <|
-  (Algebra.TensorProduct.assoc' K E (Algebra.ofId F E).range
-    E (Algebra.ofId F E).range A).trans <|
-  Algebra.TensorProduct.congr AlgEquiv.refl (e3 K F E A n e) |>.trans <|
-  (matrixEquivTensor' _ _ _).symm
+abbrev g (φ : F →ₐ[K] E): E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
+  Algebra.TensorProduct.congr (Algebra.TensorProduct.rid φ.range E E|>.symm) AlgEquiv.refl |>.trans
+  <| Algebra.TensorProduct.assoc' K E φ.range E φ.range A|>.trans <|
+  Algebra.TensorProduct.congr AlgEquiv.refl (e1'' A n e φ) |>.trans <|
+  (matrixEquivTensor' _ _ _ ).symm
 
 end defs
 
+#exit
 omit [NeZero n] in
 lemma mat_over_extension [Algebra F E] [IsScalarTower K F E] (φ : F →ₐ[F] E) (a : A):
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, g (1 ⊗ₜ a) =
