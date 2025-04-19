@@ -146,45 +146,32 @@ abbrev g (φ : F →ₐ[K] E): E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
 
 end defs
 
-#exit
+variable {K E F} in
 omit [NeZero n] in
-lemma mat_over_extension [Algebra F E] [IsScalarTower K F E] (φ : F →ₐ[F] E) (a : A):
+lemma mat_over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A):
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, g (1 ⊗ₜ a) =
     φ.mapMatrix (e (1 ⊗ₜ a)) := by
-  use g e
-  simp
-  -- rw [Algebra.TensorProduct.one_def]
-  sorry
-  -- use g e
-  -- simp only [Algebra.range_ofId, AlgEquiv.trans_apply, Algebra.TensorProduct.congr_apply,
-  --   AlgEquiv.refl_toAlgHom, Algebra.TensorProduct.map_tmul, AlgHom.coe_coe, map_one, AlgHom.coe_id,
-  --   id_eq, AlgHom.mapMatrix_apply]
-  -- rw [Algebra.TensorProduct.one_def]
-  -- erw [Algebra.TensorProduct.assoc'_apply]
-  -- simp only [Algebra.range_ofId, Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq,
-  --   AlgHom.coe_coe, matrixEquivTensor'_symm_apply, one_smul]
-  -- ext i j
-  -- simp only [Matrix.map_apply]
-  -- unfold e3
-  -- simp only [Algebra.range_ofId, AlgEquiv.mapMatrix_symm, AlgEquiv.trans_apply,
-  --   Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom, Algebra.TensorProduct.map_tmul,
-  --   AlgHom.coe_coe, map_one, AlgHom.coe_id, id_eq, AlgEquiv.mapMatrix_apply, Matrix.map_apply]
-  -- change algebraMap _ _ (e1.symm (e (_) i j)) = _
-  -- change algebraMap _ _ ((AlgEquiv.ofInjective _ (FaithfulSMul.algebraMap_injective F E )) (e _ i j)) = _
-  -- change algebraMap _ _ ((algebraMap F E) (e _ i j)) = _
-  -- conv_lhs => rw [← RingHom.comp_apply]
-  -- change ((RingHom.id _).comp _) _ = _
-  -- simp [Algebra.ofId]
+  use g e φ
+  simp only [AlgEquiv.trans_apply, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom,
+    Algebra.TensorProduct.map_tmul, AlgHom.coe_coe, Algebra.TensorProduct.rid_symm_apply,
+    AlgHom.coe_id, id_eq, Algebra.TensorProduct.assoc'_apply, AlgEquiv.coe_mk,
+    AlgEquiv.toEquiv_eq_coe, EquivLike.coe_coe, AlgEquiv.symm_mk, map_one, AlgEquiv.coe_ofBijective,
+    Equiv.coe_fn_mk, AlgHom.coe_codRestrict, φ_m_apply, matrixEquivTensor'_symm_apply, one_smul,
+    AlgHom.mapMatrix_apply, Algebra.TensorProduct.one_def]
+  ext i j
+  simp [Matrix.map_apply]
+  rfl
 
-variable {K F n} in
+variable {K F n A} in
 def ReducedCharPoly (a : A): Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a))
 
 namespace ReducedCharPoly
+
 omit [NeZero n] in
-lemma over_extension [Algebra F E] [IsScalarTower K F E] (a : A):
-    ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, ReducedCharPoly A
-    g a = Polynomial.mapAlgHom (Algebra.ofId F E) (ReducedCharPoly A e a) := by
-  obtain ⟨g, hg⟩ := mat_over_extension K F E A n e a
+lemma over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A):
+    ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, ReducedCharPoly g a =
+    Polynomial.mapAlgHom φ (ReducedCharPoly e a) := by
+  obtain ⟨g, hg⟩ := mat_over_extension A n e φ a
   use g
   simp only [ReducedCharPoly, hg, AlgHom.mapMatrix_apply, Polynomial.coe_mapAlgHom]
   change (Matrix.charmatrix _).det = Polynomial.map _ (Matrix.charmatrix _).det
@@ -192,15 +179,8 @@ lemma over_extension [Algebra F E] [IsScalarTower K F E] (a : A):
   rw [AlgHom.toRingHom_eq_coe, ← Polynomial.coe_mapRingHom, RingHom.map_det,
     RingHom.mapMatrix_apply]
 
-#exit
-lemma _root_.Matrix.charpoly.similar_eq (n : ℕ) (u : (Matrix (Fin n) (Fin n) F)ˣ)
-    (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹):
-    A.charpoly = B.charpoly := sorry
 
--- lemma _root_.Matrix.charmatrix_commute_blockdiag (n m F : Type*) [Fintype n] [Fintype m]
---     [DecidableEq n] [DecidableEq m] [Field F] (A : Matrix n n F):
---     (Matrix.blockDiagonal (fun (_ : m) ↦ A)).charmatrix =
---     Matrix.blockDiagonal (fun _ ↦ A.charmatrix) := sorry
+end ReducedCharPoly
 
 /-- A subtype of a `Prod` that depends only on the second component is equivalent to the
 first type times a corresponding subtype of the second type. -/
@@ -253,15 +233,83 @@ lemma Matrix.reindex_diagonal_charpoly (r n m : ℕ) (eq : m = r * n)
     Matrix.charpoly_reindex, blockDiagonal_charpoly]
   simp
 
--- set_option trace.profiler true in
+lemma _root_.Matrix.charpoly.similar_eq (n : ℕ) (u : (Matrix (Fin n) (Fin n) F)ˣ)
+    (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹):
+    A.charpoly = B.charpoly := sorry
+
+-- set_option synthInstance.maxHeartbeats 80000 in
+-- set_option maxHeartbeats 600000 in
+-- include F_bar e in
+-- omit [NeZero n] in
+-- lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F) [NeZero m] (a : A):
+--     ∃ (r : ℕ), NeZero r ∧ m = r * n ∧ Matrix.charpoly (g (1 ⊗ₜ a)) = (ReducedCharPoly e a)^r :=
+--   have iso : F ⊗[K] A ≃ₐ[F] g.range := AlgEquiv.ofInjective _ <|
+--     IsSimpleRing.iff_eq_zero_or_injective' (F ⊗[K] A) F |>.1
+--     (IsCentralSimple.TensorProduct.simple K F A) g|>.resolve_left <| fun hg ↦ by
+--       simpa [one_ne_zero] using (TwoSidedIdeal.mem_ker g|>.1 <| SetLike.ext_iff.1 hg 1|>.2 (by trivial))
+--   haveI : Algebra.IsCentral F g.range := .of_algEquiv F _ _ iso
+--   haveI : IsSimpleRing g.range := .of_ringEquiv iso.toRingEquiv inferInstance
+--   have ee := writeAsTensorProduct (F := F) (A := Matrix (Fin m) (Fin m) F) g.range
+--   haveI : IsSimpleRing (Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range) :=
+--     centralizer_isSimple (A := Matrix (Fin m) (Fin m) F) g.range
+--     (Module.finBasis _ _)
+--   haveI : Algebra.IsCentral F (g.range ⊗[F] ↥(Subalgebra.centralizer F (SetLike.coe g.range))) :=
+--     .of_algEquiv F _ (g.range ⊗[F] (Subalgebra.centralizer F (SetLike.coe g.range))) ee
+--   haveI : Algebra.IsCentral F (Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range) :=
+--     .right_of_tensor_of_field F g.range _
+--   let r : ℕ := deg F F_bar ⟨.of F (Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range)⟩
+--   have eq : r * n = m := by
+--     apply_fun fun x ↦ x^2 using (Nat.pow_left_injective (by omega))
+--     have eq1 : Module.finrank F g.range = n^2 := by
+--       rw [← iso.toLinearEquiv.finrank_eq, e.toLinearEquiv.finrank_eq]
+--       simp [pow_two, Module.finrank_matrix]
+--     simp only [mul_comm, mul_pow, r, deg_sq_eq_dim, ← eq1, ← Module.finrank_tensorProduct,
+--       ee.symm.toLinearEquiv.finrank_eq]
+--     rw [pow_two, Module.finrank_matrix]
+--     simp
+--   let h: F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F := {
+--     toFun ta :=
+--       Matrix.reindexAlgEquiv F _ (finProdFinEquiv.trans ((finCongr (by rw [mul_comm, eq]))))
+--       (Matrix.blockDiagonalRingHom (Fin n) (Fin r) _ (fun i ↦ e ta))
+--     map_one' := by
+--       simp only [eq_mpr_eq_cast, cast_cast, map_one, Matrix.blockDiagonalRingHom_apply]
+--       erw [Matrix.blockDiagonal_one (m := Fin n) (o := Fin _) (α := F)]
+--       exact map_one _
+--     map_mul' := by simp
+--     map_zero' := by
+--         simp only [Matrix.blockDiagonalRingHom_apply, map_zero]
+--         change Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal 0) = _
+--         simp
+--     map_add' fa1 fa2 := by
+--       simp only [map_add, Matrix.blockDiagonalRingHom_apply]
+--       change Matrix.reindexAlgEquiv _ _ _
+--         (Matrix.blockDiagonal ((fun i ↦ e fa1) + (fun i ↦ e fa2))) = _
+--       rw [Matrix.blockDiagonal_add, map_add]
+--     commutes' k := by
+--       simp only [eq_mpr_eq_cast, cast_cast, Algebra.TensorProduct.algebraMap_apply,
+--         Algebra.id.map_eq_id, RingHom.id_apply, Matrix.blockDiagonalRingHom_apply]
+--       rw [← mul_one k, ← smul_eq_mul k 1, ← TensorProduct.smul_tmul', map_smul]
+--       change Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal (k • _)) = _
+--       rw [Matrix.blockDiagonal_smul, map_smul, ← Algebra.TensorProduct.one_def, map_one]
+--       change k • (Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal 1)) = _
+--       simp [Algebra.algebraMap_eq_smul_one] }
+--   ⟨r, deg_pos _ _ _, eq.symm,
+--   by
+--     obtain ⟨u, hu⟩ := SkolemNoether' F _ _ h g
+--     specialize hu (1 ⊗ₜ a)
+--     delta ReducedCharPoly
+--     rw [Matrix.charpoly.similar_eq _ m u _ _ hu]
+--     simp only [h, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
+--     exact Matrix.reindex_diagonal_charpoly F _ _ _ eq.symm (e (1 ⊗ₜ[K] a))⟩
+
+#exit
+
 set_option synthInstance.maxHeartbeats 80000 in
 set_option maxHeartbeats 600000 in
 include F_bar e in
 omit [NeZero n] in
 lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F) [NeZero m] (a : A):
     ∃ (r : ℕ), NeZero r ∧ m = r * n ∧ Matrix.charpoly (g (1 ⊗ₜ a)) = (ReducedCharPoly A e a)^r :=
-  -- if h : m ≠ 0 then
-  -- haveI : NeZero m := ⟨h⟩
   have iso : F ⊗[K] A ≃ₐ[F] g.range := AlgEquiv.ofInjective _ <|
     IsSimpleRing.iff_eq_zero_or_injective' (F ⊗[K] A) F |>.1
     (IsCentralSimple.TensorProduct.simple K F A) g|>.resolve_left <| fun hg ↦ by
