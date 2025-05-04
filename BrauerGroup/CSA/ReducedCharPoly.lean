@@ -308,15 +308,20 @@ lemma eq_polys (f1 f2 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (a : A):
   rw [← hr2]
   rfl
 
-lemma _root_.Matrix.charpoly_eq_reduced (K : Type*) [Field K] (n : ℕ) [NeZero n]
-    (M : Matrix (Fin n) (Fin n) K):
-    M.charpoly = ReducedCharPoly (F := K) (A := ⟨.of K (Matrix (Fin n) (Fin n) K)⟩) (n := n)
-      (Algebra.TensorProduct.lid _ _) M := by simp [ReducedCharPoly]
-
-variable [IsGalois K F]
 
 open Polynomial
 
+section
+variable [IsGalois K F] [FiniteDimensional K F]
+
+lemma fixedpoints (x : F) : (∀ φ : F ≃ₐ[K] F, φ x = x) → x ∈ (Algebra.ofId K F).range := by
+  intro h
+  have eq1 := IntermediateField.mem_fixedField_iff (F := K) ⊤ x|>.2 (by aesop)
+  have := OrderIso.map_bot (IsGalois.intermediateFieldEquivSubgroup (F := K) (E := F)).symm
+  change IntermediateField.fixedField ⊤ = _ at this
+  rwa [this] at eq1
+
+-- lemma 3
 include F_bar in
 lemma mem_Kx (a : A): ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.ofId K F) := by
   have fixed : ∀ φ : F ≃ₐ[K] F, (e (1 ⊗ₜ[K] a)).charpoly = map φ (e (1 ⊗ₜ[K] a)).charpoly := fun φ ↦ by
@@ -333,11 +338,46 @@ lemma mem_Kx (a : A): ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.o
       AlgEquiv.toRingEquiv_toRingHom] at hg
     exact hr.symm.trans hg
   simp only [ext_iff, coeff_map, RingHom.coe_coe] at fixed
+  have fixed2 : ∀ m : ℕ, (e (1 ⊗ₜ a)).charpoly.coeff m ∈ (Algebra.ofId K F).range := fun m ↦
+    fixedpoints K F _ <| fun φ ↦ fixed φ m |>.symm
+  rw [ReducedCharPoly]
+  use ⟨(⟨(e (1 ⊗ₜ[K] a)).charpoly.support, fun m ↦ fixed2 m|>.choose, ?_⟩ : ℕ →₀ K)⟩
+  pick_goal 2
+  · simp
+    intro k
+    constructor
+    · by_contra! h
+      obtain ⟨h1, h2⟩ := h
+      have := fixed2 k|>.choose_spec
+      apply_fun (Algebra.ofId K F) at h2
+      rw [map_zero] at h2
+      rw [← this] at h1
+      tauto
+    · by_contra! h
+      obtain ⟨h1, h2⟩ := h
+      have := fixed2 k|>.choose_spec
+      simp only [h2] at this
+      change algebraMap _ _ _ = 0 at this
+      rw [FaithfulSMul.algebraMap_eq_zero_iff] at this
+      exact h1 <| by convert this
+  ext k
+  simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, coe_mapAlgHom, coeff_map, coeff_ofFinsupp,
+    Finsupp.coe_mk]
+  exact fixed2 k|>.choose_spec.symm
 
+end
+-- abbrev galois_fixed_Kx_mem (a : A): K[X] := (mem_Kx K F F_bar A n e a).choose
+
+lemma unique_onver_split (L : Type*) [Field L] [Algebra K L] [IsGalois K L]
+    (e1 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (e2 : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E)
+    (e3 : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) (a : A):
+    ∃ f g : K[X], ReducedCharPoly e1 a = f.mapAlgHom (Algebra.ofId K F) ∧
+    ReducedCharPoly e2 a = g.mapAlgHom (Algebra.ofId K E) ∧ f = g := by
 
   sorry
 
+-- lemma 4 ?????
 
--- lemma cayleyHamilton (a : A) : (mem_Kx K F A n e a).choose.aeval a = 0 := by
-
---   sorry
+theorem equalMatrixCharpoly (M : Matrix (Fin n) (Fin n) K):
+    @ReducedCharPoly K K _ _ _ ⟨.of K (Matrix (Fin n) (Fin n) K)⟩ n
+    (Algebra.TensorProduct.lid _ _) M = M.charpoly := by simp [ReducedCharPoly]
