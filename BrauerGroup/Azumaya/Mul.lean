@@ -249,7 +249,7 @@ abbrev v (n : ℕ): Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
   simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
     mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
   exact hf) <| fun x _ ↦ by
-  refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
+  refine Submodule.mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
   change ∑ i : Fin n, _ • Function.update _ _ _ = x
   ext j
   simp [Function.update_apply]
@@ -364,7 +364,7 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
 
 -- example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N):
 --   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
-
+set_option maxSynthPendingDepth 6 in
 /--
 A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
@@ -374,9 +374,9 @@ A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
 End R A   ------------> End R B
 
 -/
-lemma small_comm_square (e : A ≃ₐ[R] B):
+lemma small_comm_square (e : A ≃ₐ[R] B) :
     (AlgHom.mulLeftRight R B).comp (Algebra.TensorProduct.congr e e.op).toAlgHom =
-    (e.toLinearEquiv.algConj).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
+      (e.toLinearEquiv.algConj R).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
   apply AlgHom.ext
   intro a
   induction a using TensorProduct.induction_on with
@@ -396,51 +396,51 @@ lemma _root_.IsAzumaya.ofAlgEquiv (e : A ≃ₐ[R] B) (hA : IsAzumaya R A) : IsA
     simp [hA.bij]⟩
 
 abbrev inclusion' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.End R M →ₗ[R] Module.End R (Fin (nn R M) → R) where
+    [Module.Projective R M] : Module.End R M →ₗ[R] Module.End R (Fin (nn R M) → R) where
   toFun := fun f ↦ g0 R M ∘ₗ f ∘ₗ f0 R M
   map_add' := fun _ _ ↦ by simp [LinearMap.add_comp, LinearMap.comp_add]
   map_smul' := fun _ _ ↦ by simp [LinearMap.smul_comp, LinearMap.comp_smul]
 
 abbrev projection' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.End R (Fin (nn R M) → R) →ₗ[R] Module.End R M where
+    [Module.Projective R M] : Module.End R (Fin (nn R M) → R) →ₗ[R] Module.End R M where
   toFun := fun f ↦ f0 R M ∘ₗ f ∘ₗ g0 R M
   map_add' := fun _ _ ↦ by simp [LinearMap.add_comp, LinearMap.comp_add]
   map_smul' := fun _ _ ↦ by simp [LinearMap.smul_comp, LinearMap.comp_smul]
 
 lemma projection'_inclusion' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: projection' R M ∘ₗ inclusion' R M = LinearMap.id := by
+    [Module.Projective R M] : projection' R M ∘ₗ inclusion' R M = LinearMap.id := by
   ext f : 1
   simp [LinearMap.comp_assoc, fg]
   rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp]
 
 lemma projection'_surj (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Function.Surjective (projection' R M) :=
+    [Module.Projective R M] : Function.Surjective (projection' R M) :=
   Function.Surjective.of_comp (g := inclusion' R M) <| by
   rw [← LinearMap.coe_comp, projection'_inclusion']
   exact CharacterModule.surjective_of_dual_injective LinearMap.id fun ⦃a₁ a₂⦄ a ↦ a
 
 lemma _root_.Module.Projective.ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.Projective R (Module.End R M) :=
+    [Module.Projective R M] : Module.Projective R (Module.End R M) :=
   .of_split (M := Module.End R (Fin (nn R M) → R)) (inclusion' R M) (projection' R M)
     <| projection'_inclusion' R M
 
 instance _root_.Module.Finite.End (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.Finite R (Module.End R M) :=
+    [Module.Projective R M] : Module.Finite R (Module.End R M) :=
   Module.Finite.of_surjective (projection' R M) (projection'_surj R M)
 
-instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M]:
+instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M] :
     FaithfulSMul R (Module.End R M) where
   eq_of_smul_eq_smul {r1 r2} h12 := by
     specialize h12 1
     rw [LinearMap.ext_iff] at h12
-    simp only [LinearMap.smul_apply, LinearMap.one_apply] at h12
+    simp only [LinearMap.smul_apply, Module.End.one_apply] at h12
     exact eq_of_smul_eq_smul h12
 
-abbrev MatrixAlg (n : ℕ) [NeZero n]: Azumaya R := {
+abbrev MatrixAlg (n : ℕ) [NeZero n] : Azumaya R := {
   __ := AlgebraCat.of R (_root_.Matrix (Fin n) (Fin n) R)
   isAzumaya := IsAzumaya.matrix R (Fin n) }
 
-abbrev EndRn (n : ℕ) [NeZero n]: Azumaya R := {
+abbrev EndRn (n : ℕ) [NeZero n] : Azumaya R := {
   __ := AlgebraCat.of R (Module.End R (Fin n → R))
   isAzumaya := IsAzumaya.ofAlgEquiv R _ _
     LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R (Fin n)
@@ -563,10 +563,9 @@ lemma bij_endM :
   ⟨inj_endM R M, surj_endM R M⟩
 
 abbrev ofEnd (M : Type v) [Nontrivial M] [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M] [FaithfulSMul R M]: Azumaya R := {
+    [Module.Projective R M] [FaithfulSMul R M] : Azumaya R where
   __ := AlgebraCat.of R (Module.End R M)
-  isAzumaya := {
-    out := Module.Projective.ofEnd R M|>.out
-    bij := bij_endM R M }}
+  isAzumaya.out := Module.Projective.ofEnd R M|>.out
+  isAzumaya.bij := bij_endM R M
 
 end Azumaya
