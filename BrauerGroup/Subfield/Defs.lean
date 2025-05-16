@@ -95,3 +95,47 @@ instance : Nonempty (SubField K A) := ⟨⊥⟩
 
 end Semifield
 end SubField
+
+abbrev iSup_chain_subfield (D : Type u) [DivisionRing D] [Algebra K D] (α : Set (SubField K D))
+    [Nonempty α] (hα : IsChain (· ≤ ·) α) : SubField K D where
+  __ := (⨆ (L : α), L.1.1 : Subalgebra K D)
+  mul_comm x y hx hy := by
+    simp only [Subsemiring.coe_carrier_toSubmonoid, Subalgebra.coe_toSubsemiring,
+      SetLike.mem_coe] at hx hy
+    have := Subalgebra.coe_iSup_of_directed hα.directed
+    dsimp at this
+    change x ∈ (_ : Set _) at hx ; change _ ∈ ( _ : Set _) at hy
+    rw [this] at hx hy
+    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx hy
+    obtain ⟨L1, hL1, hx⟩ := hx
+    obtain ⟨L2, hL2, hy⟩ := hy
+    obtain ⟨L3, _, hL31, hL32⟩ := hα.directedOn L1 hL1 L2 hL2
+    exact L3.mul_comm x y (hL31 hx) (hL32 hy)
+  inverse x hx hx0 := by
+    simp only [Subalgebra.coe_toSubsemiring,
+      Subsemiring.coe_carrier_toSubmonoid, SetLike.mem_coe] at *
+    letI : Nonempty α := Set.Nonempty.to_subtype (Set.Nonempty.of_subtype)
+    have := Subalgebra.coe_iSup_of_directed hα.directed
+    dsimp at this
+    change x ∈ (_ : Set _) at hx
+    rw [this] at hx
+    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx
+    obtain ⟨L1, hL1, hx⟩ := hx
+    use L1.inverse x hx hx0|>.choose
+    constructor
+    · have : L1.1 ≤ ⨆ (L : α), (L.1).toSubalgebra := by
+        exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L1.1) ⟨L1, hL1⟩ (by rfl)
+      exact this (L1.inverse x hx hx0).choose_spec.1
+    · exact L1.inverse x hx hx0|>.choose_spec.2
+
+lemma exists_subfield_isMax (D : Type*) [DivisionRing D] [Algebra ℝ D] :
+    ∃ L : SubField ℝ D, IsMax L := by
+  refine zorn_le_nonempty (α := SubField ℝ D) fun α hα hα' ↦ ?_
+  letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
+  use iSup_chain_subfield D α hα
+  change (iSup_chain_subfield D α hα) ∈ {L | _}
+  simp only [Set.mem_setOf_eq]
+  intro L hL
+  change L.1 ≤ (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
+  exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L.1) ⟨L, hL⟩ (by rfl) |>.trans <|
+    by trivial

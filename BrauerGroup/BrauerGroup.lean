@@ -2,12 +2,10 @@ import BrauerGroup.CentralSimple
 import BrauerGroup.FieldCat
 import Mathlib.Algebra.BrauerGroup.Defs
 import Mathlib.Algebra.Central.Matrix
-import Mathlib.Algebra.GroupWithZero.Action.Faithful
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
-import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
-import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.SimpleRing.Matrix
 
 suppress_compilation
 universe u v v₁ v₂ w

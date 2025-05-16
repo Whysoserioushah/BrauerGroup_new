@@ -661,7 +661,6 @@ theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :
   have := is_fin_dim_of_wdb K B n S e
 
   exact ⟨n, ⟨hn⟩, ⟨e.trans $ AlgEquiv.mapMatrix $ AlgEquiv.symm $
-    AlgEquiv.ofBijective (Algebra.ofId _ _) $
-      bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed _ _⟩⟩
+    AlgEquiv.ofBijective (Algebra.ofId _ _) IsAlgClosed.algebraMap_bijective_of_isIntegral⟩⟩
 
 end central_simple
