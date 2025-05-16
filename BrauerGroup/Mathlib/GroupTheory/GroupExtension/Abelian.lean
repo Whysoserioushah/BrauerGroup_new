@@ -14,11 +14,13 @@ This file gives lemmas about group extensions `1 → N → E → G → 1` that h
 For the main definitions, see `Mathlib/GroupTheory/GroupExtension/Defs.lean`. For basic lemmas about
 group extensions in general, see `Mathlib/GroupTheory/GroupExtension/Basic.lean`.
 
-## Main definition
+## Main definitions
 
 - `SemidirectProduct.conjClassesEquivH1 (φ : G →* MulAut N)`: the bijection between the
   `N`-conjugacy classes of splittings associated to the semidirect product `G ⋊[φ] N` and
   $H^1 (G, N)$
+- `GroupExtension.OfMulDistribMulAction.equivH2 [MulDistribMulAction G N]` : the bijection between
+  the equivalence classes of group extensions and $H^2 (G, N)$
 
 ## References
 
@@ -100,8 +102,8 @@ theorem isConj_iff_sub_mem_oneCoboundaries (s₁ s₂ : (toGroupExtension φ).Sp
     one_mul, mul_one, and_true]
   rw [eq_mul_inv_iff_mul_eq, mul_comm, ← eq_mul_inv_iff_mul_eq, mul_assoc, mul_comm,
     ← mul_inv_eq_iff_eq_mul]
-  simp only [← div_eq_mul_inv, groupCohomology.dZero_apply, toRep_ρ_apply_apply, toMul_ofMul,
-    splittingToOneCocycle, Pi.sub_apply]
+  simp only [groupCohomology.dZero_apply, groupCohomology.oneCocycles.val_eq_coe, Pi.sub_apply,
+    splittingToOneCocycle, toRep_ρ_apply_apply, toMul_ofMul, ← div_eq_mul_inv]
   rfl
 
 open groupCohomology in
@@ -272,7 +274,7 @@ noncomputable def toTwoCocycle : groupCohomology.twoCocycles (Rep.ofMulDistribMu
     rw [S.smul_eq_conjAct S.σ]
     simp only [map_mul, Section.inl_conjAct_comm,
       Function.invFun_eq <| Section.mul_mul_mul_inv_mem_range_inl _ _ _]
-    rw [Subgroup.mul_comm_of_mem_isCommutative _ (Section.mul_mul_mul_inv_mem_range_inl _ _ _)
+    rw [Subgroup.mul_comm_of_mem_isMulCommutative _ (Section.mul_mul_mul_inv_mem_range_inl _ _ _)
       (Section.mul_mul_mul_inv_mem_range_inl _ _ _)]
     group
 
@@ -569,33 +571,27 @@ theorem sub_mem_twoCoboundaries_of_toOfMulDistribMulAction_equiv
   ext ⟨g₁, g₂⟩
   apply (Additive.toMul (α := N)).injective
   apply S'.extension.inl_injective
-  simp only [ModuleCat.hom_ofHom, Section.equivComp_apply, LinearMap.coe_mk, AddHom.coe_mk,
-    toMul_ofMul]
-  rw [← groupCohomology.twoCocycles.val_eq_coe, Pi.sub_apply, toMul_add, toMul_sub, toMul_sub]
-  simp only [S'.smul_eq_conjAct S'.σ, toMul_ofMul, div_eq_mul_inv, map_mul,
-    Section.inl_conjAct_comm, map_inv, groupCohomology.twoCocycles.val_eq_coe, inl_toTwoCocycle,
-    mul_inv_rev, inv_inv]
+  simp only [Rep.ofMulDistribMulAction_ρ_apply_apply, toMul_ofMul]
+  rw [← groupCohomology.twoCocycles.val_eq_coe, AddSubgroupClass.coe_sub, Pi.sub_apply, toMul_add,
+    toMul_sub, toMul_sub]
+  simp only [groupCohomology.twoCocycles.val_eq_coe, div_eq_mul_inv, toMul_ofMul, map_mul, map_inv,
+    inl_toTwoCocycle, Function.invFun_eq ((S.σ.equivComp equiv).mul_inv_mem_range_inl S'.σ _),
+    S'.smul_eq_conjAct S'.σ, Section.inl_conjAct_comm]
   calc
-    _ = S'.σ g₁ * (S.σ.equivComp equiv g₂ * (S'.σ g₂)⁻¹ * (S'.σ g₁)⁻¹ * S'.σ (g₁ * g₂) *
-        (S.σ.equivComp equiv (g₁ * g₂))⁻¹ * S.σ.equivComp equiv g₁) * (S'.σ g₁)⁻¹ := by
-      rw [Function.invFun_eq (f := S'.extension.inl), Function.invFun_eq (f := S'.extension.inl),
-        Function.invFun_eq (f := S'.extension.inl)]
-      · simp only [mul_assoc, mul_inv_rev, inv_inv]
-        rfl
-      · sorry
-      · sorry
-      · sorry
-    _ = S.σ.equivComp equiv g₁ * (S.σ.equivComp equiv g₂ * (S'.σ g₂)⁻¹ * (S'.σ g₁)⁻¹ *
-        S'.σ (g₁ * g₂) * (S.σ.equivComp equiv (g₁ * g₂))⁻¹ * S.σ.equivComp equiv g₁) *
-        (S.σ.equivComp equiv g₁)⁻¹ :=
+    _ = S'.σ g₁ * ((S.σ.equivComp equiv) g₂ * (S'.σ g₂)⁻¹ * (S'.σ g₁)⁻¹ * S'.σ (g₁ * g₂) *
+        ((S.σ.equivComp equiv) (g₁ * g₂))⁻¹ * (S.σ.equivComp equiv) g₁) * (S'.σ g₁)⁻¹ := by
+      simp only [mul_assoc, mul_inv_rev, inv_inv]
+    _ = (S.σ.equivComp equiv) g₁ * ((S.σ.equivComp equiv) g₂ * (S'.σ g₂)⁻¹ * (S'.σ g₁)⁻¹ *
+        S'.σ (g₁ * g₂) * ((S.σ.equivComp equiv) (g₁ * g₂))⁻¹ * (S.σ.equivComp equiv) g₁) *
+        ((S.σ.equivComp equiv) g₁)⁻¹ :=
       S'.σ.conj_eq_of_rightHom_eq_one (S.σ.equivComp equiv) g₁ <| by
         simp only [map_mul, map_inv, Section.rightHom_section, mul_inv_cancel_right,
           inv_mul_cancel_right, mul_inv_cancel]
-    _ = S.σ.equivComp equiv g₁ * S.σ.equivComp equiv g₂ * (S.σ.equivComp equiv (g₁ * g₂))⁻¹ *
-        (S.σ.equivComp equiv (g₁ * g₂) * ((S'.σ g₂)⁻¹ * (S'.σ g₁)⁻¹ * S'.σ (g₁ * g₂)) *
-        (S.σ.equivComp equiv (g₁ * g₂))⁻¹) := by
+    _ = (S.σ.equivComp equiv) g₁ * (S.σ.equivComp equiv) g₂ * ((S.σ.equivComp equiv) (g₁ * g₂))⁻¹ *
+        ((S.σ.equivComp equiv) (g₁ * g₂) * ((S'.σ g₂)⁻¹ * (S'.σ g₁)⁻¹ * S'.σ (g₁ * g₂)) *
+        ((S.σ.equivComp equiv) (g₁ * g₂))⁻¹) := by
       simp only [← mul_assoc, mul_inv_cancel_right, inv_mul_cancel_right]
-    _ = S.σ.equivComp equiv g₁ * S.σ.equivComp equiv g₂ * (S.σ.equivComp equiv (g₁ * g₂))⁻¹ *
+    _ = (S.σ.equivComp equiv) g₁ * (S.σ.equivComp equiv) g₂ * ((S.σ.equivComp equiv) (g₁ * g₂))⁻¹ *
         (S'.σ (g₁ * g₂) * ((S'.σ g₂)⁻¹ * (S'.σ g₁)⁻¹ * S'.σ (g₁ * g₂)) * (S'.σ (g₁ * g₂))⁻¹) := by
       rw [(S.σ.equivComp equiv).conj_eq_of_rightHom_eq_one S'.σ (g₁ * g₂) <| by
         simp only [map_mul, map_inv, Section.rightHom_section, ← mul_inv_rev, inv_mul_cancel]]

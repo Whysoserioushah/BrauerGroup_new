@@ -247,7 +247,7 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 --   simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
 --     mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
 --   exact hf) <| fun x _ ↦ by
---   refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
+--   refine Submodule.mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
 --   change ∑ i : Fin n, _ • Function.update _ _ _ = x
 --   ext j
 --   simp [Function.update_apply]
@@ -360,7 +360,7 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
 
 -- example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N) :
 --   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
-
+set_option maxSynthPendingDepth 6 in
 /--
 A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
@@ -372,7 +372,7 @@ End R A   ------------> End R B
 -/
 lemma small_comm_square (e : A ≃ₐ[R] B) :
     (AlgHom.mulLeftRight R B).comp (Algebra.TensorProduct.congr e e.op).toAlgHom =
-    (e.toLinearEquiv.algConj).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
+      (e.toLinearEquiv.algConj R).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
   apply AlgHom.ext
   intro a
   induction a using TensorProduct.induction_on with
@@ -429,7 +429,7 @@ instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M] :
   eq_of_smul_eq_smul {r1 r2} h12 := by
     specialize h12 1
     rw [LinearMap.ext_iff] at h12
-    simp only [LinearMap.smul_apply, LinearMap.one_apply] at h12
+    simp only [LinearMap.smul_apply, Module.End.one_apply] at h12
     exact eq_of_smul_eq_smul h12
 
 abbrev MatrixAlg (n : ℕ) [NeZero n] : Azumaya R := {
