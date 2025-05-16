@@ -1,5 +1,5 @@
 import BrauerGroup.Azumaya.Basic
-import Mathlib.Algebra.Category.AlgebraCat.Basic
+import Mathlib.Algebra.Azumaya.Matrix
 import Mathlib.LinearAlgebra.Contraction
 import Mathlib.LinearAlgebra.TensorProduct.Opposite
 
@@ -207,11 +207,9 @@ lemma Azumaya.IsMoritaEquivalent.iff {A B : Azumaya R} :
   Iff.rfl
 
 abbrev AzuMorita.equiv : Equivalence (Azumaya.IsMoritaEquivalent R) where
-  refl _ := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.refl R
-  symm h := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.symm R
-    <| Azumaya.IsMoritaEquivalent.iff R|>.1 h
-  trans h1 h2 := Azumaya.IsMoritaEquivalent.iff R|>.2 <| ModuleCat.IsMoritaEquivalent.trans R
-    (Azumaya.IsMoritaEquivalent.iff R|>.2 h1) <| Azumaya.IsMoritaEquivalent.iff R|>.2 h2
+  refl _ := .refl R _
+  symm := .symm R
+  trans := .trans R
 
 abbrev AzumayaSetoid : Setoid (Azumaya R) where
   r := Azumaya.IsMoritaEquivalent R

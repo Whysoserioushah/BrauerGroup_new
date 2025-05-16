@@ -1,7 +1,5 @@
-import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 import BrauerGroup.Subfield.Splitting
-import Mathlib
-import BrauerGroup.Subfield.Subfield
+import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 
 suppress_compilation
 
@@ -1157,31 +1155,13 @@ def Units.ofLeftRightInverse (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) 
   val := a
   inv := b
   val_inv := h
-  inv_val := by
-    suffices b = c by
-      subst this
-      exact h'
-    calc b
-      _ = 1 * b := by rw [_root_.one_mul]
-      _ = (c * a) * b := by rw [← h']
-      _ = c * (a * b) := by rw [_root_.mul_assoc]
-      _ = c * 1 := by rw [h]
-      _ = c := by rw [_root_.mul_one]
+  inv_val := by simpa [left_inv_eq_right_inv h' h] using h'
 
 lemma Units.ofLeftRightInverse_inv_eq1 (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) (h' : c * a = 1) :
     (Units.ofLeftRightInverse G a b c h h').inv = b := rfl
 
 lemma Units.ofLeftRightInverse_inv_eq2 (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) (h' : c * a = 1) :
-    (Units.ofLeftRightInverse G a b c h h').inv = c := by
-  suffices b = c by
-    subst this
-    rw [ofLeftRightInverse_inv_eq1]
-  calc b
-      _ = 1 * b := by rw [_root_.one_mul]
-      _ = (c * a) * b := by rw [← h']
-      _ = c * (a * b) := by rw [_root_.mul_assoc]
-      _ = c * 1 := by rw [h]
-      _ = c := by rw [_root_.mul_one]
+    (Units.ofLeftRightInverse G a b c h h').inv = c := by simp [left_inv_eq_right_inv h' h]
 
 def x_ (σ : K ≃ₐ[F] K) : (CrossProduct ha)ˣ :=
   Units.ofLeftRightInverse (CrossProduct ha) ⟨Pi.single σ 1⟩
@@ -1221,19 +1201,23 @@ def x_ (σ : K ≃ₐ[F] K) : (CrossProduct ha)ˣ :=
       rw [mul_comm]
       simp only [Units.val_inv_eq_inv_val])
 
+set_option linter.style.nameCheck false in
 @[simp]
 lemma x__val (σ : K ≃ₐ[F] K) :
     (x_ ha σ).val.val = Pi.single σ 1 := rfl
 
+set_option linter.style.nameCheck false in
 lemma x__inv (σ : K ≃ₐ[F] K) :
     (x_ ha σ).inv.val = Pi.single σ⁻¹ ((σ⁻¹ ((a (σ, σ⁻¹))⁻¹ * (a 1)⁻¹)) : K) := rfl
 
+set_option linter.style.nameCheck false in
 lemma x__inv' (σ : K ≃ₐ[F] K) :
     (x_ ha σ).inv.1 = Pi.single σ⁻¹ ((a (σ⁻¹, σ))⁻¹ * (a 1)⁻¹) := by
   delta x_
   rw [Units.ofLeftRightInverse_inv_eq2]
   simp
 
+set_option linter.style.nameCheck false in
 lemma x__mul : x_ ha σ * x_ ha τ = ι ha (a (σ, τ)) * x_ ha (σ * τ) := by
   ext α
   simp only [mul_val, x__val, crossProductMul_single_single, ι_apply_val, Prod.mk_one_one,
@@ -1244,6 +1228,7 @@ lemma x__mul : x_ ha σ * x_ ha τ = ι ha (a (σ, τ)) * x_ ha (σ * τ) := by
   rw [a_one_left ha]
   simp
 
+set_option linter.style.nameCheck false in
 lemma x__conj (c : K) : x_ ha σ * ι ha c * (x_ ha σ)⁻¹ = ι ha (σ c) := by
   have eq1 :=
     calc (x_ ha σ) * (ι ha) c
@@ -1259,6 +1244,7 @@ lemma x__conj (c : K) : x_ ha σ * ι ha c * (x_ ha σ)⁻¹ = ι ha (σ c) := b
   change _ * ((x_ ha σ).1 * _) = _
   simp
 
+set_option linter.style.nameCheck false in
 lemma x__conj' (c : K) : x_ ha σ * ι ha c = ι ha (σ c) * (x_ ha σ) := by
   rw [← x__conj]
   simp only [Units.inv_mul_cancel_right]
@@ -1377,6 +1363,7 @@ lemma one_def : (1 : CrossProduct ha) = (a 1).1⁻¹ • x_AsBasis ha 1 := by
     Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
     isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right]
 
+set_option linter.style.nameCheck false in
 lemma x__conj'' (c : K) : x_AsBasis ha σ * ι ha c = (σ c) • (x_AsBasis ha σ) := by
   simpa using x__conj' ha σ c
 

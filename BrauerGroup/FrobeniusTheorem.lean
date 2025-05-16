@@ -11,7 +11,7 @@ section prerequisites
 
 set_option synthInstance.maxHeartbeats 80000 in
 theorem rank_1_D_iso_R [Algebra ℝ D] : Module.finrank ℝ D = 1 →
-    Nonempty (D≃ₐ[ℝ] ℝ) := fun h => by
+    Nonempty (D ≃ₐ[ℝ] ℝ) := fun h => by
   have h' := Subalgebra.finrank_eq_one_iff (F := ℝ) (S := (⊤ : Subalgebra ℝ D))
   have : Module.finrank ℝ (⊤ : Subalgebra ℝ D) = 1 := by
     simp_all only [Subalgebra.finrank_eq_one_iff, Subalgebra.bot_eq_top_of_finrank_eq_one]

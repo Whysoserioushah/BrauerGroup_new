@@ -1,7 +1,7 @@
-import Mathlib
-import BrauerGroup.BrauerGroup
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.SplittingOfCSA
+import Mathlib.Algebra.Central.TensorProduct
+import Mathlib.RingTheory.SimpleRing.Congr
 
 universe u v w
 

@@ -1,6 +1,5 @@
-import Mathlib
-import BrauerGroup.examples.«ShortComplex.LeftHomologyMapData»
 import BrauerGroup.IsoSecond
+import BrauerGroup.examples.ShortComplex.LeftHomologyMapData
 
 universe u
 
@@ -158,7 +157,6 @@ lemma ele_is_preim [CommGroup G] (x : MonoidAlgebra k G) (hσ : Submonoid.powers
   | hadd f g _ _ => sorry
   | hsmul r f _ => sorry
 
--- #check Finsupp.support_finset_sum
 -- lemma eq_sum_sigma [CommGroup G] (hσ : Submonoid.powers σ = ⊤) (x : MonoidAlgebra k G) :
 --     x = ∑ i ∈ Finset.range (Fintype.card G), .single (σ^i) (x (σ^i)) := by
 --   rw [← MonoidAlgebra.sum_single x]

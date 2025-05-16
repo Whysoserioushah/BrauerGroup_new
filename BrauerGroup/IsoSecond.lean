@@ -1,5 +1,5 @@
 import BrauerGroup.ToSecond
-import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.Algebra.Module.LinearMap.Basic
 
 suppress_compilation
 
@@ -527,8 +527,6 @@ instance : MulAction C (M hα hβ) where
       change C_smul hα hβ _ _ = C_smul hα hβ 0 (C_smul hα hβ _ _)
       simp only [map_zero, LinearMap.zero_apply]
 
-example : True := ⟨⟩
--- #check QuotientAddGroup.mk_add
 instance : DistribMulAction C (M hα hβ) where
   smul_zero := by
     intro c
@@ -1290,3 +1288,4 @@ def isoSnd :
 #print axioms isoSnd
 
 end RelativeBrGroup
+#min_imports

@@ -1,6 +1,5 @@
 import BrauerGroup.Morita.ChangOfRings
 import BrauerGroup.BrauerGroup
-import Mathlib
 import Mathlib.Algebra.Central.Matrix
 import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.matrixkronecker

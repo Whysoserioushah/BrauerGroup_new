@@ -1,6 +1,9 @@
-import BrauerGroup.Wedderburn
 import BrauerGroup.MoritaEquivalence
-import Mathlib
+import BrauerGroup.Wedderburn
+import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
+import Mathlib.Algebra.Category.ModuleCat.Products
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.LittleWedderburn
 
 open CategoryTheory DirectSum
 

@@ -1,4 +1,5 @@
 import BrauerGroup.BrauerGroup
+import Mathlib.RingTheory.LittleWedderburn
 
 variable (K : Type*) [Field K] [Finite K]
 

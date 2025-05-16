@@ -128,15 +128,15 @@ instance: Monoid (Azumaya.BrauerGroup R) where
     induction' B using Quotient.inductionOn' with B
     induction' C using Quotient.inductionOn' with C
     apply Quotient.sound
-    exact ModuleCat.IsMoritaEquivalent.of_algEquiv R (Algebra.TensorProduct.assoc _ _ _ _)
+    exact .of_algEquiv R (Algebra.TensorProduct.assoc _ _ _ _)
   one_mul A := by
     induction' A using Quotient.inductionOn' with A
     apply Quotient.sound
-    exact ModuleCat.IsMoritaEquivalent.of_algEquiv R (Algebra.TensorProduct.lid _ _)
+    exact .of_algEquiv R (Algebra.TensorProduct.lid _ _)
   mul_one A := by
     induction' A using Quotient.inductionOn' with A
     apply Quotient.sound
-    exact ModuleCat.IsMoritaEquivalent.of_algEquiv R (Algebra.TensorProduct.rid _ _ _)
+    exact .of_algEquiv R (Algebra.TensorProduct.rid _ _ _)
 
 instance: Inv (Azumaya.BrauerGroup R) :=
   ⟨Quotient.lift (fun A ↦ Quotient.mk'' (Azumaya.Inv R A)) (fun A B h ↦ by

@@ -1,4 +1,12 @@
-import Mathlib
+import Mathlib.Algebra.Category.ModuleCat.EpiMono
+import Mathlib.Algebra.Category.ModuleCat.Limits
+import Mathlib.Algebra.Group.Subgroup.Finite
+import Mathlib.Algebra.Homology.ShortComplex.Exact
+import Mathlib.CategoryTheory.Limits.Shapes.Countable
+import Mathlib.Data.Matrix.Basis
+import Mathlib.LinearAlgebra.Basis.VectorSpace
+import Mathlib.RingTheory.SimpleModule.Basic
+import Mathlib.RingTheory.SimpleRing.Basic
 
 open Matrix
 
