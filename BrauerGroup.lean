@@ -15,10 +15,12 @@ import BrauerGroup.ExtendScalar
 import BrauerGroup.FieldCat
 import BrauerGroup.FiniteField
 import BrauerGroup.FrobeniusTheorem
+import BrauerGroup.GoodRep
 import BrauerGroup.IsoSecond
 import BrauerGroup.LemmasAboutSimpleRing
+import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 import BrauerGroup.MatrixCenterEquiv
-import BrauerGroup.Morita.ChangOfRings
+import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.Morita.TensorProduct
 import BrauerGroup.MoritaEquivalence
 import BrauerGroup.RelativeBrauer

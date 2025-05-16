@@ -1,10 +1,10 @@
-import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 
 universe u
 
 suppress_compilation
 
-open BigOperators TensorProduct MulOpposite
+open TensorProduct MulOpposite
 
 section def_and_lemmas
 
@@ -120,26 +120,20 @@ instance (priority := low) algebra' {K' : Type u} [CommRing K'] [SMul K' K] [Alg
 instance (S : SubField K A) : Algebra K S := S.algebra'
 
 open scoped Classical in
-instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) : Field L.1 := {
+instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) :
+    Field L.1 where
   __ := L
   mul_comm := fun ⟨a, ha⟩ ⟨b, hb⟩ ↦ Subtype.ext_iff.2 $ L.2 a b ha hb
   inv := fun ⟨x, hx⟩ ↦ if h0 : x = 0 then 0 else ⟨L.3 x hx h0|>.choose,
     L.3 x hx h0|>.choose_spec.1⟩
   exists_pair_ne := ⟨⟨0, Subalgebra.zero_mem L.1⟩, ⟨1, Subalgebra.one_mem L.1⟩, by
     refine Subtype.coe_ne_coe.1 $ by simp only [ne_eq, zero_ne_one, not_false_eq_true]⟩
-  mul_inv_cancel := fun ⟨a, ha⟩ ha0 ↦ by
-    unfold Inv.inv
-    simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
-      Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ha0, ↓reduceDIte, MulMemClass.mk_mul_mk]
-    suffices a * (L.3 a ha (Subtype.coe_ne_coe.2 ha0)).choose = (1 : A) from
-      Subtype.ext_iff.2 (by simp only [this, OneMemClass.coe_one])
-    exact L.3 a ha (Subtype.coe_ne_coe.2 ha0)|>.choose_spec.2
+  mul_inv_cancel a ha := by ext; simpa [ha] using (L.3 a a.2 <| mod_cast ha).choose_spec.2
   inv_zero := by
     simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
       Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ↓reduceDIte]
   nnqsmul := _
   qsmul := _
-}
 
 instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) : Field L :=
   inferInstanceAs (Field L.1)

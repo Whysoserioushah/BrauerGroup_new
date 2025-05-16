@@ -1,13 +1,16 @@
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Order.CompletePartialOrder
+import Mathlib.Algebra.Algebra.Hom
+import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Data.Fintype.BigOperators
+import Mathlib.RingTheory.SimpleRing.Defs
 import Mathlib.RingTheory.TwoSidedIdeal.BigOperators
 import Mathlib.RingTheory.TwoSidedIdeal.Instances
+import Mathlib.RingTheory.TwoSidedIdeal.Kernel
 import Mathlib.RingTheory.TwoSidedIdeal.Operations
 
 variable {M : Type*} [AddCommMonoid M] (r : AddCon M) {ι : Type*} (s : Finset ι)
 variable {R : Type*} [Ring R] (t : TwoSidedIdeal R)
 
-open BigOperators MulOpposite
+open MulOpposite
 
 namespace RingCon
 
@@ -35,35 +38,33 @@ lemma smul_mem (r : R) {x} (hx : x ∈ I) : r • x ∈ I := by
 Any two-sided-ideal in `A` corresponds to a two-sided-ideal in `Aᵒᵖ`.
 -/
 @[simps]
-def toMop (rel : TwoSidedIdeal R) : (TwoSidedIdeal Rᵐᵒᵖ) :=
-.mk
-{ r := fun a b ↦ rel.ringCon b.unop a.unop
-  iseqv :=
-  { refl := fun a ↦ rel.ringCon.refl a.unop
-    symm := rel.ringCon.symm
-    trans := fun h1 h2 ↦ rel.ringCon.trans h2 h1 }
-  mul' := fun h1 h2 ↦ rel.ringCon.mul h2 h1
-  add' := rel.ringCon.add }
+def toMop (rel : TwoSidedIdeal R) : TwoSidedIdeal Rᵐᵒᵖ := .mk {
+  r a b := rel.ringCon b.unop a.unop
+  iseqv.refl a := rel.ringCon.refl a.unop
+  iseqv.symm := rel.ringCon.symm
+  iseqv.trans h1 h2 := rel.ringCon.trans h2 h1
+  mul' h1 h2 := rel.ringCon.mul h2 h1
+  add' := rel.ringCon.add
+}
 
 /--
 Any two-sided-ideal in `Aᵒᵖ` corresponds to a two-sided-ideal in `A`.
 -/
 @[simps]
-def fromMop (rel : TwoSidedIdeal Rᵐᵒᵖ) : (TwoSidedIdeal R) :=
-.mk
-{ r := fun a b ↦ rel.ringCon (op b) (op a)
-  iseqv :=
-  { refl := fun a ↦ rel.ringCon.refl (op a)
-    symm := rel.ringCon.symm
-    trans := fun h1 h2 ↦ rel.ringCon.trans h2 h1 }
-  mul' := fun h1 h2 ↦ rel.ringCon.mul h2 h1
-  add' := rel.ringCon.add }
+def fromMop (rel : TwoSidedIdeal Rᵐᵒᵖ) : TwoSidedIdeal R := .mk {
+  r a b := rel.ringCon (.op b) (.op a)
+  iseqv.refl a := rel.ringCon.refl (.op a)
+  iseqv.symm := rel.ringCon.symm
+  iseqv.trans h1 h2 := rel.ringCon.trans h2 h1
+  mul' h1 h2 := rel.ringCon.mul h2 h1
+  add' := rel.ringCon.add
+}
 
 /--
 Two-sided-ideals of `A` and that of `Aᵒᵖ` corresponds bijectively to each other.
 -/
 @[simps]
-def toMopOrderIso : (TwoSidedIdeal R) ≃o (TwoSidedIdeal Rᵐᵒᵖ) where
+def toMopOrderIso : TwoSidedIdeal R ≃o TwoSidedIdeal Rᵐᵒᵖ where
   toFun := toMop
   invFun := fromMop
   left_inv := unop_op
@@ -227,16 +228,6 @@ lemma mem_span_ideal_iff_exists_fin (s : Ideal R) (x : R) :
     exact ⟨n, fin, xR, fun i ↦ ⟨xL i * y i, s.mul_mem_left _ (y i).2⟩, by simp⟩
   · rintro ⟨n, fin, xR, y, rfl⟩
     exact ⟨n, fin, 1, xR, y, by simp⟩
-
-lemma span_le {s : Set R} {I : TwoSidedIdeal R} : s ⊆ I ↔ span s ≤ I := by
-  rw [le_iff]
-  constructor
-  · intro h x hx
-    rw [SetLike.mem_coe, mem_span_iff_exists_fin] at hx
-    obtain ⟨n, finn, xL, xR, y, rfl⟩ := hx
-    exact I.finsetSum_mem _ _ fun i _ => I.mul_mem_right _ _ (I.mul_mem_left _ _ <| h (y i).2)
-  · intro h x hx
-    exact h <| subset_span hx
 
 lemma coe_bot_set : ((⊥ : TwoSidedIdeal R) : Set R) = {0} := by
   ext x
