@@ -5,7 +5,6 @@ Authors: Jujian Zhang
 -/
 import BrauerGroup.MoritaEquivalence
 import Mathlib.Algebra.Category.ModuleCat.Abelian
-import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.RingTheory.HopkinsLevitzki
 import Mathlib.RingTheory.Morita.Basic
 import Mathlib.RingTheory.SimpleModule.Rank
@@ -22,7 +21,6 @@ instance {R₀ S} [CommRing R₀] [Ring S] [Algebra R₀ S]:
 universe u₀ u u' u''  v'
 
 variable (R : Type u₀) [CommRing R]
-
 
 -- namespace IsMoritaEquivalent
 
@@ -292,9 +290,8 @@ def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.o
       Category.assoc, Equivalence.counitInv_functor_comp, Category.comp_id]
     exact e.eqv.functor_unit_comp_assoc (ModuleCat.of A A) g
   map_mul' x y := by simp
-  map_add' x y := by simp only; rw [e.eqv.functor.map_add]
+  map_add' x y := by rw [e.eqv.functor.map_add]
   commutes' r := by
-    simp only
     rw [Algebra.algebraMap_eq_smul_one, e.linear.map_smul, Algebra.algebraMap_eq_smul_one]
     simp only [End.one_def, CategoryTheory.Functor.map_id]
 -- variable [Algebra K S]
@@ -327,7 +324,7 @@ def aux2 (M N : ModuleCat B) (f : M ≅ N) : End M ≃ₐ[R] End N where
   left_inv x := by simp
   right_inv x := by simp
   map_mul' x y := by simp
-  map_add' x y := by simp only; rw [Preadditive.add_comp, Preadditive.comp_add]
+  map_add' x y := by rw [Preadditive.add_comp, Preadditive.comp_add]
   commutes' r := by
     apply hom_ext
     ext n
@@ -337,8 +334,6 @@ def aux2 (M N : ModuleCat B) (f : M ≅ N) : End M ≃ₐ[R] End N where
     erw [map_smul f.hom.hom]
     simp
     rfl
-    -- simp
-    -- chan
 
 noncomputable def toRingMopEquiv : Aᵐᵒᵖ ≃ₐ[R] Bᵐᵒᵖ :=
   mopAlgEquivEnd R A |>.trans $
@@ -354,9 +349,8 @@ noncomputable def toRingEquiv : A ≃ₐ[R] B where
   map_mul' a b := by simp only [MulOpposite.op_mul, _root_.map_mul, MulOpposite.unop_mul]
   map_add' a b := by simp only [MulOpposite.op_add, map_add, MulOpposite.unop_add]
   commutes' r := by
-    dsimp
     rw [show (MulOpposite.op <| algebraMap R A r) = algebraMap R Aᵐᵒᵖ r by rfl]
-    rw [AlgEquiv.commutes, ]
+    rw [AlgEquiv.commutes]
     rfl
 
 -- end division_ring

@@ -1,16 +1,10 @@
-import BrauerGroup.Subfield.Subfield
-import BrauerGroup.ZeroSevenFourE
-import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.RelativeBrauer
-import Mathlib.RingTheory.MatrixAlgebra
-import BrauerGroup.SplittingOfCSA
-import Mathlib.RingTheory.SimpleRing.Field
 
 universe u
 
 variable (K F : Type u) [Field K] [Field F] [Algebra F K]
 
-open FiniteDimensional MulOpposite BrauerGroup BigOperators TensorProduct
+open FiniteDimensional MulOpposite BrauerGroup TensorProduct
 
 section CSA
 
@@ -91,13 +85,13 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
         simp only [AlgEquiv.toAlgHom_eq_coe, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
           AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
           AlgHom.coe_restrictScalars', AlgHom.coe_coe, Function.comp_apply,
-          Algebra.TensorProduct.includeRight_apply, LinearMap.mul_apply, LinearMap.coe_mk,
+          Algebra.TensorProduct.includeRight_apply, Module.End.mul_apply, LinearMap.coe_mk,
           AddHom.coe_mk, LinearMap.coe_restrictScalars, map_smul, emb]⟩
       map_one' := by ext; simp only [one_smul, LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk,
-        LinearMap.coe_single, Function.comp_apply, OneMemClass.coe_one, LinearMap.one_apply]
+        LinearMap.coe_single, Function.comp_apply, OneMemClass.coe_one, Module.End.one_apply]
       map_mul' := by intros; ext; simp only [LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk,
         LinearMap.coe_single, Function.comp_apply, Pi.smul_apply, smul_eq_mul, _root_.mul_assoc,
-        MulMemClass.coe_mul, LinearMap.mul_apply]
+        MulMemClass.coe_mul, Module.End.mul_apply]
       map_zero' := by ext; simp only [zero_smul, LinearMap.coe_comp, LinearMap.coe_mk,
         AddHom.coe_mk, LinearMap.coe_single, Function.comp_apply, Pi.zero_apply,
         ZeroMemClass.coe_zero, LinearMap.zero_comp, LinearMap.zero_apply]
@@ -241,7 +235,7 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
       (by
         ext
         simp only [smul_eq_mul, Algebra.TensorProduct.one_def, LinearMap.coe_mk, lift.tmul',
-          AddHom.coe_mk, one_smul, _root_.one_mul, LinearMap.one_apply, μ'', μ', μ])
+          AddHom.coe_mk, one_smul, _root_.one_mul, Module.End.one_apply, μ'', μ', μ])
       (by
         intro x y
         ext a''
@@ -253,11 +247,11 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
           | tmul c' a' =>
             simp only [smul_eq_mul, Algebra.TensorProduct.tmul_mul_tmul, mul_comm c c',
               LinearMap.coe_mk, lift.tmul', AddHom.coe_mk, mul_smul, _root_.mul_assoc,
-              LinearMap.mul_apply, map_smul, μ'', μ', μ]
+              Module.End.mul_apply, map_smul, μ'', μ', μ]
           | add m n hm hn =>
-            simp only [mul_add, map_add, LinearMap.add_apply, hm, LinearMap.mul_apply, hn]
+            simp only [mul_add, map_add, LinearMap.add_apply, hm, Module.End.mul_apply, hn]
         | add m n hm hn =>
-          simp only [add_mul, map_add, LinearMap.add_apply, hm, LinearMap.mul_apply, hn])
+          simp only [add_mul, map_add, LinearMap.add_apply, hm, Module.End.mul_apply, hn])
     haveI : FiniteDimensional K B := FiniteDimensional.right F K B
     let e : Module.End K B ≃ₐ[K] Matrix _ _ _ := algEquivMatrix (Module.finBasis _ _)
     rw [split_sound' K F A B (Quotient.eq''.1 eq)]
@@ -291,16 +285,15 @@ noncomputable abbrev toTensorMatrix_toFun_Flinear (A : Type u) (n : Type*) [Ring
   TensorProduct.lift {
     toFun := fun k ↦ {
       toFun := fun M ↦ k • Algebra.TensorProduct.includeRight.mapMatrix M
-      map_add' := fun M1 M2 ↦ by
-        simp only ; rw [map_add, smul_add]
-      map_smul' := fun a M ↦ by
+      map_add' M1 M2 := by  rw [map_add, smul_add]
+      map_smul' a M := by
         simp only [map_smul, AlgHom.mapMatrix_apply, RingHom.id_apply]
         exact smul_comm _ _ _ }
-    map_add' := fun k1 k2 ↦ by
+    map_add' k1 k2 := by
       ext : 1
       simp only [AlgHom.mapMatrix_apply, add_smul, LinearMap.coe_mk, AddHom.coe_mk,
         LinearMap.add_apply]
-    map_smul' := fun a k ↦ by
+    map_smul' a k := by
       ext : 1
       simp only [AlgHom.mapMatrix_apply, smul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
         RingHom.id_apply, LinearMap.smul_apply] }
@@ -308,7 +301,7 @@ noncomputable abbrev toTensorMatrix_toFun_Flinear (A : Type u) (n : Type*) [Ring
 noncomputable abbrev toTensorMatrix_toFun_Kliniear (A : Type u) (n : Type*) [Ring A] [Algebra F A]
     [DecidableEq n] [Fintype n] : K ⊗[F] Matrix n n A →ₗ[K] Matrix n n (K ⊗[F] A) where
   __ := toTensorMatrix_toFun_Flinear K F A n
-  map_smul' := fun k1 koxM ↦ by
+  map_smul' k1 koxM := by
     simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
     induction koxM using TensorProduct.induction_on with
     | zero => simp only [smul_zero, map_zero]
