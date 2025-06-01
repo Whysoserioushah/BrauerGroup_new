@@ -33,7 +33,7 @@ variable (K F : Type u) [Field K] [Field F] [Algebra F K] -- [FiniteDimensional 
 /--
 The relative Brauer group `Br(K/F)` is the kernel of the map `Br F -> Br K`
 -/
-abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E := K)
+abbrev RelativeBrGroup := MonoidHom.ker <| BrauerGroupHom.BaseChange (K := F) (E := K)
 
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
     BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrGroup (K := K)) :=

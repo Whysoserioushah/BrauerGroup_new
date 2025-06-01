@@ -242,17 +242,17 @@ def trans {A B C : CSA K} (hAB : IsBrauerEquivalent A B) (hBC : IsBrauerEquivale
     IsBrauerEquivalent A C := by
   obtain ⟨n, m, iso1⟩ := hAB
   obtain ⟨p, q, iso2⟩ := hBC
-  refine ⟨⟨p * n, m * q,
-    matrix_eqv' _ _ _ |>.symm.trans $ Matrix.compAlgEquiv _ _ _ _|>.symm.trans $
-      iso1.mapMatrix (m := Fin p)|>.trans $ Matrix.compAlgEquiv _ _ _ _|>.trans $ ?_⟩⟩
-  exact Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans $
-    Matrix.compAlgEquiv _ _ _ _|>.symm.trans $ iso2.mapMatrix.trans $
-    Matrix.compAlgEquiv _ _ _ _|>.trans $ matrix_eqv' _ _ _
+  exact ⟨⟨p * n, m * q,
+    matrix_eqv' _ _ _ |>.symm.trans <| Matrix.compAlgEquiv _ _ _ _ |>.symm.trans <|
+      iso1.mapMatrix (m := Fin p) |>.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
+        Matrix.reindexAlgEquiv K B (.prodComm (Fin p) (Fin m))|>.trans <|
+        Matrix.compAlgEquiv _ _ _ _ |>.symm.trans <| iso2.mapMatrix.trans <|
+        Matrix.compAlgEquiv _ _ _ _ |>.trans <| matrix_eqv' _ _ _⟩⟩
 
 lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B := by
   exact ⟨⟨1, 1, h.mapMatrix (m := (Fin 1))⟩⟩
 
-theorem Braur_is_eqv : Equivalence (IsBrauerEquivalent (K := K)) where
+theorem Brauer_is_eqv : Equivalence (IsBrauerEquivalent (K := K)) where
   refl := refl
   symm := symm
   trans := trans
@@ -263,7 +263,7 @@ namespace BrauerGroup
 
 def CSA_Setoid : Setoid (CSA K) where
   r := IsBrauerEquivalent
-  iseqv := IsBrauerEquivalent.Braur_is_eqv
+  iseqv := IsBrauerEquivalent.Brauer_is_eqv
 
 def mul (A B : CSA K) : CSA K where
   carrier := A ⊗[K] B
@@ -458,10 +458,10 @@ theorem eqv_tensor_eqv
   obtain ⟨n, m, e1⟩ := hAB
   obtain ⟨p, q, e2⟩ := hCD
   exact ⟨⟨n * p, m * q, kroneckerMatrixTensor' .. |>.symm.trans <|
-    Algebra.TensorProduct.congr e1 e2|>.trans <| kroneckerMatrixTensor' ..⟩⟩
+    Algebra.TensorProduct.congr e1 e2 |>.trans <| kroneckerMatrixTensor' ..⟩⟩
 
-abbrev BrGroup := Quotient $ CSA_Setoid (K := K)
-
+abbrev BrGroup := Quotient <| CSA_Setoid (K := K)
+#check CSA.{u, v} (K := K)
 instance Mul: Mul $ BrGroup (K := K) :=
   ⟨Quotient.lift₂ (fun A B ↦ Quotient.mk (CSA_Setoid) $ BrauerGroup.mul A B)
   (by

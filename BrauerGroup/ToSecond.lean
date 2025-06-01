@@ -14,7 +14,7 @@ variable (X : BrGroup (K := F))
 
 variable (K) in
 structure GoodRep where
-carrier : CSA.{0, 0} F
+carrier : CSA.{0} F
 quot_eq : (Quotient.mk'' carrier) = X
 ι : K →ₐ[F] carrier
 dim_eq_square : Module.finrank F carrier = (Module.finrank F K) ^ 2
@@ -93,9 +93,9 @@ variable (ρ σ τ : K ≃ₐ[F] K)
 def conjFactor : (σ : K ≃ₐ[F] K) → Type :=
   fun σ => { a : Aˣ //  ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹ }
 
-def aribitaryConjFactor : A.conjFactor σ :=
-⟨SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose, fun x =>
-  SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose_spec x⟩
+def arbitraryConjFactor : A.conjFactor σ :=
+⟨SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose,
+  SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose_spec⟩
 
 variable {A ρ σ τ}
 
@@ -107,6 +107,9 @@ def mul' (x : A.conjFactor σ) (y : A.conjFactor τ) : A.conjFactor (σ * τ) :=
   simp only [AlgEquiv.mul_apply, Units.val_mul, _root_.mul_assoc, mul_inv_rev]
   rw [← _root_.mul_assoc (A.ι c), ← mul_assoc (y.1 : A), ← mul_assoc (y.1 : A),
     conjFactor_prop, ← _root_.mul_assoc, conjFactor_prop]⟩
+
+instance : HMul (A.conjFactor σ) (A.conjFactor τ) (A.conjFactor (σ * τ)) where
+  hMul := mul'
 
 @[simp]
 lemma mul'_coe (x : A.conjFactor σ) (y : A.conjFactor τ) : (mul' x y).1.1 = x.1 * y.1 := rfl
@@ -569,7 +572,7 @@ def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
 end GoodRep
 
 def RelativeBrGroup.toSnd :  RelativeBrGroup K F → groupCohomology.H2 (galAct F K) :=
-  fun X => (goodRep X).toH2 (goodRep X).aribitaryConjFactor
+  fun X => (goodRep X).toH2 (goodRep X).arbitraryConjFactor
 
 lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
     (A : GoodRep K X.1) (x_ : Π σ, A.conjFactor σ) :
@@ -1547,7 +1550,7 @@ namespace is_simple_proofs
 variable (I : TwoSidedIdeal (CrossProduct ha))
 variable {ha}
 
-def π : (CrossProduct ha) →+* RingCon.Quotient I.ringCon := I.ringCon.mk'
+def π : (CrossProduct ha) →+* I.ringCon.Quotient := I.ringCon.mk'
 
 def πRes : (ι ha).range →+* I.ringCon.Quotient :=
   RingHom.domRestrict (π I) (ι ha).range
@@ -2104,7 +2107,7 @@ lemma fromSnd_toSnd :
   ext X
   obtain ⟨A⟩ := mem_relativeBrGroup_iff_exists_goodRep X.1 |>.1 X.2
   simp only [Function.comp_apply, id_eq, SetLike.coe_eq_coe]
-  rw [toSnd_wd (A := A) (x_ := A.aribitaryConjFactor)]
+  rw [toSnd_wd (A := A) (x_ := A.arbitraryConjFactor)]
   ext : 1
   conv_rhs => rw [← A.quot_eq]
   simp only [GoodRep.toH2, fromSnd_wd]
@@ -2114,7 +2117,7 @@ lemma fromSnd_toSnd :
   change lhs ≃ₐ[F] A
   letI : Module K lhs := inferInstanceAs <| Module K (GoodRep.CrossProduct _)
   let φ0 : lhs ≃ₗ[K] A :=
-    Basis.equiv (x_AsBasis _) (A.conjFactorBasis (A.aribitaryConjFactor)) (Equiv.refl _)
+    Basis.equiv (x_AsBasis _) (A.conjFactorBasis (A.arbitraryConjFactor)) (Equiv.refl _)
   haveI : LinearMap.CompatibleSMul lhs A.carrier.carrier F K := by
     constructor
     have eq (c : F) (a : A) : c • a = algebraMap F K c • a := by
@@ -2151,9 +2154,9 @@ lemma fromSnd_toSnd :
     change A.ι (A.toTwoCocycles _ (1, 1))⁻¹ * _ = 1
     simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, Prod.mk_one_one,
       Prod.fst_one, Prod.snd_one, AlgEquiv.one_apply]
-    have := A.conjFactorCompCoeff_spec' (A.aribitaryConjFactor 1)
-      (A.aribitaryConjFactor 1)
-      (A.aribitaryConjFactor (1 * 1))
+    have := A.conjFactorCompCoeff_spec' (A.arbitraryConjFactor 1)
+      (A.arbitraryConjFactor 1)
+      (A.arbitraryConjFactor (1 * 1))
     simp only [AlgEquiv.one_apply, AlgEquiv.mul_apply] at this
     rw [GoodRep.conjFactorCompCoeff_inv]
     erw [_root_.one_mul]
@@ -2181,7 +2184,7 @@ lemma fromSnd_toSnd :
         congr 1
         simp only [_root_.mul_assoc]
         congr 1
-        rw [(A.aribitaryConjFactor x).2 d]
+        rw [(A.arbitraryConjFactor x).2 d]
         field_simp
       | add y y' hy hy' =>
         erw [mul_add, map_add, hy, hy', map_add, mul_add]

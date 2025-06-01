@@ -78,10 +78,10 @@ lemma directSum_simple_module_over_simple_ring
       { hom := Limits.Sigma.desc fun i ↦ e.inverse.map <|
           Limits.Sigma.ι (fun i : b ↦ ModuleCat.of D D) i
         inv := -- e.inverse.map (Limits.Sigma.desc fun i ↦ _) ≫ e.unitInv.app _
-          e.symm.toAdjunction.homEquiv _ _ |>.symm
-            (Limits.Sigma.desc fun i ↦
+          e.symm.toAdjunction.homEquiv _ _ |>.symm <|
+            Limits.Sigma.desc fun i ↦
               e.symm.toAdjunction.homEquiv _ _ <| Limits.Sigma.ι
-                (fun i : b ↦ e.inverse.obj <| ModuleCat.of D D) i)
+                (fun i : b ↦ e.inverse.obj <| ModuleCat.of D D) i
         hom_inv_id := by
           ext i : 1
           simp only [ModuleCat.of_coe, Equivalence.symm_inverse, Equivalence.symm_functor,
@@ -152,25 +152,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     obtain ⟨S, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring k A M
     obtain ⟨ι', ⟨iso'⟩⟩ := directSum_simple_module_over_simple_ring' k A N S
 
-    by_cases HS : Subsingleton S
-    · letI : Unique S := ⟨⟨0⟩, fun x => Subsingleton.elim _ _⟩
-      letI : Unique (ι →₀ S) := inferInstance
-      letI : Unique (ι' →₀ S) := inferInstance
-      let e : (ι →₀ S) ≃ₗ[A] (ι' →₀ S) :=
-        { toFun := 0
-          map_add' := by simp
-          map_smul' := by simp
-          invFun := 0
-          left_inv := by
-            intro x
-            apply Subsingleton.elim
-          right_inv := by
-            intro x
-            apply Subsingleton.elim }
-      refine ⟨iso ≪≫ₗ e ≪≫ₗ iso'.symm⟩
-
-    replace HS : Nontrivial S := not_subsingleton_iff_nontrivial.mp HS
-
+    haveI : Nontrivial S := IsSimpleModule.nontrivial A S
     by_cases Hιι' : IsEmpty ι ∨ IsEmpty ι'
     · rcases Hιι' with (Hι|Hι')
       · letI : Unique (ι →₀ S) := inferInstance
