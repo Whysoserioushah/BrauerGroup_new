@@ -672,7 +672,7 @@ noncomputable def auxRight (B : Subalgebra F A) (C : Type u) [Ring C] [Algebra F
       rw [map_mul]
       rfl)
 
-instance : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
+instance tensorRightMul_isSimpleRing : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
   constructor
   let eqv : (A ⊗[F] Module.End.rightMul F B) ≃ₐ[F] (Bᵐᵒᵖ  ⊗[F] A):=
     AlgEquiv.trans (Algebra.TensorProduct.congr AlgEquiv.refl Module.End.rightMulEquiv)
@@ -687,8 +687,7 @@ instance : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
 
 set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 200000 in
-lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
-    ∃ (x : (A ⊗[F] Module.End F B)ˣ),
+lemma step1 : ∃ (x : (A ⊗[F] Module.End F B)ˣ),
     Nonempty <|
       ((Subalgebra.centralizer F (B : Set A)) ⊗[F] (Module.End F B)) ≃ₐ[F]
       Subalgebra.conj
@@ -770,7 +769,7 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
       exact hx ⟨z, hz⟩
 
   have eq2 := congr(Subalgebra.centralizer F $(eq1).carrier)
-  erw [centralizer_inclusionLeft (𝒜' := ℬ)] at eq2
+  erw [centralizer_inclusionLeft (𝒜' := Basis.ofVectorSpace ..)] at eq2
   have temp := Subalgebra.conj_centralizer' (F := F) (A := A ⊗[F] Module.End F B)
     (B := (Algebra.TensorProduct.includeRight (R := F) (A := A) (B := Module.End F B) |>.comp
           (Module.End.leftMul F B).val).range) (x := x)
@@ -779,8 +778,7 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
   rw [centralizer_mulLeft] at eq2
 
   rw [← eq2]
-  refine ⟨?_⟩
-  apply auxLeft
+  exact ⟨auxLeft ..⟩
 
 lemma finrank_mop (B : Type*) [Ring B] [Algebra F B] : Module.finrank F Bᵐᵒᵖ =
     Module.finrank F B := by
@@ -797,12 +795,12 @@ end centralizer_isSimple.aux
 open centralizer_isSimple.aux in
 set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 200000 in
-lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
+lemma centralizer_isSimple  :
     IsSimpleRing (Subalgebra.centralizer F (B : Set A)) := by
   letI (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
       Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
 
-  obtain ⟨x, ⟨eqv⟩⟩ := step1 B ℬ
+  obtain ⟨x, ⟨eqv⟩⟩ := step1 B
 
   have : IsSimpleRing (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) := by
     have := TwoSidedIdeal.orderIsoOfRingEquiv eqv
@@ -832,7 +830,7 @@ lemma dim_centralizer  :
   haveI : Module.Free F (Module.End.rightMul F B) := Module.Free.of_divisionRing F
     ↥(Module.End.rightMul F ↥B)
 
-  obtain ⟨x, ⟨eqv⟩⟩ := step1 B (Module.finBasis _ _)
+  obtain ⟨x, ⟨eqv⟩⟩ := step1 B
   let leqv := eqv.toLinearEquiv
   have : Module.finrank F (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) =
     Module.finrank F _ := LinearEquiv.finrank_eq leqv
@@ -858,7 +856,7 @@ lemma double_centralizer :
   apply Subalgebra.eq_of_le_of_finrank_eq
   · intro x hx y hy
     exact hy x hx |>.symm
-  · haveI := centralizer_isSimple B (Module.finBasis F _)
+  · haveI := centralizer_isSimple B
     have eq1 := dim_centralizer F B
     have eq2 := dim_centralizer F (A := A) (Subalgebra.centralizer F B)
     have eq3 := eq1.trans eq2.symm
@@ -877,7 +875,7 @@ noncomputable def writeAsTensorProduct
     [Algebra.IsCentral F B] [IsSimpleRing B] :
     A ≃ₐ[F] B ⊗[F] Subalgebra.centralizer F (B : Set A) :=
   haveI s1 : IsSimpleRing (Subalgebra.centralizer F (B : Set A)) :=
-    centralizer_isSimple B (Module.Free.chooseBasis _ _)
+    centralizer_isSimple B
   haveI s2 : IsSimpleRing (B ⊗[F] Subalgebra.centralizer F (B : Set A)) :=
     ⟨TwoSidedIdeal.orderIsoOfRingEquiv
       (Algebra.TensorProduct.comm F B (Subalgebra.centralizer F (B : Set A))).toRingEquiv

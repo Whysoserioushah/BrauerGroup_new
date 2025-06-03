@@ -707,6 +707,58 @@ def mopToEnd : Rᵐᵒᵖ →+* End (ModuleCat.of R R) where
     apply ModuleCat.hom_ext
     simp only [ModuleCat.hom_comp]; ext; simp
 
+variable (K : Type u) [CommRing K] [Algebra K R] [Algebra K S]
+
+instance : Algebra K (End (ModuleCat.of R R)) where
+  smul κ f := ModuleCat.ofHom <|
+    { toFun r := f.hom <| κ • r
+      map_add' := by aesop
+      map_smul' r r' := by
+        simp only [smul_eq_mul, Algebra.smul_def, RingHom.id_apply]
+        rw [← smul_eq_mul, ← smul_eq_mul, ← smul_eq_mul, ← smul_eq_mul]
+        rw [f.hom.map_smul, f.hom.map_smul, f.hom.map_smul]
+        simp only [smul_eq_mul, Algebra.commutes, mul_assoc] }
+  algebraMap :=
+    { toFun κ := ModuleCat.ofHom
+        { toFun r := κ • r
+          map_add' := by aesop
+          map_smul' := by aesop }
+      map_one' := by aesop
+      map_mul' _ _ := ModuleCat.Hom.ext <| LinearMap.ext fun (r : R) => MulAction.mul_smul _ _ _
+      map_zero' := by aesop
+      map_add' _ _ := ModuleCat.Hom.ext <| LinearMap.ext fun (r : R) => add_smul _ _ _ }
+  commutes' r f := ModuleCat.Hom.ext <| LinearMap.ext fun (r' : R) => by
+    change r • f.hom r' = f.hom (r • r')
+    simp only [LinearMap.map_smul_of_tower]
+  smul_def' κ (f : _ ⟶ _) := by
+    simp only [LinearMap.map_smul_of_tower, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
+      End.mul_def]
+    apply ModuleCat.hom_ext
+    simp only [ModuleCat.hom_comp, ModuleCat.hom_ofHom]
+    ext
+    simp only [LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply]
+    rfl
+
+def mopToEndAlgHom : Rᵐᵒᵖ →ₐ[K] End (ModuleCat.of R R) where
+  toFun a := ModuleCat.ofHom <|
+    { toFun := fun (x : R) ↦ x * a.unop
+      map_add' := by simp [add_mul]
+      map_smul' := by simp [mul_assoc] }
+  map_zero' := by simp; rfl
+  map_one' := by aesop
+  map_add' := fun x y => by simp [mul_add]; rfl
+  map_mul' := fun (x y) => by
+    simp only [MulOpposite.unop_mul, End.mul_def]
+    apply ModuleCat.hom_ext
+    simp only [ModuleCat.hom_comp]; ext; simp
+  commutes' κ := by
+    simp only [MulOpposite.algebraMap_apply, MulOpposite.unop_op]
+    apply ModuleCat.hom_ext
+    ext
+    simp only [ModuleCat.hom_ofHom, LinearMap.coe_mk, AddHom.coe_mk, one_mul]
+    rw [Algebra.algebraMap_eq_smul_one]
+    rfl
+
 noncomputable def mopEquivEnd : Rᵐᵒᵖ ≃+* End (ModuleCat.of R R) :=
   RingEquiv.ofBijective (mopToEnd R) ⟨RingHom.injective_iff_ker_eq_bot _ |>.mpr $
     SetLike.ext fun (α : Rᵐᵒᵖ) => ⟨fun (h : _ = _) => by
@@ -721,6 +773,9 @@ noncomputable def mopEquivEnd : Rᵐᵒᵖ ≃+* End (ModuleCat.of R R) :=
       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, mopToEnd_apply, MulOpposite.unop_op,
         ModuleCat.hom_ofHom, LinearMap.coe_mk, AddHom.coe_mk]
       rw [← smul_eq_mul, ← φ.hom.map_smul, smul_eq_mul, mul_one]⟩⟩
+
+noncomputable def mopAlgEquivEnd : Rᵐᵒᵖ ≃ₐ[K] End (ModuleCat.of R R) :=
+  AlgEquiv.ofBijective (mopToEndAlgHom R K) (mopEquivEnd R).bijective
 
 variable {R S} in
 def aux1 : End (ModuleCat.of R R) ≃+* End (e.functor.obj $ ModuleCat.of R R) where
@@ -740,7 +795,6 @@ def aux1 : End (ModuleCat.of R R) ≃+* End (e.functor.obj $ ModuleCat.of R R) w
     exact e.functor_unit_comp_assoc (ModuleCat.of R R) g
   map_mul' x y := by simp
   map_add' x y := by simp only; rw [e.functor.map_add]
-
 
 noncomputable def aux20 : (e.functor.obj (ModuleCat.of R R)) ≅ ModuleCat.of S S := by
   have :  IsSimpleModule R (ModuleCat.of R R) := inferInstanceAs $ IsSimpleModule R R

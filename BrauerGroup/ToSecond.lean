@@ -56,7 +56,7 @@ lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := b
   change Module.finrank F A = Module.finrank F A.ι.range * Module.finrank F A.ι.range
   rw [A.dim_eq_square, pow_two, LinearEquiv.finrank_eq (f := A.ιRange.toLinearEquiv.symm)]
 
-instance : Module K A where
+instance goodRepMod : Module K A where
   smul c a := A.ι c * a
   one_smul a := show A.ι 1 * a = a by simp
   mul_smul c c' x := show A.ι (c * c') * x = _ * (_ * _) by simp [_root_.mul_assoc]
@@ -538,7 +538,7 @@ noncomputable def galAct : Rep ℤ (K ≃ₐ[F] K) :=
   Rep.ofMulDistribMulAction (K ≃ₐ[F] K) Kˣ
 
 @[simp] lemma galAct_ρ_apply (σ : K ≃ₐ[F] K) (x : Kˣ) :
-    (galAct F K).ρ σ (.ofMul x) = .ofMul (Units.map σ x) := rfl
+    (galAct F K).ρ σ x = Units.map σ x := rfl
 
 variable [FiniteDimensional F K]
 

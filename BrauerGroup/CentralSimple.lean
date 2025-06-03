@@ -11,7 +11,9 @@ import Mathlib.LinearAlgebra.TensorProduct.RightExactness
 import Mathlib.RingTheory.SimpleRing.Matrix
 import Mathlib.Algebra.Central.Basic
 import BrauerGroup.Centralizer
-
+import Mathlib.Tactic.Widget.CommDiag
+import ProofWidgets.Component.Panel.SelectionPanel
+import ProofWidgets.Component.Panel.GoalTypePanel
 /-!
 # Characteristic predicate for central simple algebras
 
@@ -295,7 +297,6 @@ noncomputable def centerTensor
         obtain ⟨y, rfl⟩ := hx
         refine ⟨y, rfl⟩)) rfl rfl)
 
-set_option synthInstance.maxHeartbeats 40000 in
 instance TensorProduct.isCentral
     (A B : Type u) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     [isCentral_A : Algebra.IsCentral K A] [isCentral_B : Algebra.IsCentral K B] :
@@ -342,7 +343,7 @@ a non-zero element in an ideal that can be represented as a sum of tensor produc
 -/
 structure is_obtainable_by_sum_tmul
     {ιA A B : Type*} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : TwoSidedIdeal $ A ⊗[K] B) (n : ℕ) : Prop where
+    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : TwoSidedIdeal <| A ⊗[K] B) (n : ℕ) : Prop where
   mem : x ∈ I
   ne_zero : x ≠ 0
   rep : ∃ (s : Finset ιA) (_ : s.card = n) (f : ιA → B),

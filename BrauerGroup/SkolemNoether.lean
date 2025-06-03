@@ -142,7 +142,7 @@ instance (K A B M : Type u)
     | add x y hx hy =>
       rw [smul_add, add_smul, hx, hy, add_smul, smul_add]
 
-instance module_inst_findim (K A B M : Type u)
+instance module_inst_fg (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]

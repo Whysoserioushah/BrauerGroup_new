@@ -792,7 +792,7 @@ lemma toEndEnd_injective
 class IsBalanced (M : Type v) [AddCommGroup M] [Module A M] : Prop where
   surj : Function.Surjective (toEndEnd A M)
 
-instance : IsBalanced A A where
+instance IsBalanced.self : IsBalanced A A where
   surj f := ⟨f 1, by
     ext x
     simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, smul_eq_mul]

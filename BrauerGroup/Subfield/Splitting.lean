@@ -75,7 +75,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       use r
       rw [Subtype.ext_iff, ← hr]
       rfl }
-  haveI : IsSimpleRing B := centralizer_isSimple _ (Module.Free.chooseBasis _ _)
+  haveI : IsSimpleRing B := centralizer_isSimple _
   refine ⟨⟨B⟩, ?_,
     { toFun := fun r =>
         ⟨{
