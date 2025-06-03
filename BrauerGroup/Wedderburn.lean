@@ -574,7 +574,7 @@ lemma Wedderburn_Artin_algebra_version
     map_mul' := by intros f g; ext; simp }
 
   refine ⟨n, hn, (Module.End B I)ᵐᵒᵖ, inferInstance, inferInstance, ⟨AlgEquiv.ofRingEquiv
-    (f := equivEndMop B |>.trans $ endEquiv.op.trans $ (endPowEquivMatrix B I n).op.trans
+    (f := equivEndMop B |>.trans <| endEquiv.op.trans <| (endPowEquivMatrix B I n).op.trans
     (matrixEquivMatrixMop n (Module.End B ↥I)).symm) ?_⟩⟩
   intro r
   rw [Matrix.algebraMap_eq_diagonal]
