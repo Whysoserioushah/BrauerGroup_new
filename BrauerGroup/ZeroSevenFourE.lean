@@ -56,10 +56,9 @@ lemma directSum_simple_module_over_simple_ring
   haveI : IsSimpleModule D (ModuleCat.of D D) := inferInstanceAs $ IsSimpleModule D D
   haveI : IsSimpleModule A S :=
     IsMoritaEquivalent.division_ring.IsSimpleModule.functor _ _ e.symm (ModuleCat.of D D)
-  let M' := e.functor.obj (ModuleCat.of A M)
-  obtain ⟨b, hb⟩ : Module.Free D M' := inferInstance
+  obtain ⟨b, hb⟩ : Module.Free D (e.functor.obj (ModuleCat.of A M)) := inferInstance
   refine ⟨S, inferInstance, inferInstance, inferInstance, b, ⟨?_⟩⟩
-  let iso₂ : M' ≅ ModuleCat.of D (b →₀ D) := LinearEquiv.toModuleIso hb.repr
+  let iso₂ : e.functor.obj (ModuleCat.of A M) ≅ ModuleCat.of D (b →₀ D) := LinearEquiv.toModuleIso hb.repr
   let iso₃ : ModuleCat.of A M ≅ e.inverse.obj (ModuleCat.of D (b →₀ D)) :=
     e.unitIso.app (ModuleCat.of A M) ≪≫ (e.inverse.mapIso iso₂)
   let iso₄₀ :
@@ -71,41 +70,8 @@ lemma directSum_simple_module_over_simple_ring
     ∐ fun i : b ↦ ModuleCat.of A (e.inverse.obj (ModuleCat.of D D)) :=
         Iso.symm (ModuleCat.coprodIsoDirectSum _)
   let iso₄₂ :
-    (∐ fun i : b ↦ ModuleCat.of A (e.inverse.obj (ModuleCat.of D D))) ≅
-    e.inverse.obj (∐ fun i : b ↦ ModuleCat.of D D) :=
-      { hom := Limits.Sigma.desc fun i ↦ e.inverse.map <|
-          Limits.Sigma.ι (fun i : b ↦ ModuleCat.of D D) i
-        inv := -- e.inverse.map (Limits.Sigma.desc fun i ↦ _) ≫ e.unitInv.app _
-          e.symm.toAdjunction.homEquiv _ _ |>.symm
-            (Limits.Sigma.desc fun i ↦
-              e.symm.toAdjunction.homEquiv _ _ <| Limits.Sigma.ι
-                (fun i : b ↦ e.inverse.obj <| ModuleCat.of D D) i)
-        hom_inv_id := by
-          ext i : 1
-          simp only [ModuleCat.of_coe, Equivalence.symm_inverse, Equivalence.symm_functor,
-            Adjunction.homEquiv, Functor.comp_obj, Equivalence.toAdjunction,
-            show e.symm.unit = e.counitInv by aesop_cat,
-            show e.symm.counit = e.unitInv by aesop_cat, Equiv.coe_fn_mk, Equiv.coe_fn_symm_mk, ←
-            Category.assoc, Limits.colimit.ι_desc, Limits.Cofan.mk_pt, Limits.Cofan.mk_ι_app, ←
-            Functor.map_comp, Category.comp_id]
-          simp only [Functor.map_comp, Equivalence.inv_fun_map, Functor.comp_obj, Functor.id_obj,
-            Equivalence.inverse_counitInv_comp_assoc, Category.assoc, Iso.hom_inv_id_app,
-            Category.comp_id]
-        inv_hom_id := by
-          apply_fun (e.symm.toAdjunction.homEquiv _ _)
-          apply Limits.Sigma.hom_ext
-          intro i
-          simp only [Equivalence.symm_inverse, Equivalence.symm_functor, Adjunction.homEquiv,
-            Functor.comp_obj, Equivalence.toAdjunction_unit,
-            show e.symm.unit = e.counitInv by aesop_cat, Equivalence.toAdjunction_counit,
-            show e.symm.counit = e.unitInv by aesop_cat, ModuleCat.of_coe, Equiv.coe_fn_mk,
-            Equiv.coe_fn_symm_mk, Category.assoc, Functor.map_comp, Equivalence.fun_inv_map,
-            Functor.id_obj, Equivalence.counitInv_functor_comp_assoc, Iso.inv_hom_id_app_assoc,
-            Limits.colimit.ι_desc_assoc, Discrete.functor_obj_eq_as, Limits.Cofan.mk_pt,
-            Limits.Cofan.mk_ι_app, CategoryTheory.Functor.map_id, Category.comp_id]
-          simp only [← Functor.map_comp, Limits.colimit.ι_desc, Limits.Cofan.mk_pt,
-            Limits.Cofan.mk_ι_app, Equivalence.fun_inv_map, Functor.comp_obj, Functor.id_obj,
-            Iso.inv_hom_id_app_assoc]  }
+    (∐ fun i : b ↦ (e.inverse.obj (ModuleCat.of D D))) ≅
+    e.inverse.obj (∐ fun i : b ↦ ModuleCat.of D D) := CategoryTheory.Limits.PreservesCoproduct.iso _ _ |>.symm
   let iso₄₃ : e.inverse.obj (∐ fun i : b ↦ ModuleCat.of D D) ≅
     e.inverse.obj (ModuleCat.of D (⨁ i : b, D)) :=
     e.inverse.mapIso (ModuleCat.coprodIsoDirectSum _)
@@ -149,26 +115,7 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
   · intro h
     obtain ⟨S, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring k A M
     obtain ⟨ι', ⟨iso'⟩⟩ := directSum_simple_module_over_simple_ring' k A N S
-
-    by_cases HS : Subsingleton S
-    · letI : Unique S := ⟨⟨0⟩, fun x => Subsingleton.elim _ _⟩
-      letI : Unique (ι →₀ S) := inferInstance
-      letI : Unique (ι' →₀ S) := inferInstance
-      let e : (ι →₀ S) ≃ₗ[A] (ι' →₀ S) :=
-        { toFun := 0
-          map_add' := by simp
-          map_smul' := by simp
-          invFun := 0
-          left_inv := by
-            intro x
-            apply Subsingleton.elim
-          right_inv := by
-            intro x
-            apply Subsingleton.elim }
-      refine ⟨iso ≪≫ₗ e ≪≫ₗ iso'.symm⟩
-
-    replace HS : Nontrivial S := not_subsingleton_iff_nontrivial.mp HS
-
+    have HS : Nontrivial S := IsSimpleModule.nontrivial A S
     by_cases Hιι' : IsEmpty ι ∨ IsEmpty ι'
     · rcases Hιι' with (Hι|Hι')
       · letI : Unique (ι →₀ S) := inferInstance
@@ -279,7 +226,6 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
       exact lt_of_le_of_lt ineq2 ineq
 
     rw [Module.finrank_finsupp,  Module.finrank_finsupp] at EQ
-    simp only [Cardinal.lift_id] at EQ
     simp only [mul_eq_mul_right_iff] at EQ
     replace EQ := EQ.resolve_right
       (by have := Module.finrank_pos (R := k) (M := S); omega)
@@ -309,11 +255,13 @@ lemma simple_mod_of_wedderburn (n : ℕ) [NeZero n]
     exact IsMoritaEquivalent.division_ring.IsSimpleModule.functor D (Matrix (Fin n) (Fin n) D)
       (moritaEquivalentToMatrix D (Fin n)) (ModuleCat.of D D)
 
-  have : IsSimpleModule (Matrix (Fin n) (Fin n) D)
-    (ModuleCat.of (Matrix (Fin n) (Fin n) D) $ Fin n → D) := inst1
+  -- have : IsSimpleModule (Matrix (Fin n) (Fin n) D)
+  --   (ModuleCat.of (Matrix (Fin n) (Fin n) D) $ Fin n → D) := inst1
 
-  exact IsMoritaEquivalent.division_ring.IsSimpleModule.functor (Matrix (Fin n) (Fin n) D) A
+  have := IsMoritaEquivalent.division_ring.IsSimpleModule.functor (Matrix (Fin n) (Fin n) D) A
     e.symm (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → D))
+
+  exact this
 
 noncomputable section wedderburn
 
@@ -325,10 +273,9 @@ abbrev endCatEquiv (n : ℕ) [NeZero n]
   Module.End A (Fin n → D) ≃ₐ[k] Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
   AlgEquiv.ofAlgHom {
     toFun := fun f ↦ {
-      toFun := f
-      map_add' := f.map_add
+      __ := f
       map_smul' := fun a v => by
-        simp only [RingHom.id_apply]
+        simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
         rw [show a • v = wdb.symm a • v by simp [smul_def], map_smul, smul_def]
         simp
     }
@@ -348,8 +295,7 @@ abbrev endCatEquiv (n : ℕ) [NeZero n]
     map_zero' := rfl
     map_add' := fun _ _ => rfl
     commutes' := by intros; ext; simp }
-  (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
-  (AlgHom.ext $ fun _ => LinearMap.ext $ fun _ => by rfl)
+  (by rfl) (by rfl)
 
 set_option maxHeartbeats 500000 in
 /--
@@ -625,14 +571,7 @@ instance end_simple_mod_finite
     FiniteDimensional k (Module.End A M) := by
   obtain ⟨n, hn, D, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version k A
   obtain ⟨iso⟩ := end_simple_mod_of_wedderburn' k A n D e M
-  let E : Dᵐᵒᵖ ≃ₗ[k] D := LinearEquiv.ofLinear
-    { toFun := MulOpposite.unop
-      map_add' := by simp
-      map_smul' := by simp }
-    { toFun := MulOpposite.op
-      map_add' := by simp
-      map_smul' := by simp }
-    (by ext; simp) (by ext; simp)
+  let E : Dᵐᵒᵖ ≃ₗ[k] D := MulOpposite.opLinearEquiv k |>.symm
   have : Module.Finite k D := by
     haveI inst1 : Module.Finite k (Matrix (Fin n) (Fin n) D) := e.toLinearEquiv.finiteDimensional
     rw [← Module.rank_lt_aleph0_iff] at inst1 ⊢
@@ -646,36 +585,36 @@ instance end_simple_mod_finite
   have : FiniteDimensional k Dᵐᵒᵖ := E.symm.finiteDimensional
   refine iso.symm.toLinearEquiv.finiteDimensional
 
-instance (D : Type v) [DivisionRing D] : Module.Finite Dᵐᵒᵖ D := by
-  rw [Module.finite_def]
-  refine ⟨{1}, eq_top_iff.2 fun x _ => ?_⟩
-  simp only [Finset.coe_singleton]
-  rw [show x = (MulOpposite.op x : Dᵐᵒᵖ) • 1 by simp]
-  exact Submodule.smul_mem _ _ $ Submodule.subset_span rfl
+-- instance (D : Type v) [DivisionRing D] : Module.Finite Dᵐᵒᵖ D := by
+--   rw [Module.finite_def]
+--   refine ⟨{1}, eq_top_iff.2 fun x _ => ?_⟩
+--   simp only [Finset.coe_singleton]
+--   rw [show x = (MulOpposite.op x : Dᵐᵒᵖ) • 1 by simp]
+--   exact Submodule.smul_mem _ _ $ Submodule.subset_span rfl
 
-noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
-    Basis (Fin n) Dᵐᵒᵖ (Fin n → D) :=
-  .mk (v := fun i => Pi.single i 1)
-    (by
-      rw [linearIndependent_iff]
-      intro c hc
-      ext i
-      replace hc := congr_fun hc i
-      simpa only [Finsupp.linearCombination, Finsupp.coe_lsum, Finsupp.sum, LinearMap.coe_smulRight,
-        LinearMap.id_coe, id_eq, Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_ite,
-        MulOpposite.smul_eq_mul_unop, one_mul, smul_zero, Finset.sum_ite_eq,
-        Finsupp.mem_support_iff, ne_eq, Pi.zero_apply, ite_eq_right_iff,
-        MulOpposite.unop_eq_zero_iff, _root_.not_imp_self, Finsupp.coe_zero] using hc )
-    (by
-      rintro v -
-      have eq1 : v = ∑ i : Fin n, (MulOpposite.op $ v i) • Pi.single i 1 := by
-        ext i
-        simp only [Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_ite,
-          MulOpposite.smul_eq_mul_unop, MulOpposite.unop_op, one_mul, smul_zero, Finset.sum_ite_eq,
-          Finset.mem_univ, ↓reduceIte]
-      rw [eq1]
-      refine Submodule.sum_mem _ fun i _ => Submodule.smul_mem _ _ $ Submodule.subset_span ?_
-      simp)
+-- noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
+--     Basis (Fin n) Dᵐᵒᵖ (Fin n → D) :=
+--   .mk (v := fun i => Pi.single i 1)
+--     (by
+--       rw [linearIndependent_iff]
+--       intro c hc
+--       ext i
+--       replace hc := congr_fun hc i
+--       simpa only [Finsupp.linearCombination, Finsupp.coe_lsum, Finsupp.sum, LinearMap.coe_smulRight,
+--         LinearMap.id_coe, id_eq, Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_ite,
+--         MulOpposite.smul_eq_mul_unop, one_mul, smul_zero, Finset.sum_ite_eq,
+--         Finsupp.mem_support_iff, ne_eq, Pi.zero_apply, ite_eq_right_iff,
+--         MulOpposite.unop_eq_zero_iff, _root_.not_imp_self, Finsupp.coe_zero] using hc )
+--     (by
+--       rintro v -
+--       have eq1 : v = ∑ i : Fin n, (MulOpposite.op $ v i) • Pi.single i 1 := by
+--         ext i
+--         simp only [Finset.sum_apply, Pi.smul_apply, Pi.single_apply, smul_ite,
+--           MulOpposite.smul_eq_mul_unop, MulOpposite.unop_op, one_mul, smul_zero, Finset.sum_ite_eq,
+--           Finset.mem_univ, ↓reduceIte]
+--       rw [eq1]
+--       refine Submodule.sum_mem _ fun i _ => Submodule.smul_mem _ _ $ Submodule.subset_span ?_
+--       simp)
 
 instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower k A M] :
     Algebra k (Module.End (Module.End A M) M) where
@@ -786,7 +725,6 @@ def toEndEnd (M : Type v) [AddCommGroup M] [Module A M] : A →ₗ[A] Module.End
   map_add' := by intros; ext; simp [add_smul]
   map_smul' := by intros; ext; simp [mul_smul]
 
-
 def toEndEndAlgHom (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower k A M] :
     A →ₐ[k] Module.End (Module.End A M) M where
   __ := toEndEnd A M
@@ -804,8 +742,8 @@ omit [FiniteDimensional k A] in
 lemma toEndEnd_injective
     (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]
     [Module k M] [IsScalarTower k A M] :
-    Function.Injective (toEndEnd A M) := by
-  exact RingHom.injective (toEndEndAlgHom k A M).toRingHom
+    Function.Injective (toEndEnd A M) :=
+  RingHom.injective (toEndEndAlgHom k A M).toRingHom
 
 class IsBalanced (M : Type v) [AddCommGroup M] [Module A M] : Prop where
   surj : Function.Surjective (toEndEnd A M)
@@ -814,25 +752,20 @@ instance : IsBalanced A A where
   surj f := ⟨f 1, by
     ext x
     simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, smul_eq_mul]
-    let X : Module.End A A :=
-      { toFun := fun y => y * x
-        map_add' := by simp [add_mul]
-        map_smul' := by simp [mul_assoc] }
-    have eq1 := f.map_smul X 1
-    simp only [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, one_mul, X] at eq1
-    exact eq1.symm⟩
+    let X : Module.End A A := LinearMap.mulRight _ x
+    simpa [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, one_mul, X] using (f.map_smul X 1).symm⟩
 
 omit [IsSimpleRing A] in
 lemma IsBalanced.congr_aux (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module A M] [Module A N]
     (l : M ≃ₗ[A] N) (h : IsBalanced A M) : IsBalanced A N := by
   refine ⟨fun a => ?_⟩
   let a' : Module.End (Module.End A M) M :=
-  { toFun := fun m => l.symm $ a $ l m
+  { toFun := fun m => l.symm <| a (l m)
     map_add' := by simp
     map_smul' := fun x y => by
       simp only [LinearMap.smul_def, RingHom.id_apply]
       let L := l.toLinearMap ∘ₗ x ∘ₗ l.symm.toLinearMap
-      have := a.map_smul L (l $ y)
+      have := a.map_smul L (l y)
       simp only [LinearMap.smul_def, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
         LinearEquiv.symm_apply_apply, L] at this
       simp [this] }
@@ -840,11 +773,12 @@ lemma IsBalanced.congr_aux (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Mod
   refine ⟨b, ?_⟩
   ext n
   simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply]
-  have := congr($hb $ l.symm n)
-  simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk,
-    LinearEquiv.apply_symm_apply, a'] at this
+  have := congr($hb <| l.symm n)
+  simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, LinearMap.coe_mk, AddHom.coe_mk] at this
+
   apply_fun l at this
-  simpa using this
+  -- simp [this]
+  aesop
 
 omit [IsSimpleRing A] in
 lemma IsBalanced.congr {M N : Type v} [AddCommGroup M] [AddCommGroup N] [Module A M] [Module A N]
@@ -857,7 +791,6 @@ lemma isBalanced_of_simpleMod (M : Type v) [AddCommGroup M] [Module A M] [IsSimp
     [Module k M] [IsScalarTower k A M] : IsBalanced A M := by
   classical
   obtain ⟨ι, ⟨e⟩⟩ := directSum_simple_module_over_simple_ring' k A A M
-  haveI : IsBalanced A A := inferInstance
   haveI b : IsBalanced A (ι →₀ M) := by
     rw [← IsBalanced.congr A e]
     infer_instance
@@ -918,21 +851,8 @@ noncomputable def end_end_iso
     (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M] [Module k M] [IsScalarTower k A M] :
     A ≃ₐ[k] Module.End (Module.End A M) M :=
-  AlgEquiv.ofBijective
-    { toFun := fun a =>
-      { toFun := fun m => a • m
-        map_add' := by simp
-        map_smul' := by simp }
-      map_one' := by ext; simp
-      map_mul' := by intros; ext; simp [mul_smul]
-      map_zero' := by ext; simp
-      map_add' := by intros; ext; simp [add_smul]
-      commutes' := by
-        intro r
-        ext m
-        simp only [algebraMap_smul, LinearMap.coe_mk, AddHom.coe_mk]
-        rfl }
-    ⟨toEndEnd_injective k A M, isBalanced_of_simpleMod k A M |>.1⟩
+  AlgEquiv.ofBijective (toEndEndAlgHom k A M) ⟨toEndEnd_injective k A M,
+    isBalanced_of_simpleMod k A M |>.1⟩
 
 
 lemma Wedderburn_Artin_uniqueness₀
@@ -961,21 +881,7 @@ lemma Wedderburn_Artin_uniqueness₀
   haveI : IsSimpleModule A (Fin n → D) := simple_mod_of_wedderburn k A n D wdb
   have ⟨iso⟩ := end_simple_mod_of_wedderburn' k A n D wdb (Fin n → D)
   have ⟨iso'⟩ := end_simple_mod_of_wedderburn' k A n' D' wdb' (Fin n → D)
-  let e := iso.symm.trans iso'
-  exact Nonempty.intro {
-    toFun := fun x => e (MulOpposite.op x) |>.unop
-    invFun := fun x => e.symm (MulOpposite.op x) |>.unop
-    left_inv := fun x => by simp
-    right_inv := fun x => by simp
-    map_mul' := fun x y => by simp
-    map_add' := fun x y => by simp
-    commutes' := fun x => by
-      simp only
-      have := e.commutes x
-      simp only [MulOpposite.algebraMap_apply] at this
-      rw [this]
-      simp
-  }
+  exact ⟨AlgEquiv.op.symm (iso.symm.trans iso')⟩
 
 lemma Wedderburn_Artin_uniqueness₁
     (n n' : ℕ) [NeZero n] [NeZero n']
