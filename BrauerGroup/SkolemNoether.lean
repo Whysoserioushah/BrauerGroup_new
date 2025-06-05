@@ -326,14 +326,16 @@ theorem SkolemNoether (K A B M : Type u)
   simp only [end_end_iso, AlgEquiv.coe_ofBijective, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
     OneHom.coe_mk, map_mul, AlgEquiv.apply_symm_apply, ISO, Φ, Ψ]
   ext m
-  simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply]
+  simp only [toEndEndAlgHom, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, AlgHom.coe_mk,
+    RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, toEndEnd_apply,
+    DistribMulAction.toLinearMap_apply, LinearMap.mul_apply, LinearMap.coe_mk, AddHom.coe_mk, a, b,
+    ISO, Ψ, Φ]
   have := φ.map_smul (x ⊗ₜ LinearMap.id) (φ.symm m)
   change φ (smul1 K A B M _ _ (x ⊗ₜ LinearMap.id)) = _ at this
-  simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+  simp [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
     LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
     ZeroHom.coe_mk, LinearMap.id_coe, id_eq] at this
   rw [this]
-  simp only [LinearEquiv.apply_symm_apply]
   change _ = smul1 K A B M _ _ (x ⊗ₜ LinearMap.id)
   simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
     LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
