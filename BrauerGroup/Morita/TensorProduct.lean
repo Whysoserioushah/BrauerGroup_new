@@ -204,6 +204,10 @@ abbrev moduleAux (M : TensorModule R A C): A ⊗[R] C →ₐ[R] Module.End R M :
   Algebra.TensorProduct.lift (Algebra.lsmul _ _ _) ((Module.End.restrictScalars R A M R).comp M.morphism)
   <| fun a c ↦ by ext; simp
 
+lemma moduleAux_apply (M : TensorModule R A C) (a : A) (c : C) (m : M):
+    moduleAux R A C M (a ⊗ₜ[R] c) m = a • (M.morphism c) m := by
+  simp [moduleAux]
+
 instance moduletotensor (M : TensorModule R A C): Module (A ⊗[R] C) M :=
   Module.compHom _ (moduleAux R A C M).toRingHom
 
@@ -213,7 +217,7 @@ lemma smul_tensormod (x : A ⊗[R] C) (M : TensorModule R A C) (m : M):
 
 abbrev toModuleOverTensor: TensorModule R A C ⥤ ModuleCat (A ⊗[R] C) where
   obj M := ModuleCat.of _ M
-  map f := ModuleCat.ofHom {
+  map {M N} f := ModuleCat.ofHom {
     __ := f.hom.hom
     map_smul' ac m := by
       induction ac using TensorProduct.induction_on with
@@ -328,7 +332,14 @@ abbrev toBCfunctor (F : ModuleCat A ⥤ ModuleCat B) [F.Additive] [F.Linear R]:
   }
   map {M N} f := {
     hom := F.map f.hom
-    commutes c := by simp [← Functor.map_comp]
+    commutes c := by
+      simp only
+      rw [AlgHom.comp_apply, AlgHom.comp_apply]
+      simp_rw [ModuleCat.of_coe, AlgHom.coe_mk, RingHom.coe_mk,
+        MonoidHom.coe_mk, OneHom.coe_mk, ModuleCat.ofHom_hom]
+      rw [← Functor.map_comp, ← Functor.map_comp]
+      congr 1
+      exact f.commutes c
   }
   map_id M := by ext : 1; exact F.map_id M.1
   map_comp f g := by ext1; exact F.map_comp f.hom g.hom

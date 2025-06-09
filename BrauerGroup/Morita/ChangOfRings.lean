@@ -273,11 +273,18 @@ lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
 noncomputable def mopAlgEquivEnd : Aᵐᵒᵖ ≃ₐ[R] End (ModuleCat.of A A) :=
   AlgEquiv.ofBijective (mopToEnd R A) <| moptoend_bij R A
 
+example: End (ModuleCat.of A A) ≃ₐ[R] Module.End A A :=
+  mopAlgEquivEnd R A|>.symm.trans <| {__ := Module.moduleEndSelf A, commutes' r := by ext; simp [Algebra.smul_def]}
+
+
+
 variable (e : MoritaEquivalence R A B)
+
+#synth Algebra R (End (ModuleCat.of A A))
 
 variable {R S} in
 def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.of A A) where
-  toFun f := e.eqv.functor.map f
+  toFun (f : _ ⟶ _) := e.eqv.functor.map f
   invFun g := e.eqv.unit.app _ ≫ e.eqv.inverse.map g ≫ e.eqv.unitInv.app _
   left_inv := by
     intro f
@@ -297,6 +304,22 @@ def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.o
     simp only
     rw [Algebra.algebraMap_eq_smul_one, e.linear.map_smul, Algebra.algebraMap_eq_smul_one]
     simp only [End.one_def, CategoryTheory.Functor.map_id]
+
+-- instance (M : Type*) [AddCommGroup M] [Module B M] : Algebra R (Module.End B M) :=
+-- {
+--   __ := Module.End.ring (R := B) (N₁ := M),
+--   smul r f := {
+--     toFun m := algebraMap R B r • f m
+--     map_add' _ _ := by simp
+--     map_smul' _ _ := by simp
+--   },
+--   algebraMap := sorry
+--   commutes' := sorry
+--   smul_def' := fun r f => sorry
+-- }
+
+-- def myaux1 : Module.End A A ≃ₐ[R] Module.End B (e.eqv.functor.obj (ModuleCat.of A A)) := sorry
+
 -- variable [Algebra K S]
 
 -- instance (M : ModuleCat S): Module K M := Module.compHom M (algebraMap K S)

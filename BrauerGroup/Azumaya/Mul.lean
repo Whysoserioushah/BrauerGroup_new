@@ -178,7 +178,7 @@ lemma homTensorHomMap_surj: Function.Surjective (TensorProduct.homTensorHomMap R
   rw [← LinearMap.coe_comp, comm_square4]
   exact CharacterModule.surjective_of_dual_injective LinearMap.id fun ⦃a₁ a₂⦄ a ↦ a
 
-
+#check homTensorHomEquiv_apply
 end formathlib
 
 open MulOpposite
@@ -219,7 +219,7 @@ namespace Azumaya
 
 variable (A B : Type v) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
 instance [Module.Finite R A] [Module.Finite R B] :
-    Module.Finite R (A ⊗[R] B) := by exact Module.Finite.tensorProduct R A B
+    Module.Finite R (A ⊗[R] B) := Module.Finite.tensorProduct R A B
 
 variable {R A B} in
 instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
@@ -238,21 +238,21 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
     exact eq_of_smul_eq_smul (M := R) (α := A) (m₁ := r1) (m₂ := r2) <|
       fun a ↦ by rw [← one_mul a, ← smul_mul_assoc, this, smul_mul_assoc, one_mul]
 
-abbrev u (n : ℕ) : Fin n → (Fin n → R) := fun i ↦ Function.update (0 : Fin n → R) i 1
+-- abbrev u (n : ℕ) : Fin n → (Fin n → R) := fun i ↦ Function.update (0 : Fin n → R) i 1
 
-abbrev v (n : ℕ): Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
-  rw [Fintype.linearIndependent_iff]
-  refine fun f hf j ↦ ?_
-  apply congrFun at hf
-  specialize hf j
-  change (∑ _, _ • Function.update _ _ _) _ = _ at hf
-  simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
-    mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
-  exact hf) <| fun x _ ↦ by
-  refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
-  change ∑ i : Fin n, _ • Function.update _ _ _ = x
-  ext j
-  simp [Function.update_apply]
+-- abbrev v (n : ℕ): Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
+--   rw [Fintype.linearIndependent_iff]
+--   refine fun f hf j ↦ ?_
+--   apply congrFun at hf
+--   specialize hf j
+--   change (∑ _, _ • Function.update _ _ _) _ = _ at hf
+--   simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
+--     mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
+--   exact hf) <| fun x _ ↦ by
+--   refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
+--   change ∑ i : Fin n, _ • Function.update _ _ _ = x
+--   ext j
+--   simp [Function.update_apply]
 
 open Algebra.TensorProduct in
 variable {R A B} in
@@ -267,13 +267,13 @@ abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] 
 lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
   e ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) = (a ⊗ₜ b) ⊗ₜ op (a'.unop ⊗ₜ[R] b'.unop) := rfl
 
-lemma top_square_comm' (A B : Azumaya R) (a : A) (a' : Aᵐᵒᵖ) (b : B) (b' : Bᵐᵒᵖ) :
-    ((TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
-    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
-    (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) =
-    ((AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) := by
-  ext a0 b0
-  simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
+-- lemma top_square_comm' (A B : Azumaya R) (a : A) (a' : Aᵐᵒᵖ) (b : B) (b' : Bᵐᵒᵖ) :
+--     ((TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
+--     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
+--     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) =
+--     ((AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) := by
+--   ext a0 b0
+--   simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
 
 -- set_option synthInstance.maxHeartbeats 100000 in
 set_option maxHeartbeats 400000 in
@@ -417,7 +417,7 @@ lemma projection'_surj (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite
     [Module.Projective R M]: Function.Surjective (projection' R M) :=
   Function.Surjective.of_comp (g := inclusion' R M) <| by
   rw [← LinearMap.coe_comp, projection'_inclusion']
-  exact CharacterModule.surjective_of_dual_injective LinearMap.id fun ⦃a₁ a₂⦄ a ↦ a
+  exact Function.surjective_id
 
 lemma _root_.Module.Projective.ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
     [Module.Projective R M]: Module.Projective R (Module.End R M) :=
@@ -551,7 +551,8 @@ lemma inj_endM: Function.Injective (AlgHom.mulLeftRight R (Module.End R M)) :=
       <| tensor_inclusion1'_inj R M
 
 lemma surj_endM: Function.Surjective (AlgHom.mulLeftRight R (Module.End R M)) :=
-    Function.Surjective.of_comp (g := tensor_projection1' R M) <| by
+    Function.Surjective.of_comp (g := tensor_projection1' R M)
+  <| by
   change Function.Surjective
     ((AlgHom.mulLeftRight R (Module.End R M)).toLinearMap ∘ₗ tensor_projection1' R M)
   rw [comm_square_endend', LinearMap.coe_comp]
@@ -562,11 +563,13 @@ lemma bij_endM :
   Function.Bijective (AlgHom.mulLeftRight R (Module.End R M)) :=
   ⟨inj_endM R M, surj_endM R M⟩
 
-abbrev ofEnd (M : Type v) [Nontrivial M] [AddCommGroup M] [Module R M] [Module.Finite R M]
+abbrev ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
     [Module.Projective R M] [FaithfulSMul R M]: Azumaya R := {
   __ := AlgebraCat.of R (Module.End R M)
   isAzumaya := {
     out := Module.Projective.ofEnd R M|>.out
-    bij := bij_endM R M }}
+    bij := by
+      nontriviality M
+      exact bij_endM R M}}
 
 end Azumaya
