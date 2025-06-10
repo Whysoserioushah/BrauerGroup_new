@@ -835,52 +835,6 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
       rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij).symm ⟩
 
-abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set (SubField ℝ D))
-    [Nonempty α] (hα : IsChain (· ≤ ·) α) : SubField ℝ D where
-  __ := (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
-  mul_comm x y hx hy := by
-    simp only [Subsemiring.coe_carrier_toSubmonoid, Subalgebra.coe_toSubsemiring,
-      SetLike.mem_coe] at hx hy
-    have := Subalgebra.coe_iSup_of_directed hα.directed
-    dsimp at this
-    change x ∈ (_ : Set _) at hx ; change _ ∈ ( _ : Set _) at hy
-    rw [this] at hx hy
-    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx hy
-    obtain ⟨L1, hL1, hx⟩ := hx
-    obtain ⟨L2, hL2, hy⟩ := hy
-    obtain ⟨L3, _, hL31, hL32⟩ := hα.directedOn L1 hL1 L2 hL2
-    exact L3.mul_comm x y (hL31 hx) (hL32 hy)
-  inverse x hx hx0 := by
-    simp only [Subalgebra.coe_toSubsemiring,
-      Subsemiring.coe_carrier_toSubmonoid, SetLike.mem_coe] at *
-    letI : Nonempty α := Set.Nonempty.to_subtype (Set.Nonempty.of_subtype)
-    have := Subalgebra.coe_iSup_of_directed hα.directed
-    dsimp at this
-    change x ∈ (_ : Set _) at hx
-    rw [this] at hx
-    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx
-    obtain ⟨L1, hL1, hx⟩ := hx
-    use L1.inverse x hx hx0|>.choose
-    constructor
-    · have : L1.1 ≤ ⨆ (L : α), (L.1).toSubalgebra := by
-        exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L1.1) ⟨L1, hL1⟩ (by rfl)
-      exact this (L1.inverse x hx hx0).choose_spec.1
-    · exact L1.inverse x hx hx0|>.choose_spec.2
-
--- set_option maxHeartbeats 1600000 in
-lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D]: ∃(L : SubField ℝ D),
-    IsMaximalSubfield ℝ D L := by
-  obtain ⟨m, hm⟩ := zorn_le_nonempty (α := SubField ℝ D) (fun α hα hα' ↦ by
-    letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
-    use iSup_chain_subfield D α hα
-    change (iSup_chain_subfield D α hα) ∈ {L | _}
-    simp only [Set.mem_setOf_eq]
-    intro L hL
-    change L.1 ≤ (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
-    exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L.1) ⟨L, hL⟩ (by rfl) |>.trans <|
-      by trivial)
-  exact ⟨m, isMax_iff_isMaxSubfield _ _ _ |>.1 hm⟩
-
 set_option synthInstance.maxHeartbeats 40000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]:
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
@@ -904,7 +858,7 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
         simp only [Complex.finrank_real_complex] at this
         exact Or.inr this
     specialize hhA'
-    obtain ⟨L, hL⟩ := exitsmaxsub A
+    obtain ⟨L, hL⟩ := SubField.exitsmaxsub ℝ A
     specialize hhA' L hL
     have dimeq := dim_max_subfield ℝ A L hL
     cases' hhA' with h1 h2
