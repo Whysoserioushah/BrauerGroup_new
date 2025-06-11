@@ -14,11 +14,11 @@ lemma Matrix.mem_center_iff (R : Type*) [Ring R] (n : ℕ) (M) :
       intro h
       rw [Subring.mem_center_iff] at h
       have diag : Matrix.IsDiag M := fun i j hij => by
-        simpa only [StdBasisMatrix.mul_left_apply_same, one_mul,
-          StdBasisMatrix.mul_right_apply_of_ne (hbj := hij.symm)] using
-          Matrix.ext_iff.2 (h (stdBasisMatrix i i 1)) i j
+        simpa only [single_mul_apply_same, one_mul,
+          mul_single_apply_of_ne (hbj := hij.symm)] using
+          Matrix.ext_iff.2 (h (single i i 1)) i j
       have (i j : Fin n) : M i i = M j j := by
-        simpa [Eq.comm] using Matrix.ext_iff.2 (h (stdBasisMatrix i j 1)) i j
+        simpa [Eq.comm] using Matrix.ext_iff.2 (h (single i j 1)) i j
       obtain ⟨b, hb⟩ : ∃ (b : R), M = b • 1 := by
         refine ⟨M ⟨0, by omega⟩ ⟨0, by omega⟩, Matrix.ext fun i j => ?_⟩
         if heq : i = j then subst heq; rw [this i ⟨0, by omega⟩]; simp

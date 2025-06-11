@@ -315,9 +315,9 @@ lemma comm_square' :
   ext a b
   simp only [inclusion', AlgHom.mapMatrix_apply, Matrix.map_apply]
   simp only [Algebra.ofId, AlgHom.coe_mk, IntermediateField.algebraMap_apply]
-  rw [Matrix.stdBasis_eq_stdBasisMatrix]
-  erw [Matrix.stdBasis_eq_stdBasisMatrix]
-  simp only [Matrix.stdBasisMatrix]
+  rw [Matrix.stdBasis_eq_single]
+  erw [Matrix.stdBasis_eq_single]
+  simp only [Matrix.single]
   aesop
 
 set_option synthInstance.maxHeartbeats 60000 in

@@ -428,16 +428,16 @@ instance : MulAction C (M α β) where
     change (1 : C) • Submodule.Quotient.mk x = Submodule.Quotient.mk x
     induction x using TensorProduct.induction_on with
     | tmul a b =>
-      rw [show (1 : C) = ((β 1).1⁻¹ * (α 1).1⁻¹) • CrossProductAlgebra.basis 1 by
+      rw [show (1 : C) = ((β (1, 1)).1⁻¹ * (α (1, 1)).1⁻¹) • CrossProductAlgebra.basis 1 by
         apply val_injective; simp [CrossProductAlgebra.basis], C_smul_calc, mul_smul,
         show basis 1 = (⟨.single 1 1⟩ : CrossProductAlgebra α) from rfl,
-        show ((α 1).1)⁻¹ • (⟨.single 1 1⟩ : A) = ⟨(↑(α 1))⁻¹ • .single 1 1⟩ by
-          apply val_injective; simp; congr; change _ = (α 1)⁻¹.1 * 1; simp,
-        Finsupp.smul_single, show (α 1)⁻¹ • 1 = (α 1).1⁻¹ by change (α 1)⁻¹.1 * 1 = _; simp,
-        show (⟨.single 1 (α 1).1⁻¹⟩ : A) = 1 by rfl,
+        show ((α (1, 1)).1)⁻¹ • (⟨.single 1 1⟩ : A) = ⟨(↑(α (1, 1)))⁻¹ • .single 1 1⟩ by
+          apply val_injective; simp; congr; change _ = (α (1, 1))⁻¹.1 * 1; simp,
+        Finsupp.smul_single, show (α (1, 1))⁻¹ • 1 = (α (1, 1)).1⁻¹ by change (α (1, 1))⁻¹.1 * 1 = _; simp,
+        show (⟨.single 1 (α (1, 1)).1⁻¹⟩ : A) = 1 by rfl,
         smul_mul_assoc, _root_.one_mul, Submodule.Quotient.eq]
-      refine Submodule.subset_span ⟨⟨(β 1).1⁻¹, a, basis 1 * b⟩, ?_⟩
-      simp [← smul_mul_assoc, show ((β 1).1)⁻¹ • basis 1 = (1 : B) by
+      refine Submodule.subset_span ⟨⟨(β (1, 1)).1⁻¹, a, basis 1 * b⟩, ?_⟩
+      simp [← smul_mul_assoc, show ((β (1, 1)).1)⁻¹ • basis 1 = (1 : B) by
         apply val_injective; simp [CrossProductAlgebra.basis]]
     | add x y hx hy =>
       simp only [Submodule.Quotient.mk_add]
@@ -534,9 +534,9 @@ instance : IsScalarTower F C (M α β) := .of_algebraMap_smul <| fun x m ↦ by
   change Submodule.Quotient.mk (_ ⊗ₜ (⟨mulLinearMap β _ _⟩ : B)) = _
   simp only [mulLinearMap_single_single, _root_.one_mul, AlgEquiv.one_apply, mul_comm k2]
   rw [← smul_eq_mul (β _).1, ← Finsupp.smul_single, ← smul_mk, Submodule.Quotient.eq]
-  simp_rw [map_one_fst_of_isMulTwoCocycle Fact.out, ← Prod.one_eq_mk]
-  refine Submodule.subset_span ⟨⟨(β 1).1⁻¹, ⟨Finsupp.single σ k1⟩,
-    (β 1).1 • ⟨Finsupp.single τ k2⟩⟩, ?_⟩
+  simp_rw [map_one_fst_of_isMulTwoCocycle Fact.out]
+  refine Submodule.subset_span ⟨⟨(β (1, 1)).1⁻¹, ⟨Finsupp.single σ k1⟩,
+    (β (1, 1)).1 • ⟨Finsupp.single τ k2⟩⟩, ?_⟩
   simp only [smul_mk, Finsupp.smul_single, smul_eq_mul, isUnit_iff_ne_zero, ne_eq,
     Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_left, sub_left_inj]
   congr 3
@@ -699,8 +699,8 @@ lemma exists_simple_module_directSum [IsGalois F K] :
     | add f g _ _ => simp_all [smul_add]
     | single σ c =>
       simp [Algebra.algebraMap_eq_smul_one, map_one_fst_of_isMulTwoCocycle Fact.out]
-      rw [mul_comm _ c, mul_assoc c, ← smul_mul_assoc, ← mul_assoc ((β 1).1⁻¹ * _),
-        mul_assoc (β 1).1⁻¹, inv_mul_cancel₀ (by simp), _root_.mul_one]
+      rw [mul_comm _ c, mul_assoc c, ← smul_mul_assoc, ← mul_assoc ((β (1, 1)).1⁻¹ * _),
+        mul_assoc (β (1, 1)).1⁻¹, inv_mul_cancel₀ (by simp), _root_.mul_one]
       field_simp
   let iso' : C ≃ₗ[F] (ι →₀ S) := iso.restrictScalars F
   haveI : IsScalarTower F C (ι →₀ S) := by
@@ -1116,7 +1116,6 @@ def isoSnd : Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) :=
   .symm <| .mk' (equivSnd (F := F) (K := K)).symm fun x y ↦ by
     induction x using Quotient.inductionOn' with | h x =>
     induction y using Quotient.inductionOn' with | h y =>
-    simp only [Function.comp_apply]
     rcases x with ⟨x, hx'⟩
     have hx := isMulTwoCocycle_of_mem_twoCocycles _ hx'
     rcases y with ⟨y, hy'⟩

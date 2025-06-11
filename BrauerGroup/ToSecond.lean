@@ -13,7 +13,7 @@ variable (X : BrauerGroup F)
 variable (K) in
 structure GoodRep extends CSA.{0, 0} F where
   quot_eq : Quotient.mk'' toCSA = X
-  ι : K →ₐ[F] toAlgebraCat
+  ι : K →ₐ[F] toAlgCat
   dim_eq_sq : Module.finrank F carrier = (Module.finrank F K) ^ 2
 
 namespace GoodRep
@@ -592,7 +592,7 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     let e : (Set.univ : Set Gal(K, F)) ≃ Gal(K, F) := Equiv.Set.univ Gal(K, F)
     have := linearIndependent_equiv e.symm |>.2 LI
     exact this
-  rw [Set.ne_univ_iff_exists_not_mem] at ne
+  rw [Set.ne_univ_iff_exists_notMem] at ne
   obtain ⟨σ, hσ⟩ := ne
 
   obtain ⟨c, c_ne_zero, hc⟩ := maximal σ hσ
@@ -757,7 +757,7 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
     let φ2 : A ≃ₐ[F] B := AlgEquiv.ofLinearEquiv φ1
       (by
         change φ0 1 = 1
-        rw [show (1 : A) = (a 1)⁻¹.1 • (CrossProductAlgebra.basis 1 : A) by
+        rw [show (1 : A) = (a (1, 1))⁻¹.1 • (CrossProductAlgebra.basis 1 : A) by
           apply val_injective
           simp [CrossProductAlgebra.basis], map_smul]
         erw [Basis.equiv_apply]
@@ -771,8 +771,8 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
           Finsupp.smul_single, smul_eq_mul, _root_.mul_one, B, basis]
         congr 1
         specialize hc 1 1
-        simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Prod.mk_one_one,
-          Pi.div_apply, B, basis] at hc
+        simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Pi.div_apply, B, basis]
+          at hc
         field_simp [hc])
       (by
         intro α β
@@ -918,7 +918,8 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
     change φ0 1 = 1
     conv_lhs =>
       enter [2]
-      rw [show (1 : lhs) = ((A.toTwoCocycles A.arbitraryConjFactor) (1, 1))⁻¹.1 • (CrossProductAlgebra.basis 1) by
+      rw [show (1 : lhs) =
+        ((A.toTwoCocycles A.arbitraryConjFactor) (1, 1))⁻¹.1 • (CrossProductAlgebra.basis 1) by
         apply CrossProductAlgebra.val_injective
         rw [← smul_one_mul, ← CrossProductAlgebra.incl_apply, CrossProductAlgebra.val_mul]
         simp [CrossProductAlgebra.basis, CrossProductAlgebra.incl_apply]
@@ -927,12 +928,12 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
     rw [map_smul]
     simp only [LinearEquiv.restrictScalars_apply, φ1, φ0]
     erw [Basis.equiv_apply]
-    simp only [Prod.mk_one_one, Function.comp_apply, Units.val_inv_eq_inv_val,
-      GoodRep.conjFactorBasis, Equiv.refl_apply, coe_basisOfLinearIndependentOfCardEqFinrank,
-      AlgEquiv.one_apply, GoodRep.smul_def]
+    simp only [Function.comp_apply, Units.val_inv_eq_inv_val, GoodRep.conjFactorBasis,
+      Equiv.refl_apply, coe_basisOfLinearIndependentOfCardEqFinrank,  AlgEquiv.one_apply,
+      GoodRep.smul_def]
     change A.ι (A.toTwoCocycles _ (1, 1))⁻¹ * _ = 1
-    simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, Prod.mk_one_one,
-      Prod.fst_one, Prod.snd_one, AlgEquiv.one_apply]
+    simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, Prod.fst_one, Prod.snd_one,
+      AlgEquiv.one_apply]
     have := A.conjFactorCompCoeff_spec' (A.arbitraryConjFactor 1)
       (A.arbitraryConjFactor 1)
       (A.arbitraryConjFactor (1 * 1))

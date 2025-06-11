@@ -21,7 +21,6 @@ import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Lattice
 import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
-import BrauerGroup.Mathlib.FieldTheory.Galois.Basic
 import BrauerGroup.Mathlib.GroupTheory.Congruence.Defs
 import BrauerGroup.Mathlib.LinearAlgebra.Finsupp.LinearCombination
 import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
