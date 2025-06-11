@@ -172,6 +172,45 @@ instance centralizerSubfieldDiv (L : SubField K D) :
   nnqsmul q a := ⟨q.1 • a.1, Set.centralizer.qsmul_mem K D L.1.1 q a.1 a.2⟩
   nnqsmul_def q a := by ext; simp [Rat.smul_def]
 
+-- attribute [simps] NonUnitalSubring.center
+
+@[simp]
+lemma NonUnitalSubring.carrier_eq (R : Type*) [NonUnitalRing R] (S : NonUnitalSubring R) :
+  S.carrier = S := rfl
+
+@[simp]
+lemma NonUnitalSubsemiring.carrier_eq (R : Type*) [NonUnitalSemiring R] (S : NonUnitalSubsemiring R) :
+  S.carrier = S := rfl
+
+attribute [simp, norm_cast] NonUnitalSubsemiring.coe_center
+
+
+theorem Subalgebra.map_centralizer_le_centralizer_image {R A B : Type*} [CommRing R] [Ring A]
+    [Ring B] [Algebra R A][Algebra R B] (s : Set A) (f : A →ₐ[R] B) :
+    (centralizer _ s).map f ≤ centralizer _ (f '' s) := by
+  rintro - ⟨g, hg, rfl⟩ - ⟨h, hh, rfl⟩
+  dsimp only [RingHom.coe_coe]
+  rw [← map_mul, ← map_mul, hg h hh]
+
+instance (L : SubField K D) : Algebra L (Subalgebra.centralizer K (A := D) L) where
+  smul l1 x := ⟨l1 * x, Set.mul_mem_centralizer
+    (Subalgebra.mem_centralizer_iff K|>.2 <| fun y hy ↦ L.2 l1 y l1.2 hy |>.symm) x.2⟩
+  algebraMap := Subalgebra.inclusion (fun x hx ↦ Subalgebra.mem_centralizer_iff K|>.2
+    <| fun y hy ↦ L.2 x y hx hy|>.symm : L.1 ≤ Subalgebra.centralizer K (A := D) L)
+  commutes' l x := Subtype.ext_iff.2 <| Subalgebra.mem_centralizer_iff K|>.1 x.2 l.1 l.2
+  smul_def' _ _ := rfl
+
+instance (L : SubField K D): IsScalarTower K L (Subalgebra.centralizer K (A := D) L) where
+  smul_assoc k l x := Subtype.ext_iff.2 <| by
+    simp [show ↑((k • l) • x) = (k • l.1) * _ from rfl, show k • ↑(l • x) = k • (l.1 * x.1) from rfl]
+
+instance (L : SubField K D) : FiniteDimensional L (Subalgebra.centralizer K (A := D) L) :=
+  haveI : FiniteDimensional K (Subalgebra.centralizer K (A := D) L) := inferInstance
+  haveI : FiniteDimensional K L := inferInstance
+  Module.Finite.of_restrictScalars_finite K _ _
+
+set_option synthInstance.maxHeartbeats 500000 in
+open Subalgebra in
 theorem exists_sep_masSubfield: ∃ a : D, IsMaximalSubfield K D (SubField.adjoin K D a) ∧
     Algebra.IsSeparable K (SubField.adjoin K D a) := by
   obtain ⟨L, hL⟩ := exists_max_sepSub K D
@@ -181,4 +220,63 @@ theorem exists_sep_masSubfield: ∃ a : D, IsMaximalSubfield K D (SubField.adjoi
   · simp at h
 
     sorry
-  · sorry
+  · let ZCL := Subalgebra.center K CL
+    let CCL := Subalgebra.centralizer K (A := D) CL
+    letI : Field L.1.1 := inferInstance
+    haveI sim : IsSimpleRing L.1.1 := inferInstance
+    have eq1 := double_centralizer (F := K) (A := D) L.1.1
+    change CCL = L.1.1 at eq1
+    have eq2 : CCL = ZCL.map (Subalgebra.val _) := by
+      dsimp [CCL, ZCL, CL] at *
+      clear CCL ZCL CL
+      refine le_antisymm ?_ ?_
+      · rw [eq1]
+        intro x hx
+        simp
+        constructor
+        · simp [Subalgebra.mem_center_iff]
+          intro y hy
+          simp [Subalgebra.mem_centralizer_iff] at hy
+          exact hy x hx|>.symm
+        · simp [Subalgebra.mem_centralizer_iff]
+          exact fun y hy ↦ L.1.2 x y hx hy|>.symm
+      · convert le_trans ?_ (Subalgebra.map_centralizer_le_centralizer_image ⊤ (centralizer K (L.1.1: Set D)).val)
+        · simp
+        apply Subalgebra.map_mono
+        exact Subalgebra.center_le_centralizer _ _
+      -- rw [eq1]
+    rw [eq1] at eq2
+    haveI inst1 : Algebra.IsAlgebraic L CL := Algebra.IsAlgebraic.of_finite L CL
+    haveI inst2 : FiniteDimensional ZCL CL := inferInstance
+    haveI inst3: Algebra.IsAlgebraic ZCL CL := Algebra.IsAlgebraic.of_finite ZCL CL
+    have ass : Subring.center ↥CL ≠ ⊤ := by
+      rw [eq2] at h
+      symm
+      contrapose! h
+      apply Subalgebra.toSubring_injective
+      convert congr(Subring.map CL.val.toRingHom $h)
+      ext
+      simp
+    obtain ⟨a, ha1, ha2⟩ := @JacobsonNoether.exists_separable_and_not_isCentral (Subalgebra.centralizer K (A := D) L) _
+      inst3 ass
+    obtain ⟨L, hLsep⟩ := L
+    simp_all only
+    have e1 := Subalgebra.equivOfEq L.1 _ eq2
+    have e2 : Subalgebra.map CL.val ZCL ≃ₐ[K] ZCL := AlgEquiv.ofBijective sorry sorry |>.symm
+    -- have : Subring.center CL ≃+* L.1:=
+    --   RingEquiv.ofBijective (R := Subring.center CL) (S := L.1)
+    --     (sorry : Subalgebra.center K CL →ₐ[K] L.1) _
+    -- have : Subring.center
+    -- apply_fun Subalgebra.comap CL.val at eq2
+    -- rw [Subalgebra.comap_map_eq_self_of_injective (f := CL.val) (Subtype.val_injective)] at eq2
+    -- apply_fun Subalgebra.toSubring at eq2 using Subalgebra.toSubring_injective (R := K) (A := CL)
+    -- change _ = Subring.center _ at eq2
+
+
+    sorry
+#check IsSeparable.of_equiv_equiv
+instance (K : Type*) [Field K] : IsSimpleRing K := by exact DivisionRing.isSimpleRing K
+
+#check AddSubgroup.map_centralizer_le_centralizer_image
+#check Algebra.IsAlgebraic.of_finite
+#check Module.Finite.of_restrictScalars_finite

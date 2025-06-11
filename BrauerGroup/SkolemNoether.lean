@@ -91,10 +91,7 @@ lemma one_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B] [AddCommGroup M]
     [Module K M] [Module A M] [IsScalarTower K A M](f: B →ₐ[K] A):
     ∀(m : module_inst K A B M f), smul1 K A B M f m 1 = m := fun m ↦ by
-  simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
-    Algebra.TensorProduct.one_def, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
-    AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_one, one_smul, unop_one, Module.End.one_apply]
-    AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_one, one_smul, unop_one, Module.End.one_apply]
+  simp [smul1, smul1AddHom, smul1AddHom', Algebra.TensorProduct.one_def]
 
 lemma mul_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B] [AddCommGroup M]
@@ -199,7 +196,6 @@ instance module_inst_findim (K A B M : Type u)
   rintro x -
   have mem : (x : M) ∈ (Submodule.span K s : Submodule K M) := hs ▸ ⟨⟩
   obtain ⟨c, hc1, rfl⟩ := Submodule.mem_span_set (R := K) (M := M) |>.1 mem
-  obtain ⟨c, hc1, rfl⟩ := Submodule.mem_span_set (R := K) (M := M) |>.1 mem
   refine Submodule.sum_mem _ fun k hk => ?_
   simp only
   rw [show (c k • k : module_inst K A B M f) =
@@ -208,7 +204,6 @@ instance module_inst_findim (K A B M : Type u)
       change _ = smul1 K A B M f k _
       simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
         LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
-        ZeroHom.coe_mk, AlgHom.commutes, algebraMap_smul, Module.End.one_apply]]
         ZeroHom.coe_mk, AlgHom.commutes, algebraMap_smul, Module.End.one_apply]]
   refine Submodule.smul_mem _ _ ?_
   simp only
@@ -277,8 +272,7 @@ theorem SkolemNoether (K A B M : Type u)
             AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk,
             TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_one, one_smul]
         rw [this]
-        change φ (((1 : B) ⊗ₜ[K] F) • m) = _
-        rw [φ.map_smul]
+        erw [φ.map_smul]
         change smul1 K A B M _ _ (1 ⊗ₜ F) = _
         simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe,
           AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk,
@@ -288,7 +282,6 @@ theorem SkolemNoether (K A B M : Type u)
       map_add' := by simp
       map_smul' := by
         intro F m
-        simp only [Module.End.smul_def, RingHom.id_apply]
         simp only [Module.End.smul_def, RingHom.id_apply]
         have : F m = smul1 K A B M g m (1 ⊗ₜ F) := by
           simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe,
@@ -311,13 +304,9 @@ theorem SkolemNoether (K A B M : Type u)
     ext m
     simp only [Module.End.mul_apply, LinearMap.coe_mk, AddHom.coe_mk, LinearEquiv.apply_symm_apply,
       Module.End.one_apply, Φ, Ψ]), (by
-    simp only [Module.End.mul_apply, LinearMap.coe_mk, AddHom.coe_mk, LinearEquiv.apply_symm_apply,
-      Module.End.one_apply, Φ, Ψ]), (by
     apply_fun ISO using AlgEquiv.injective _
     simp only [map_mul, AlgEquiv.apply_symm_apply, map_one, b, a]
     ext m
-    simp only [Module.End.mul_apply, LinearMap.coe_mk, AddHom.coe_mk, LinearEquiv.symm_apply_apply,
-      Module.End.one_apply, Ψ, Φ])⟩, ?_⟩
     simp only [Module.End.mul_apply, LinearMap.coe_mk, AddHom.coe_mk, LinearEquiv.symm_apply_apply,
       Module.End.one_apply, Ψ, Φ])⟩, ?_⟩
   intro x
@@ -329,12 +318,12 @@ theorem SkolemNoether (K A B M : Type u)
   simp only [LinearMap.coe_mk, AddHom.coe_mk, Module.End.mul_apply]
   have := φ.map_smul (x ⊗ₜ LinearMap.id) (φ.symm m)
   change φ (smul1 K A B M _ _ (x ⊗ₜ LinearMap.id)) = _ at this
-  simp [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
+  simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
     LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
-    ZeroHom.coe_mk, LinearMap.id_coe, id_eq] at this
-  rw [this]
+    ZeroHom.coe_mk, LinearMap.id_coe, id_eq, LinearEquiv.apply_symm_apply, Φ, ISO, Ψ, b, a] at this
+  erw [this]
   change _ = smul1 K A B M _ _ (x ⊗ₜ LinearMap.id)
-  simp [smul1, smul1AddHom, smul1AddHom']
+  simp [smul1, smul1AddHom, smul1AddHom', toEndEndAlgHom]
 
 theorem SkolemNoether' (K A B : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
