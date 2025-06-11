@@ -297,47 +297,40 @@ instance [Fact (IsMulTwoCocycle a)] : Ring (CrossProduct a) where
     Pi.add_apply, Pi.neg_apply]; group
   neg_add_cancel := by intros; ext; simp
 
-instance : SMul F (CrossProduct a) where
-  smul r x := ⟨crossProductSMul r x.1⟩
+-- instance : SMul F (CrossProduct a) where
+--   smul r x := ⟨crossProductSMul r x.1⟩
 
-@[simp]
-lemma smul_val (r : F) (x : CrossProduct a) :
-    (r • x).val = crossProductSMul r x.val := rfl
+-- @[simp]
+-- lemma smul_val (r : F) (x : CrossProduct a) :
+--     (r • x).val = crossProductSMul r x.val := rfl
 
-instance algebra : Algebra F (CrossProduct a) where
-  algebraMap := {
-    toFun r := r • 1
-    map_one' := by
-      ext α
-      simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, one_smul]
-    map_mul' := by
-      intro r r'
-      ext α
-      simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single, mul_smul, mul_val,
-        mulLinearMap_single_single, map_smul, map_inv₀, AlgEquiv.one_apply, Algebra.mul_smul_comm,
-        Algebra.smul_mul_assoc, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
-        IsUnit.inv_mul_cancel_right]
-      congr 1
-      rw [smul_comm]
-    map_zero' := by
-      ext; simp
-    map_add' := by
-      intro r r'
-      ext α
-      simp only [smul_val, map_add, one_val, Prod.mk_one_one, LinearMap.add_apply,
-        crossProductSMul_single, Pi.add_apply, add_val]
-  }
-  commutes' := by
-    intro r x
+instance algebra [Fact (IsMulTwoCocycle a)] : Algebra F (CrossProduct a) where
+  algebraMap.toFun r := r • 1
+  algebraMap.map_one' := by
     ext α
-    simp only [one_val, Prod.mk_one_one, crossProductSMul_single, RingHom.coe_mk, MonoidHom.coe_mk,
+    simp [smul_val, one_val, Prod.mk_one_one, one_smul]
+  algebraMap.map_mul' r r' := by
+    ext α
+    simp [smul_val, one_val, Prod.mk_one_one, mul_val,
+      mulLinearMap_single_single, map_smul, map_inv₀, AlgEquiv.one_apply, Algebra.mul_smul_comm,
+      Algebra.smul_mul_assoc, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
+      IsUnit.inv_mul_cancel_right]
+    rw [mul_comm r r', mul_smul]
+  algebraMap.map_zero' := by ext; simp
+  algebraMap.map_add' r r' := by
+    ext α
+    simp [smul_val, map_add, one_val, Prod.mk_one_one, LinearMap.add_apply,
+      Pi.add_apply, add_val, add_smul]
+  commutes' r x := by
+    have ha : IsMulTwoCocycle a := Fact.out
+    ext α
+    simp only [one_val, Prod.mk_one_one, RingHom.coe_mk, MonoidHom.coe_mk,
       OneHom.coe_mk, mul_val]
-    induction x using single_induction ha with
+    induction x using single_induction with
     | single x cx =>
-      simp only [smul_val, one_val, Prod.mk_one_one, crossProductSMul_single,
-        mulLinearMap_single_single, AlgEquiv.one_apply, Algebra.smul_mul_assoc, map_smul,
-        map_inv₀, Algebra.mul_smul_comm]
-      rw [_root_.one_mul, _root_.mul_one]
+      simp only [smul_val, one_val, Prod.mk_one_one, map_smul, LinearMap.smul_apply,
+        mulLinearMap_single_single, _root_.one_mul, AlgEquiv.one_apply, Pi.smul_apply,
+        _root_.mul_one, map_inv₀]
       congr 2
       have eq1 := ha x 1 1
       simp only [_root_.mul_one, Prod.mk_one_one, AlgEquiv.smul_units_def, mul_left_inj] at eq1
@@ -378,10 +371,10 @@ instance algebra : Algebra F (CrossProduct a) where
     | zero => simp
 
 @[simp]
-lemma algebraMap_val (r : F) :
+lemma algebraMap_val [Fact (IsMulTwoCocycle a)] (r : F) :
     algebraMap F (CrossProduct a) r = r • 1 := rfl
 
-def ι : K →ₐ[F] CrossProduct a where
+def ι [Fact (IsMulTwoCocycle a)] : K →ₐ[F] CrossProduct a where
   toFun b := ⟨Pi.single 1 (b * (a (1, 1))⁻¹)⟩
   map_one' := by
     ext α
@@ -420,21 +413,18 @@ lemma ι_apply_val (b : K) :
     (ι ha b).val = Pi.single 1 (b * (a (1, 1))⁻¹) := rfl
 
 include ha in
- (K ≃ₐ[F] K)] in
 @[simp] lemma a_one_left : a (1, σ) = a 1 := by
   have := ha 1 1 σ
   simp only [_root_.mul_one, Prod.mk_one_one, one_smul, _root_.one_mul, mul_right_inj] at this
   exact this.symm
 
 include ha in
- (K ≃ₐ[F] K)] in
 lemma a_one_right : a (σ, 1) = Units.map σ (a 1) := by
   have := ha σ 1 1
   simp only [_root_.mul_one, Prod.mk_one_one, AlgEquiv.smul_units_def, mul_left_inj] at this
   exact this
 
 include ha in
- (K ≃ₐ[F] K)] in
 lemma a_one_right' : (a (σ, 1)).1 = σ (a 1) := congr($(a_one_right ha σ).1)
 
 lemma identity_double_cross (b : K) :

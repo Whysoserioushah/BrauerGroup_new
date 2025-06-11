@@ -211,7 +211,7 @@ instance (L : SubField K D) : FiniteDimensional L (Subalgebra.centralizer K (A :
 
 set_option synthInstance.maxHeartbeats 500000 in
 open Subalgebra in
-theorem exists_sep_masSubfield: ∃ a : D, IsMaximalSubfield K D (SubField.adjoin K D a) ∧
+theorem exists_sep_masSubfield : ∃ a : D, IsMaximalSubfield K D (SubField.adjoin K D a) ∧
     Algebra.IsSeparable K (SubField.adjoin K D a) := by
   obtain ⟨L, hL⟩ := exists_max_sepSub K D
   let CL := Subalgebra.centralizer K (A := D) L
@@ -271,12 +271,4 @@ theorem exists_sep_masSubfield: ∃ a : D, IsMaximalSubfield K D (SubField.adjoi
     -- rw [Subalgebra.comap_map_eq_self_of_injective (f := CL.val) (Subtype.val_injective)] at eq2
     -- apply_fun Subalgebra.toSubring at eq2 using Subalgebra.toSubring_injective (R := K) (A := CL)
     -- change _ = Subring.center _ at eq2
-
-
     sorry
-#check IsSeparable.of_equiv_equiv
-instance (K : Type*) [Field K] : IsSimpleRing K := by exact DivisionRing.isSimpleRing K
-
-#check AddSubgroup.map_centralizer_le_centralizer_image
-#check Algebra.IsAlgebraic.of_finite
-#check Module.Finite.of_restrictScalars_finite

@@ -18,7 +18,9 @@ import BrauerGroup.FrobeniusTheorem
 import BrauerGroup.GoodRep
 import BrauerGroup.IsoSecond
 import BrauerGroup.LemmasAboutSimpleRing
-import BrauerGroup.Mathlib.RepresentationTheory.forMathlib.LowDegree
+import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
+import BrauerGroup.Mathlib.RepresentationTheory.Cohomology.LowDegree
+import BrauerGroup.Mathlib.matrixEquivTensor
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.Morita.TensorProduct
@@ -27,6 +29,7 @@ import BrauerGroup.RelativeBrauer
 import BrauerGroup.SkolemNoether
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.Subfield.Basic
+import BrauerGroup.Subfield.Separable
 import BrauerGroup.Subfield.Splitting
 import BrauerGroup.Subfield.Subfield
 import BrauerGroup.ToSecond
