@@ -3,7 +3,7 @@ import Mathlib
 
 suppress_compilation
 
-open TensorProduct BigOperators Classical FiniteDimensional
+open TensorProduct Classical FiniteDimensional
 
 variable {D : Type} [DivisionRing D]
 
@@ -685,8 +685,7 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
       simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons] at h1
       rw [add_comm, ← add_assoc, neg_smul, one_smul, smul_neg, ← neg_smul] at heq
       specialize h1 heq ⟨1, by omega⟩
-      simp only [Fin.mk_one, Fin.isValue, Matrix.cons_val_one, Matrix.head_cons, neg_eq_zero] at h1
-      exact h1
+      simpa using h1
     have hc : c = 0 := by
       simp only [hb, zero_smul, zero_add] at heq
       rw [Algebra.smul_def, k_eq, mul_eq_mul_right_iff] at heq
@@ -752,7 +751,7 @@ lemma linEquivH_eq_toFun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x
       map_one, zero_smul, add_zero]
     rw [← Fin.succ_one_eq_two, Fin.cons_succ, ← Fin.succ_zero_eq_one, Fin.cons_succ]; simp
   · erw [Basis.equiv_apply]
-    simp only [Fin.isValue, Fin.mk_one, Equiv.coe_fn_mk, Matrix.cons_val_one, Matrix.head_cons,
+    simp only [Fin.isValue, Fin.mk_one, Equiv.coe_fn_mk, Matrix.cons_val_one, Matrix.cons_val_zero,
       Basis.coe_mk, basisijk, map_inv₀, QuaternionAlgebra.lift_apply,
       QuaternionAlgebra.Basis.liftHom, QuaternionAlgebra.basisOneIJK, Basis.coe_ofEquivFun,
       QuaternionAlgebra.coe_linearEquivTuple_symm, QuaternionAlgebra.equivTuple_symm_apply, ne_eq,
@@ -787,24 +786,25 @@ theorem rank4_iso_H (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.
 set_option synthInstance.maxHeartbeats 40000 in
 abbrev SmulCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)): ℂ →+* A where
-  toFun := fun z ↦ e z
+  toFun z := e z
   map_one' := by simp
   map_mul' := by simp
   map_zero' := by simp
-  map_add' := fun z1 z2 ↦ by simp
+  map_add' z1 z2 := by simp
 
 instance AlgCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)): Algebra ℂ A where
   __ := SmulCA A e
   smul z a := (SmulCA A e z) * a
-  commutes' := fun z _ ↦ by
+  algebraMap := _
+  commutes' z _ := by
     simp [Subalgebra.mem_center_iff.1 (e z).2]
-  smul_def' := fun _ _ ↦ rfl
+  smul_def' _ _ := rfl
 
 set_option synthInstance.maxHeartbeats 40000 in
 lemma smulCRassoc (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)) (r : ℝ) (z : ℂ) (a : A): (e (r • z)) * a =
-    r • ((e z) * a) := by
+    r • (e z * a) := by
   rw [map_smul e, Subalgebra.coe_smul]
   exact smul_mul_assoc r (↑(e z)) a
 
@@ -823,69 +823,17 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
       Subalgebra.coe_one, smul_mul_assoc, one_mul]
   haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 $ fin
   haveI : FiniteDimensional ℂ A := Module.Finite.right ℝ ℂ A
-  have bij := bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed ℂ A
+  have bij := IsAlgClosed.algebraMap_bijective_of_isIntegral (k := ℂ) (K := A)
   exact ⟨(AlgEquiv.ofBijective {
     toFun := algebraMap ℂ A
     map_one' := _
     map_mul' := _
     map_zero' := _
     map_add' := _
-    commutes' := fun r => by
+    commutes' r := by
       simp; change (algebraMap ℂ A) (algebraMap ℝ ℂ r) = _;
       rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij).symm ⟩
-
-abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set (SubField ℝ D))
-    [Nonempty α] (hα : IsChain (· ≤ ·) α) : SubField ℝ D :=
-  {
-  __ := (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
-  mul_comm := by
-    rintro x y hx hy
-    simp only [Subsemiring.coe_carrier_toSubmonoid, Subalgebra.coe_toSubsemiring,
-      SetLike.mem_coe] at hx hy
-    have := Subalgebra.coe_iSup_of_directed hα.directed
-    dsimp at this
-    change x ∈ (_ : Set _) at hx ; change _ ∈ ( _ : Set _) at hy
-    rw [this] at hx hy
-    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx hy
-    obtain ⟨L1, hL1, hx⟩ := hx
-    obtain ⟨L2, hL2, hy⟩ := hy
-    obtain ⟨L3, _, hL31, hL32⟩ := hα.directedOn L1 hL1 L2 hL2
-    exact L3.mul_comm x y (hL31 hx) (hL32 hy)
-  inverse := by
-    rintro x hx hx0
-    simp only [Subalgebra.coe_toSubsemiring,
-      Subsemiring.coe_carrier_toSubmonoid, SetLike.mem_coe] at *
-    letI : Nonempty α := Set.Nonempty.to_subtype (Set.Nonempty.of_subtype)
-    have := Subalgebra.coe_iSup_of_directed hα.directed
-    dsimp at this
-    change x ∈ (_ : Set _) at hx
-    rw [this] at hx
-    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx
-    obtain ⟨L1, hL1, hx⟩ := hx
-    use L1.inverse x hx hx0|>.choose
-    constructor
-    · have : L1.1 ≤ ⨆ (L : α), (L.1).toSubalgebra := by
-        exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L1.1) ⟨L1, hL1⟩ (by rfl)
-      exact this (L1.inverse x hx hx0).choose_spec.1
-    · exact L1.inverse x hx hx0|>.choose_spec.2
-  }
-
-
-
--- set_option maxHeartbeats 1600000 in
-lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D]: ∃(L : SubField ℝ D),
-    IsMaximalSubfield ℝ D L := by
-  obtain ⟨m, hm⟩ := zorn_le_nonempty (α := SubField ℝ D) (fun α hα hα' ↦ by
-    letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
-    use iSup_chain_subfield D α hα
-    change (iSup_chain_subfield D α hα) ∈ {L | _}
-    simp only [Set.mem_setOf_eq]
-    intro L hL
-    change L.1 ≤ (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
-    exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L.1) ⟨L, hL⟩ (by rfl) |>.trans <|
-      by trivial)
-  exact ⟨m, isMax_iff_isMaxSubfield _ _ _ |>.1 hm⟩
 
 set_option synthInstance.maxHeartbeats 40000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]:
@@ -910,7 +858,7 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
         simp only [Complex.finrank_real_complex] at this
         exact Or.inr this
     specialize hhA'
-    obtain ⟨L, hL⟩ := exitsmaxsub A
+    obtain ⟨L, hL⟩ := SubField.exitsmaxsub ℝ A
     specialize hhA' L hL
     have dimeq := dim_max_subfield ℝ A L hL
     cases' hhA' with h1 h2
