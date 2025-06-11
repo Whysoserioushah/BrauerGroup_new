@@ -103,7 +103,8 @@ section galois
 
 variable {X : BrauerGroup (K := F)} (A : GoodRep K X)
 
-lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
+omit [FiniteDimensional F K] in
+lemma _root_.GoodRep.conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     LinearIndependent K fun i : K ≃ₐ[F] K ↦ (x_ i).1.1 := by
   classical
   by_contra! rid
@@ -141,7 +142,7 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
       _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
             A.ι (B.repr ⟨_, mem1⟩ τ) * (x_ τ).1.1 * A.ι c := by
         conv_lhs => rw [eq0, Finset.sum_mul]
-
+        congr
       _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
             A.ι (B.repr ⟨_, mem1⟩ τ) * A.ι (τ.1 c) * (x_ τ).1.1 :=
         Finset.sum_congr rfl fun i _ => by
@@ -212,8 +213,9 @@ def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis (K ≃ₐ[F] K) K A :=
 open DirectSum
 
 attribute [local simp] mul_def in
-instance monoid : Monoid (CrossProduct a) where
+instance monoid [Fact (IsMulTwoCocycle a)]: Monoid (CrossProduct a) where
   mul_assoc x y z := by
+    haveI ha : IsMulTwoCocycle a := Fact.out
     ext α
     induction x using single_induction ha with
     | single x cx =>

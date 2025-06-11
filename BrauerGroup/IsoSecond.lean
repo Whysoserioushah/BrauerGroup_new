@@ -1,5 +1,5 @@
 import BrauerGroup.ToSecond
-import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
+-- import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 
 suppress_compilation
 
