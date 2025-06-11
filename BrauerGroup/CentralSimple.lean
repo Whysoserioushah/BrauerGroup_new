@@ -48,7 +48,7 @@ variable (K : Type u) [Field K]
 open Matrix in
 instance MatrixRing.isCentral (ι : Type) [Fintype ι] [Nonempty ι] [DecidableEq ι] :
     Algebra.IsCentral K (Matrix ι ι K) where
-  out _ h := mem_range_scalar_of_commute_stdBasisMatrix fun _ _ _ =>
+  out _ h := mem_range_scalar_of_commute_single fun _ _ _ =>
     Subalgebra.mem_center_iff.mp h _
 
 namespace IsCentralSimple

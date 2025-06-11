@@ -812,14 +812,16 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
   have e := hA.some.symm
   letI : Algebra ℂ A := AlgCA A e
   have : IsScalarTower ℝ ℂ A := { smul_assoc := smulCRassoc A e }
-  rename_i _ _ fin _
+  have : IsScalarTower ℝ ℝ A :=
+    { smul_assoc a b x := by simp [Complex.real_smul]; sorry }
+  rename_i _ _ _ fin _
   unfold FiniteDimensional at fin
   have : Algebra.toModule (R := ℝ) (A := A) = Module.complexToReal A := by
     ext r a
     change r • a = (e (algebraMap ℝ ℂ r)) * a
     rw [Algebra.algebraMap_eq_smul_one, _root_.map_smul e, map_one, Subalgebra.coe_smul,
       Subalgebra.coe_one, smul_mul_assoc, one_mul]
-  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 $ fin
+  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 ‹FiniteDimensional ℝ A›
   haveI : FiniteDimensional ℂ A := Module.Finite.right ℝ ℂ A
   have bij := IsAlgClosed.algebraMap_bijective_of_isIntegral (k := ℂ) (K := A)
   exact ⟨(AlgEquiv.ofBijective {
@@ -874,3 +876,4 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
       · exact ⟨(rank4_iso_H L e2.some (f_is_conjugation L e2.some).choose
           (f_is_conjugation L e2.some).choose_spec dimeq).some.symm⟩
   · left; exact centereqvCisoC A hC
+#min_imports

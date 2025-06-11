@@ -133,10 +133,6 @@ instance : PartialOrder (AllSepSubfield K D) where
   lt_iff_le_not_le _ _ := by aesop
   le_antisymm _ _ _ _ := by aesop
 
-lemma IsSeparable.map {L} {F} {K} [CommRing F] [Ring K] [Algebra F K] [Ring L] [Algebra F L]
-    {x : K} (f : K →ₐ[F] L) (hf : Function.Injective f)
-    (H : IsSeparable F x) : IsSeparable F (f x) := by
-  rwa [IsSeparable, minpoly.algHom_eq _ hf]
 
 set_option maxHeartbeats 500000 in
 noncomputable abbrev iSup_chain_sepsubfield (c : Set (AllSepSubfield K D)) [Nonempty c]
