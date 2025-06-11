@@ -214,14 +214,15 @@ open DirectSum
 
 attribute [local simp] mul_def in
 instance monoid [Fact (IsMulTwoCocycle a)]: Monoid (CrossProduct a) where
+
   mul_assoc x y z := by
     haveI ha : IsMulTwoCocycle a := Fact.out
     ext α
-    induction x using single_induction ha with
+    induction x using single_induction with
     | single x cx =>
-      induction y using single_induction ha with
+      induction y using single_induction with
       | single y cy =>
-        induction z using single_induction ha with
+        induction z using single_induction with
         | single z cz =>
           simp only [mul_def, mulLinearMap_single_single, AlgEquiv.mul_apply, ← _root_.mul_assoc,
             map_mul]
@@ -248,8 +249,9 @@ instance monoid [Fact (IsMulTwoCocycle a)]: Monoid (CrossProduct a) where
       simp only [hx, hx']
     | zero => simp
   one_mul x := by
+    haveI ha : IsMulTwoCocycle a := Fact.out
     ext α
-    induction x using single_induction ha with
+    induction x using single_induction with
     | single x cx =>
       simp only [mul_def, one_val, Prod.mk_one_one, mulLinearMap_single_single, _root_.one_mul,
         AlgEquiv.one_apply]
@@ -265,8 +267,9 @@ instance monoid [Fact (IsMulTwoCocycle a)]: Monoid (CrossProduct a) where
       simp only [hx, hx']
     | zero => simp
   mul_one x := by
+    haveI ha : IsMulTwoCocycle a := Fact.out
     ext α
-    induction x using single_induction ha with
+    induction x using single_induction with
     | single x cx =>
       simp only [mul_def, one_val, Prod.mk_one_one, mulLinearMap_single_single, _root_.mul_one,
         map_inv₀]
@@ -283,9 +286,9 @@ instance monoid [Fact (IsMulTwoCocycle a)]: Monoid (CrossProduct a) where
       simp only [hx, hx']
     | zero => simp
 
-instance : Ring (CrossProduct a) where
-  __ := addCommGroup ha
-  __ := monoid ha
+instance [Fact (IsMulTwoCocycle a)] : Ring (CrossProduct a) where
+  __ := (_ : AddCommGroup (CrossProduct a))
+  __ := CrossProduct.monoid
   left_distrib := by intros; ext; simp
   right_distrib := by intros; ext; simp
   zero_mul := by intros; ext; simp
