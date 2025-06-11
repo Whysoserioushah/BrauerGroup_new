@@ -1,4 +1,7 @@
-import Mathlib
+import Mathlib.Algebra.Algebra.Subalgebra.Directed
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.LinearAlgebra.FiniteDimensional.Basic
+import Mathlib.Order.CompletePartialOrder
 
 universe u
 
@@ -22,7 +25,7 @@ instance (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] : LE (SubFie
 def IsMaximalSubfield (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
   := ∀ (B : SubField K A), L ≤ B → B = L
 
-instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempty (SubField K A) :=
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A] : Nonempty (SubField K A) :=
   have e : K ≃ₐ[K] (Algebra.ofId K A).range := AlgEquiv.ofBijective
     (Algebra.ofId K A).rangeRestrict ⟨by
       suffices Function.Injective (Algebra.ofId K A) from
@@ -185,17 +188,16 @@ abbrev iSup_chain_subfield (D : Type u) [DivisionRing D] [Algebra K D] (α : Set
       exact this (L1.inverse x hx hx0).choose_spec.1
     · exact L1.inverse x hx hx0|>.choose_spec.2
 
-lemma exitsmaxsub (D : Type u) [DivisionRing D] [Algebra K D]: ∃(L : SubField K D),
-    IsMaximalSubfield K D L := by
-  obtain ⟨m, hm⟩ := zorn_le_nonempty (α := SubField K D) (fun α hα hα' ↦ by
+lemma exitsmaxsub (D : Type u) [DivisionRing D] [Algebra K D] :
+    ∃ L : SubField K D, IsMaximalSubfield K D L := by
+  obtain ⟨m, hm⟩ := zorn_le_nonempty (α := SubField K D) fun α hα hα' ↦ by
     letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
     use iSup_chain_subfield K D α hα
-    change (iSup_chain_subfield K D α hα) ∈ {L | _}
+    change iSup_chain_subfield K D α hα ∈ {L | _}
     simp only [Set.mem_setOf_eq]
     intro L hL
     change L.1 ≤ (⨆ (L : α), L.1.1 : Subalgebra K D)
-    exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L.1) ⟨L, hL⟩ (by rfl) |>.trans <|
-      by trivial)
+    exact le_iSup_of_le ⟨L, hL⟩ le_rfl
   exact ⟨m, isMax_iff_isMaxSubfield _ _ _ |>.1 hm⟩
 
 end SubField

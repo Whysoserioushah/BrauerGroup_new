@@ -3,7 +3,6 @@ Copyright (c) 2024 Jujian Zhang. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jujian Zhang
 -/
-
 import BrauerGroup.SkolemNoether
 import BrauerGroup.LemmasAboutSimpleRing
 import Mathlib.RingTheory.SimpleRing.Field
@@ -24,6 +23,7 @@ variable [Field F] [Ring A] [Algebra F A] [Ring A'] [Algebra F A']
 variable (B : Subalgebra F A) (B' : Subalgebra F A')
 variable {ι ι' : Type*} (𝒜 : Basis ι F A) (𝒜' : Basis ι' F A')
 
+set_option synthInstance.maxHeartbeats 40000 in
 include 𝒜' in
 lemma centralizer_inclusionLeft :
     Subalgebra.centralizer F (A := A ⊗[F] A')
@@ -46,7 +46,6 @@ lemma centralizer_inclusionLeft :
     specialize this i hi
     rw [sub_eq_zero] at this
     exact this
-
   · rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩
     induction x using TensorProduct.induction_on with
     | zero => simp
@@ -62,6 +61,7 @@ lemma centralizer_inclusionLeft :
         Function.comp_apply, Algebra.TensorProduct.includeLeft_apply, map_add] at hx hy ⊢
       simp [mul_add, hx, hy, add_mul]
 
+set_option synthInstance.maxHeartbeats 40000 in
 include 𝒜 in
 lemma centralizer_inclusionRight :
     Subalgebra.centralizer F (A := A ⊗[F] A')

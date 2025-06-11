@@ -56,7 +56,7 @@ lemma tensor_inclusion1_projection1 : (tensor_projection1 R M N P Q).comp
     (tensor_inclusion1 R M N P Q) = LinearMap.id := by
   simp [← TensorProduct.map_comp, projection_inlusion1]
 
-lemma tensor_inclusion1_projection1_apply (x : (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)): (tensor_projection1 R M N P Q)
+lemma tensor_inclusion1_projection1_apply (x : (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)) : (tensor_projection1 R M N P Q)
     ((tensor_inclusion1 R M N P Q) x) = x :=
   DFunLike.congr_fun (tensor_inclusion1_projection1 R M N P Q) x
 
@@ -95,7 +95,7 @@ lemma projection2_inclusion2 : (projection2).comp (inclusion2) =
     LinearMap.id (R := R) (M := M ⊗[R] N) :=
   by simp [← TensorProduct.map_comp, fg]
 
-lemma projection2_inclusion2_apply (x : M ⊗[R] N): (projection2) ((inclusion2) x) = x :=
+lemma projection2_inclusion2_apply (x : M ⊗[R] N) : (projection2) ((inclusion2) x) = x :=
   DFunLike.congr_fun (projection2_inclusion2 R M N) x
 
 lemma tensor_projection2_inclusion2 : (tensor_projection2 R P Q).comp (tensor_inclusion2 R P Q) =
@@ -125,7 +125,7 @@ lemma comm_square2: (homTensorHomEquiv R (Fin (nn R M) → R) (Fin (nn R N) → 
   intro u
   simp
 
-lemma comm_square2_apply (f : (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)):
+lemma comm_square2_apply (f : (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)) :
   (homTensorHomEquiv R (Fin (nn R M) → R) (Fin (nn R N) → R) P Q).toLinearMap
     (tensor_inclusion1 R M N P Q f) = tensor_inclusion2 R P Q (TensorProduct.homTensorHomMap R M N P Q f) :=
   DFunLike.congr_fun (comm_square2 R M N P Q) f
@@ -147,14 +147,14 @@ lemma comm_sqaure3: (homTensorHomEquiv R _ _ _ _).toLinearMap ∘ₗ
   intro u
   simp
 
-lemma comm_square3_apply (f : ((Fin (nn R M) → R) →ₗ[R] P) ⊗[R] ((Fin (nn R N) → R) →ₗ[R] Q)):
+lemma comm_square3_apply (f : ((Fin (nn R M) → R) →ₗ[R] P) ⊗[R] ((Fin (nn R N) → R) →ₗ[R] Q)) :
     (homTensorHomEquiv R _ _ _ _) (tensor_inclusion1 R M N P Q (tensor_projection1 R M N P Q f)) =
     tensor_inclusion2 R P Q (tensor_projection2 R P Q (homTensorHomEquiv R _ _ _ _ f)) :=
   DFunLike.congr_fun (comm_sqaure3 R M N P Q) f
 
 lemma comm_square1: tensor_projection1 R M N P Q ∘ₗ (homTensorHomEquiv R _ _ P Q).symm.toLinearMap ∘ₗ
     tensor_inclusion2 R P Q ∘ₗ TensorProduct.homTensorHomMap R M N P Q =
-    LinearMap.id (R := R) (M := (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)):= by
+    LinearMap.id (R := R) (M := (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)) := by
   rw [← comm_square2]
   apply LinearMap.ext
   simp [-homTensorHomEquiv_toLinearMap, -homTensorHomEquiv_apply, tensor_inclusion1_projection1_apply]
@@ -188,7 +188,7 @@ open MulOpposite
 --   [isAlgebra : Algebra R carrier]
 --   isAzumaya : IsAzumaya R carrier
 
-structure Azumaya (R : Type u) [CommRing R] extends AlgebraCat R where
+structure Azumaya (R : Type u) [CommRing R] extends AlgCat R where
   isAzumaya : IsAzumaya R carrier
 
 @[coe]
@@ -238,7 +238,7 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 
 -- abbrev u (n : ℕ) : Fin n → (Fin n → R) := fun i ↦ Function.update (0 : Fin n → R) i 1
 
--- abbrev v (n : ℕ): Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
+-- abbrev v (n : ℕ) : Basis (Fin n) R (Fin n → R) := Basis.mk (v := u R n) (by
 --   rw [Fintype.linearIndependent_iff]
 --   refine fun f hf j ↦ ?_
 --   apply congrFun at hf
@@ -252,16 +252,15 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 --   ext j
 --   simp [Function.update_apply]
 
-
-open Algebra.TensorProduct in
+open Algebra.TensorProduct (assoc congr opAlgEquiv) in
 variable {R A B} in
 abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
-  (Algebra.TensorProduct.assoc R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
-  (congr (AlgEquiv.refl) (Algebra.TensorProduct.assoc R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
-  Algebra.TensorProduct.congr AlgEquiv.refl (congr (Algebra.TensorProduct.comm R _ _) AlgEquiv.refl) |>.trans
-  <| Algebra.TensorProduct.congr AlgEquiv.refl (Algebra.TensorProduct.assoc R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
-  <| Algebra.TensorProduct.assoc R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
-  <| congr AlgEquiv.refl <| opAlgEquiv R R A B
+  (assoc R R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
+  (congr .refl (assoc R R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
+  congr .refl (congr (Algebra.TensorProduct.comm R _ _) .refl) |>.trans
+  <| congr .refl (assoc R R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
+  <| assoc R R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
+  <| Algebra.TensorProduct.congr .refl <| opAlgEquiv R R A B
 
 lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
   e ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) = (a ⊗ₜ b) ⊗ₜ op (a'.unop ⊗ₜ[R] b'.unop) := rfl
@@ -274,7 +273,6 @@ lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
 --   ext a0 b0
 --   simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
 
--- set_option synthInstance.maxHeartbeats 100000 in
 set_option maxHeartbeats 400000 in
 open TensorProduct.AlgebraTensorModule in
 lemma top_square_comm'' (A B : Azumaya R) :
@@ -294,7 +292,6 @@ lemma top_square_comm (A B : Azumaya R) :
     = (AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e :=
   congr_arg DFunLike.coe <| top_square_comm'' R A B
 
-
 /--
 A ⊗ Aᵐᵒᵖ ⊗ B ⊗ B ᵐᵒᵖ --------> (A ⊗ B) ⊗ (A ⊗ B)ᵐᵒᵖ
         |                              |
@@ -309,11 +306,11 @@ End R A ⊗ End R B ---------------> End R (A ⊗ B)
     |     |   `homTensorHomEquiv`     |   |
 End R Rⁿ ⊗ End R Rᵐ -------------> End R (Rⁿ ⊗ Rᵐ)
 -/
-lemma bij_homtensorhom (A B : Azumaya.{u, v} R):
+lemma bij_homtensorhom (A B : Azumaya.{u, v} R) :
     Function.Bijective (TensorProduct.homTensorHomMap R A B A B) :=
   ⟨homTensorHomMap_inj R A B A B, homTensorHomMap_surj R A B A B⟩
 
-abbrev e1 (A B : Azumaya.{u, v} R): (Module.End R A ⊗[R] Module.End R B) ≃ₗ[R]
+abbrev e1 (A B : Azumaya.{u, v} R) : (Module.End R A ⊗[R] Module.End R B) ≃ₗ[R]
     (Module.End R (A ⊗[R] B)) :=
   LinearEquiv.ofBijective (TensorProduct.homTensorHomMap R A B A B) <|
     bij_homtensorhom R A B
@@ -322,12 +319,12 @@ abbrev e2 (A B : Azumaya R) := (Algebra.TensorProduct.congr
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))
 
-lemma top_square_comm_apply (A B : Azumaya R) (x : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] (B ⊗[R] Bᵐᵒᵖ)):
+lemma top_square_comm_apply (A B : Azumaya R) (x : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] (B ⊗[R] Bᵐᵒᵖ)) :
     (e1 R A B) (e2 R A B x) = (AlgHom.mulLeftRight R (A ⊗[R] B)) (e.toAlgHom x) := by
   erw [← AlgHom.comp_apply, AlgHom.coe_comp, ← top_square_comm]
   rfl
 
-lemma bij_mulLeftRight (A B : Azumaya.{u, v} R):
+lemma bij_mulLeftRight (A B : Azumaya.{u, v} R) :
     Function.Bijective (AlgHom.mulLeftRight R (A ⊗[R] B)) :=
   Function.Bijective.of_comp_iff (AlgHom.mulLeftRight R (A ⊗[R] B))
     (e (R := R) (A := A) (B := B)).bijective|>.1 <| by
@@ -336,7 +333,7 @@ lemma bij_mulLeftRight (A B : Azumaya.{u, v} R):
   exact (e1 R A B).bijective.comp (e2 R A B).bijective
 
 abbrev mul (A B : Azumaya R) : Azumaya R := {
-  __ := AlgebraCat.of R (A.carrier ⊗[R] B.carrier)
+  __ := AlgCat.of R (A.carrier ⊗[R] B.carrier)
   isAzumaya := {
     out := Module.Projective.tensorProduct|>.out
     eq_of_smul_eq_smul := Azumaya.FathfulSMul.tensor|>.eq_of_smul_eq_smul
@@ -347,8 +344,8 @@ abbrev mul (A B : Azumaya R) : Azumaya R := {
 instance : Mul (Azumaya R) where
   mul A B := mul R A B
 
-lemma mul_coe (A B : Azumaya R): (A * B) =
-    ⟨AlgebraCat.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
+lemma mul_coe (A B : Azumaya R) : (A * B) =
+    ⟨AlgCat.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
 
 instance : One (Azumaya R) where
   one := ⟨.of R R, IsAzumaya_R R⟩
@@ -360,9 +357,6 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
     simp only [unop_one, smul_eq_mul, mul_one, op_inj] at hr
     exact hr
 
-
--- example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N):
---   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
 set_option maxSynthPendingDepth 6 in
 /--
 A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
@@ -371,7 +365,6 @@ A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
   |                        |
 End R A   ------------> End R B
-
 -/
 lemma small_comm_square (e : A ≃ₐ[R] B) :
     (AlgHom.mulLeftRight R B).comp (Algebra.TensorProduct.congr e e.op).toAlgHom =
@@ -436,11 +429,11 @@ instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M] :
     exact eq_of_smul_eq_smul h12
 
 abbrev MatrixAlg (n : ℕ) [NeZero n] : Azumaya R := {
-  __ := AlgebraCat.of R (_root_.Matrix (Fin n) (Fin n) R)
+  __ := AlgCat.of R (_root_.Matrix (Fin n) (Fin n) R)
   isAzumaya := IsAzumaya.matrix R (Fin n) }
 
 abbrev EndRn (n : ℕ) [NeZero n] : Azumaya R := {
-  __ := AlgebraCat.of R (Module.End R (Fin n → R))
+  __ := AlgCat.of R (Module.End R (Fin n → R))
   isAzumaya := IsAzumaya.ofAlgEquiv R _ _
     LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R (Fin n)
 }
@@ -564,7 +557,7 @@ lemma bij_endM :
 
 abbrev ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M] [Module.Projective R M]
     [FaithfulSMul R M]: Azumaya R where
-  __ := AlgebraCat.of R (Module.End R M)
+  __ := AlgCat.of R (Module.End R M)
   isAzumaya.out := Module.Projective.ofEnd R M|>.out
   isAzumaya.bij := by nontriviality M; exact bij_endM R M
 
