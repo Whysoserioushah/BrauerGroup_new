@@ -1,7 +1,7 @@
-import BrauerGroup.Morita.ChangeOfRings
-import BrauerGroup.BrauerGroup
 import Mathlib.Algebra.Central.Matrix
+import BrauerGroup.BrauerGroup
 import BrauerGroup.LemmasAboutSimpleRing
+import BrauerGroup.Morita.ChangeOfRings
 
 universe u v
 

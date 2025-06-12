@@ -1,11 +1,7 @@
 import Mathlib.Algebra.Algebra.Subalgebra.Directed
-import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.LinearAlgebra.FiniteDimensional.Basic
-import Mathlib.Order.CompletePartialOrder
 
 universe u
-
-suppress_compilation
 
 open TensorProduct MulOpposite
 
@@ -25,7 +21,7 @@ instance (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] : LE (SubFie
 def IsMaximalSubfield (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
   := ∀ (B : SubField K A), L ≤ B → B = L
 
-instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A] : Nonempty (SubField K A) :=
+instance foo (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A] : Nonempty (SubField K A) :=
   have e : K ≃ₐ[K] (Algebra.ofId K A).range := AlgEquiv.ofBijective
     (Algebra.ofId K A).rangeRestrict ⟨by
       suffices Function.Injective (Algebra.ofId K A) from
@@ -134,8 +130,8 @@ instance (priority := low) algebra' {K' : Type u} [CommRing K'] [SMul K' K] [Alg
 instance (S : SubField K A) : Algebra K S := S.algebra'
 
 open scoped Classical in
-instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) :
-    Field L.1 where
+noncomputable instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A]
+    (L : SubField K A) : Field L.1 where
   __ := L
   mul_comm := fun ⟨a, ha⟩ ⟨b, hb⟩ ↦ Subtype.ext_iff.2 $ L.2 a b ha hb
   inv := fun ⟨x, hx⟩ ↦ if h0 : x = 0 then 0 else ⟨L.3 x hx h0|>.choose,
@@ -149,8 +145,8 @@ instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : Sub
   nnqsmul := _
   qsmul := _
 
-instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) : Field L :=
-  inferInstanceAs (Field L.1)
+noncomputable instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A]
+    (L : SubField K A) : Field L := inferInstanceAs (Field L.1)
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     (L : SubField K A): FiniteDimensional K L :=

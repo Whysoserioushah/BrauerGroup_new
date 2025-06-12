@@ -1,6 +1,5 @@
-import Mathlib
-import BrauerGroup.Subfield.Splitting
-import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
+import BrauerGroup.Subfield.Subfield
+import Mathlib.FieldTheory.JacobsonNoether
 
 -- section
 -- variable {ι R A : Type*} (B : ι → Type*) [Preorder ι] [CommRing R]
@@ -52,10 +51,6 @@ instance : PartialOrder (AllSepSubfield K D) where
   lt_iff_le_not_le _ _ := by aesop
   le_antisymm _ _ _ _ := by aesop
 
-lemma IsSeparable.map {L} {F} {K} [CommRing F] [Ring K] [Algebra F K] [Ring L] [Algebra F L]
-    {x : K} (f : K →ₐ[F] L) (hf : Function.Injective f)
-    (H : IsSeparable F x) : IsSeparable F (f x) := by
-  rwa [IsSeparable, minpoly.algHom_eq _ hf]
 
 set_option maxHeartbeats 500000 in
 noncomputable abbrev iSup_chain_sepsubfield (c : Set (AllSepSubfield K D)) [Nonempty c]
@@ -192,7 +187,7 @@ theorem Subalgebra.map_centralizer_le_centralizer_image {R A B : Type*} [CommRin
   dsimp only [RingHom.coe_coe]
   rw [← map_mul, ← map_mul, hg h hh]
 
-instance (L : SubField K D) : Algebra L (Subalgebra.centralizer K (A := D) L) where
+noncomputable instance (L : SubField K D) : Algebra L (Subalgebra.centralizer K (A := D) L) where
   smul l1 x := ⟨l1 * x, Set.mul_mem_centralizer
     (Subalgebra.mem_centralizer_iff K|>.2 <| fun y hy ↦ L.2 l1 y l1.2 hy |>.symm) x.2⟩
   algebraMap := Subalgebra.inclusion (fun x hx ↦ Subalgebra.mem_centralizer_iff K|>.2

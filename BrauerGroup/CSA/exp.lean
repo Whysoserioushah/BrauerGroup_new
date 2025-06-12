@@ -1,4 +1,5 @@
-import Mathlib
+import Mathlib.Data.Matrix.Basis
+import Mathlib.RingTheory.TensorProduct.Basic
 
 suppress_compilation
 
