@@ -7,7 +7,7 @@ import Mathlib.RingTheory.HopkinsLevitzki
 
 variable (A : Type*) [Ring A]
 
-open BigOperators Matrix MulOpposite
+open Matrix MulOpposite
 
 local notation "M[" ι "," R "]" => Matrix ι ι R
 
@@ -73,33 +73,33 @@ def TwoSidedIdeal.equivRingConMatrix (oo : ι) : TwoSidedIdeal A ≃ TwoSidedIde
     constructor
     · intro h
       choose y hy1 hy2 using h
-      rw [Matrix.matrix_eq_sum_stdBasisMatrix x]
+      rw [Matrix.matrix_eq_sum_single x]
       refine J.finsetSum_mem _ _ fun i _ ↦ J.finsetSum_mem _ _ fun j _ ↦ ?_
       suffices
-          stdBasisMatrix i j (x i j) =
-          stdBasisMatrix i oo 1 * y i j * stdBasisMatrix oo j 1 by
+          single i j (x i j) =
+          single i oo 1 * y i j * single oo j 1 by
         rw [this]
         exact J.mul_mem_right _ _ (J.mul_mem_left _ _ <| hy1 _ _)
       ext a b
       by_cases hab : a = i ∧ b = j
       · rcases hab with ⟨ha, hb⟩
         subst ha hb
-        simp only [StdBasisMatrix.apply_same, StdBasisMatrix.mul_right_apply_same,
-          StdBasisMatrix.mul_left_apply_same, one_mul, mul_one]
+        simp only [single_apply_same, mul_single_apply_same,
+          single_mul_apply_same, one_mul, mul_one]
         specialize hy2 a b
         simp only [sub_zero] at hy2
         exact hy2.symm
       · conv_lhs =>
-          dsimp [stdBasisMatrix]
+          dsimp [single]
           rw [if_neg (by tauto)]
         rw [not_and_or] at hab
         rcases hab with ha | hb
-        · rw [mul_assoc, Matrix.StdBasisMatrix.mul_left_apply_of_ne (h := ha)]
-        · rw [Matrix.StdBasisMatrix.mul_right_apply_of_ne (hbj := hb)]
+        · rw [mul_assoc, Matrix.single_mul_apply_of_ne (h := ha)]
+        · rw [Matrix.mul_single_apply_of_ne (hbj := hb)]
     · intro hx i j
-      refine ⟨stdBasisMatrix oo i 1 * x * stdBasisMatrix j oo 1,
+      refine ⟨single oo i 1 * x * single j oo 1,
         J.mul_mem_right _ _ (J.mul_mem_left _ _ hx), ?_⟩
-      simp only [StdBasisMatrix.mul_right_apply_same, StdBasisMatrix.mul_left_apply_same, one_mul,
+      simp only [mul_single_apply_same, single_mul_apply_same, one_mul,
         mul_one, sub_zero]
   left_inv I := SetLike.ext fun x ↦ by
     simp only
@@ -499,11 +499,11 @@ variable (K : Type u) (B : Type v) [Field K] [Ring B] [Algebra K B] [FiniteDimen
 --       intro h
 --       rw [Subring.mem_center_iff] at h
 --       have diag : Matrix.IsDiag M := fun i j hij => by
---         simpa only [StdBasisMatrix.mul_left_apply_same, one_mul,
---           StdBasisMatrix.mul_right_apply_of_ne (hbj := hij.symm)] using
---           Matrix.ext_iff.2 (h (stdBasisMatrix i i 1)) i j
+--         simpa only [single_mul_apply_same, one_mul,
+--           mul_single_apply_of_ne (hbj := hij.symm)] using
+--           Matrix.ext_iff.2 (h (single i i 1)) i j
 --       have (i j : Fin n) : M i i = M j j := by
---         simpa [Eq.comm] using Matrix.ext_iff.2 (h (stdBasisMatrix i j 1)) i j
+--         simpa [Eq.comm] using Matrix.ext_iff.2 (h (single i j 1)) i j
 --       obtain ⟨b, hb⟩ : ∃ (b : R), M = b • 1 := by
 --         refine ⟨M ⟨0, by omega⟩ ⟨0, by omega⟩, Matrix.ext fun i j => ?_⟩
 --         if heq : i = j then subst heq; rw [this i ⟨0, by omega⟩]; simp
@@ -651,11 +651,6 @@ theorem is_fin_dim_of_wdb
         map_smul' := by intros; ext i j; by_cases i = j  <;> aesop
       } : S →ₗ[K] Matrix (Fin n) (Fin n) S) fun x y h => Matrix.ext_iff.2 h 0 0
 
-lemma bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed
-    (K D : Type*) [Field K] [IsAlgClosed K] [Ring D] [IsSimpleRing D] [IsDomain D] [Algebra K D]
-    [FiniteDimensional K D] : Function.Bijective (algebraMap K D) := 
-  ⟨(algebraMap K D).injective, IsAlgClosed.algebraMap_surjective_of_isIntegral⟩
-
 theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :
     ∃ (n : ℕ) (_ : NeZero n), Nonempty (B ≃ₐ[K] M[Fin n, K]) := by
   rcases Wedderburn_Artin_algebra_version K B with ⟨n, hn, S, ins1, ins2, ⟨e⟩⟩
@@ -663,7 +658,6 @@ theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :
   have := is_fin_dim_of_wdb K B n S e
 
   exact ⟨n, ⟨hn⟩, ⟨e.trans $ AlgEquiv.mapMatrix $ AlgEquiv.symm $
-    AlgEquiv.ofBijective (Algebra.ofId _ _) $
-      bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed _ _⟩⟩
+    AlgEquiv.ofBijective (Algebra.ofId _ _) IsAlgClosed.algebraMap_bijective_of_isIntegral⟩⟩
 
 end central_simple

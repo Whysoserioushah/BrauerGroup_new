@@ -180,4 +180,10 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
     exact L.mul_comm _ _ hx hy
 
+lemma maxsubfield_of_div_iff (L : SubField K D): (∀ (L' : Subalgebra K D)
+    (_ : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') ↔
+    IsMaximalSubfield K D L :=
+  ⟨fun h ↦ fun L' hL' ↦ SubField.toSubalgebra_inj K D|>.1 <| h L'.1 (fun x a y a_1 ↦ L'.2 x y a a_1) hL'|>.symm,
+  fun h ↦ cor_two_2to3 K D L <| dim_max_subfield K D L h⟩
+
 end cors_of_DC

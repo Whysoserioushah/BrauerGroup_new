@@ -4,35 +4,34 @@ suppress_compilation
 
 universe u
 
-open scoped TensorProduct BigOperators
+open scoped TensorProduct
 
 variable (k K L A : Type u) [Field k] [Field K] [Field L] [Algebra k K] [Algebra K L]
   [Algebra k L] [Ring A] [Algebra k A] [IsScalarTower k K L]
 
-set_option synthInstance.maxHeartbeats 40000 in
 def releaseAddHom : L ⊗[k] A →+ L ⊗[K] K ⊗[k] A :=
   TensorProduct.liftAddHom
   {
-    toFun := fun l ↦
-    {
-      toFun := fun a ↦ l ⊗ₜ[K] (1 : K) ⊗ₜ[k] a
+    toFun l := {
+      toFun a := l ⊗ₜ[K] (1 : K) ⊗ₜ[k] a
       map_zero' := by simp only [TensorProduct.tmul_zero]
-      map_add' := fun _ _ ↦ by simp only; repeat rw [TensorProduct.tmul_add]
+      map_add' _ _ := by simp_rw [TensorProduct.tmul_add]
     }
     map_zero' := by simp only [TensorProduct.zero_tmul]; rfl
-    map_add' := fun x y ↦ by
+    map_add' x y := by
       ext a'
       simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.add_apply]
       repeat rw [TensorProduct.add_tmul]
-  } (fun r l a ↦ by simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, TensorProduct.tmul_smul]; rfl)
+  } fun r l a ↦ by simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, TensorProduct.tmul_smul]; rfl
 
+set_option maxHeartbeats 400000 in
 set_option synthInstance.maxHeartbeats 40000 in
 def release : L ⊗[k] A →ₐ[L] L ⊗[K] K ⊗[k] A where
   __ := releaseAddHom k K L A
   map_one' := by simp only [releaseAddHom, Algebra.TensorProduct.one_def, ZeroHom.toFun_eq_coe,
     AddMonoidHom.toZeroHom_coe, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
     ZeroHom.coe_mk]
-  map_mul' := fun x y ↦ by
+  map_mul' x y := by
     induction x using TensorProduct.induction_on with
     | zero => simp only [zero_mul, ZeroHom.toFun_eq_coe, map_zero, AddMonoidHom.toZeroHom_coe]
     | tmul l a =>

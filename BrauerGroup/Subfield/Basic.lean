@@ -1,10 +1,9 @@
-import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import Mathlib.Algebra.Algebra.Subalgebra.Directed
+import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 
 universe u
 
-suppress_compilation
-
-open BigOperators TensorProduct MulOpposite
+open TensorProduct MulOpposite
 
 section def_and_lemmas
 
@@ -22,7 +21,7 @@ instance (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] : LE (SubFie
 def IsMaximalSubfield (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
   := ∀ (B : SubField K A), L ≤ B → B = L
 
-instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempty (SubField K A) :=
+instance foo (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A] : Nonempty (SubField K A) :=
   have e : K ≃ₐ[K] (Algebra.ofId K A).range := AlgEquiv.ofBijective
     (Algebra.ofId K A).rangeRestrict ⟨by
       suffices Function.Injective (Algebra.ofId K A) from
@@ -65,6 +64,17 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : SetLike (SubField K A
       change L2.1 ≤ L1.1
       exact le_of_eq_of_le hL12.symm fun _ a ↦ a
     exact (LE.le.le_iff_eq le).1 ge|>.symm
+
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : Bot (SubField K A) where
+  bot := ⟨⊥, by
+    rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩;
+    simp [← map_mul];
+    congr 1; exact CommMonoid.mul_comm x y,
+    fun _ ↦ by
+    rintro ⟨x, rfl⟩ hx
+    use algebraMap K A x⁻¹
+    simp [Algebra.ofId, ← map_mul]
+    rw [mul_inv_cancel₀ (by aesop), map_one]⟩
 
 lemma isMax_iff_isMaxSubfield (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A):
     IsMax L ↔ IsMaximalSubfield K A L :=
@@ -120,33 +130,71 @@ instance (priority := low) algebra' {K' : Type u} [CommRing K'] [SMul K' K] [Alg
 instance (S : SubField K A) : Algebra K S := S.algebra'
 
 open scoped Classical in
-instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) : Field L.1 := {
+noncomputable instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A]
+    (L : SubField K A) : Field L.1 where
   __ := L
   mul_comm := fun ⟨a, ha⟩ ⟨b, hb⟩ ↦ Subtype.ext_iff.2 $ L.2 a b ha hb
   inv := fun ⟨x, hx⟩ ↦ if h0 : x = 0 then 0 else ⟨L.3 x hx h0|>.choose,
     L.3 x hx h0|>.choose_spec.1⟩
   exists_pair_ne := ⟨⟨0, Subalgebra.zero_mem L.1⟩, ⟨1, Subalgebra.one_mem L.1⟩, by
     refine Subtype.coe_ne_coe.1 $ by simp only [ne_eq, zero_ne_one, not_false_eq_true]⟩
-  mul_inv_cancel := fun ⟨a, ha⟩ ha0 ↦ by
-    unfold Inv.inv
-    simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
-      Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ha0, ↓reduceDIte, MulMemClass.mk_mul_mk]
-    suffices a * (L.3 a ha (Subtype.coe_ne_coe.2 ha0)).choose = (1 : A) from
-      Subtype.ext_iff.2 (by simp only [this, OneMemClass.coe_one])
-    exact L.3 a ha (Subtype.coe_ne_coe.2 ha0)|>.choose_spec.2
+  mul_inv_cancel a ha := by ext; simpa [ha] using (L.3 a a.2 <| mod_cast ha).choose_spec.2
   inv_zero := by
     simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
       Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ↓reduceDIte]
   nnqsmul := _
   qsmul := _
-}
 
-instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : SubField K A) : Field L :=
-  inferInstanceAs (Field L.1)
+noncomputable instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A]
+    (L : SubField K A) : Field L := inferInstanceAs (Field L.1)
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     (L : SubField K A): FiniteDimensional K L :=
   FiniteDimensional.finiteDimensional_subalgebra L.1
+
+abbrev iSup_chain_subfield (D : Type u) [DivisionRing D] [Algebra K D] (α : Set (SubField K D))
+    [Nonempty α] (hα : IsChain (· ≤ ·) α) : SubField K D where
+  __ := (⨆ (L : α), L.1.1 : Subalgebra K D)
+  mul_comm x y hx hy := by
+    simp only [Subsemiring.coe_carrier_toSubmonoid, Subalgebra.coe_toSubsemiring,
+      SetLike.mem_coe] at hx hy
+    have := Subalgebra.coe_iSup_of_directed hα.directed
+    dsimp at this
+    change x ∈ (_ : Set _) at hx ; change _ ∈ ( _ : Set _) at hy
+    rw [this] at hx hy
+    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx hy
+    obtain ⟨L1, hL1, hx⟩ := hx
+    obtain ⟨L2, hL2, hy⟩ := hy
+    obtain ⟨L3, _, hL31, hL32⟩ := hα.directedOn L1 hL1 L2 hL2
+    exact L3.mul_comm x y (hL31 hx) (hL32 hy)
+  inverse x hx hx0 := by
+    simp only [Subalgebra.coe_toSubsemiring,
+      Subsemiring.coe_carrier_toSubmonoid, SetLike.mem_coe] at *
+    letI : Nonempty α := Set.Nonempty.to_subtype (Set.Nonempty.of_subtype)
+    have := Subalgebra.coe_iSup_of_directed hα.directed
+    dsimp at this
+    change x ∈ (_ : Set _) at hx
+    rw [this] at hx
+    simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx
+    obtain ⟨L1, hL1, hx⟩ := hx
+    use L1.inverse x hx hx0|>.choose
+    constructor
+    · have : L1.1 ≤ ⨆ (L : α), (L.1).toSubalgebra := by
+        exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L1.1) ⟨L1, hL1⟩ (by rfl)
+      exact this (L1.inverse x hx hx0).choose_spec.1
+    · exact L1.inverse x hx hx0|>.choose_spec.2
+
+lemma exitsmaxsub (D : Type u) [DivisionRing D] [Algebra K D] :
+    ∃ L : SubField K D, IsMaximalSubfield K D L := by
+  obtain ⟨m, hm⟩ := zorn_le_nonempty (α := SubField K D) fun α hα hα' ↦ by
+    letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
+    use iSup_chain_subfield K D α hα
+    change iSup_chain_subfield K D α hα ∈ {L | _}
+    simp only [Set.mem_setOf_eq]
+    intro L hL
+    change L.1 ≤ (⨆ (L : α), L.1.1 : Subalgebra K D)
+    exact le_iSup_of_le ⟨L, hL⟩ le_rfl
+  exact ⟨m, isMax_iff_isMaxSubfield _ _ _ |>.1 hm⟩
 
 end SubField
 

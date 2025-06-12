@@ -22,10 +22,11 @@ def toTensorMartrix_toFun_bilinear:
 
 @[simp]
 lemma toTensorMartrix_toFun_bilinear_apply (k : K) (M : Matrix n n A) :
-    toTensorMartrix_toFun_bilinear K F A n k M = k • Algebra.TensorProduct.includeRight.mapMatrix M := rfl
+  toTensorMartrix_toFun_bilinear K F A n k M =
+  k • Algebra.TensorProduct.includeRight.mapMatrix M := rfl
 
 abbrev toTensorMatrix_toFun_Flinear: K ⊗[F] Matrix n n A →ₗ[F] Matrix n n (K ⊗[F] A) :=
-    TensorProduct.lift <| toTensorMartrix_toFun_bilinear K F A n
+  TensorProduct.lift <| toTensorMartrix_toFun_bilinear K F A n
 
 abbrev toTensorMatrix_toFun_Kliniear: K ⊗[F] Matrix n n A →ₗ[K] Matrix n n (K ⊗[F] A) :=
   {__ := toTensorMatrix_toFun_Flinear K F A n,
@@ -63,7 +64,7 @@ def invFun_toFun_bilinear (i j : n): K →ₗ[F] A →ₗ[F] K ⊗[F] Matrix n n
 omit [Fintype n] in
 @[simp]
 lemma invFun_toFun_bilinear_apply (i j : n) (k : K) (a : A) :
-    invFun_toFun_bilinear K F A n i j k a = k ⊗ₜ single i j a := rfl
+  invFun_toFun_bilinear K F A n i j k a = k ⊗ₜ single i j a := rfl
 
 abbrev invFun_toFun (i j : n) : K ⊗[F] A →ₗ[F] K ⊗[F] Matrix n n A :=
   TensorProduct.lift <| invFun_toFun_bilinear K F A n i j
@@ -104,13 +105,13 @@ def equivTensor' : K ⊗[F] Matrix n n A ≃ Matrix n n (K ⊗[F] A) where
   left_inv := left_inv K F A n
   right_inv := right_inv K F A n
 
-def matrixEquivTensorMatrix: K ⊗[F] Matrix n n A ≃ₐ[K] Matrix n n (K ⊗[F] A) :=
+def matrixTensorEquivTensor: K ⊗[F] Matrix n n A ≃ₐ[K] Matrix n n (K ⊗[F] A) :=
   {toTensorMatrix K F A n, equivTensor' K F A n with}
 
 @[simp]
-lemma matrixEquivTensorMatrix_apply (M : K ⊗[F] Matrix n n A) :
-    matrixEquivTensorMatrix K F A n M = toTensorMatrix K F A n M := rfl
+lemma matrixTensorEquivTensor_apply (M : K ⊗[F] Matrix n n A) :
+    matrixTensorEquivTensor K F A n M = toTensorMatrix K F A n M := rfl
 
 @[simp]
-lemma matrixEquivTensorMatrix_symm_apply (M : Matrix n n (K ⊗[F] A)) :
-    (matrixEquivTensorMatrix K F A n).symm M = invFun_linearMap K F A n M := rfl
+lemma matrixTensorEquivTensor_symm_apply (M : Matrix n n (K ⊗[F] A)) :
+    (matrixTensorEquivTensor K F A n).symm M = invFun_linearMap K F A n M := rfl
