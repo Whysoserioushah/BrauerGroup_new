@@ -1,14 +1,16 @@
-import BrauerGroup.BrauerGroup
 import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
-import Mathlib.LinearAlgebra.Dimension.Constructions
-import Mathlib.LinearAlgebra.Dimension.Finrank
 import BrauerGroup.LemmasAboutSimpleRing
+import Mathlib.Algebra.BrauerGroup.Defs
+import Mathlib.Algebra.Central.Matrix
+import Mathlib.Analysis.Normed.Ring.Lemmas
+import Mathlib.LinearAlgebra.FreeModule.PID
+import Mathlib.RingTheory.SimpleRing.Matrix
 
 suppress_compilation
 
 universe u v w
-variable (k A K: Type u) [Field k] [Field K] [Algebra k K] [Ring A]
+variable (k A K : Type u) [Field k] [Field K] [Algebra k K] [Ring A]
   [Algebra k A]
 
 variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
@@ -245,14 +247,9 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
           Algebra.id.map_eq_id, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe,
           matrixEquivTensor_apply_symm, Matrix.map]
         ext i j
-        simp only [Matrix.of_apply]
-        if hij : i = j then
-        subst hij
-        simp only [Matrix.one_apply_eq, map_one, mul_one, Algebra.algebraMap_eq_smul_one,
-          Matrix.smul_apply, smul_eq_mul, mul_one]
-        else
-        simp only [ne_eq, hij, not_false_eq_true, Matrix.one_apply_ne, map_zero, mul_zero,
-          Algebra.algebraMap_eq_smul_one, Matrix.smul_apply, smul_eq_mul, zero_mul]
+        obtain rfl | hij := eq_or_ne i j
+        · simp [Matrix.one_apply_eq, Algebra.algebraMap_eq_smul_one, Matrix.smul_apply]
+        · simp [hij, Matrix.one_apply_ne, Algebra.algebraMap_eq_smul_one]
     }
     let e5 : n = deg k k_bar A := by
       have := deg_sq_eq_dim k k_bar A

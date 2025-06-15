@@ -1,5 +1,5 @@
 import BrauerGroup.ToSecond
-import Mathlib.Algebra.Module.LinearMap.Basic
+-- import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 
 suppress_compilation
 
@@ -16,8 +16,7 @@ open scoped TensorProduct
 
 -- variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
 
--- set_option maxHeartbeats 1000000 in
--- def φ0 :
+-- -- def φ0 :
 --     CrossProduct (F := F) (K := K) (a := 1)
 --       (ha := isMulTwoCocycle_of_mem_twoCocycles 0 <| Submodule.zero_mem _) →ₗ[K]
 --     Module.End F K :=
@@ -74,7 +73,7 @@ open scoped TensorProduct
 --           rw [Basis.constr_basis, Basis.constr_basis, Basis.constr_basis]
 --           ext α
 --           simp only [LinearMap.smul_apply, AlgEquiv.toLinearMap_apply, AlgEquiv.mul_apply,
---             smul_eq_mul, _root_.mul_assoc, LinearMap.mul_apply, map_mul]
+--             smul_eq_mul, _root_.mul_assoc, Module.End.mul_apply, map_mul]
 --         | add y y' hy hy' =>
 --           erw [mul_add]
 --           rw [map_add, hy, hy']
@@ -128,34 +127,25 @@ namespace map_mul_proof
 section map_mul
 
 variable (α β : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ)
-variable (hα : IsMulTwoCocycle α) (hβ : IsMulTwoCocycle β)
 
-variable {K F α β}
-
-include hα hβ in
-lemma hαβ : IsMulTwoCocycle (α * β) := isMulTwoCocycle_of_mem_twoCocycles _ <|
-  ((twoCocyclesOfIsMulTwoCocycle hα) + (twoCocyclesOfIsMulTwoCocycle hβ)).2
-
-local notation "A" => CrossProduct hα
-local notation "B" => CrossProduct hβ
-local notation "C" => CrossProduct (hαβ hα hβ)
+local notation "A" => CrossProduct α
+local notation "B" => CrossProduct β
+local notation "C" => CrossProduct (α * β)
 
 open CrossProduct TensorProduct
 
 variable [FiniteDimensional F K]  [DecidableEq (K ≃ₐ[F] K)]
 
-
-abbrev S : Set (A ⊗[F] B) :=
-  Set.range (fun (cba : K × A × B) =>
-    (cba.1 • cba.2.1) ⊗ₜ[F] cba.2.2 - cba.2.1 ⊗ₜ[F] (cba.1 • cba.2.2))
+def S : Set (A ⊗[F] B) :=
+  .range fun ((k, a, b) : K × A × B) ↦ (k • a) ⊗ₜ[F] b - a ⊗ₜ[F] (k • b)
 
 @[simp]
-lemma mem_S (x : A ⊗[F] B) : x ∈ S hα hβ ↔
-    ∃ (k : K) (a : A) (b : B), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b) := by
+lemma mem_S (x : A ⊗[F] B) :
+    x ∈ S α β ↔ ∃ (k : K) (a : A) (b : B), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b) := by
   simp only [S, Set.mem_range, Prod.exists]
   aesop
 
-abbrev M := (A ⊗[F] B) ⧸ Submodule.span F (S hα hβ)
+abbrev M := (A ⊗[F] B) ⧸ Submodule.span F (S α β)
 
 open MulOpposite
 
@@ -182,11 +172,11 @@ instance : IsScalarTower K A A where
 
 section Aox_FB_mod
 
-def Aox_FB_smul_M_aux (a' : A) (b' : B) : M hα hβ →ₗ[F] M hα hβ :=
-  Submodule.mapQ (Submodule.span F (S hα hβ)) (Submodule.span F (S hα hβ))
+def Aox_FB_smul_M_aux (a' : A) (b' : B) : d →ₗ[F] d :=
+  Submodule.mapQ (Submodule.span F (S α β)) (Submodule.span F (S α β))
     (TensorProduct.lift
-      { toFun := fun a =>
-        { toFun := fun b => (a * a') ⊗ₜ (b * b')
+      { toFun a :=
+        { toFun b := (a * a') ⊗ₜ (b * b')
           map_add' := by
             intro b1 b2
             simp [add_mul, tmul_add]
@@ -207,12 +197,11 @@ def Aox_FB_smul_M_aux (a' : A) (b' : B) : M hα hβ →ₗ[F] M hα hβ :=
         AddHom.coe_mk, SetLike.mem_coe]
       refine Submodule.subset_span ⟨⟨k, a * a', b * b'⟩, by simp [smul_mul_assoc]⟩)
 
-def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M hα hβ →ₗ[F] M hα hβ :=
+def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] d →ₗ[F] d :=
   TensorProduct.lift
-  { toFun := fun a' =>
-    { toFun := fun b' => Aox_FB_smul_M_aux _ _ a' b'
-      map_add' := by
-        intro b1' b2'
+  { toFun a' :=
+    { toFun b' := Aox_FB_smul_M_aux _ _ a' b'
+      map_add' b1' b2' := by
         ext a b
         simp only [Aox_FB_smul_M_aux, AlgebraTensorModule.curry_apply, curry_apply,
           LinearMap.coe_restrictScalars, LinearMap.coe_comp, Function.comp_apply,
@@ -220,23 +209,20 @@ def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M hα hβ →ₗ[F] M hα hβ :=
           LinearMap.add_apply]
         rw [mul_add, tmul_add]
         rfl
-      map_smul' := by
-        intro f b'
+      map_smul' f b' := by
         ext a b
         simp only [Aox_FB_smul_M_aux, Algebra.mul_smul_comm, tmul_smul,
           AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
           LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, Submodule.mapQ_apply,
           lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, Submodule.Quotient.mk_smul, RingHom.id_apply,
           LinearMap.smul_apply] }
-    map_add' := by
-      intro a1' a2'
+    map_add' a1' a2' := by
       ext b' a b
       simp only [Aox_FB_smul_M_aux, mul_add, add_tmul, LinearMap.coe_mk, AddHom.coe_mk,
         AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
         LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, Submodule.mapQ_apply,
         lift.tmul, Submodule.Quotient.mk_add, LinearMap.add_apply]
-    map_smul' := by
-      intro f a'
+    map_smul' f a' := by
       ext b' a b
       simp only [Aox_FB_smul_M_aux, Algebra.mul_smul_comm, LinearMap.coe_mk, AddHom.coe_mk,
         AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
@@ -247,24 +233,23 @@ def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M hα hβ →ₗ[F] M hα hβ :=
 
 @[simp]
 lemma Aox_FB_smul_M_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
-    Aox_FB_smul_M hα hβ (a' ⊗ₜ[F] b') (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    Aox_FB_smul_d (a' ⊗ₜ[F] b') (Submodule.Quotient.mk (a ⊗ₜ[F] b) : d) =
     Submodule.Quotient.mk ((a * a') ⊗ₜ[F] (b * b')) := rfl
 
-
-instance : SMul (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
+instance : SMul (A ⊗[F] B)ᵐᵒᵖ (d) where
   smul x y := Aox_FB_smul_M _ _ x.unop y
 
 @[simp]
 lemma Aox_FB_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
-    op (a' ⊗ₜ[F] b') • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    op (a' ⊗ₜ[F] b') • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : d) =
     Submodule.Quotient.mk ((a * a') ⊗ₜ[F] (b * b')) := rfl
 
-instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
+instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (d) where
   one_smul := by
     intro x
     rw [show (1 : (A ⊗[F] B)ᵐᵒᵖ) = op 1 from rfl,
       Algebra.TensorProduct.one_def]
-    change Aox_FB_smul_M hα hβ (1 ⊗ₜ[F] 1) x = LinearMap.id (R := F) x
+    change Aox_FB_smul_d (1 ⊗ₜ[F] 1) x = LinearMap.id (R := F) x
     refine LinearMap.ext_iff |>.1 ?_ x
     ext a b
     simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
@@ -272,7 +257,7 @@ instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
       Aox_FB_smul_M_op_tmul_smul_mk_tmul, _root_.mul_one, LinearMap.id_comp]
   mul_smul := by
     rintro ⟨x⟩ ⟨y⟩ b
-    change Aox_FB_smul_M hα hβ (y * x) _ = Aox_FB_smul_M hα hβ x (Aox_FB_smul_M hα hβ y b)
+    change Aox_FB_smul_d (y * x) _ = Aox_FB_smul_d x (Aox_FB_smul_d y b)
     rw [← LinearMap.comp_apply]
     refine LinearMap.ext_iff |>.1 ?_ b
     ext a b
@@ -293,62 +278,45 @@ instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
     | zero =>
       simp only [mul_zero, map_zero, LinearMap.zero_apply]
 
-instance : DistribMulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
-  smul_zero := by
-    intro x
-    change Aox_FB_smul_M hα hβ _ _ = _
-    simp
-  smul_add := by
-    intro x a b
-    change Aox_FB_smul_M hα hβ _ _ = Aox_FB_smul_M hα hβ _ _ + Aox_FB_smul_M hα hβ _ _
-    simp
+instance : DistribMulAction (A ⊗[F] B)ᵐᵒᵖ (d) where
+  smul_zero x := show Aox_FB_smul_d _ _ = _ by simp
+  smul_add x a b :=
+    show Aox_FB_smul_d _ _ = Aox_FB_smul_d _ _ + Aox_FB_smul_d _ _ by simp
 
-instance : Module (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
-  add_smul := by
-    intro x y a
-    change Aox_FB_smul_M hα hβ _ _ = Aox_FB_smul_M hα hβ _ _ + Aox_FB_smul_M hα hβ _ _
-    simp
-  zero_smul := by
-    intro x
-    change Aox_FB_smul_M hα hβ _ _ = _
-    simp
+instance : Module (A ⊗[F] B)ᵐᵒᵖ (d) where
+  add_smul x y a :=
+    show Aox_FB_smul_d _ _ = Aox_FB_smul_d _ _ + Aox_FB_smul_d _ _ by simp
+  zero_smul x := show Aox_FB_smul_d _ _ = _ by simp
 
 end Aox_FB_mod
 
 section C_mod
 
-def F_smul_mul_compatible (f : F) (a a' : A) :
-    (f • a) * a' = a * (f • a') := by
+lemma F_smul_mul_compatible (f : F) (a a' : A) : (f • a) * a' = a * (f • a') := by
   simp only [Algebra.smul_mul_assoc, Algebra.mul_smul_comm]
 
-def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
-  Submodule.mapQ (Submodule.span F (S hα hβ)) (Submodule.span F (S hα hβ))
+def C_smul_aux (c : C) : d →ₗ[F] d :=
+  Submodule.mapQ (Submodule.span F (S α β)) (Submodule.span F (S α β))
     (TensorProduct.lift
-      { toFun := fun a =>
-        { toFun := fun b =>
-            ∑ σ : K ≃ₐ[F] K, ((c.1 σ • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)
-          map_add' := by
-            intro b b'
-            dsimp only
+      { toFun a := {
+          toFun b := ∑ σ : K ≃ₐ[F] K, ((c.1 σ • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)
+          map_add' b b' := by
             rw [← Finset.sum_add_distrib]
             refine Finset.sum_congr rfl fun σ _ => ?_
             rw [mul_add, tmul_add]
-          map_smul' := by
-            intro f b
+          map_smul' f b := by
             dsimp only [RingHom.id_apply]
             rw [Finset.smul_sum]
             refine Finset.sum_congr rfl fun σ _ => ?_
             rw [smul_tmul', smul_tmul, ← F_smul_mul_compatible]
             simp only [Algebra.smul_mul_assoc, tmul_smul] }
-        map_add' := by
-          intro a a'
+        map_add' a a' := by
           ext b : 1
           simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
           rw [← Finset.sum_add_distrib]
           refine Finset.sum_congr rfl fun σ _ => ?_
           simp [mul_add, add_tmul]
-        map_smul' := by
-          intro f a
+        map_smul' f a := by
           ext b : 1
           simp only [Algebra.mul_smul_comm, LinearMap.coe_mk, AddHom.coe_mk,
             RingHom.id_apply, LinearMap.smul_apply]
@@ -371,7 +339,7 @@ def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
 
 
 lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
-    C_smul_aux _ _ (k • x_AsBasis (hαβ hα hβ) σ) (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    C_smul_aux _ _ (k • x_AsBasis (hαβ hα hβ) σ) (Submodule.Quotient.mk (a ⊗ₜ[F] b) : d) =
     Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) := by
   delta C_smul_aux
   rw [Submodule.mapQ_apply, lift.tmul]
@@ -395,13 +363,9 @@ lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
   left
   rw [mul_comm]
 
-
-set_option maxHeartbeats 400000 in
-def C_smul : C →ₗ[F] M hα hβ →ₗ[F] M hα hβ where
+def C_smul : C →ₗ[F] d →ₗ[F] d where
   toFun c := C_smul_aux hα hβ c
-  map_add' := by
-    intro c c'
-    dsimp only
+  map_add' c c' := by
     ext a b
     simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
       LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, LinearMap.add_apply]
@@ -415,9 +379,7 @@ def C_smul : C →ₗ[F] M hα hβ →ₗ[F] M hα hβ where
     rw [← map_add, ← add_tmul]
     congr 2
     simp only [add_val, Pi.add_apply, x_AsBasis_apply, add_smul, add_mul]
-  map_smul' := by
-    intro f c
-    dsimp only
+  map_smul' f c := by
     ext a b
     simp only [AlgebraTensorModule.curry_apply, curry_apply, LinearMap.coe_restrictScalars,
       LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply, RingHom.id_apply,
@@ -437,18 +399,18 @@ def C_smul : C →ₗ[F] M hα hβ →ₗ[F] M hα hβ where
       smul_mul_assoc]
 
 
-instance : SMul C (M hα hβ) where
+instance : SMul C (d) where
   smul c x := C_smul hα hβ c x
 
+lemma smul_def (c : C) (x : d) : c • x = C_smul hα hβ c x := rfl
+
 lemma C_smul_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
-    (k • x_AsBasis (hαβ hα hβ) σ) • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    (k • x_AsBasis (hαβ hα hβ) σ) • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : d) =
     Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) :=
   C_smul_aux_calc hα hβ k σ a b
 
-set_option maxHeartbeats 400000 in
-instance : MulAction C (M hα hβ) where
-  one_smul := by
-    intro x
+instance : MulAction C (d) where
+  one_smul x := by
     induction x using Quotient.inductionOn' with | h x =>
     change (1 : C) • Submodule.Quotient.mk x = Submodule.Quotient.mk x
     induction x using TensorProduct.induction_on with
@@ -462,14 +424,10 @@ instance : MulAction C (M hα hβ) where
     | add x y hx hy =>
       simp only [Submodule.Quotient.mk_add]
       conv_rhs => rw [← hx, ← hy]
-      change C_smul_aux hα hβ _ _ =  C_smul_aux hα hβ _ _ +  C_smul_aux hα hβ _ _
-      simp only [map_add]
+      simp only [smul_def, map_add]
     | zero =>
-      simp only [Submodule.Quotient.mk_zero]
-      change C_smul_aux hα hβ _ _ = _
-      simp only [map_zero]
-  mul_smul := by
-    intro x y ab
+      simp only [Submodule.Quotient.mk_zero, smul_def, map_zero]
+  mul_smul x y ab := by
     induction x using single_induction with
     | single σ x =>
       induction y using single_induction with
@@ -505,8 +463,8 @@ instance : MulAction C (M hα hβ) where
           change C_smul_aux hα hβ _ _ = C_smul_aux hα hβ _ (C_smul_aux hα hβ _ _)
           rw [show Quotient.mk'' 0 = (0 : M _ _) from rfl, map_zero, map_zero, map_zero]
       | add y y' hy hy' =>
-        change C_smul hα hβ _ _ = C_smul hα hβ _ _ at hy hy' ⊢
-        change _ = C_smul hα hβ _ (C_smul hα hβ _ _)
+        change C_smul hα hβ _ _ = C_smul hα hβ _ _ at hy hy'
+        change C_smul hα hβ _ _ = C_smul hα hβ _ (C_smul hα hβ _ _)
         erw [mul_add, map_add, map_add, map_add]
         simp only [LinearMap.add_apply, hy, hy']
         rfl
@@ -527,35 +485,25 @@ instance : MulAction C (M hα hβ) where
       change C_smul hα hβ _ _ = C_smul hα hβ 0 (C_smul hα hβ _ _)
       simp only [map_zero, LinearMap.zero_apply]
 
-instance : DistribMulAction C (M hα hβ) where
-  smul_zero := by
-    intro c
-    change C_smul hα hβ _ _ = 0
-    simp
-  smul_add := by
-    intro c x y
-    change C_smul hα hβ _ _ = C_smul hα hβ _ _ + C_smul hα hβ _ _
-    simp
+instance : DistribMulAction C (d) where
+  smul_zero c := show C_smul hα hβ _ _ = 0 by simp
+  smul_add c x y := show C_smul hα hβ _ _ = C_smul hα hβ _ _ + C_smul hα hβ _ _ by simp
 
-instance : Module C (M hα hβ) where
-  add_smul := by
-    intro c c' x
-    change C_smul hα hβ _ _ = C_smul hα hβ _ _ + C_smul hα hβ _ _
-    simp only [map_add, LinearMap.add_apply]
-  zero_smul := by
-    intro x
-    change C_smul hα hβ _ _ = _
-    simp
+instance : Module C (d) where
+  add_smul c c' x :=
+    show C_smul hα hβ _ _ = C_smul hα hβ _ _ + C_smul hα hβ _ _ by
+      simp only [map_add, LinearMap.add_apply]
+  zero_smul x := show C_smul hα hβ _ _ = _ by simp
 
 end C_mod
 
 section bimodule
 
-instance : SMulCommClass (A ⊗[F] B)ᵐᵒᵖ C (M hα hβ) where
+instance : SMulCommClass (A ⊗[F] B)ᵐᵒᵖ C (d) where
   smul_comm := by
     rintro ⟨x⟩ c m
     induction m using Quotient.inductionOn' with | h m =>
-    change (op x) • c • Submodule.Quotient.mk _ = c • op x • Submodule.Quotient.mk _
+    change op x • c • Submodule.Quotient.mk _ = c • op x • Submodule.Quotient.mk _
     induction x using TensorProduct.induction_on with
     | tmul a' b' =>
       induction m using TensorProduct.induction_on with
@@ -583,77 +531,40 @@ end bimodule
 
 section iso
 
-set_option maxHeartbeats 400000 in
-instance : IsScalarTower F C (M hα hβ) where
-  smul_assoc f c m := by
-    -- rw [Algebra.smul_def]
-    induction m using Quotient.inductionOn' with | h m =>
-    change _ • Submodule.Quotient.mk _ = _ • _ • Submodule.Quotient.mk _
-    induction m using TensorProduct.induction_on with
-    | tmul a b =>
-      induction c using single_induction with
-      | single σ c =>
-        rw [single_in_xAsBasis, C_smul_calc]
-        rw [show f • c • (x_AsBasis (hαβ hα hβ)) σ = algebraMap F K f • c • (x_AsBasis (hαβ hα hβ)) σ by
-          simp only [Algebra.smul_def]
-          rw [GoodRep.CrossProduct.smul_def]
-          congr 1
-          delta CrossProduct.ι
-          simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]]
-        rw [← smul_assoc, C_smul_calc, ← Submodule.Quotient.mk_smul]
-        congr 2
-        simp only [smul_eq_mul, x_AsBasis_apply]
-        ext τ
-        simp only [CrossProduct.smul_def, map_mul, AlgHom.commutes, algebraMap_val,
-          Algebra.smul_mul_assoc, _root_.one_mul, smul_val, crossProductSMul, LinearMap.lsum_apply,
-          LinearMap.coe_mk, AddHom.coe_mk, mul_val, ι_apply_val, Prod.mk_one_one,
-          Units.val_inv_eq_inv_val, crossProductMul_single_single, AlgEquiv.one_apply,
-          _root_.mul_one, LinearMap.coeFn_sum, LinearMap.coe_comp, LinearMap.coe_proj,
-          Finset.sum_apply, Function.comp_apply, Function.eval, Function.update_apply,
-          Pi.zero_apply, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte]
-      | add c c' hc hc' =>
-        erw [add_smul, smul_add, add_smul, hc, hc', smul_add]
-      | zero =>
-        erw [smul_zero, zero_smul, smul_zero]
-    | add x y hx hy =>
-      simp only [Submodule.Quotient.mk_add, smul_add, hx, hy]
-    | zero =>
-      erw [smul_zero]
+instance : IsScalarTower F C (d) := by
+  refine .of_algebraMap_smul ?_
+
 
 example : True := ⟨⟩
 
--- instance : Algebra F (Module.End C (M hα hβ)) := Module.End.instAlgebra _ _ _
+-- instance : Algebra F (Module.End C (d)) := Module.End.instAlgebra _ _ _
 
--- set_option maxHeartbeats 400000 in
-instance : Module F (M hα hβ) := inferInstance
+-- instance : Module F (d) := inferInstance
 
 noncomputable def φ0 :
-    (A ⊗[F] B)ᵐᵒᵖ →ₐ[F] Module.End C (M hα hβ) where
-  toFun x :=
-  { toFun := fun m => x • m
-    map_add' := by intros; dsimp only; rw [smul_add]
-    map_smul' := by
-      intro c y
+    (A ⊗[F] B)ᵐᵒᵖ →ₐ[F] Module.End C (d) where
+  toFun x := {
+    toFun m := x • m
+    map_add' _ _ := by rw [smul_add]
+    map_smul' c y := by
       simp only [RingHom.id_apply]
-      rw [smul_comm] }
+      rw [smul_comm]
+    }
   map_one' := by
     refine LinearMap.ext fun _ => ?_
-    simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply, implies_true]
-  map_mul' := by
-    intro x y
+    simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, Module.End.one_apply, implies_true]
+  map_mul' x y := by
     refine LinearMap.ext fun _ => ?_
-    simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply]
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, Module.End.mul_apply]
     rw [mul_smul]
   map_zero' := by
     refine LinearMap.ext fun _ => ?_
     simp only [zero_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply]
-  map_add' := by
-    intro x y
+  map_add' x y := by
     refine LinearMap.ext fun _ => ?_
     simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
     rw [add_smul]
-  commutes' := by
-    intro f
+  commutes' f := by
     refine LinearMap.ext fun m => ?_
     simp only [MulOpposite.algebraMap_apply, Algebra.TensorProduct.algebraMap_apply, algebraMap_val,
       LinearMap.coe_mk, AddHom.coe_mk, Module.algebraMap_end_apply]
@@ -672,12 +583,11 @@ noncomputable def φ0 :
     | zero =>
       erw [smul_zero]
 
-set_option synthInstance.maxHeartbeats 40000 in
-def MtoAox_KB : M hα hβ →ₗ[F] A ⊗[K] B :=
+def MtoAox_KB : d →ₗ[F] A ⊗[K] B :=
   Submodule.liftQ _
     (TensorProduct.lift
-      { toFun := fun a =>
-        { toFun := fun b => a ⊗ₜ b
+      { toFun a :=
+        { toFun b := a ⊗ₜ b
           map_add' := by simp [tmul_add]
           map_smul' := by simp }
         map_add' := by intros; ext; simp [add_tmul]
@@ -689,10 +599,10 @@ def MtoAox_KB : M hα hβ →ₗ[F] A ⊗[K] B :=
       simp only [SetLike.mem_coe, LinearMap.mem_ker, map_sub, lift.tmul, LinearMap.coe_mk,
         AddHom.coe_mk, tmul_smul, smul_tmul', sub_self])
 
-def Aox_KBToM_aux : A ⊗[K] B →+ M hα hβ :=
+def Aox_KBToM_aux : A ⊗[K] B →+ d :=
 TensorProduct.liftAddHom
-  { toFun := fun a =>
-    { toFun := fun b => Submodule.Quotient.mk <| a ⊗ₜ b
+  { toFun a :=
+    { toFun b := Submodule.Quotient.mk <| a ⊗ₜ b
       map_zero' := by simp
       map_add' := by simp [tmul_add] }
     map_zero' := by ext; simp
@@ -701,8 +611,7 @@ TensorProduct.liftAddHom
   rw [Submodule.Quotient.eq]
   exact Submodule.subset_span <| ⟨⟨k, a, b⟩, rfl⟩
 
-set_option synthInstance.maxHeartbeats 80000 in
-def Aox_KBToM : A ⊗[K] B →ₗ[F] M hα hβ where
+def Aox_KBToM : A ⊗[K] B →ₗ[F] d where
   __ := Aox_KBToM_aux hα hβ
   map_smul' := by
     intro f x
@@ -719,9 +628,7 @@ def Aox_KBToM : A ⊗[K] B →ₗ[F] M hα hβ where
       simp only [smul_zero, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_zero,
         RingHom.id_apply]
 
-set_option synthInstance.maxHeartbeats 80000 in
-def Aox_KBEquivM : M hα hβ ≃ₗ[F] A ⊗[K] B :=
-LinearEquiv.ofLinear
+def Aox_KBEquivM : d ≃ₗ[F] A ⊗[K] B := .ofLinear
   (MtoAox_KB _ _)
   (Aox_KBToM _ _)
   (by
@@ -745,8 +652,8 @@ LinearEquiv.ofLinear
       LinearMap.id_comp])
 
 open Module
-lemma M_F_dim [IsGalois F K] : finrank F (M hα hβ) = (finrank F K)^3 := by
-  rw [LinearEquiv.finrank_eq (Aox_KBEquivM hα hβ),
+lemma M_F_dim [IsGalois F K] : finrank F (d) = (finrank F K)^3 := by
+  rw [LinearEquiv.finrank_eq (Aox_KBEquivd),
     show finrank F (A ⊗[K] B) = finrank F K * finrank K (A ⊗[K] B) from
       Eq.symm (finrank_mul_finrank F K (A ⊗[K] B)),
     finrank_tensorProduct, finrank_eq_card_basis (x_AsBasis hα),
@@ -760,8 +667,8 @@ instance [IsGalois F K] : FiniteDimensional F C :=
     have : 0 < finrank F K := finrank_pos
     omega
 
-instance [IsGalois F K] : Module.Finite C (M hα hβ) :=
-  Module.Finite.right F C (M hα hβ)
+instance [IsGalois F K] : Module.Finite C (d) :=
+  Module.Finite.right F C (d)
 
 lemma exists_simple_module_directSum [IsGalois F K] :
   ∃ (S : Type) (_ : AddCommGroup S) (_ : Module C S) (_ : IsSimpleModule C S)
@@ -805,35 +712,35 @@ lemma exists_simple_module_directSum [IsGalois F K] :
 
 variable [IsGalois F K]
 
-def simpleMod : Type := exists_simple_module_directSum hα hβ |>.choose
+def SimpleMod : Type := exists_simple_module_directSud |>.choose
 
-local notation "SM" => simpleMod hα hβ
+local notation "SM" => SimpleMod hα hβ
 
-instance : AddCommGroup SM := exists_simple_module_directSum hα hβ |>.choose_spec.choose
+instance : AddCommGroup SM := exists_simple_module_directSud |>.choose_spec.choose
 
-instance : Module C SM := exists_simple_module_directSum hα hβ |>.choose_spec.choose_spec.choose
+instance : Module C SM := exists_simple_module_directSud |>.choose_spec.choose_spec.choose
 
 instance : Module F SM := Module.compHom SM (algebraMap F C)
 
-instance : IsSimpleModule C SM := exists_simple_module_directSum hα hβ
+instance : IsSimpleModule C SM := exists_simple_module_directSud
   |>.choose_spec.choose_spec.choose_spec.choose
 
-def indexingSet : Type := exists_simple_module_directSum hα hβ
+def indexingSet : Type := exists_simple_module_directSud
   |>.choose_spec.choose_spec.choose_spec.choose_spec.choose
 
 local notation "ι" => indexingSet hα hβ
 
-instance : Fintype ι := exists_simple_module_directSum hα hβ
+instance : Fintype ι := exists_simple_module_directSud
   |>.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.choose
 
-def isoιSM : C ≃ₗ[C] ι →₀ SM := exists_simple_module_directSum hα hβ
+def isoιSM : C ≃ₗ[C] ι →₀ SM := exists_simple_module_directSud
   |>.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.some
 
 instance : Nonempty ι := by
   by_contra!
   simp only [not_nonempty_iff] at this
   haveI : Subsingleton (ι →₀ SM) := inferInstance
-  haveI : Subsingleton C := isoιSM hα hβ |>.toEquiv.subsingleton
+  haveI : Subsingleton C := isoιSd |>.toEquiv.subsingleton
   haveI : Nontrivial C := inferInstance
   rw [← not_subsingleton_iff_nontrivial] at this
   contradiction
@@ -843,7 +750,7 @@ instance : NeZero (Fintype.card ι) := by
   simp
 
 def isoιSMPow : C ≃ₗ[C] ι → SM :=
-  isoιSM hα hβ ≪≫ₗ Finsupp.linearEquivFunOnFinite C SM ι
+  isoιSd ≪≫ₗ Finsupp.linearEquivFunOnFinite C SM ι
 
 def isoιSMPow' : C ≃ₗ[C] Fin (Fintype.card ι) → SM :=
   isoιSMPow hα hβ ≪≫ₗ
@@ -856,7 +763,7 @@ def isoιSMPow' : C ≃ₗ[C] Fin (Fintype.card ι) → SM :=
       intros; rfl }
 
 
-instance : LinearMap.CompatibleSMul (M hα hβ) (ι →₀ SM) F C := by
+instance : LinearMap.CompatibleSMul (d) (ι →₀ SM) F C := by
     constructor
     intro l f x
     change _ = algebraMap F C f • l x
@@ -869,7 +776,7 @@ instance : IsScalarTower F C SM := by
     change _ = algebraMap F C f • _ • x
     rw [Algebra.smul_def, mul_smul]
 
-instance : Module.Finite C (ι →₀ SM) := Module.Finite.equiv (isoιSM hα hβ)
+instance : Module.Finite C (ι →₀ SM) := Module.Finite.equiv (isoιSd)
 
 instance : Module.Finite F (ι →₀ SM) := Module.Finite.trans C (ι →₀ SM)
 
@@ -881,7 +788,7 @@ instance : SMulCommClass C F SM where
 section C_iso
 
 instance [DecidableEq (Module.End C SM)] : DivisionRing (Module.End C SM) :=
-  Module.End.divisionRing
+  Module.End.instDivisionRing
 
 variable [DecidableEq (Module.End C SM)]
 
@@ -913,34 +820,8 @@ AlgEquiv.ofRingEquiv (f := mopEquivEnd C) <| by
     Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, crossProductSMul_single,
     Module.algebraMap_end_apply]
 
-
-set_option synthInstance.maxHeartbeats 40000 in
-set_option maxHeartbeats 600000 in
 def C_iso_aux : Cᵐᵒᵖ ≃ₐ[F] Module.End C (Fin (Fintype.card ι) → SM) :=
-  let iso1 : Module.End C (Fin (Fintype.card ι) → SM) ≃ₐ[F] Module.End C C :=
-  { toFun := fun x => (isoιSMPow' hα hβ).symm ∘ₗ x ∘ₗ (isoιSMPow' hα hβ)
-    invFun := fun x => (isoιSMPow' hα hβ) ∘ₗ x ∘ₗ (isoιSMPow' hα hβ).symm
-    left_inv := by
-      intro x; ext; simp
-    right_inv := by
-      intro x; ext; simp
-    map_mul' := by
-      intro x y; ext; simp
-    map_add' := by
-      intro x y; ext; simp
-    commutes' := by
-      intro f
-      ext σ
-      simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
-        Module.algebraMap_end_apply, smul_val, one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul,
-        mul_inv_rev, crossProductSMul_single]
-      rw [show f • (isoιSMPow' hα hβ) 1 = algebraMap F C f • (isoιSMPow' hα hβ) 1 by rfl]
-      rw [map_smul]
-      simp only [algebraMap_val, LinearEquiv.symm_apply_apply, smul_eq_mul, _root_.mul_one, smul_val,
-        one_val, Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, crossProductSMul_single] }
-  mopEquivEnd' hα hβ |>.trans iso1.symm
-
-example : True := ⟨⟩
+  mopEquivEnd' hα hβ |>.trans <| (isoιSMPow' hα hβ).algConj F
 
 def C_iso_aux' : Cᵐᵒᵖ ≃ₐ[F] Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM) :=
   C_iso_aux hα hβ |>.trans <| isoDagger hα hβ _
@@ -952,17 +833,16 @@ lemma dim_endCSM : (finrank F K)^2 =
   rw [show finrank F Cᵐᵒᵖ = finrank F C by
     refine LinearEquiv.finrank_eq
       { toFun := unop
-        map_add' := fun _ _ => rfl
-        map_smul' := fun _ _ => rfl
+        map_add' _ _ := rfl
+        map_smul' _ _ := rfl
         invFun := op
         left_inv := unop_op
-        right_inv := fun _ => rfl }, CrossProduct.dim_eq_square] at eq1
+        right_inv _ := rfl }, CrossProduct.dim_eq_square] at eq1
   rw [eq1, matrixEquivTensor (Fin (Fintype.card ι)) F (Module.End C SM)  |>.toLinearEquiv.finrank_eq,
     finrank_tensorProduct, finrank_matrix]
   simp only [Fintype.card_fin, finrank_self, _root_.mul_one, pow_two]
   group
 
-set_option maxHeartbeats 1200000 in
 def C_iso_aux'' : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM))ᵐᵒᵖ where
   toFun c := op <| C_iso_aux' _ _ (op c)
   invFun m := (C_iso_aux' _ _ |>.symm m.unop).unop
@@ -994,8 +874,8 @@ def C_iso : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) 
 
 end C_iso
 
-lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃ₗ[C] ιM →₀ SM) := by
-  obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (M hα hβ) SM
+lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (d ≃ₗ[C] ιM →₀ SM) := by
+  obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (d) SM
   refine ⟨ιM, ?_, ⟨iso⟩⟩
 
   haveI : LinearMap.CompatibleSMul C (ιM →₀ SM) F C := by
@@ -1004,13 +884,13 @@ lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃�
     change _ = algebraMap F C f • l x
     rw [← map_smul]
     simp only [algebraMap_val, smul_assoc, one_smul]
-  let iso' : M hα hβ ≃ₗ[F] (ιM →₀ SM) := iso.restrictScalars F
+  let iso' : d ≃ₗ[F] (ιM →₀ SM) := iso.restrictScalars F
   haveI : IsScalarTower F C (ιM →₀ SM) := by
     constructor
     intro f c x
     change _ = algebraMap F C f • _ • x
     rw [Algebra.smul_def, mul_smul]
-  haveI : Module.Finite C (M hα hβ) := Module.Finite.right F C (M hα hβ)
+  haveI : Module.Finite C (d) := Module.Finite.right F C (d)
   haveI : Module.Finite C (ιM →₀ SM) := Module.Finite.equiv iso
   haveI : Module.Finite F (ιM →₀ SM) := Module.Finite.trans C (ιM →₀ SM)
   have eq := LinearEquiv.finrank_eq iso'
@@ -1038,14 +918,14 @@ lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃�
   rw [mul_comm] at ineq2
   exact lt_of_le_of_lt ineq2 ineq
 
-def indexingSetM : Type := (M_directSum hα hβ).choose
+def indexingSetM : Type := (M_directSud).choose
 
-local notation "ιM" => indexingSetM hα hβ
+local notation "ιM" => indexingSetd
 
-instance : Fintype ιM := (M_directSum hα hβ).choose_spec.choose
+instance : Fintype ιM := (M_directSud).choose_spec.choose
 
-def M_iso_directSum : M hα hβ ≃ₗ[C] ιM →₀ SM :=
-  (M_directSum hα hβ).choose_spec.choose_spec.some
+def M_iso_directSum : d ≃ₗ[C] ιM →₀ SM :=
+  (M_directSud).choose_spec.choose_spec.some
 
 instance : Module.Finite C SM := by
   rw [Module.finite_def, Submodule.fg_def]
@@ -1073,7 +953,7 @@ instance : Module.Finite C (Fin (Fintype.card ι * finrank F K) → SM) := by
   have := Finsupp.linearEquivFunOnFinite C SM (Fin (Fintype.card ι * finrank F K))
   refine Module.Finite.equiv this
 
-lemma M_iso_powAux : Nonempty (M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM) := by
+lemma M_iso_powAux : Nonempty (d ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM) := by
   rw [linearEquiv_iff_finrank_eq_over_simple_ring F C]
   have eq2 := rank_fun (η := (Fin (finrank F K * Fintype.card ι))) (M := SM) (R := F)
   rw [Fintype.card_fin, ← finrank_eq_rank F SM,
@@ -1083,15 +963,14 @@ lemma M_iso_powAux : Nonempty (M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.ca
   have := finrank_eq_of_rank_eq eq2
   rw [this, M_F_dim, _root_.mul_assoc, SM_F_dim, pow_three, pow_two]
 
-def M_iso_pow : M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM :=
+def M_iso_pow : d ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM :=
   M_iso_powAux _ _ |>.some
 
-def M_iso_pow' : M hα hβ ≃ₗ[F] Fin (finrank F K * Fintype.card ι) → SM :=
+def M_iso_pow' : d ≃ₗ[F] Fin (finrank F K * Fintype.card ι) → SM :=
 M_iso_pow _ _ |>.restrictScalars F
 
--- set_option maxHeartbeats 600000 in
-def endCMIso :
-    Module.End C (M hα hβ) ≃ₐ[F] Module.End C (Fin (finrank F K * Fintype.card ι) → SM) where
+-- def endCMIso :
+    Module.End C (d) ≃ₐ[F] Module.End C (Fin (finrank F K * Fintype.card ι) → SM) where
   toFun x := (M_iso_pow hα hβ) ∘ₗ x ∘ₗ (M_iso_pow hα hβ).symm
   invFun x := (M_iso_pow hα hβ).symm ∘ₗ x ∘ₗ (M_iso_pow hα hβ)
   left_inv := by
@@ -1106,13 +985,11 @@ def endCMIso :
       LinearEquiv.refl_toLinearMap, LinearMap.id_comp]
     simp only [LinearMap.comp_assoc, LinearEquiv.comp_coe, LinearEquiv.symm_trans_self,
       LinearEquiv.refl_toLinearMap, LinearMap.comp_id]
-  map_mul' := by
-    intro x y
+  map_mul' x y := by
     refine DFunLike.ext _ _ fun z => ?_
-    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mul_apply,
+    simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, Module.End.mul_apply,
       LinearEquiv.symm_apply_apply]
-  map_add' := by
-    intro x y
+  map_add' x y := by
     refine DFunLike.ext _ _ fun z => ?_
     simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.add_apply,
       map_add]
@@ -1134,13 +1011,13 @@ instance : NeZero (finrank F K * Fintype.card ι) := by
   omega
 
 def endCMIso' :
-    Module.End C (M hα hβ) ≃ₐ[F]
+    Module.End C (d) ≃ₐ[F]
     Matrix (Fin (finrank F K * Fintype.card ι))
       (Fin (finrank F K * Fintype.card ι)) (Module.End C SM) :=
   endCMIso hα hβ  |>.trans <| isoDagger _ _ _
 
 lemma dim_endCM :
-    finrank F (Module.End C (M hα hβ)) = (finrank F K)^4 := by
+    finrank F (Module.End C (d)) = (finrank F K)^4 := by
   have := LinearEquiv.finrank_eq (endCMIso' hα hβ).toLinearEquiv
   rw [this]
   have := matrixEquivTensor (Fin (finrank F K * Fintype.card ι)) F (Module.End C SM)
@@ -1154,21 +1031,21 @@ lemma dim_endCM :
   group
 
 def φ1 :
-    (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M hα hβ) :=
+    (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (d) :=
   AlgEquiv.ofBijective (φ0 hα hβ) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
     rw [dim_endCM, show finrank F (A ⊗[F] B)ᵐᵒᵖ = finrank F (A ⊗[F] B) by
       refine LinearEquiv.finrank_eq
         { toFun := unop
-          map_add' := fun _ _ => rfl
-          map_smul' := fun _ _ => rfl
+          map_add' _ _ := rfl
+          map_smul' _ _ := rfl
           invFun := op
           left_inv := unop_op
-          right_inv := fun _ => rfl }, finrank_tensorProduct, CrossProduct.dim_eq_square,
+          right_inv _ := rfl }, finrank_tensorProduct, CrossProduct.dim_eq_square,
       CrossProduct.dim_eq_square, pow_two, pow_succ]
     group)
 
 def φ2 :
-    (A ⊗[F] B) ≃ₐ[F] (Module.End C (M hα hβ))ᵐᵒᵖ where
+    (A ⊗[F] B) ≃ₐ[F] (Module.End C (d))ᵐᵒᵖ where
   toFun a := op <| φ1 _ _ (op a)
   invFun g := (φ1 _ _ |>.symm g.unop).unop
   left_inv := by intro x; simp
@@ -1197,8 +1074,8 @@ def φ4 :
       (Module.End C SM)ᵐᵒᵖ) :=
   φ3 _ _ |>.trans ((matrixEquivMatrixMop_algebra F _ _).symm)
 
-instance [DecidableEq (Module.End C SM)] : DivisionRing ((Module.End C SM)ᵐᵒᵖ) := by
-  letI : DivisionRing (Module.End C SM) := Module.End.divisionRing
+instance [DecidableEq (Module.End C SM)] : DivisionRing (Module.End C SM)ᵐᵒᵖ := by
+  letI : DivisionRing (Module.End C SM) := Module.End.instDivisionRing
   infer_instance
 
 lemma isBrauerEquivalent : IsBrauerEquivalent (⟨.of F (A ⊗[F] B)⟩ : CSA F) ⟨.of F C⟩ := by
@@ -1288,4 +1165,3 @@ def isoSnd :
 #print axioms isoSnd
 
 end RelativeBrGroup
-#min_imports
