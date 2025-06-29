@@ -594,21 +594,21 @@ noncomputable def φ0 :
       rw [smul_comm]
     }
   map_one' := by
-    refine LinearMap.ext fun _ => ?_
+    refine LinearMap.ext fun _ ↦ ?_
     simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply, implies_true]
   map_mul' x y := by
-    refine LinearMap.ext fun _ => ?_
+    refine LinearMap.ext fun _ ↦ ?_
     simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply]
     rw [mul_smul]
   map_zero' := by
-    refine LinearMap.ext fun _ => ?_
+    refine LinearMap.ext fun _ ↦ ?_
     simp only [zero_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply]
   map_add' x y := by
-    refine LinearMap.ext fun _ => ?_
+    refine LinearMap.ext fun _ ↦ ?_
     simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
     rw [add_smul]
   commutes' f := by
-    refine LinearMap.ext fun m => ?_
+    refine LinearMap.ext fun m ↦ ?_
     simp only [MulOpposite.algebraMap_apply, Algebra.TensorProduct.algebraMap_apply, algebraMap_val,
       LinearMap.coe_mk, AddHom.coe_mk, Module.algebraMap_end_apply]
     induction m using Quotient.inductionOn' with | h m =>
@@ -1059,16 +1059,16 @@ def endCMIso :
     simp only [LinearMap.comp_assoc, LinearEquiv.comp_coe, LinearEquiv.symm_trans_self,
       LinearEquiv.refl_toLinearMap, LinearMap.comp_id]
   map_mul' x y := by
-    refine DFunLike.ext _ _ fun z => ?_
+    refine DFunLike.ext _ _ fun z ↦ ?_
     simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mul_apply,
       LinearEquiv.symm_apply_apply]
   map_add' x y := by
-    refine DFunLike.ext _ _ fun z => ?_
+    refine DFunLike.ext _ _ fun z ↦ ?_
     simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.add_apply,
       map_add]
   commutes' := by
     intro f
-    refine DFunLike.ext _ _ fun z => ?_
+    refine DFunLike.ext _ _ fun z ↦ ?_
     simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
       Module.algebraMap_end_apply]
     change  (M_iso_pow' hα hβ) (f • (M_iso_pow' hα hβ).symm z) = f • z

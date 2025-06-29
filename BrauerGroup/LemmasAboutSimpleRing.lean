@@ -19,9 +19,9 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     have : Subsingleton (TwoSidedIdeal (B ⊗[K] C)) := by
       constructor
       intro I J
-      refine SetLike.ext fun x => ?_
+      refine SetLike.ext fun x ↦ ?_
       rw [show x = 0 from Subsingleton.elim _ _]
-      refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ => TwoSidedIdeal.zero_mem _⟩
+      refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ ↦ TwoSidedIdeal.zero_mem _⟩
     have H := hbc.1.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
@@ -34,9 +34,9 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     have : Subsingleton (TwoSidedIdeal (B ⊗[K] C)) := by
       constructor
       intro I J
-      refine SetLike.ext fun x => ?_
+      refine SetLike.ext fun x ↦ ?_
       rw [show x = 0 from Subsingleton.elim _ _]
-      refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ => TwoSidedIdeal.zero_mem _⟩
+      refine ⟨fun _ => TwoSidedIdeal.zero_mem _, fun _ ↦ TwoSidedIdeal.zero_mem _⟩
     have H := hbc.1.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
@@ -51,7 +51,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     refine SetLike.ext ?_
     intro b
     simp only [TwoSidedIdeal.mem_ker]
-    refine ⟨fun _ => trivial, fun _ => Subsingleton.elim _ _⟩
+    refine ⟨fun _ => trivial, fun _ ↦ Subsingleton.elim _ _⟩
   let F : B ⊗[K] C →ₐ[K] (B' ⊗[K] C) := Algebra.TensorProduct.map f (AlgHom.id _ _)
   have hF := IsSimpleRing.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
 

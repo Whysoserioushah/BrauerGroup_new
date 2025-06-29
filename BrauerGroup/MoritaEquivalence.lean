@@ -22,24 +22,24 @@ variable (ι : Type w) [Fintype ι] [Inhabited ι] [DecidableEq ι]
 
 instance (M : Type*) [AddCommGroup M] [Module R M] : Module M[ι, R] (ι → M) where
   smul N v i := ∑ j : ι, N i j • v j
-  one_smul v := funext fun i => show ∑ _, _ = _ by simp [one_apply]
-  mul_smul N₁ N₂ v := funext fun i => show ∑ _, _ = ∑ _, _ • (∑ _, _) by
+  one_smul v := funext fun i ↦ show ∑ _, _ = _ by simp [one_apply]
+  mul_smul N₁ N₂ v := funext fun i ↦ show ∑ _, _ = ∑ _, _ • (∑ _, _) by
     simp_rw [mul_apply, Finset.smul_sum, Finset.sum_smul, MulAction.mul_smul]
     rw [Finset.sum_comm]
-  smul_zero v := funext fun i => show ∑ _, _ = _ by simp
-  smul_add N v₁ v₂ := funext fun i => show ∑ j : ι, N i j • (v₁ + v₂) j = (∑ _, _) + (∑ _, _) by
+  smul_zero v := funext fun i ↦ show ∑ _, _ = _ by simp
+  smul_add N v₁ v₂ := funext fun i ↦ show ∑ j : ι, N i j • (v₁ + v₂) j = (∑ _, _) + (∑ _, _) by
     simp [Finset.sum_add_distrib]
-  add_smul N₁ N₂ v := funext fun i => show ∑ j : ι, (N₁ + N₂) i j • v j = (∑ _, _) + (∑ _, _) by
+  add_smul N₁ N₂ v := funext fun i ↦ show ∑ j : ι, (N₁ + N₂) i j • v j = (∑ _, _) + (∑ _, _) by
     simp [add_smul, Finset.sum_add_distrib]
-  zero_smul v := funext fun i => show ∑ _, _ = _ by simp
+  zero_smul v := funext fun i ↦ show ∑ _, _ = _ by simp
 
 omit [Inhabited ι] in
 lemma matrix_smul_vec_def {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M) :
-    N • v = fun i => ∑ j : ι, N i j • v j := rfl
+    N • v = fun i ↦ ∑ j : ι, N i j • v j := rfl
 
 omit [Inhabited ι] in
 lemma matrix_smul_vec_def' {M : Type*} [AddCommGroup M] [Module R M] (N : M[ι, R]) (v : ι → M) :
-    N • v = ∑ j : ι, fun i => N i j • v j := by
+    N • v = ∑ j : ι, fun i ↦ N i j • v j := by
   rw [matrix_smul_vec_def]
   ext
   simp
@@ -54,9 +54,9 @@ def toModuleCatOverMatrix : ModuleCat R ⥤ ModuleCat M[ι, R] where
   obj M := ModuleCat.of M[ι, R] (ι → M)
   map f := ModuleCat.ofHom {
     toFun := fun v i => f <| v i
-    map_add' := fun x y => funext fun i => show f (x i + y i) = f (x i) + f (y i) from
+    map_add' := fun x y => funext fun i ↦ show f (x i + y i) = f (x i) + f (y i) from
       f.hom.map_add _ _
-    map_smul' := fun m v => funext fun i => show f (∑ _, _) = ∑ _, _ by
+    map_smul' := fun m v => funext fun i ↦ show f (∑ _, _) = ∑ _, _ by
       simp only [RingHom.id_apply, map_sum, _root_.map_smul] }
   map_id _ := rfl
   map_comp _ _ := rfl
@@ -210,7 +210,7 @@ def matrix.unitIsoInv :
     { toFun x := (⟨Function.update (0 : ι → X) default x, by
         simp only [α, AddSubgroup.mem_mk, Set.mem_range]
         refine ⟨fun _ => x, ?_⟩
-        refine funext fun i => ?_
+        refine funext fun i ↦ ?_
         change ∑ _, _ = _
         simp only [stdBasisMatrix, of_apply, ite_smul, one_smul, zero_smul, Function.update,
           eq_rec_constant, Pi.zero_apply, dite_eq_ite]
@@ -225,7 +225,7 @@ def matrix.unitIsoInv :
         rintro (x : X) (y : X)
         simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
           fromModuleCatOverMatrix_obj_carrier, Functor.id_obj]
-        refine Subtype.ext $ funext fun i => ?_
+        refine Subtype.ext $ funext fun i ↦ ?_
         simp only [toModuleCatOverMatrix_obj_carrier]
         change _ =
           (Function.update (0 : ι → X) default x + Function.update (0 : ι → X) default y) i
@@ -234,7 +234,7 @@ def matrix.unitIsoInv :
         rintro r (x : X)
         simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
           fromModuleCatOverMatrix_obj_carrier, Functor.id_obj, RingHom.id_apply]
-        refine Subtype.ext $ funext fun i => ?_
+        refine Subtype.ext $ funext fun i ↦ ?_
         simp only [toModuleCatOverMatrix_obj_carrier]
         change _ = ∑ _, stdBasisMatrix default default r i _ • _
         simp only [Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite, smul_ite,
@@ -248,7 +248,7 @@ def matrix.unitIsoInv :
     simp only [Functor.id_obj, Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
       fromModuleCatOverMatrix_obj_carrier, Functor.id_map, Functor.comp_map]
     ext x
-    refine Subtype.ext $ funext fun i => ?_
+    refine Subtype.ext $ funext fun i ↦ ?_
     simp only [Functor.id_obj, Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
       fromModuleCatOverMatrix_obj_carrier, Function.comp_apply]
     erw [LinearMap.coe_mk, AddHom.coe_mk, Subtype.coe_mk, fromModuleCatOverMatrix_map,
@@ -272,7 +272,7 @@ def matrix.unitIso :
     simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
       fromModuleCatOverMatrix_obj_carrier, NatTrans.comp_app, Functor.id_obj,
       Function.comp_apply, NatTrans.id_app, ModuleCat.id_apply]
-    refine Subtype.ext $ funext fun i => ?_
+    refine Subtype.ext $ funext fun i ↦ ?_
     simp only [toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
       fromModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_carrier,
       fromModuleCatOverMatrix_obj_isModule, ModuleCat.hom_comp, fromModuleCatOverMatrix_obj_carrier,
@@ -319,11 +319,11 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         simp only [α, AddSubgroup.mem_mk, Set.mem_range]
         refine ⟨(stdBasisMatrix default i 1 : M[ι, R]) • m, ?_⟩
         simp only [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one]⟩
-      map_add' := fun x y => funext fun i => Subtype.ext $
+      map_add' := fun x y => funext fun i ↦ Subtype.ext $
         show (stdBasisMatrix default i 1 : M[ι, R]) • (x + y) =
           (stdBasisMatrix default i 1 : M[ι, R]) • x +
           (stdBasisMatrix default i 1 : M[ι, R]) • y from smul_add _ _ _
-      map_smul' := fun x m => funext fun i => Subtype.ext $ by
+      map_smul' := fun x m => funext fun i ↦ Subtype.ext $ by
         simp only [RingHom.id_apply]
         change _ = Subtype.val (∑ _, _)
         simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe]
@@ -366,7 +366,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         by rw [StdBasisMatrix.mul_same, one_mul], MulAction.mul_smul]
       refine Submodule.smul_mem _ _ ?_
       rw [show _ • x = 0 from Subtype.ext_iff.1 $ congr_fun hx i]
-      rfl, fun v => by
+      rfl, fun v ↦ by
       refine ⟨∑ k : ι, (stdBasisMatrix k default 1 : M[ι, R]) • (v k), ?_⟩
       simp only [map_sum, _root_.map_smul, LinearMap.coe_mk, AddHom.coe_mk]
       conv_rhs => rw [show v = ∑ k : ι, Function.update (0 : ι → (α R ι M)) k (v k) by
@@ -416,7 +416,7 @@ noncomputable def matrix.counitIsoHom :
       toModuleCatOverMatrix_obj_isAddCommGroup, fromModuleCatOverMatrix_obj_isAddCommGroup,
       toModuleCatOverMatrix_obj_isModule, fromModuleCatOverMatrix_obj_isModule, ModuleCat.hom_comp,
       LinearMap.coe_comp, Function.comp_apply]
-    refine funext fun i => ?_
+    refine funext fun i ↦ ?_
     erw [toModuleCatOverMatrix_map, ModuleCat.hom_ofHom]
     refine Subtype.ext ?_
     erw [counitIsoHomMap_hom_hom_apply_coe]
@@ -433,7 +433,7 @@ noncomputable def matrix.counitIsoInv :
     ext x
     simp only [Functor.comp_obj, fromModuleCatOverMatrix_obj_carrier,
       toModuleCatOverMatrix_obj_carrier, Function.comp_apply]
-    refine funext fun i => Subtype.ext ?_
+    refine funext fun i ↦ Subtype.ext ?_
     erw [counitIsoHomMap_hom_hom_apply_coe, fromModuleCatOverMatrix_map,
       toModuleCatOverMatrix_map]
     simp [counitIsoHomMap]
@@ -554,14 +554,14 @@ lemma isSimpleModule_iff_injective_or_eq_zero
     · intro N f
       refine inst1.2 (LinearMap.ker f.hom) |>.elim
         (fun h => Or.inr <| by rwa [LinearMap.ker_eq_bot] at h) <|
-        fun h => Or.inl <| by
+        fun h ↦ Or.inl <| by
           simp only [LinearMap.ker_eq_top] at h
           ext : 1
           rw [h]; simp
   · rintro ⟨inst1, h⟩
     refine ⟨fun p => ?_⟩
     refine h (.of R (M ⧸ p)) (ModuleCat.ofHom (Submodule.mkQ p)) |>.elim (fun h => Or.inr ?_) <|
-      fun h => Or.inl $ eq_bot_iff.2 fun x hx => h ?_
+      fun h ↦ Or.inl $ eq_bot_iff.2 fun x hx => h ?_
     · rw [ModuleCat.hom_ext_iff] at h
       simp only [ModuleCat.of_coe, ModuleCat.hom_zero, ModuleCat.hom_ofHom] at h
       rw [← Submodule.ker_mkQ p, LinearMap.ker_eq_top, h]

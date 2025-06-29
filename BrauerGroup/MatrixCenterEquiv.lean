@@ -9,7 +9,7 @@ section RingEquiv
 lemma Matrix.mem_center_iff (R : Type*) [Ring R] (n : ℕ) (M) :
     M ∈ Subring.center M[Fin n, R] ↔ ∃ α : (Subring.center R), M = α • 1 := by
   constructor
-  · if h : n = 0 then subst h; exact fun _ => ⟨0, Subsingleton.elim _ _⟩
+  · if h : n = 0 then subst h; exact fun _ ↦ ⟨0, Subsingleton.elim _ _⟩
     else
       intro h
       rw [Subring.mem_center_iff] at h
@@ -24,8 +24,8 @@ lemma Matrix.mem_center_iff (R : Type*) [Ring R] (n : ℕ) (M) :
         if heq : i = j then subst heq; rw [this i ⟨0, by omega⟩]; simp
         else simp [diag heq, Matrix.one_apply_ne heq]
       suffices b ∈ Subring.center R by aesop
-      refine Subring.mem_center_iff.mpr fun g => ?_
-      simpa [hb] using Matrix.ext_iff.2 (h (Matrix.diagonal fun _ => g)) ⟨0, by omega⟩ ⟨0, by omega⟩
+      refine Subring.mem_center_iff.mpr fun g ↦ ?_
+      simpa [hb] using Matrix.ext_iff.2 (h (Matrix.diagonal fun _ ↦ g)) ⟨0, by omega⟩ ⟨0, by omega⟩
   · rintro ⟨α, ha⟩; rw [Subring.mem_center_iff]; aesop
 
 def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R]:
@@ -33,10 +33,10 @@ def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R]:
   toFun A := ⟨(A.1 ⟨0, by omega⟩ ⟨0, by omega⟩), by
     obtain ⟨a, ha⟩ := (Matrix.mem_center_iff R n A.1).1 A.2
     simpa only [ha, smul_apply, one_apply_eq] using Subring.mul_mem _ a.2 $ Subring.one_mem _⟩
-  invFun a := ⟨a • 1, Subring.mem_center_iff.2 fun A => Matrix.ext fun i j => by simp [mul_comm]⟩
+  invFun a := ⟨a • 1, Subring.mem_center_iff.2 fun A ↦ Matrix.ext fun i j => by simp [mul_comm]⟩
   left_inv := by
     if hn : n = 0
-    then subst hn; exact fun _ => Subsingleton.elim _ _
+    then subst hn; exact fun _ ↦ Subsingleton.elim _ _
     else
     rintro ⟨A, hA⟩; obtain ⟨⟨α, hα⟩, rfl⟩ := Matrix.mem_center_iff _ _ _ |>.1 hA
     simp only [smul_apply, one_apply_eq, Subtype.mk.injEq]

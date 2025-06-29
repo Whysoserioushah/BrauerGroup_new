@@ -99,7 +99,7 @@ namespace tensor_self_op
 variable [Algebra.IsCentral K A] [hA: IsSimpleRing A] [FiniteDimensional K A]
 
 instance st : IsScalarTower K K (Module.End K A) where
-  smul_assoc k₁ k₂ f := DFunLike.ext _ _ fun a => by
+  smul_assoc k₁ k₂ f := DFunLike.ext _ _ fun a ↦ by
     change (k₁ * k₂) • f a = k₁ • (k₂ • f a)
     rw [mul_smul]
 
@@ -113,7 +113,7 @@ def toEnd : A ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
       map_mul' := by intros; ext; simp [mul_assoc]
       map_zero' := by aesop
       map_add' := by intros; ext; simp [add_mul]
-      commutes' k := DFunLike.ext _ _ fun a => show (algebraMap K A) k * a = k • _ from
+      commutes' k := DFunLike.ext _ _ fun a ↦ show (algebraMap K A) k * a = k • _ from
         (Algebra.smul_def _ _).symm }
     { toFun a :=
         { toFun x := x * a.unop
@@ -123,11 +123,11 @@ def toEnd : A ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
       map_mul' := by intros; ext; simp [mul_assoc]
       map_zero' := by aesop
       map_add' := by intros; ext; simp [mul_add]
-      commutes' k := DFunLike.ext _ _ fun a =>
+      commutes' k := DFunLike.ext _ _ fun a ↦
         show a * (algebraMap K A) k = k • _ by
           rw [Algebra.smul_def, Algebra.commutes]
           rfl }
-    fun a a' => show _ = _ from DFunLike.ext _ _ fun x => show a * (x * a'.unop) = a * x * a'.unop
+    fun a a' => show _ = _ from DFunLike.ext _ _ fun x ↦ show a * (x * a'.unop) = a * x * a'.unop
       from mul_assoc _ _ _ |>.symm
 
 -- instance : Algebra.IsCentral K Aᵐᵒᵖ := inferInstance -- CSA_op_is_CSA K A inferInstance
@@ -514,7 +514,7 @@ instance [IsAlgClosed K]: Unique (BrauerGroup (K := K)) where
 
 theorem Alg_closed_Brauer_trivial [IsAlgClosed K]: (⊤ : Subgroup (BrauerGroup K)) =
     (⊥ : Subgroup $ BrauerGroup (K := K)) :=
-  Subgroup.ext fun _ => ⟨fun _ ↦ Alg_closed_eq_one _, fun _ ↦ ⟨⟩⟩
+  Subgroup.ext fun _ ↦ ⟨fun _ ↦ Alg_closed_eq_one _, fun _ ↦ ⟨⟩⟩
 
 end BrauerGroup
 

@@ -239,7 +239,7 @@ lemma findimB (K A B M : Type u)
     FiniteDimensional K B := FiniteDimensional.of_injective (K := K) (V₂ := A) f (by
     change Function.Injective f
     have H := IsSimpleRing.injective_ringHom_or_subsingleton_codomain f.toRingHom
-    refine H.resolve_right fun rid => ?_
+    refine H.resolve_right fun rid ↦ ?_
     have : Nontrivial A := inferInstance
     rw [← not_subsingleton_iff_nontrivial] at this
     contradiction)

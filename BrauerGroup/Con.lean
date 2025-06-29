@@ -85,7 +85,7 @@ lemma comap_injective {F : Type*} [FunLike F R R'] [RingHomClass F R R']
     (f : F) (hf : Function.Surjective f) :
     Function.Injective (fun J : TwoSidedIdeal _ ↦ J.comap f) := by
   intro I J h
-  refine SetLike.ext fun x => ?_
+  refine SetLike.ext fun x ↦ ?_
   simp only [mem_comap] at h
   obtain ⟨x, rfl⟩ := hf x
   rw [← mem_comap, ← mem_comap, h]
@@ -124,7 +124,7 @@ def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (
       (RingEquivClass.toRingEquiv f).symm.toRingHom]
     simp only [RingEquiv.toRingHom_eq_coe, RingEquiv.symm_comp]
     rfl
-  right_inv I := SetLike.ext $ fun x => by
+  right_inv I := SetLike.ext $ fun x ↦ by
     simp only [mem_comap, RingEquiv.apply_symm_apply]
   map_rel_iff' := by
     intro I J

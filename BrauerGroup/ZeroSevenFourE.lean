@@ -125,14 +125,14 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           apply Subsingleton.elim⟩
         have eq : Module.finrank k M = 0 := by
           rw [Module.finrank_eq_zero_iff]
-          exact fun m => ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
+          exact fun m ↦ ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
         have eq' : Module.finrank k N = 0 := by
           rw [← h, eq]
         haveI : Unique N := ⟨⟨0⟩, by
           rw [Module.finrank_zero_iff] at eq'
           intro n
           exact Subsingleton.elim _ _⟩
-        refine ⟨⟨0, 0, fun x => Subsingleton.elim _ _, fun x => Subsingleton.elim _ _⟩⟩
+        refine ⟨⟨0, 0, fun x ↦ Subsingleton.elim _ _, fun x ↦ Subsingleton.elim _ _⟩⟩
       · letI : Unique (ι' →₀ S) := inferInstance
         letI : Unique N := ⟨⟨0⟩, by
           intros a
@@ -140,14 +140,14 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           apply Subsingleton.elim⟩
         have eq : Module.finrank k N = 0 := by
           rw [Module.finrank_eq_zero_iff]
-          exact fun m => ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
+          exact fun m ↦ ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
         have eq' : Module.finrank k M = 0 := by
           rw [h, eq]
         haveI : Unique M := ⟨⟨0⟩, by
           rw [Module.finrank_zero_iff] at eq'
           intro n
           exact Subsingleton.elim _ _⟩
-        refine ⟨⟨0, 0, fun x => Subsingleton.elim _ _, fun x => Subsingleton.elim _ _⟩⟩
+        refine ⟨⟨0, 0, fun x ↦ Subsingleton.elim _ _, fun x ↦ Subsingleton.elim _ _⟩⟩
 
     push_neg at Hιι'
     rw [not_isEmpty_iff, not_isEmpty_iff] at Hιι'
@@ -458,7 +458,7 @@ def end_simple_mod_of_wedderburn (n : ℕ) [NeZero n]
         simp only [moritaEquivalentToMatrix, toModuleCatOverMatrix, E]
         ext : 1
         simp only [LinearMap.coe_mk, AddHom.coe_mk]
-        refine funext fun j => ?_
+        refine funext fun j ↦ ?_
         rfl }
     (by
       simp only [Functor.id_obj, Functor.comp_obj, ModuleCat.hom_comp, E]
@@ -594,7 +594,7 @@ instance end_simple_mod_finite
 
 -- noncomputable def pow_basis  (n : ℕ) [NeZero n] (D : Type v) [DivisionRing D] :
 --     Basis (Fin n) Dᵐᵒᵖ (Fin n → D) :=
---   .mk (v := fun i => Pi.single i 1)
+--   .mk (v := fun i ↦ Pi.single i 1)
 --     (by
 --       rw [linearIndependent_iff]
 --       intro c hc
@@ -695,7 +695,7 @@ lemma exists_gen (M : Type v) [AddCommGroup M]
     ∃ m : M, m ≠ 0 ∧ ∀ m', ∃ a : A, m' = a • m := by
     have i : Submodule.IsPrincipal (⊤ : Submodule A M) := inferInstance
 
-    refine ⟨i.1.choose, ?_, fun m => by
+    refine ⟨i.1.choose, ?_, fun m ↦ by
       classical
       have : m ∈ Submodule.span A {i.1.choose} := by
         rw [← i.1.choose_spec]; trivial
@@ -736,7 +736,7 @@ def toEndEndAlgHom (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsSc
 
 instance (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]:
     Nontrivial (Module.End (Module.End A M) M) where
-  exists_pair_ne := ⟨0, 1, fun eq => gen_ne_zero A M congr($eq (gen A M)).symm⟩
+  exists_pair_ne := ⟨0, 1, fun eq ↦ gen_ne_zero A M congr($eq (gen A M)).symm⟩
 
 omit [FiniteDimensional k A] in
 lemma toEndEnd_injective

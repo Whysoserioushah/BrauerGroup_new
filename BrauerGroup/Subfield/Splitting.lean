@@ -87,7 +87,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
             simp only [Pi.smul_apply, smul_eq_mul, Algebra.mul_smul_comm, RingHom.id_apply]
         }, by
         rintro _ ⟨x, rfl⟩
-        refine LinearMap.ext fun v => ?_
+        refine LinearMap.ext fun v ↦ ?_
         simp only [AlgEquiv.toAlgHom_eq_coe, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
           AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
           AlgHom.coe_restrictScalars', AlgHom.coe_coe, Function.comp_apply,
@@ -131,7 +131,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
     rw [dim_eq2, ← pow_two] at dim_eq1
     let m := Module.finrank F B
     let M := Module.finrank F K
-    haveI : Nontrivial B := ⟨0, 1, fun r => by
+    haveI : Nontrivial B := ⟨0, 1, fun r ↦ by
       simp only [zero_ne_one] at r⟩
     simp only [_root_.mul_one] at dim_eq1
     change m * n ^ 2 = M^2 * _ at dim_eq1

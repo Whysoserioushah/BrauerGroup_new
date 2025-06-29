@@ -381,7 +381,7 @@ lemma Wedderburn_Artin.aux.equivIdeal
     map_add' := fun v1 v2 => by simp [add_mul, Finset.sum_add_distrib]
     map_smul' := fun a v => by simp [Finset.mul_sum, mul_assoc] }
 
-  have g_surj : Function.Surjective g := fun a =>
+  have g_surj : Function.Surjective g := fun a ↦
     ⟨fun j ↦ ⟨a * (i j), I.mul_mem_left _ (i j).2⟩,
       by simp [g, mul_assoc, ← Finset.mul_sum, one_eq]⟩
 
@@ -493,7 +493,7 @@ variable (K : Type u) (B : Type v) [Field K] [Ring B] [Algebra K B] [FiniteDimen
 -- lemma Matrix.mem_center_iff (R : Type*) [Ring R] (n : ℕ) (M) :
 --     M ∈ Subring.center M[Fin n, R] ↔ ∃ α : (Subring.center R), M = α • 1 := by
 --   constructor
---   · if h : n = 0 then subst h; exact fun _ => ⟨0, Subsingleton.elim _ _⟩
+--   · if h : n = 0 then subst h; exact fun _ ↦ ⟨0, Subsingleton.elim _ _⟩
 --     else
 --       intro h
 --       rw [Subring.mem_center_iff] at h
@@ -508,8 +508,8 @@ variable (K : Type u) (B : Type v) [Field K] [Ring B] [Algebra K B] [FiniteDimen
 --         if heq : i = j then subst heq; rw [this i ⟨0, by omega⟩]; simp
 --         else simp [diag heq, Matrix.one_apply_ne heq]
 --       suffices b ∈ Subring.center R by aesop
---       refine Subring.mem_center_iff.mpr fun g => ?_
---       simpa [hb] using Matrix.ext_iff.2 (h (Matrix.diagonal fun _ => g)) ⟨0, by omega⟩ ⟨0, by omega⟩
+--       refine Subring.mem_center_iff.mpr fun g ↦ ?_
+--       simpa [hb] using Matrix.ext_iff.2 (h (Matrix.diagonal fun _ ↦ g)) ⟨0, by omega⟩ ⟨0, by omega⟩
 
 --   · rintro ⟨α, ha⟩; rw [Subring.mem_center_iff]; aesop
 
@@ -519,7 +519,7 @@ lemma Matrix.mem_center_iff' (K R : Type*) [Field K] [Ring R] [Algebra K R] (n :
   Matrix.mem_center_iff R n M
 
 theorem RingEquiv.mem_center_iff {R1 R2 : Type*} [Ring R1] [Ring R2] (e : R1 ≃+* R2) :
-    ∀ x, x ∈ Subring.center R1 ↔ e x ∈ Subring.center R2 := fun x => by
+    ∀ x, x ∈ Subring.center R1 ↔ e x ∈ Subring.center R2 := fun x ↦ by
   simpa only [Subring.mem_center_iff] using
     ⟨fun h r => e.symm.injective $ by simp [h], fun h r => e.injective $ by simpa using h (e r)⟩
 
@@ -620,7 +620,7 @@ theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]
     Algebra.IsCentral K S := by
   constructor
   intro x hx
-  have hx' : (Matrix.diagonal fun _ => x) ∈ Subalgebra.center K M[Fin n, S] :=
+  have hx' : (Matrix.diagonal fun _ ↦ x) ∈ Subalgebra.center K M[Fin n, S] :=
     Matrix.mem_center_iff' _ _ _ _ |>.2 $
       ⟨⟨x, hx⟩, by
         ext; simp only [diagonal, of_apply]; split_ifs
@@ -628,9 +628,9 @@ theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]
           change _ = x • (1 : S)
           simp only [smul_eq_mul, mul_one]
         · simp_all only [le_bot_iff, smul_apply, ne_eq, not_false_eq_true, one_apply_ne, smul_zero]⟩
-  have hx'' : Wdb.symm (Matrix.diagonal fun _ => x) ∈ Subalgebra.center K B := by
+  have hx'' : Wdb.symm (Matrix.diagonal fun _ ↦ x) ∈ Subalgebra.center K B := by
     rw [Subalgebra.mem_center_iff] at hx' ⊢
-    exact fun b => Wdb.injective $ by simpa using hx' (Wdb b)
+    exact fun b ↦ Wdb.injective $ by simpa using hx' (Wdb b)
   obtain ⟨s, (hs : algebraMap _ _ s = _)⟩ := hctr.out hx''
   exact ⟨s, show algebraMap _ _ _ = _ by
     simpa using Matrix.ext_iff.2 congr(Wdb $hs) 0 0⟩

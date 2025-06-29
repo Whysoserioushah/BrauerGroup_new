@@ -247,7 +247,7 @@ lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
       specialize h (1 : A)
       simp_all [one_ne_zero, false_or, Ideal.mem_bot],
       by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : A)), ModuleCat.hom_ext <|
-      LinearMap.ext fun r => by
+      LinearMap.ext fun r ↦ by
       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, mopToEnd_apply, MulOpposite.unop_op,
         hom_ofHom, LinearMap.coe_mk, AddHom.coe_mk]
       rw [← smul_eq_mul, ← φ.hom.map_smul, smul_eq_mul, mul_one]⟩⟩
@@ -261,8 +261,8 @@ lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
 --         MulOpposite.unop_eq_zero_iff] at h
 --       specialize h (1 : R)
 --       simp_all only [one_ne_zero, false_or, Ideal.mem_bot],
---       by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : R)), ModuleCat.hom_ext <|
---       LinearMap.ext fun r => by
+--       by rintro rfl; simp⟩, fun $1 ↦ ⟨MulOpposite.op (φ.hom.toFun (1 : R)), ModuleCat.hom_ext <|
+--       LinearMap.ext fun r ↦ by
 --       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, MulOpposite.unop_op,
 --         mopToEnd_apply_hom_apply, MulOpposite.unop_op]
 --       rw [← smul_eq_mul, ← φ.hom.map_smul, smul_eq_mul, mul_one]⟩⟩

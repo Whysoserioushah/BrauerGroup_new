@@ -75,9 +75,9 @@ open scoped TensorProduct
 section should_be_elsewhere
 
 instance (B : Type*) [Ring B] [Algebra K B]: Algebra K (Subring.center B) :=
-  RingHom.toAlgebra <| (algebraMap K B).codRestrict _ <| fun x => by
+  RingHom.toAlgebra <| (algebraMap K B).codRestrict _ <| fun x ↦ by
     rw [Subring.mem_center_iff]
-    exact fun y => Algebra.commutes x y |>.symm
+    exact fun y ↦ Algebra.commutes x y |>.symm
 
 lemma TensorProduct.sum_tmul_basis_right_eq_zero'
     (B : Type*) [Ring B] [Algebra K B]
@@ -88,7 +88,7 @@ lemma TensorProduct.sum_tmul_basis_right_eq_zero'
     ∀ i ∈ s, b i = 0 := by
   intro i
   have := TensorProduct.sum_tmul_basis_right_eq_zero (κ := ιC) 𝒞 (M := B)
-    { support := s.filter fun i => b i ≠ 0
+    { support := s.filter fun i ↦ b i ≠ 0
       toFun x := if x ∈ s then b x else 0
       mem_support_toFun := by simp }
     (by
@@ -323,7 +323,7 @@ instance TensorProduct.nontrivial
     (A B : Type v) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     [Nontrivial A] [Nontrivial B] :
     Nontrivial (A ⊗[K] B) := by
-  refine ⟨0, 1, fun r => ?_⟩
+  refine ⟨0, 1, fun r ↦ ?_⟩
   let f : K ⊗[K] B →ₐ[K] A ⊗[K] B :=
     Algebra.TensorProduct.map (Algebra.ofId _ _) (.id _ _)
   have hf : Function.Injective f := Module.Flat.rTensor_preserves_injective_linearMap _
@@ -444,7 +444,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
           else right; exact ⟨hx', hx⟩
         · rintro (rfl|⟨_, hx2⟩) <;> assumption
 
-      have span_bi₀ : TwoSidedIdeal.span {b i₀} = ⊤ := isSimple_B.1.2 _ |>.resolve_left fun r => by
+      have span_bi₀ : TwoSidedIdeal.span {b i₀} = ⊤ := isSimple_B.1.2 _ |>.resolve_left fun r ↦ by
         have mem : b i₀ ∈ (⊥ : TwoSidedIdeal B) := by
           rw [← r]
           apply TwoSidedIdeal.subset_span
@@ -531,7 +531,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
             rw [TensorProduct.add_tmul]
 
       rw [Ω_eq2] at Ω_in_I
-      have hI : I.comap f = ⊤ := isSimple_A.2 _ |>.resolve_left fun r => by
+      have hI : I.comap f = ⊤ := isSimple_A.2 _ |>.resolve_left fun r ↦ by
         have mem : 𝒜 i₀ + (∑ i ∈ (s.erase i₀).attach, (k i.1 i.2 • 𝒜 i)) ∈ I.comap f := by
           rw [TwoSidedIdeal.mem_comap]
           exact Ω_in_I
@@ -660,7 +660,7 @@ lemma _root_.AlgEquiv.isCentral {K B C : Type*}
   out z hz := by
     obtain ⟨k, hk⟩ := hc.out (show e.symm z ∈ _ by
       simp only [Subalgebra.mem_center_iff] at hz ⊢
-      exact fun x => by simpa using congr(e.symm $(hz (e x))))
+      exact fun x ↦ by simpa using congr(e.symm $(hz (e x))))
     exact ⟨k, by simpa [Algebra.ofId_apply] using congr(e $hk)⟩
 
 theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
@@ -670,7 +670,7 @@ theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
   haveI := TwoSidedIdeal.equivRingConMatrix' D (ι := (Fin n)) 0 |>.isSimpleOrder
   refine ⟨fun d hd => ?_⟩
   obtain ⟨k, hk⟩ := Wdb.isCentral.1
-    (show (Matrix.diagonal fun _ => d) ∈ _ by
+    (show (Matrix.diagonal fun _ ↦ d) ∈ _ by
       rw [Matrix.mem_center_iff']
       refine ⟨⟨d, hd⟩, ?_⟩
       ext i j

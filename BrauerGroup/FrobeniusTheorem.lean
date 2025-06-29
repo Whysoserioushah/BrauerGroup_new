@@ -13,7 +13,7 @@ section prerequisites
 
 set_option synthInstance.maxHeartbeats 80000 in
 theorem rank_1_D_iso_R [Algebra ℝ D] : Module.finrank ℝ D = 1 →
-    Nonempty (D ≃ₐ[ℝ] ℝ) := fun h => by
+    Nonempty (D ≃ₐ[ℝ] ℝ) := fun h ↦ by
   have h' := Subalgebra.finrank_eq_one_iff (F := ℝ) (S := (⊤ : Subalgebra ℝ D))
   have : Module.finrank ℝ (⊤ : Subalgebra ℝ D) = 1 := by
     simp_all only [Subalgebra.finrank_eq_one_iff, Subalgebra.bot_eq_top_of_finrank_eq_one]
@@ -108,7 +108,7 @@ lemma f_is_conjugation : ∃ (x : Dˣ), ∀ (z : k), (x.1⁻¹) * (f k e z) * x 
   intro z
   have hx2 := hx
   specialize hx z
-  apply_fun fun y => ↑x⁻¹ * y * ↑x at hx
+  apply_fun fun y ↦ ↑x⁻¹ * y * ↑x at hx
   nth_rw 2 [mul_assoc, mul_assoc] at hx
   simp only [Units.val_inv_eq_inv_val, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
     OneHom.coe_mk, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,

@@ -76,7 +76,7 @@ lemma dim_eq' [FiniteDimensional F K] : Module.finrank K A = Module.finrank F K 
     Eq.symm (Module.finrank_mul_finrank F K A.carrier.carrier)
   rw [A.dim_eq_square, pow_two] at this
   simp only [mul_eq_mul_left_iff] at this
-  refine this.recOn Eq.symm fun rid => ?_
+  refine this.recOn Eq.symm fun rid ↦ ?_
   have : 0 < Module.finrank F K := Module.finrank_pos
   omega
 
@@ -90,7 +90,7 @@ def conjFactor : (σ : K ≃ₐ[F] K) → Type :=
   fun σ => { a : Aˣ //  ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹ }
 
 def arbitraryConjFactor : A.conjFactor σ :=
-⟨SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose, fun x =>
+⟨SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose, fun x ↦
   SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose_spec x⟩
 
 variable {A ρ σ τ}
@@ -99,7 +99,7 @@ variable {A ρ σ τ}
     x.1 * A.ι c * x.1⁻¹ = A.ι (σ c) := x.2 c |>.symm
 
 def mul' (x : A.conjFactor σ) (y : A.conjFactor τ) : A.conjFactor (σ * τ) :=
-⟨x.1 * y.1, fun c => by
+⟨x.1 * y.1, fun c ↦ by
   simp only [AlgEquiv.mul_apply, Units.val_mul, _root_.mul_assoc, mul_inv_rev]
   rw [← _root_.mul_assoc (A.ι c), ← mul_assoc (y.1 : A), ← mul_assoc (y.1 : A),
     conjFactor_prop, ← _root_.mul_assoc, conjFactor_prop]⟩
@@ -484,7 +484,7 @@ lemma compare_conjFactorCompCoeff
   simp only [map_mul, eq1]
 
 def trivialFactorSet (c : (K ≃ₐ[F] K) → Kˣ) : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
-  fun p => c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
+  fun p ↦ c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
 
 lemma compare_toTwoCocycles (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFactor σ) :
     B.toTwoCocycles y_ (σ, τ) *
@@ -564,7 +564,7 @@ def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
 end GoodRep
 
 def RelativeBrGroup.toSnd :  RelativeBrGroup K F → groupCohomology.H2 (galAct F K) :=
-  fun X => (goodRep X).toH2 (goodRep X).arbitraryConjFactor
+  fun X ↦ (goodRep X).toH2 (goodRep X).arbitraryConjFactor
 
 lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
     (A : GoodRep K X.1) (x_ : Π σ, A.conjFactor σ) :
@@ -673,7 +673,7 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     specialize eq6 c τ τ.2
     rw [mul_comm] at eq6
     simp only [Subtype.coe_eta, mul_eq_mul_right_iff] at eq6
-    refine eq6.recOn Eq.symm fun rid => ?_
+    refine eq6.recOn Eq.symm fun rid ↦ ?_
     simp only [Finsupp.mem_support_iff, ne_eq] at τ_mem
     contradiction
 
@@ -1515,7 +1515,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
     exact Subalgebra.zero_mem _
 
 instance : Nontrivial (CrossProduct ha) where
-  exists_pair_ne := ⟨0, 1, fun h => by
+  exists_pair_ne := ⟨0, 1, fun h ↦ by
     have := congr($(h).val 1)
     simp only [zero_val, Pi.zero_apply, one_val, Prod.mk_one_one, Pi.single_eq_same,
       zero_eq_inv] at this
@@ -1532,7 +1532,7 @@ def πRes : (ι ha).range →+* I.ringCon.Quotient :=
   RingHom.domRestrict (π I) (ι ha).range
 
 variable {I} in
-def x : (πRes I).range → K := fun x => x.2.choose.2.choose
+def x : (πRes I).range → K := fun x ↦ x.2.choose.2.choose
 
 lemma hx (a : πRes I |>.range) : πRes I ⟨ι ha (x a), by simp⟩ = a := by
   rw [← a.2.choose_spec]
@@ -1758,7 +1758,7 @@ def basis (ne_top : I ≠ ⊤) : Basis (K ≃ₐ[F] K) K I.ringCon.Quotient :=
         specialize eq6 c τ τ.2
         rw [mul_comm] at eq6
         simp only [Subtype.coe_eta, mul_eq_mul_right_iff] at eq6
-        refine eq6.recOn Eq.symm fun rid => ?_
+        refine eq6.recOn Eq.symm fun rid ↦ ?_
         simp only [Finsupp.mem_support_iff, ne_eq] at τ_mem
         contradiction
       subst eq7
@@ -2050,7 +2050,7 @@ lemma toSnd_fromSnd :
   let A : GoodRep K (Quotient.mk'' <| asCSA ha) :=
     ⟨asCSA ha, rfl, ι ha, dim_eq_square ha⟩
 
-  let y_ σ : A.conjFactor σ := ⟨x_ ha σ, fun c => by erw [x__conj ha σ]; rfl⟩
+  let y_ σ : A.conjFactor σ := ⟨x_ ha σ, fun c ↦ by erw [x__conj ha σ]; rfl⟩
   rw [toSnd_wd (A := A) (x_ := y_)]
   let b : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ := A.toTwoCocycles y_
 

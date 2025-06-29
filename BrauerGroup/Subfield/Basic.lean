@@ -100,7 +100,7 @@ theorem coe_toSubalgebra (L : SubField K A) : (L.toSubalgebra : Set A) = L := rf
 variable {K A} in
 theorem toSubalgebra_injective :
     Function.Injective (SubField.toSubalgebra : SubField K A → Subalgebra K A) :=
-  fun S T h => ext' fun x => by rw [← mem_toSubring, ← mem_toSubring, h]
+  fun S T h => ext' fun x ↦ by rw [← mem_toSubring, ← mem_toSubring, h]
 
 theorem toSubalgebra_inj {S U : SubField K A} : S.toSubalgebra = U.toSubalgebra ↔ S = U :=
   toSubalgebra_injective.eq_iff
@@ -108,7 +108,7 @@ theorem toSubalgebra_inj {S U : SubField K A} : S.toSubalgebra = U.toSubalgebra 
 def toSubalgebra' : SubField K A ↪o Subalgebra K A where
   toEmbedding := {
     toFun S := {S with}
-    inj' := fun _ _ h => ext' fun x => SetLike.ext_iff.1 h x
+    inj' := fun _ _ h => ext' fun x ↦ SetLike.ext_iff.1 h x
   }
   map_rel_iff' := SetLike.coe_subset_coe.symm.trans SetLike.coe_subset_coe
 
