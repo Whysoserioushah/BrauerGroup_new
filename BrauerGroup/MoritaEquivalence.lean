@@ -10,7 +10,7 @@ import Mathlib.RingTheory.SimpleRing.Basic
 
 open Matrix
 
-open CategoryTheory BigOperators
+open CategoryTheory
 
 universe u u' u'' v v' v'' w
 

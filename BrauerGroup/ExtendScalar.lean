@@ -4,7 +4,7 @@ suppress_compilation
 
 universe u
 
-open scoped TensorProduct BigOperators
+open scoped TensorProduct
 
 variable (k K L A : Type u) [Field k] [Field K] [Field L] [Algebra k K] [Algebra K L]
   [Algebra k L] [Ring A] [Algebra k A] [IsScalarTower k K L]

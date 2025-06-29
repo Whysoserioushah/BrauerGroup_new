@@ -15,7 +15,7 @@ universe u v v₁ v₂ w
 variable (K : Type u) [Field K]
 variable (A B : Type u) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
 
-open scoped TensorProduct BigOperators
+open scoped TensorProduct
 
 lemma bijective_of_dim_eq_of_isCentralSimple
     [csa_source : IsSimpleRing A]
@@ -444,7 +444,7 @@ lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) o
   exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso _|>.trans this⟩⟩
 
 variable (K R : Type*) [CommSemiring K] [Semiring R] [Algebra K R] in
-open BigOperators Matrix MulOpposite in
+open Matrix MulOpposite in
 /-- Mn(Rᵒᵖ) ≃ₐ[K] Mₙ(R)ᵒᵖ -/
 def matrixEquivMatrixMop_algebra (n : ℕ):
     Matrix (Fin n) (Fin n) Rᵐᵒᵖ ≃ₐ[K] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where

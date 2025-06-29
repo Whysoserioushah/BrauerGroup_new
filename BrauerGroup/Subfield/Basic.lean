@@ -4,7 +4,7 @@ universe u
 
 suppress_compilation
 
-open BigOperators TensorProduct MulOpposite
+open TensorProduct MulOpposite
 
 section def_and_lemmas
 

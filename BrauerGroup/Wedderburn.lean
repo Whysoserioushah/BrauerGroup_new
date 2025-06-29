@@ -7,7 +7,7 @@ import Mathlib.RingTheory.HopkinsLevitzki
 
 variable (A : Type*) [Ring A]
 
-open BigOperators Matrix MulOpposite
+open Matrix MulOpposite
 
 local notation "M[" ι "," R "]" => Matrix ι ι R
 

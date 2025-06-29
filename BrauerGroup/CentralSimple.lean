@@ -29,7 +29,6 @@ algebras in this case according to our definition.
 universe u v w
 
 open Classical
-open scoped BigOperators
 
 -- /--
 -- For a field `K` and a `K`-algebra `D`, we say that `D` is a central algebra over `K` if the center

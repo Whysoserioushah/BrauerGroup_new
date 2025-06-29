@@ -10,7 +10,7 @@ universe u
 
 variable (K F : Type u) [Field K] [Field F] [Algebra F K]
 
-open FiniteDimensional MulOpposite BrauerGroup BigOperators TensorProduct
+open FiniteDimensional MulOpposite BrauerGroup TensorProduct
 
 section CSA
 

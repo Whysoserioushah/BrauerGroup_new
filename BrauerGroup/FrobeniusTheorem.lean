@@ -5,7 +5,7 @@ import Mathlib.Data.Complex.FiniteDimensional
 
 suppress_compilation
 
-open TensorProduct BigOperators Classical FiniteDimensional
+open TensorProduct Classical FiniteDimensional
 
 variable {D : Type} [DivisionRing D]
 

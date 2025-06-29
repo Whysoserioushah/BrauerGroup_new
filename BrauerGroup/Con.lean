@@ -7,7 +7,7 @@ import Mathlib.RingTheory.TwoSidedIdeal.Operations
 variable {M : Type*} [AddCommMonoid M] (r : AddCon M) {ι : Type*} (s : Finset ι)
 variable {R : Type*} [Ring R] (t : TwoSidedIdeal R)
 
-open BigOperators MulOpposite
+open MulOpposite
 
 namespace RingCon
 
