@@ -20,7 +20,7 @@ theorem rank_1_D_iso_R [Algebra ℝ D] : Module.finrank ℝ D = 1 →
   exact ⟨Subalgebra.topEquiv.symm.trans $ Subalgebra.equivOfEq _ _
     (h'.1 this)|>.trans $ Algebra.botEquiv ℝ D⟩
 
-lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K]:
+lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K] :
     Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
   let CC := AlgebraicClosure K
   letI : Algebra ℝ CC := AlgebraicClosure.instAlgebra K
@@ -873,7 +873,7 @@ abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set
   }
 
 -- set_option maxHeartbeats 1600000 in
-lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D]: ∃(L : SubField ℝ D),
+lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D] : ∃(L : SubField ℝ D),
     IsMaximalSubfield ℝ D L := by
   obtain ⟨m, hm⟩ := zorn_le_nonempty (α := SubField ℝ D) (fun α hα hα' ↦ by
     letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
@@ -887,7 +887,7 @@ lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D]: ∃(L : SubField 
   exact ⟨m, isMax_iff_isMaxSubfield _ _ _ |>.1 hm⟩
 
 set_option synthInstance.maxHeartbeats 40000 in
-theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]:
+theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
   have hh := RealExtension_is_RorC (Subalgebra.center ℝ A)
   cases' hh with hR hC

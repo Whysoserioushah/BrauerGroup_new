@@ -74,7 +74,7 @@ open scoped TensorProduct
 
 section should_be_elsewhere
 
-instance (B : Type*) [Ring B] [Algebra K B]: Algebra K (Subring.center B) :=
+instance (B : Type*) [Ring B] [Algebra K B] : Algebra K (Subring.center B) :=
   RingHom.toAlgebra <| (algebraMap K B).codRestrict _ <| fun x ↦ by
     rw [Subring.mem_center_iff]
     exact fun y ↦ Algebra.commutes x y |>.symm

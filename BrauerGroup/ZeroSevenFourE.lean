@@ -707,7 +707,7 @@ lemma exists_gen (M : Type v) [AddCommGroup M]
     simp only [Submodule.span_zero_singleton, top_ne_bot] at this
 
 noncomputable def gen (M : Type v) [AddCommGroup M]
-    [Module A M] [IsSimpleModule A M]: M :=
+    [Module A M] [IsSimpleModule A M] : M :=
     (exists_gen A M).choose
 
 omit [IsSimpleRing A] in
@@ -734,7 +734,7 @@ def toEndEndAlgHom (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsSc
   commutes' a := by ext; simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, toEndEnd_apply,
     DistribMulAction.toLinearMap_apply, algebraMap_smul]; rfl
 
-instance (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M]:
+instance (M : Type v) [AddCommGroup M] [Module A M] [IsSimpleModule A M] :
     Nontrivial (Module.End (Module.End A M) M) where
   exists_pair_ne := ⟨0, 1, fun eq ↦ gen_ne_zero A M congr($eq (gen A M)).symm⟩
 

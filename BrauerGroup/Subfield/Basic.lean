@@ -22,7 +22,7 @@ instance (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] : LE (SubFie
 def IsMaximalSubfield (K A : Type u) [CommSemiring K] [Semiring A] [Algebra K A] (L : SubField K A) : Prop
   := ∀ (B : SubField K A), L ≤ B → B = L
 
-instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A]: Nonempty (SubField K A) :=
+instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A] : Nonempty (SubField K A) :=
   have e : K ≃ₐ[K] (Algebra.ofId K A).range := AlgEquiv.ofBijective
     (Algebra.ofId K A).rangeRestrict ⟨by
       suffices Function.Injective (Algebra.ofId K A) from
@@ -151,3 +151,4 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
 end SubField
 
 end instances
+] :

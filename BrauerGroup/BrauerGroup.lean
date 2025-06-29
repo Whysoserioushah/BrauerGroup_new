@@ -255,7 +255,7 @@ def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
   eqv_in (one_mul_in n A) (Matrix (Fin n) (Fin n) A) $
     by unfold one_mul_in ; exact matrixEquivTensor _ K A |>.symm
 
-def dim_1 (R : Type*) [Ring R] [Algebra K R]: Algebra K (Matrix (Fin 1) (Fin 1) R) where
+def dim_1 (R : Type*) [Ring R] [Algebra K R] : Algebra K (Matrix (Fin 1) (Fin 1) R) where
   algebraMap := {
     toFun k := Matrix.diagonal (λ _ => (Algebra.ofId K R) k)
     map_one' := by simp only [map_one, Matrix.diagonal_one]
@@ -270,7 +270,7 @@ def dim_1 (R : Type*) [Ring R] [Algebra K R]: Algebra K (Matrix (Fin 1) (Fin 1) 
     Matrix.smul_apply, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, Matrix.diagonal_mul,
     Algebra.smul_def]; rfl
 
-def dim_one_iso (R : Type*) [Ring R] [Algebra K R]: (Matrix (Fin 1) (Fin 1) R) ≃ₐ[K] R where
+def dim_one_iso (R : Type*) [Ring R] [Algebra K R] : (Matrix (Fin 1) (Fin 1) R) ≃ₐ[K] R where
   toFun m := m 0 0
   invFun r := Matrix.diagonal (λ _ => r)
   left_inv m := by ext i j; fin_cases i; fin_cases j; simp only [Fin.isValue, Fin.zero_eta,
@@ -286,7 +286,7 @@ def dim_one_iso (R : Type*) [Ring R] [Algebra K R]: (Matrix (Fin 1) (Fin 1) R) �
 
 open IsBrauerEquivalent
 
-theorem eqv_mat (A : CSA K) (n : ℕ) [hn : NeZero n]: IsBrauerEquivalent A (matrix_A n A) := by
+theorem eqv_mat (A : CSA K) (n : ℕ) [hn : NeZero n] : IsBrauerEquivalent A (matrix_A n A) := by
   refine ⟨n, 1, hn.1, one_ne_zero, ?_⟩
   unfold matrix_A one_mul_in eqv_in
   exact ⟨dim_one_iso _ |>.symm⟩
@@ -374,7 +374,7 @@ lemma mul_assoc (A B C : CSA K) :
   IsBrauerEquivalent.iso_to_eqv (K := K) _ _ $ Algebra.TensorProduct.assoc _ _ _ _
 
 def huarongdao (A B C D : Type*) [Ring A] [Ring B] [Ring C] [Ring D] [Algebra K A]
-    [Algebra K B] [Algebra K C] [Algebra K D]:
+    [Algebra K B] [Algebra K C] [Algebra K D] :
     (A ⊗[K] B) ⊗[K] C ⊗[K] D ≃ₐ[K] (A ⊗[K] C) ⊗[K] B ⊗[K] D := by
   let eq1 := Algebra.TensorProduct.congr (R := K)
     (Algebra.TensorProduct.comm K A B) $ AlgEquiv.refl (A₁ := C ⊗[K] D)
@@ -498,21 +498,21 @@ instance Bruaer_Group : Group (BrauerGroup (K := K)) where
   mul_one := mul_one'
   inv_mul_cancel := mul_left_inv'
 
-lemma Alg_closed_equiv_one [IsAlgClosed K]: ∀(A : CSA K), IsBrauerEquivalent A one_in' := by
+lemma Alg_closed_equiv_one [IsAlgClosed K] : ∀(A : CSA K), IsBrauerEquivalent A one_in' := by
   intro A
   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed K A
   exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A|>.trans iso⟩⟩
 
-lemma Alg_closed_eq_one [IsAlgClosed K]: ∀(A : BrauerGroup (K := K)), A = 1 := by
+lemma Alg_closed_eq_one [IsAlgClosed K] : ∀(A : BrauerGroup (K := K)), A = 1 := by
   intro A ; induction' A using Quotient.inductionOn' with A
   change _ = Quotient.mk'' one_in' ; apply Quotient.sound
   change IsBrauerEquivalent _ _; exact Alg_closed_equiv_one A
 
-instance [IsAlgClosed K]: Unique (BrauerGroup (K := K)) where
+instance [IsAlgClosed K] : Unique (BrauerGroup (K := K)) where
   default := 1
   uniq := Alg_closed_eq_one
 
-theorem Alg_closed_Brauer_trivial [IsAlgClosed K]: (⊤ : Subgroup (BrauerGroup K)) =
+theorem Alg_closed_Brauer_trivial [IsAlgClosed K] : (⊤ : Subgroup (BrauerGroup K)) =
     (⊥ : Subgroup $ BrauerGroup (K := K)) :=
   Subgroup.ext fun _ ↦ ⟨fun _ ↦ Alg_closed_eq_one _, fun _ ↦ ⟨⟩⟩
 

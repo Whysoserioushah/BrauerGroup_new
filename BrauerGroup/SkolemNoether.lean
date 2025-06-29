@@ -16,7 +16,7 @@ def module_inst (K A B M : Type u)
     [Ring B] [Algebra K B] (f : B →ₐ[K] A) := M
 
 instance (K A B M : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
-    [Ring B] [Algebra K B] (f: B →ₐ[K] A) [AddCommGroup M]:
+    [Ring B] [Algebra K B] (f: B →ₐ[K] A) [AddCommGroup M] :
     AddCommGroup (module_inst K A B M f) :=
   inferInstanceAs $ AddCommGroup M
 
@@ -245,7 +245,7 @@ lemma findimB (K A B M : Type u)
     contradiction)
 
 omit hB in
-lemma iso_fg [hB1 : IsSimpleRing B]:
+lemma iso_fg [hB1 : IsSimpleRing B] :
   Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
   haveI := findimB K A B M f
   rw [linearEquiv_iff_finrank_eq_over_simple_ring K]

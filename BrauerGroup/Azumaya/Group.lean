@@ -14,7 +14,7 @@ section Inv
 
 open MulOpposite
 
-abbrev Endmop (A : Type*) [Ring A] [Algebra R A]: Module.End R A →ₐ[R] Module.End R (Aᵐᵒᵖ) where
+abbrev Endmop (A : Type*) [Ring A] [Algebra R A] : Module.End R A →ₐ[R] Module.End R (Aᵐᵒᵖ) where
   toFun f := (opLinearEquiv R).toLinearMap ∘ₗ f ∘ₗ (opLinearEquiv R).symm.toLinearMap
   map_one' := rfl
   map_mul' _ _ := rfl
@@ -22,12 +22,12 @@ abbrev Endmop (A : Type*) [Ring A] [Algebra R A]: Module.End R A →ₐ[R] Modul
   map_add' _ _ := rfl
   commutes' _ := rfl
 
-abbrev EndmopEquiv (A : Type*) [Ring A] [Algebra R A]: Module.End R A ≃ₐ[R] Module.End R (Aᵐᵒᵖ) :=
+abbrev EndmopEquiv (A : Type*) [Ring A] [Algebra R A] : Module.End R A ≃ₐ[R] Module.End R (Aᵐᵒᵖ) :=
   AlgEquiv.ofBijective (Endmop R A) ⟨
   fun f1 f2 h ↦ by simp at h; exact h, fun f ↦ ⟨(opLinearEquiv R).symm.toLinearMap ∘ₗ f ∘ₗ
     (opLinearEquiv R).toLinearMap, rfl⟩⟩
 
-example (A : Type*) [Ring A] [Algebra R A]:
+example (A : Type*) [Ring A] [Algebra R A] :
   (Aᵐᵒᵖ)ᵐᵒᵖ ≃ₐ[R] A := by exact (AlgEquiv.opOp R A).symm
 
     --  <| (AlgHom.mulLeftRight R A).comp <|
@@ -45,7 +45,7 @@ Aᵐᵒᵖ ⊗ A                       |
 Aᵐᵒᵖ⊗ Aᵐᵒᵖᵐᵒᵖ -------------> End R Aᵐᵒᵖ
 ```
 -/
-lemma Mopcomm_square (A : Type*) [Ring A] [Algebra R A]:
+lemma Mopcomm_square (A : Type*) [Ring A] [Algebra R A] :
     AlgHom.mulLeftRight R Aᵐᵒᵖ = (EndmopEquiv R A|>.toAlgHom.comp <|
     (AlgHom.mulLeftRight R A).comp <|
     (Algebra.TensorProduct.comm R Aᵐᵒᵖ A).toAlgHom.comp <|

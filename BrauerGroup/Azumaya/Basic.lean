@@ -90,7 +90,7 @@ lemma IsSimpleRing.ofAlgEquiv (A B : Type*) [Ring A] [Ring B] [Algebra K A] [Alg
     (e : A ≃ₐ[K] B) (hA : IsSimpleRing A) : IsSimpleRing B :=
   ⟨OrderIso.isSimpleOrder_iff (TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv)|>.1 hA.1⟩
 
-theorem IsAzumaya_iff_CentralSimple [Nontrivial A]: IsAzumaya K A ↔ FiniteDimensional K A ∧
+theorem IsAzumaya_iff_CentralSimple [Nontrivial A] : IsAzumaya K A ↔ FiniteDimensional K A ∧
     Algebra.IsCentral K A ∧ IsSimpleRing A :=
   ⟨fun ⟨bij⟩ ↦
     letI e := AlgEquiv.ofBijective _ bij|>.trans <| algEquivMatrix <| Module.finBasis _ _
@@ -123,7 +123,7 @@ def finswap {n m : ℕ}: Fin (n * m) ≃ Fin (m * n) where
 open ModuleCat in
 lemma IsMorita_iff_IsBrauer' (R : Type u) [CommRing R] (A B : Type v) [Ring A] [Ring B]
     [IsSimpleRing A] [IsSimpleRing B] [IsArtinianRing A] [IsArtinianRing B] [Algebra R A]
-    [Algebra R B]:
+    [Algebra R B] :
     IsMoritaEquivalent R A B ↔ ∃(n m : ℕ), n ≠ 0 ∧ m ≠ 0 ∧ (Nonempty <|
     Matrix (Fin n) (Fin n) A ≃ₐ[R] Matrix (Fin m) (Fin m) B) := ⟨fun hAB ↦
   by
@@ -165,7 +165,7 @@ open scoped TensorProduct
 
 variable (R : Type u) [CommRing R]
 
-instance (n : ℕ) [NeZero n]: FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
+instance (n : ℕ) [NeZero n] : FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
   eq_of_smul_eq_smul {r1 r2} h12 := by
     specialize h12 (1 : Matrix _ _ _)
     rw [← Matrix.ext_iff] at h12
@@ -247,7 +247,7 @@ lemma Mat.bij (n : ℕ): Function.Bijective (AlgHom.mulLeftRight R (Matrix (Fin 
 
 end
 
-instance (n : ℕ) [NeZero n]: FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
+instance (n : ℕ) [NeZero n] : FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
   eq_of_smul_eq_smul {r1 r2} h := by
     specialize h 1
     rw [← Matrix.ext_iff] at h

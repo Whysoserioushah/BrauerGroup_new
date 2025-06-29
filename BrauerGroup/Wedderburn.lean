@@ -605,7 +605,7 @@ lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [
 
 set_option maxHeartbeats 800000 in
 lemma Wedderburn_Artin_algebra_version
-    [sim : IsSimpleRing B]:
+    [sim : IsSimpleRing B] :
     ∃ (n : ℕ) (_ : NeZero n) (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
     Nonempty (B ≃ₐ[K] (M[Fin n, S])) := by
   classical

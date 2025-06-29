@@ -25,7 +25,7 @@ def Algebra.TensorProduct.assoc' (R S R' A B C : Type*) [CommSemiring R] [CommSe
     [CommSemiring R'] [Semiring A] [Semiring B] [Semiring C] [Algebra R R'] [Algebra R A]
     [Algebra R' A] [Algebra R B] [Algebra R' B] [Algebra R C]
     [IsScalarTower R R' A] [IsScalarTower R R' B] [Algebra S A] [Algebra R S] [Algebra R' S]
-    [IsScalarTower R' S A] [IsScalarTower R S A]:
+    [IsScalarTower R' S A] [IsScalarTower R S A] :
     (A ⊗[R'] B) ⊗[R] C ≃ₐ[S] A ⊗[R'] B ⊗[R] C :=
   AlgEquiv.ofLinearEquiv (TensorProduct.AlgebraTensorModule.assoc _ _ _ _ _ _)
     rfl (LinearMap.map_mul_iff _|>.2 <| by ext; simp)
@@ -43,7 +43,7 @@ lemma Algebra.TensorProduct.assoc'_apply (R S R' A B C : Type*) [CommSemiring R]
   -- [inst_16 : Module R P] [inst_17 : IsScalarTower R A P] [inst_18 : Algebra A B] [inst_19 : IsScalarTower A B M] :
   -- (M ⊗[A] P) ⊗[R] Q ≃ₗ[B] M ⊗[A] P ⊗[R] Q := sorry
 
--- instance [Algebra F E] [IsScalarTower K F E]: IsScalarTower K (Algebra.ofId F E).range E where
+-- instance [Algebra F E] [IsScalarTower K F E] : IsScalarTower K (Algebra.ofId F E).range E where
 --   smul_assoc k := fun ⟨f, hf⟩ x ↦ by
 --     change (k • f) • _ = k • f • x
 --     exact smul_assoc _ _ _
@@ -51,7 +51,7 @@ lemma Algebra.TensorProduct.assoc'_apply (R S R' A B C : Type*) [CommSemiring R]
 -- instance [Algebra F E] : Algebra (Algebra.ofId F E).range F :=
 --   RingHom.toAlgebra (AlgEquiv.ofInjectiveField (Algebra.ofId F E)).symm
 
--- instance [Algebra F E] [IsScalarTower K F E]: IsScalarTower K (Algebra.ofId F E).range F where
+-- instance [Algebra F E] [IsScalarTower K F E] : IsScalarTower K (Algebra.ofId F E).range F where
 --   smul_assoc k := fun ⟨e, he⟩ x ↦ by
 --     simp only [RingHom.smul_toAlgebra, RingHom.coe_coe]
 --     change (AlgEquiv.restrictScalars K (AlgEquiv.ofInjectiveField (Algebra.ofId F E)).symm) _ * _ = _

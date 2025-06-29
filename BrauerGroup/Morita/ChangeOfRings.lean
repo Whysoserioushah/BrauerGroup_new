@@ -16,7 +16,7 @@ namespace ModuleCat
 
 universe v u₁ u₂ u₃ w
 
-instance {R₀ S} [CommRing R₀] [Ring S] [Algebra R₀ S]:
+instance {R₀ S} [CommRing R₀] [Ring S] [Algebra R₀ S] :
     Linear R₀ (ModuleCat S) := Algebra.instLinear
 
 universe u₀ u u' u''  v'
@@ -88,7 +88,7 @@ variable (A B : Type u) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
 -- instance (h : IsMoritaEquivalent ℤ R S) : (equiv R S h).inverse.Additive :=
 --     inferInstance
 
-instance (n : ℕ) [NeZero n]: Functor.Additive (moritaEquivalentToMatrix A (Fin n)).functor :=
+instance (n : ℕ) [NeZero n] : Functor.Additive (moritaEquivalentToMatrix A (Fin n)).functor :=
   Functor.additive_of_preserves_binary_products _
 
 -- instance (N : ModuleCat A): Module R N := Module.compHom N (algebraMap R A)
@@ -227,7 +227,7 @@ def mopToEnd : Aᵐᵒᵖ →ₐ[R] End (ModuleCat.of A A) where
 --   smul_def' := fun k f ↦ by apply ModuleCat.hom_ext; simp; ext; simp; rfl
 
 -- @[simp]
--- def mopToEndAlgHom [Algebra K R]: Rᵐᵒᵖ →ₐ[K] End (ModuleCat.of R R) where
+-- def mopToEndAlgHom [Algebra K R] : Rᵐᵒᵖ →ₐ[K] End (ModuleCat.of R R) where
 --   __ := mopToEnd R
 --   commutes' := fun k ↦ by
 --     apply ModuleCat.hom_ext

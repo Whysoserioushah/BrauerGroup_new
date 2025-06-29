@@ -28,7 +28,7 @@ abbrev N [Group G] : Rep.ofMulAction k G G ⟶ Rep.ofMulAction k G G where
 --   comm := _
 -- }, sorry⟩⟩
 
-abbrev sigmaminus1 [CommGroup G]: Rep.ofMulAction k G G ⟶ Rep.ofMulAction k G G where
+abbrev sigmaminus1 [CommGroup G] : Rep.ofMulAction k G G ⟶ Rep.ofMulAction k G G where
   hom := ModuleCat.ofHom ((Representation.ofMulAction k G G).asAlgebraHom (.single σ 1 - 1))
   comm g := by
     ext g1 :3
@@ -72,7 +72,7 @@ def ChainComplexAbel [CommGroup G] : ChainComplex (Rep k G) ℕ where
       rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
       simp
 
-abbrev π_aux [CommGroup G]: Action.Hom ((ChainComplexAbel G k σ).X Nat.zero)
+abbrev π_aux [CommGroup G] : Action.Hom ((ChainComplexAbel G k σ).X Nat.zero)
     (((ChainComplex.single₀ (Rep k G)).obj (Rep.trivial k G k)).X Nat.zero) where
   hom := ModuleCat.ofHom (Finsupp.lsum ℕ 1 : _ →ₗ[k] k)
   comm g := by
@@ -114,7 +114,7 @@ def CyclicCoh.π [CommGroup G] : (ChainComplexAbel G k σ) ⟶
     erw [Finsupp.lsum_single, Finsupp.lsum_single]
     simp
 
-def CyclicCoh.homotopy_aux [CommGroup G]: Action.Hom (Rep.trivial k G k)
+def CyclicCoh.homotopy_aux [CommGroup G] : Action.Hom (Rep.trivial k G k)
     ((ChainComplexAbel G k σ).X 0) where
   hom := ModuleCat.ofHom {
       toFun kk := Finsupp.linearEquivFunOnFinite k k G|>.symm <| Function.const G kk
@@ -201,19 +201,19 @@ lemma im_sigmainus1_eq_ker_π [CommGroup G] (hσ : Submonoid.powers σ = ⊤):
   -- simp [Representation.ofMulAction] at hx ⊢
   sorry
 
-lemma N_ker_eq_im_sigmainus1 [CommGroup G]: LinearMap.ker (N G k).1.hom =
+lemma N_ker_eq_im_sigmainus1 [CommGroup G] : LinearMap.ker (N G k).1.hom =
     LinearMap.range (sigmaminus1 G k σ).1.hom := SetLike.ext_iff.2 fun (x : MonoidAlgebra k G) ↦
   ⟨fun hx ↦ by
     simp at hx ⊢
     sorry, by sorry⟩
 
-lemma sigmaminus1_ker_eq_N_im [CommGroup G]: LinearMap.ker (sigmaminus1 G k σ).1.hom = LinearMap.range (N G k).1.hom := by
+lemma sigmaminus1_ker_eq_N_im [CommGroup G] : LinearMap.ker (sigmaminus1 G k σ).1.hom = LinearMap.range (N G k).1.hom := by
   sorry
 
-instance (V : ModuleCat k) [Subsingleton V]: Subsingleton (End V) where
+instance (V : ModuleCat k) [Subsingleton V] : Subsingleton (End V) where
   allEq _ _ := ModuleCat.hom_ext <| LinearMap.ext (fun _ ↦ Subsingleton.allEq _ _)
 
-def singletonVasRep [Group G] (V : ModuleCat k) [Subsingleton V]: CategoryTheory.Limits.IsZero
+def singletonVasRep [Group G] (V : ModuleCat k) [Subsingleton V] : CategoryTheory.Limits.IsZero
     (⟨V, ⟨⟨0, Subsingleton.elim _ _⟩, fun _ _ ↦ rfl⟩⟩ : Rep k G) where
   unique_to W := ⟨⟨⟨0, fun _ ↦ by simp⟩, fun _ ↦ by ext (x : V); simp [Subsingleton.elim x 0]⟩⟩
   unique_from W := ⟨⟨⟨ModuleCat.ofHom 0, fun _ ↦ rfl⟩, fun f ↦ by ext x; simp; rw [Subsingleton.elim (f.1.hom x) 0]⟩⟩
@@ -231,11 +231,11 @@ lemma singleton_isZero [Group G] : ∀ X : Rep k G, Limits.IsZero X → Subsingl
   exact Equiv.subsingleton.symm this.toEquiv
 
 open ZeroObject in
-instance singleton_zero [Group G]: Subsingleton (0 : Rep k G) :=
+instance singleton_zero [Group G] : Subsingleton (0 : Rep k G) :=
   singleton_isZero G k 0 (Limits.isZero_zero (Rep k G))
 
 open ZeroObject in
-instance [Group G]: Subsingleton ((forget₂ (Rep k G) (ModuleCat k)).obj 0) :=
+instance [Group G] : Subsingleton ((forget₂ (Rep k G) (ModuleCat k)).obj 0) :=
   singleton_zero G k
 
 open ZeroObject HomologicalComplex in

@@ -37,7 +37,7 @@ abbrev aux0 (N : ModuleCat A): Module.End A N →ₐ[R] Module.End B (e1.obj N) 
 
 abbrev _root_.Module.End.restrictScalars (R S M R₁: Type*) [Ring R] [Ring S] [CommRing R₁]
     [AddCommGroup M] [Module R M] [Module R₁ M] [Module S M] [Algebra R₁ R] [IsScalarTower R₁ R M]
-    [Algebra R₁ S] [IsScalarTower R₁ S M] [LinearMap.CompatibleSMul M M R S]:
+    [Algebra R₁ S] [IsScalarTower R₁ S M] [LinearMap.CompatibleSMul M M R S] :
     Module.End S M →ₐ[R₁] (M →ₗ[R] M) :=
   AlgHom.ofLinearMap (LinearMap.restrictScalarsₗ R S M M R₁) (by rfl) (by intros; rfl)
 
@@ -324,7 +324,7 @@ instance: (equivModuleOverTensor R A C).functor.Linear R where
     congr 1
     simp
 
-abbrev toBCfunctor (F : ModuleCat A ⥤ ModuleCat B) [F.Additive] [F.Linear R]:
+abbrev toBCfunctor (F : ModuleCat A ⥤ ModuleCat B) [F.Additive] [F.Linear R] :
     TensorModule R A C ⥤ TensorModule R B C where
   obj M := {
     carrier := F.obj M.1
@@ -344,7 +344,7 @@ abbrev toBCfunctor (F : ModuleCat A ⥤ ModuleCat B) [F.Additive] [F.Linear R]:
   map_id M := by ext : 1; exact F.map_id M.1
   map_comp f g := by ext1; exact F.map_comp f.hom g.hom
 
-abbrev MoritaTensorAux0 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
+abbrev MoritaTensorAux0 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     TensorModule R A C ≌ TensorModule R B C where
   functor := toBCfunctor R A B C e.functor
   inverse := toBCfunctor R B A C e.inverse
@@ -354,22 +354,22 @@ abbrev MoritaTensorAux0 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [
     (e.counitIso.app M.1) fun c ↦ by ext; simp) fun {M N} f ↦ by ext; simp
   functor_unitIso_comp M := by ext; simp
 
-instance(e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
+instance(e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     (MoritaTensorAux0 R A B C e).functor.Additive where
   map_add := by intros; ext1; exact e.functor.map_add
 
-instance (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
+instance (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     (MoritaTensorAux0 R A B C e).functor.Linear R where
   map_smul {M N} f r := by
     ext1; simp
     exact e.functor.map_smul _ _
 
-abbrev MoritaTensorAux1 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
+abbrev MoritaTensorAux1 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     ModuleCat (A ⊗[R] C) ≌ ModuleCat (B ⊗[R] C) :=
   (equivModuleOverTensor R A C).symm.trans ((MoritaTensorAux0 R A B C e).trans
       (equivModuleOverTensor R B C))
 
--- instance MoritaTensorAux1_additive (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
+-- instance MoritaTensorAux1_additive (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
 --     (MoritaTensorAux1 R A B C e).functor.Additive := by
 --   exact Functor.additive_of_preserves_binary_products _
 
@@ -382,7 +382,7 @@ instance: Functor.Linear R (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
   map_smul {X Y} f r := by
     ext1; rfl
 
-instance MoritaTensorAux1_linear (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R]:
+instance MoritaTensorAux1_linear (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     (MoritaTensorAux1 R A B C e).functor.Linear R where
   map_smul {M N} f r := by
     ext m
