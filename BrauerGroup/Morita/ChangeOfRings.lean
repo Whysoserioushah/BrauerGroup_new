@@ -351,8 +351,6 @@ def aux2 (M N : ModuleCat B) (f : M ≅ N) : End M ≃ₐ[R] End N where
     erw [map_smul f.hom.hom]
     simp
     rfl
-    -- simp
-    -- chan
 
 noncomputable def toRingMopEquiv : Aᵐᵒᵖ ≃ₐ[R] Bᵐᵒᵖ :=
   mopAlgEquivEnd R A |>.trans $
@@ -370,7 +368,7 @@ noncomputable def toRingEquiv : A ≃ₐ[R] B where
   commutes' r := by
     dsimp
     rw [show (MulOpposite.op <| algebraMap R A r) = algebraMap R Aᵐᵒᵖ r by rfl]
-    rw [AlgEquiv.commutes, ]
+    rw [AlgEquiv.commutes]
     rfl
 
 -- end division_ring

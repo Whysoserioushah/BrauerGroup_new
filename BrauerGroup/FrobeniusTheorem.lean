@@ -804,8 +804,8 @@ instance AlgCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional �
 
 set_option synthInstance.maxHeartbeats 40000 in
 lemma smulCRassoc (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
-    (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)) (r : ℝ) (z : ℂ) (a : A) : (e (r • z)) * a =
-    r • ((e z) * a) := by
+    (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)) (r : ℝ) (z : ℂ) (a : A) : e (r • z) * a =
+    r • (e z * a) := by
   rw [map_smul e, Subalgebra.coe_smul]
   exact smul_mul_assoc r (↑(e z)) a
 

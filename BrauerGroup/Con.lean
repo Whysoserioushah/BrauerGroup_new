@@ -61,7 +61,7 @@ def fromMop (rel : TwoSidedIdeal Rᵐᵒᵖ) : TwoSidedIdeal R := .mk {
 Two-sided-ideals of `A` and that of `Aᵒᵖ` corresponds bijectively to each other.
 -/
 @[simps]
-def toMopOrderIso : (TwoSidedIdeal R) ≃o (TwoSidedIdeal Rᵐᵒᵖ) where
+def toMopOrderIso : TwoSidedIdeal R ≃o TwoSidedIdeal Rᵐᵒᵖ where
   toFun := toMop
   invFun := fromMop
   left_inv := unop_op

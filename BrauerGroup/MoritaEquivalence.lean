@@ -8,9 +8,7 @@ import Mathlib.LinearAlgebra.Basis.VectorSpace
 import Mathlib.RingTheory.SimpleModule.Basic
 import Mathlib.RingTheory.SimpleRing.Basic
 
-open Matrix
-
-open CategoryTheory
+open CategoryTheory Matrix
 
 universe u u' u'' v v' v'' w
 
