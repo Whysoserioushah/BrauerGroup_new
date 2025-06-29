@@ -1,5 +1,7 @@
 import BrauerGroup.Subfield.Subfield
-import Mathlib
+import Mathlib.Algebra.QuaternionBasis
+import Mathlib.Analysis.Quaternion
+import Mathlib.Data.Complex.FiniteDimensional
 
 suppress_compilation
 
