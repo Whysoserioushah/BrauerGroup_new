@@ -6,7 +6,6 @@ import BrauerGroup.Azumaya.Mul
 import BrauerGroup.BrauerGroup
 import BrauerGroup.BrauerOverR
 import BrauerGroup.CSA.ReducedCharPoly
-import BrauerGroup.CSA.exp
 import BrauerGroup.CentralSimple
 import BrauerGroup.Centralizer
 import BrauerGroup.Con
