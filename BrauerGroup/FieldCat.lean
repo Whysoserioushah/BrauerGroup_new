@@ -55,7 +55,6 @@ instance : Category FieldCat where
   id R := ⟨RingHom.id R⟩
   comp f g := ⟨g.hom.comp f.hom⟩
 
-
 instance {R S : FieldCat.{u}} : CoeFun (R ⟶ S) (fun _ ↦ R → S) where
   coe f := f.hom
 
@@ -100,7 +99,6 @@ lemma ofHom_comp {R S T : Type u} [Field R] [Field S] [Field T]
 lemma ofHom_apply {R S : Type u} [Field R] [Field S]
     (f : R →+* S) (r : R) : ofHom f r = f r := rfl
 
-
 @[simp]
 lemma inv_hom_apply {R S : FieldCat} (e : R ≅ S) (r : R) : e.inv (e.hom r) = r := by
   rw [← comp_apply]
@@ -119,7 +117,6 @@ instance : HasForget.{u} FieldCat where
     { obj := fun R => R
       map := fun f => f.hom }
   forget_faithful := ⟨fun h => by ext x; simpa using congrFun h x⟩
-
 
 /-- This unification hint helps with problems of the form `(forget ?C).obj R =?= carrier R'`.
 
@@ -162,7 +159,6 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
     let ff : X →+* Y := f.hom
     let e : X ≃+* Y := { ff, i.toEquiv with }
     exact FieldCat.RingEquiv.toRingCatIso e|>.isIso_hom
-
 
 -- instance : BundledHom.ParentProjection @Field.toCommRing :=
 --   ⟨⟩
@@ -297,7 +293,6 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
 -- def FieldCatIsoToRingEquiv {X Y : FieldCat} (i : X ≅ Y) : X ≃+* Y :=
 --   RingEquiv.ofHomInv i.hom i.inv i.hom_inv_id i.inv_hom_id
 
-
 -- end CategoryTheory.Iso
 
 -- /-- Field equivalences between `FieldCat`s are the same as (isomorphic to) isomorphisms in
@@ -313,7 +308,6 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
 --     let ff : X →+* Y := f
 --     let e : X ≃+* Y := { ff, i.toEquiv with }
 --     exact (FieldEquiv.toFieldCatIso e).isIso_hom
-
 
 -- -- It would be nice if we could have the following,
 -- -- but it requires making `reflectsIsomorphisms_forget₂` an instance,

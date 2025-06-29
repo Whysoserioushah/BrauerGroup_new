@@ -170,7 +170,6 @@ def mopToEnd : Aᵐᵒᵖ →+* Module.End A A where
   map_add' := by aesop
   map_mul' := by aesop
 
-
 /--
 The canonical map from `A` to `Hom(A, A)ᵒᵖ`
 -/
@@ -604,7 +603,6 @@ lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
     exact congr_arg e $ by ext; simp [Pi.single]
 
-
 set_option maxHeartbeats 800000 in
 lemma Wedderburn_Artin_algebra_version
     [sim : IsSimpleRing B]:
@@ -653,7 +651,7 @@ theorem is_fin_dim_of_wdb
 
 lemma bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed
     (K D : Type*) [Field K] [IsAlgClosed K] [Ring D] [IsSimpleRing D] [IsDomain D] [Algebra K D]
-    [FiniteDimensional K D] : Function.Bijective (algebraMap K D) := 
+    [FiniteDimensional K D] : Function.Bijective (algebraMap K D) :=
   ⟨(algebraMap K D).injective, IsAlgClosed.algebraMap_surjective_of_isIntegral⟩
 
 theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :

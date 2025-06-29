@@ -64,7 +64,6 @@ lemma bijective_of_dim_eq_of_isCentralSimple
 
       exact one_ne_zero this |>.elim
 
-
 lemma bijective_of_surj_of_isCentralSimple
     [csa_source : IsSimpleRing A]
     (f : A →ₐ[K] B) [Nontrivial B] (h : Function.Surjective f) :
@@ -179,9 +178,7 @@ def tensor_op_self
 
 -/
 
-
 variable {K : Type u} [Field K]
-
 
 namespace IsBrauerEquivalent
 
@@ -345,7 +342,6 @@ lemma matrixEquivForward_surjective
     refine h1 ?_ ?_ |>.elim <;> aesop
   · rfl
 
-
 def matrix_eqv (m n : ℕ): (Matrix (Fin m) (Fin m) K) ⊗[K] (Matrix (Fin n) (Fin n) K) ≃ₐ[K]
     Matrix (Fin m × Fin n) (Fin m × Fin n) K :=
   AlgEquiv.ofBijective
@@ -364,7 +360,6 @@ def matrix_eqv (m n : ℕ): (Matrix (Fin m) (Fin m) K) ⊗[K] (Matrix (Fin n) (F
     apply bijective_of_surj_of_isCentralSimple
     apply matrixEquivForward_surjective
 
-
 lemma one_mul (n : ℕ) [hn : NeZero n] (A : CSA K) :
     IsBrauerEquivalent A (one_mul_in n A) :=
   ⟨n, 1, hn.1, one_ne_zero, ⟨AlgEquiv.symm $ (dim_one_iso _).trans $ matrixEquivTensor _ _ _ |>.symm⟩⟩
@@ -373,7 +368,6 @@ lemma mul_one (n : ℕ) [hn : NeZero n] (A : CSA K) :
     IsBrauerEquivalent A (mul_one_in n A) :=
   ⟨n, 1, hn.1, one_ne_zero, ⟨AlgEquiv.symm $ (dim_one_iso _).trans $ AlgEquiv.symm $
     matrixEquivTensor _ _ _ |>.trans $ Algebra.TensorProduct.comm _ _ _⟩⟩
-
 
 lemma mul_assoc (A B C : CSA K) :
     IsBrauerEquivalent (mul (mul A B) C) (mul A (mul B C)) :=

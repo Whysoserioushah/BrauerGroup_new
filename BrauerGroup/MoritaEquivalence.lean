@@ -201,7 +201,6 @@ def matrix.unitIsoHom :
     refine Finset.sum_congr rfl fun i _ => ?_
     simp only [_root_.map_smul]
 
-
 set_option maxHeartbeats 600000 in
 @[simps]
 def matrix.unitIsoInv :
@@ -448,7 +447,6 @@ noncomputable def matrix.counitIso :
   hom_inv_id := by ext X x; simp
   inv_hom_id := by ext; simp
 
-
 @[simps!]
 noncomputable def moritaEquivalentToMatrix : ModuleCat R ≌ ModuleCat M[ι, R] where
     -- CategoryTheory.Equivalence.mk
@@ -497,7 +495,6 @@ namespace division_ring -- auxilaries for division rings, don't use
 
 variable (R : Type u) (S : Type u) [DivisionRing R] [DivisionRing S]
 variable (e : ModuleCat.{u} R ≌ ModuleCat.{u} S)
-
 
 -- This is a lemma on purpose, **don't** attempt to look at its definition
 lemma division_ring_exists_unique_isSimpleModule

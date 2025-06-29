@@ -20,7 +20,6 @@ suppress_compilation
 --     [IsScalarTower R R' A] [IsScalarTower R R' B]
 --     : NonUnitalSemiring ((A ⊗[R'] B) ⊗[R] C) := inferInstance
 
-
 set_option maxSynthPendingDepth 2 in
 def Algebra.TensorProduct.assoc' (R S R' A B C : Type*) [CommSemiring R] [CommSemiring S]
     [CommSemiring R'] [Semiring A] [Semiring B] [Semiring C] [Algebra R R'] [Algebra R A]
@@ -178,7 +177,6 @@ lemma over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A):
   rw [AlgHom.toRingHom_eq_coe, ← Polynomial.coe_mapRingHom, RingHom.map_det,
     RingHom.mapMatrix_apply]
 
-
 end ReducedCharPoly
 
 /-- A subtype of a `Prod` that depends only on the second component is equivalent to the
@@ -307,7 +305,6 @@ lemma eq_polys (f1 f2 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (a : A):
   simp at hr2
   rw [← hr2]
   rfl
-
 
 open Polynomial
 

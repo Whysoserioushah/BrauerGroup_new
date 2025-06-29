@@ -188,8 +188,6 @@ lemma mem_span'_iff_exists_fin (s : Set R) (x : R) :
     x = ∑ i : ι, xL i * (y i : R) * xR i := by
   simp only [span', mem_mk', Set.mem_setOf_eq]
 
-
-
 lemma mem_span_iff_exists_fin (s : Set R) (x : R) :
     x ∈ span s ↔
     ∃ (ι : Type) (_ : Fintype ι) (xL : ι → R) (xR : ι → R) (y : ι → s),

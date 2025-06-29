@@ -177,7 +177,6 @@ lemma MonoidAlgebra.sum_apply [Group G] {α : Type*} (s : Finset α)
   -- have := Finset.sum_apply (γ := G) g s
   sorry
 
-
 lemma im_sigmainus1_eq_ker_π [CommGroup G] (hσ : Submonoid.powers σ = ⊤):
     LinearMap.ker ((CyclicCoh.π G k σ).f 0).1.hom ≤
     LinearMap.range (sigmaminus1 G k σ).1.hom := fun (x : MonoidAlgebra k G) hx ↦ by

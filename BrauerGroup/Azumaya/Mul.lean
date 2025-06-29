@@ -159,7 +159,6 @@ lemma comm_square1: tensor_projection1 R M N P Q ∘ₗ (homTensorHomEquiv R _ _
   apply LinearMap.ext
   simp [-homTensorHomEquiv_toLinearMap, -homTensorHomEquiv_apply, tensor_inclusion1_projection1_apply]
 
-
 lemma comm_square4: TensorProduct.homTensorHomMap R M N P Q ∘ₗ tensor_projection1 R M N P Q ∘ₗ
     (homTensorHomEquiv R _ _ _ _).symm.toLinearMap ∘ₗ tensor_inclusion2 R P Q =
     LinearMap.id (R := R) (M := (M ⊗[R] N) →ₗ[R] P ⊗[R] Q) := by
@@ -294,7 +293,6 @@ lemma top_square_comm (A B : Azumaya R) :
     = (AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e :=
   congr_arg DFunLike.coe <| top_square_comm'' R A B
 
-
 /--
 A ⊗ Aᵐᵒᵖ ⊗ B ⊗ B ᵐᵒᵖ --------> (A ⊗ B) ⊗ (A ⊗ B)ᵐᵒᵖ
         |                              |
@@ -359,7 +357,6 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
     change op _ = op _ at hr
     simp only [unop_one, smul_eq_mul, mul_one, op_inj] at hr
     exact hr
-
 
 -- example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N):
 --   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj

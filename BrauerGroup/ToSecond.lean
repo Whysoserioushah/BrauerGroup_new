@@ -252,7 +252,6 @@ lemma conjFactorCompCoeff_inv (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A
   rw [conjFactorCompCoeff_spec'']
   field_simp
 
-
 lemma conjFactorCompCoeff_comp_comp₁
     (xρ : A.conjFactor ρ) (xσ : A.conjFactor σ) (xτ : A.conjFactor τ)
     (xρσ : A.conjFactor (ρ * σ))
@@ -658,7 +657,6 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     rw [← eq4]
     rfl
 
-
   have eq6 (c : K) := linearIndependent_iff'' |>.1 LI (B.repr ⟨_, mem1⟩).support
     (fun τ => B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ)
     (by
@@ -681,7 +679,6 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
 
   subst eq7
   exact hσ τ.2
-
 
 variable [IsGalois F K] in
 
@@ -1348,7 +1345,6 @@ lemma x_AsBasis_conj' (c : K) : x_AsBasis ha σ * ι ha c = (σ c) • (x_AsBasi
 lemma x_AsBasis_conj'' (c : K) : x_AsBasis ha σ * ι ha c = (ι ha <| σ c) * (x_AsBasis ha σ) :=
   x_AsBasis_conj' ha σ c
 
-
 lemma dim_eq_square [IsGalois F K] : Module.finrank F (CrossProduct ha) =
     (Module.finrank F K)^2 := by
   have eq1 : Module.finrank F (CrossProduct ha) = Module.finrank F K *
@@ -1414,7 +1410,6 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
       Units.val_inv_eq_inv_val, AlgEquiv.one_apply, _root_.mul_one, Pi.single_inj]
     rw [a_one_left ha]
     field_simp
-
 
   have eq4 (d : K) (τ : K ≃ₐ[F] K) : ⟨Pi.single τ d⟩ * z =
       ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • ⟨Pi.single (σ * τ) 1⟩ := by
@@ -1491,7 +1486,6 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
 
   have eq_bot := IsGalois.tfae (F := F) (E := K) |>.out 0 1 |>.1
     (inferInstance : IsGalois F K)
-
 
   apply_fun IntermediateField.toSubalgebra at eq_bot
   simp only [IntermediateField.bot_toSubalgebra] at eq_bot
@@ -1589,7 +1583,6 @@ lemma smul_def_quot'' (a : K) (y : CrossProduct ha) :
     (Quotient.mk'' (a • y) :  I.ringCon.Quotient) :=
   smul_def_quot' I a y
 
-
 set_option maxHeartbeats 500000 in
 set_option synthInstance.maxHeartbeats 50000 in
 instance : Module (RingHom.range <| πRes I) I.ringCon.Quotient where
@@ -1684,7 +1677,6 @@ def basis (ne_top : I ≠ ⊤) : Basis (K ≃ₐ[F] K) K I.ringCon.Quotient :=
         congr 1
         simp only [B, Basis.span_apply]
       simp only at eq0
-
 
       have eq1 (c : K) := calc I.ringCon.mk' (ι ha (σ c)) * I.ringCon.mk' (x_ ha σ)
           _ = I.ringCon.mk' (x_ ha σ) * I.ringCon.mk' (ι ha c) := by

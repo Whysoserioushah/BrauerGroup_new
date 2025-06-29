@@ -27,7 +27,6 @@ abbrev EndmopEquiv (A : Type*) [Ring A] [Algebra R A]: Module.End R A ≃ₐ[R] 
   fun f1 f2 h ↦ by simp at h; exact h, fun f ↦ ⟨(opLinearEquiv R).symm.toLinearMap ∘ₗ f ∘ₗ
     (opLinearEquiv R).toLinearMap, rfl⟩⟩
 
-
 example (A : Type*) [Ring A] [Algebra R A]:
   (Aᵐᵒᵖ)ᵐᵒᵖ ≃ₐ[R] A := by exact (AlgEquiv.opOp R A).symm
 
@@ -97,7 +96,6 @@ lemma Azumaya.inv_mul (A : Azumaya R): IsMoritaEquivalent R (Azumaya.mul R (Azum
 /--
 
 A-Mod ≃ B-Mod => Mod-A ≃ Mod-B?
-
 
 The proof of this is by:
 (1) On a commutative ring, `M` is progenerator iff `M` is fg faithful projective.

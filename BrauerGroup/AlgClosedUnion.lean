@@ -187,7 +187,6 @@ def ee : Basis (Fin n × Fin n) k_bar (k_bar ⊗[k] A) :=
 
 local notation "e" => ee n k k_bar A iso
 
-
 omit [NeZero n] [IsAlgClosure k k_bar] [FiniteDimensional k A] in
 @[simp]
 lemma ee_apply (i : Fin n × Fin n) : iso (e i) = Matrix.stdBasis k_bar (Fin n) (Fin n) i := by
@@ -199,12 +198,10 @@ lemma ee_apply (i : Fin n × Fin n) : iso (e i) = Matrix.stdBasis k_bar (Fin n) 
 def ℒℒ : IntermediateField k k_bar :=
   ⨆ (i : Fin n × Fin n), subfieldOf k k_bar A (e i)
 
-
 local notation "ℒ" => ℒℒ n k k_bar A iso
 
 instance : FiniteDimensional k ℒ :=
   IntermediateField.finiteDimensional_iSup_of_finite
-
 
 def f (i : Fin n × Fin n) : subfieldOf k k_bar A (e i) →ₐ[k] ℒ :=
   subfieldOf k k_bar A (e i)|>.inclusion (le_sSup ⟨i, rfl⟩)

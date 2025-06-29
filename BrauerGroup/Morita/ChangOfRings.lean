@@ -23,7 +23,6 @@ universe u₀ u u' u''  v'
 
 variable (R : Type u₀) [CommRing R]
 
-
 -- namespace IsMoritaEquivalent
 
 -- lemma refl {A : Type u₁} [Ring A] [Algebra R A] : IsMoritaEquivalent R A A where
@@ -53,7 +52,6 @@ variable (R : Type u₀) [CommRing R]
 
 -- noncomputable def equiv [IsMoritaEquivalent R S] : ModuleCat R ≌ ModuleCat S :=
 --   (inferInstance : IsMoritaEquivalent R S) |>.out.some
-
 
 -- instance [IsMoritaEquivalent R S] : (equiv R S).functor.Additive := inferInstance
 
@@ -228,7 +226,6 @@ def mopToEnd : Aᵐᵒᵖ →ₐ[R] End (ModuleCat.of A A) where
 --   commutes' := fun k f ↦ by apply ModuleCat.hom_ext; simp; ext; simp
 --   smul_def' := fun k f ↦ by apply ModuleCat.hom_ext; simp; ext; simp; rfl
 
-
 -- @[simp]
 -- def mopToEndAlgHom [Algebra K R]: Rᵐᵒᵖ →ₐ[K] End (ModuleCat.of R R) where
 --   __ := mopToEnd R
@@ -275,8 +272,6 @@ noncomputable def mopAlgEquivEnd : Aᵐᵒᵖ ≃ₐ[R] End (ModuleCat.of A A) :
 
 example: End (ModuleCat.of A A) ≃ₐ[R] Module.End A A :=
   mopAlgEquivEnd R A|>.symm.trans <| {__ := Module.moduleEndSelf A, commutes' r := by ext; simp [Algebra.smul_def]}
-
-
 
 variable (e : MoritaEquivalence R A B)
 
@@ -328,8 +323,6 @@ def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.o
 
 -- -- variable {R S} in
 -- def aux1' : End (ModuleCat.of A A) ≃ₐ[R] End (e.functor.obj $ ModuleCat.of A A) := sorry
-
-
 
 noncomputable def aux20 : (e.eqv.functor.obj (ModuleCat.of A A)) ≅ ModuleCat.of B B := by
   haveI : IsSimpleModule A A := by

@@ -20,7 +20,6 @@ lemma comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : S
     rw [eqeq, eqeq'] at this
     exact Subtype.ext_iff.1 this
 
-
 section cors_of_DC
 
 variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensional K D]

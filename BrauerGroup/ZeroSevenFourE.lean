@@ -854,7 +854,6 @@ noncomputable def end_end_iso
   AlgEquiv.ofBijective (toEndEndAlgHom k A M) ⟨toEndEnd_injective k A M,
     isBalanced_of_simpleMod k A M |>.1⟩
 
-
 lemma Wedderburn_Artin_uniqueness₀
     (n n' : ℕ) [NeZero n] [NeZero n']
     (D : Type v) [DivisionRing D] [Algebra k D] (wdb : A ≃ₐ[k] Matrix (Fin n) (Fin n) D)

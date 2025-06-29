@@ -448,7 +448,6 @@ noncomputable def matrixTensorEquivTensor (A : Type u) (n : Type*) [Ring A] [Alg
 
 end matrix
 
-
 theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSplit F A K) :
     isSplit F B K := by
   obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hAB

@@ -48,7 +48,6 @@ open scoped BigOperators
 --     rw [Subalgebra.mem_center_iff]
 --     exact (Algebra.commutes' x · |>.symm)
 
-
 variable (K : Type u) [Field K]
 
 open Matrix in
@@ -445,7 +444,6 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
           if hx' : x = i₀ then left; exact hx'
           else right; exact ⟨hx', hx⟩
         · rintro (rfl|⟨_, hx2⟩) <;> assumption
-
 
       have span_bi₀ : TwoSidedIdeal.span {b i₀} = ⊤ := isSimple_B.1.2 _ |>.resolve_left fun r => by
         have mem : b i₀ ∈ (⊥ : TwoSidedIdeal B) := by

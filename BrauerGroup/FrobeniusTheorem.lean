@@ -473,7 +473,6 @@ lemma k_ne_zero (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val 
   · exact (i_ne_zero k e) h1
   · exact (j_ne_zero _ _ _ hx hDD) h2
 
-
 lemma j_mul_i_eq_neg_i_mul_j (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (hDD : Module.finrank ℝ D = 4):
     (algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹ * ↑x *
@@ -872,8 +871,6 @@ abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set
       exact this (L1.inverse x hx hx0).choose_spec.1
     · exact L1.inverse x hx hx0|>.choose_spec.2
   }
-
-
 
 -- set_option maxHeartbeats 1600000 in
 lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D]: ∃(L : SubField ℝ D),

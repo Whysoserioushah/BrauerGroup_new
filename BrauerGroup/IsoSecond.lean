@@ -144,7 +144,6 @@ open CrossProduct TensorProduct
 
 variable [FiniteDimensional F K]  [DecidableEq (K ≃ₐ[F] K)]
 
-
 abbrev S : Set (A ⊗[F] B) :=
   Set.range (fun (cba : K × A × B) =>
     (cba.1 • cba.2.1) ⊗ₜ[F] cba.2.2 - cba.2.1 ⊗ₜ[F] (cba.1 • cba.2.2))
@@ -249,7 +248,6 @@ def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M hα hβ →ₗ[F] M hα hβ :=
 lemma Aox_FB_smul_M_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
     Aox_FB_smul_M hα hβ (a' ⊗ₜ[F] b') (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
     Submodule.Quotient.mk ((a * a') ⊗ₜ[F] (b * b')) := rfl
-
 
 instance : SMul (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
   smul x y := Aox_FB_smul_M _ _ x.unop y
@@ -369,7 +367,6 @@ def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
       x_AsBasis_conj''] <;>
     simp only [← _root_.mul_assoc, ← map_mul, mul_comm (σ k)])
 
-
 lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
     C_smul_aux _ _ (k • x_AsBasis (hαβ hα hβ) σ) (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
     Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) := by
@@ -394,7 +391,6 @@ lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
   field_simp
   left
   rw [mul_comm]
-
 
 set_option maxHeartbeats 400000 in
 def C_smul : C →ₗ[F] M hα hβ →ₗ[F] M hα hβ where
@@ -435,7 +431,6 @@ def C_smul : C →ₗ[F] M hα hβ →ₗ[F] M hα hβ where
       Function.comp_apply, Function.eval, Function.update_apply, Pi.zero_apply, Finset.sum_ite_eq,
       Finset.mem_univ, ↓reduceIte, x_AsBasis_apply, smul_assoc, Algebra.smul_mul_assoc,
       smul_mul_assoc]
-
 
 instance : SMul C (M hα hβ) where
   smul c x := C_smul hα hβ c x
@@ -855,7 +850,6 @@ def isoιSMPow' : C ≃ₗ[C] Fin (Fintype.card ι) → SM :=
     map_smul' := by
       intros; rfl }
 
-
 instance : LinearMap.CompatibleSMul (M hα hβ) (ι →₀ SM) F C := by
     constructor
     intro l f x
@@ -912,7 +906,6 @@ AlgEquiv.ofRingEquiv (f := mopEquivEnd C) <| by
     Algebra.mul_smul_comm, _root_.mul_one, LinearMap.coe_mk, AddHom.coe_mk, smul_val, one_val,
     Prod.mk_one_one, Pi.mul_apply, Units.val_mul, mul_inv_rev, crossProductSMul_single,
     Module.algebraMap_end_apply]
-
 
 set_option synthInstance.maxHeartbeats 40000 in
 set_option maxHeartbeats 600000 in

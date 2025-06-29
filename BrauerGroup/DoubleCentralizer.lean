@@ -152,7 +152,6 @@ lemma centralizer_tensor_centralizer :
           (Algebra.TensorProduct.map (AlgHom.id F A) (Subalgebra.centralizer F B').val).range := by
       apply centralizer_inclusionRight (𝒜 := 𝒜)
 
-
     refine ineq1.trans ?_
 
     rw [eq1, eq2]
@@ -318,7 +317,6 @@ instance center_algebra : Algebra (Subalgebra.center F B) B where
 
 instance : FiniteDimensional (Subalgebra.center F B) B :=
   FiniteDimensional.right F (Subalgebra.center F B) B
-
 
 variable (F B) in
 @[simps]
