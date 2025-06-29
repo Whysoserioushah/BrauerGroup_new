@@ -1,10 +1,5 @@
-import BrauerGroup.Subfield.Subfield
-import BrauerGroup.ZeroSevenFourE
-import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.RelativeBrauer
-import Mathlib.RingTheory.MatrixAlgebra
-import BrauerGroup.SplittingOfCSA
-import Mathlib.RingTheory.SimpleRing.Field
+import BrauerGroup.Subfield.FiniteDimensional
 
 universe u
 
@@ -474,8 +469,8 @@ section DivisionRing
 variable (D : Type u) [DivisionRing D] [Algebra F D] [FiniteDimensional F D]
   [Algebra.IsCentral F D] [IsSimpleRing D]
 
-theorem maxOfDivision (L : SubField F D) (hL : IsMaximalSubfield F D L) : isSplit F D L := by
+theorem isSplit_of_isMax (L : SubField F D) (hL : IsMax L) : isSplit F D L := by
   rw [isSplit_iff_dimension L F ⟨.of F D⟩]
-  exact ⟨⟨.of F D⟩, ⟨rfl, ⟨L.val, by rw [pow_two]; exact dim_max_subfield F D L hL|>.symm ⟩⟩⟩
+  exact ⟨⟨.of F D⟩, rfl, L.val, by rw [pow_two]; exact dim_max_subfield F D L hL|>.symm⟩
 
-end  DivisionRing
+end DivisionRing

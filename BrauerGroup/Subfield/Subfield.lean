@@ -1,6 +1,6 @@
-import BrauerGroup.Subfield.Basic
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
+import BrauerGroup.Subfield.Defs
 
 universe u
 
@@ -9,11 +9,11 @@ section cors_of_DC
 variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [FiniteDimensional K D]
     [Algebra.IsCentral K D]
 
-theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
-    Module.finrank K D = Module.finrank K k *
-    Module.finrank K k := by
+theorem dim_max_subfield (k : SubField K D) (hk : IsMax k) :
+    Module.finrank K D = Module.finrank K k * Module.finrank K k := by
+  letI : Field k.1 := inferInstanceAs <| Field k
   have dimdim := dim_centralizer K (A := D) k.1 |>.symm
-  have := le_centralizer_self.2 k.2
+  have := Subalgebra.le_centralizer_self.2 k.2
   have eq : k.1 = Subalgebra.centralizer K (A := D) k.1 := by
     by_contra! hneq
     have lt := LE.le.lt_iff_ne this|>.2 hneq
@@ -35,11 +35,9 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
             refine ha1 _ hβ |>.symm
           · rw [Subalgebra.mem_centralizer_iff] at ha1
             apply ha1; exact hα
-          · apply k.mul_comm _ _ hα hβ
+          · apply k.mul_comm hα hβ
         · intros; rw [Algebra.commutes]
-
         · intros; rw [Algebra.commutes]
-
         · intros; rw [Algebra.commutes]
         · intro _ _  _ _ _ _ h1 h2
           simp only [add_mul, h1, h2, mul_add]
@@ -57,12 +55,12 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
 
     let L : SubField K D := {
       __ := Algebra.adjoin K (insert a k.1)
-      mul_comm := fun x y hx hy ↦ by
+      mul_comm x hx y hy := by
         have := this.2 ⟨x, hx⟩ ⟨y, hy⟩
         change (⟨x * y, Subalgebra.mul_mem _ hx hy⟩ :
           (Algebra.adjoin K (insert a k.1) : Subalgebra K D)) = ⟨_, _⟩ at this
         simp only [Subtype.mk.injEq] at this ⊢; exact this
-      inverse := fun x hx hx0 ↦ by
+      exists_inverse x hx hx0 := by
          have := this.3 (Subtype.coe_ne_coe.1 hx0 : (⟨x, hx⟩ :
           (Algebra.adjoin K (insert a k.1) : Subalgebra K D)) ≠ 0)
          use this.choose.1
@@ -71,52 +69,46 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
           change ⟨x * this.choose.1, _⟩ = (1 : Algebra.adjoin K (insert a k.1)) at eq
           exact Subtype.ext_iff.1 eq⟩
     }
-
-    have : a ∈ L := by
-      change _ ∈ Algebra.adjoin K _
+    refine ha2 <| hk (b := L) ?_ ?_
+    · change k.1 ≤ Algebra.adjoin K (insert a k.1)
+      nth_rw 1 [← Algebra.adjoin_eq k.1]
+      refine Algebra.adjoin_mono ?_
+      exact Set.subset_insert _ _
+    · change _ ∈ Algebra.adjoin K _
       have adjoin_le : Algebra.adjoin K {a} ≤ Algebra.adjoin K (insert a k.1) :=
         Algebra.adjoin_mono (s := {a}) (Set.singleton_subset_iff.mpr (Set.mem_insert a k.1))
       have := Algebra.adjoin_le_iff |>.1 adjoin_le
       exact this rfl
-
-    have hL : k < L := ne_iff_lt_iff_le.2 (by
-      change k.1 ≤ Algebra.adjoin K (insert a k.1)
-      nth_rw 1 [← Algebra.adjoin_eq k.1]
-      refine Algebra.adjoin_mono ?_
-      exact Set.subset_insert _ _ )|>.1 $ by
-      symm
-      exact ne_of_mem_of_not_mem' this ha2
-
-    have := hk L (le_of_lt hL)
-    have : k ≠ L := ne_of_lt hL
-    tauto
   rw [← eq] at dimdim
   exact dimdim
 
 lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Algebra.IsCentral K A] [IsSimpleRing A] (L : SubField K A) :
-    Subalgebra.centralizer K L.1 = L.1 ↔ Module.finrank K A =
-    Module.finrank K L * Module.finrank K L :=
-  ⟨fun h ↦ by
-  have := dim_centralizer K (A := A) L.1; rw [h] at this; exact this.symm, fun h ↦ by
-  have := dim_centralizer K (A := A) L.1; rw [h] at this
-  erw [mul_eq_mul_right_iff] at this
-  cases' this with h1 h2
-  · exact Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm|>.symm
-  · have := Module.finrank_pos (R := K) (M := L.1)
-    simp_all only [mul_zero, lt_self_iff_false]⟩
+    Subalgebra.centralizer K L.1 = L.1 ↔
+      Module.finrank K A = Module.finrank K L * Module.finrank K L where
+  mp h := by
+    letI : Field L.1 := inferInstanceAs <| Field L
+    have := dim_centralizer K (A := A) L.1; rw [h] at this; exact this.symm
+  mpr h := by
+    letI : Field L.1 := inferInstanceAs <| Field L
+    have := dim_centralizer K (A := A) L.1; rw [h] at this
+    erw [mul_eq_mul_right_iff] at this
+    cases' this with h1 h2
+    · exact Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm|>.symm
+    · have := Module.finrank_pos (R := K) (M := L.1)
+      simp_all only [mul_zero, lt_self_iff_false]
 
 lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Algebra.IsCentral K A] [IsSimpleRing A] (L : SubField K A) :
     Module.finrank K A = Module.finrank K L * Module.finrank K L →
     (∀ (L' : Subalgebra K A) (_ : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') :=
   fun hrank L' hL' hLL ↦ by
+  letI : Field L.1 := inferInstanceAs <| Field L
   have := dim_centralizer K (A := A) L.1 |>.symm
   simp only [this, SubField.coe_toSubalgebra] at hrank
   erw [mul_eq_mul_right_iff] at hrank
   cases' hrank with h1 h2
-  · have := Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1 fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
-      simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq, L.2 x y hx hy]) h1.symm
+  · have := Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm
     exact le_antisymm hLL fun x hx => this.symm ▸ Subalgebra.mem_centralizer_iff _ |>.2
       fun y hy => hL' _ hx _ (hLL hy) |>.symm
 
@@ -145,7 +137,7 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
         · rw [Subalgebra.mem_centralizer_iff] at ha1
           rename_i hxx
           exact ha1 _ hxx
-        · exact L.2 _ _ hx hy)
+        · exact L.2 hx hy)
         (fun k1 k2 ↦ Algebra.commutes _ _) (fun k x _ ↦ Algebra.commutes _ _)
         (fun k x _ ↦ Algebra.commutes _ _|>.symm)
         (fun x y z _ _ _ hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])

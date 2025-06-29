@@ -1,3 +1,4 @@
+import BrauerGroup.Subfield.FiniteDimensional
 import BrauerGroup.Subfield.Subfield
 import Mathlib.Algebra.QuaternionBasis
 import Mathlib.Analysis.Quaternion
@@ -55,7 +56,7 @@ lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensio
 end prerequisites
 
 variable [Algebra ℝ D] [hD : Algebra.IsCentral ℝ D] [hD' : IsSimpleRing D]
-  (k : SubField ℝ D) (hk : IsMaximalSubfield ℝ D k)
+  (k : SubField ℝ D) (hk : IsMax k)
   (e : k ≃ₐ[ℝ] ℂ) [FiniteDimensional ℝ D]
 
 open ComplexConjugate
@@ -200,8 +201,7 @@ abbrev IsBasis (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z
   .mk (M := k) (v := ![1, ⟨x.1^2, xsq_ink _ _ _ hx hDD⟩]) (indep' _ _ _ hx hDD hxx) $ by
   simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.range_cons,
     Matrix.range_empty, Set.union_empty, Set.union_singleton, top_le_iff]
-  have : Module.finrank ℝ (Submodule.span ℝ
-    {⟨x.1^2, xsq_ink _ _ _ hx hDD⟩, (1 : k)})= 2 := by
+  have : Module.finrank ℝ (Submodule.span ℝ {⟨x.1^2, xsq_ink _ _ _ hx hDD⟩, (1 : k)}) = 2 := by
     have indep' := indep' _ _ _ hx hDD hxx
     apply LinearIndependent.span_eq_top_of_card_eq_finrank' at indep'
     simp only [Nat.succ_eq_add_one, zero_add, Nat.reduceAdd, Fintype.card_fin,
@@ -212,15 +212,12 @@ abbrev IsBasis (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z
       exact Complex.finrank_real_complex
     apply indep' at this
     rw [this, finrank_top]
-    exact (show Module.finrank ℝ k = 2 by
-        rw [LinearEquiv.finrank_eq e.toLinearEquiv]
-        exact Complex.finrank_real_complex
-    )
+    change Module.finrank ℝ k = 2
+    rw [LinearEquiv.finrank_eq e.toLinearEquiv]
+    exact Complex.finrank_real_complex
   have eq := Submodule.topEquiv.finrank_eq.trans $
     e.toLinearEquiv.finrank_eq.trans Complex.finrank_real_complex
-  have le : Submodule.span _ {⟨x.1 ^ 2, xsq_ink _ _ _ hx hDD⟩, (1 : k)} ≤
-    (⊤ : Submodule ℝ k) := fun _ _ ↦ ⟨⟩
-  exact Submodule.eq_of_le_of_finrank_eq le $ this.trans eq.symm
+  exact Submodule.eq_of_le_of_finrank_eq le_top $ this.trans eq.symm
 
 @[simp]
 lemma IsBasis0 (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
@@ -840,8 +837,7 @@ abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set
     [Nonempty α] (hα : IsChain (· ≤ ·) α) : SubField ℝ D :=
   {
   __ := (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
-  mul_comm := by
-    rintro x y hx hy
+  mul_comm x hx y hy := by
     simp only [Subsemiring.coe_carrier_toSubmonoid, Subalgebra.coe_toSubsemiring,
       SetLike.mem_coe] at hx hy
     have := Subalgebra.coe_iSup_of_directed hα.directed
@@ -852,9 +848,8 @@ abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set
     obtain ⟨L1, hL1, hx⟩ := hx
     obtain ⟨L2, hL2, hy⟩ := hy
     obtain ⟨L3, _, hL31, hL32⟩ := hα.directedOn L1 hL1 L2 hL2
-    exact L3.mul_comm x y (hL31 hx) (hL32 hy)
-  inverse := by
-    rintro x hx hx0
+    exact L3.mul_comm (hL31 hx) (hL32 hy)
+  exists_inverse x hx hx0 := by
     simp only [Subalgebra.coe_toSubsemiring,
       Subsemiring.coe_carrier_toSubmonoid, SetLike.mem_coe] at *
     letI : Nonempty α := Set.Nonempty.to_subtype (Set.Nonempty.of_subtype)
@@ -864,27 +859,24 @@ abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set
     rw [this] at hx
     simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx
     obtain ⟨L1, hL1, hx⟩ := hx
-    use L1.inverse x hx hx0|>.choose
-    constructor
-    · have : L1.1 ≤ ⨆ (L : α), (L.1).toSubalgebra := by
-        exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L1.1) ⟨L1, hL1⟩ (by rfl)
-      exact this (L1.inverse x hx hx0).choose_spec.1
-    · exact L1.inverse x hx hx0|>.choose_spec.2
+    obtain ⟨y, hy, hxy⟩ := L1.exists_inverse hx hx0
+    have : L1.1 ≤ ⨆ (L : α), (L.1).toSubalgebra := by
+      exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L1.1) ⟨L1, hL1⟩ (by rfl)
+    exact ⟨y, this hy, hxy⟩
   }
 
 -- set_option maxHeartbeats 1600000 in
-lemma exitsmaxsub (D : Type) [DivisionRing D] [Algebra ℝ D] : ∃(L : SubField ℝ D),
-    IsMaximalSubfield ℝ D L := by
-  obtain ⟨m, hm⟩ := zorn_le_nonempty (α := SubField ℝ D) (fun α hα hα' ↦ by
-    letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
-    use iSup_chain_subfield D α hα
-    change (iSup_chain_subfield D α hα) ∈ {L | _}
-    simp only [Set.mem_setOf_eq]
-    intro L hL
-    change L.1 ≤ (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
-    exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L.1) ⟨L, hL⟩ (by rfl) |>.trans <|
-      by trivial)
-  exact ⟨m, isMax_iff_isMaxSubfield _ _ _ |>.1 hm⟩
+lemma exists_subfield_isMax (D : Type) [DivisionRing D] [Algebra ℝ D] :
+    ∃ L : SubField ℝ D, IsMax L := by
+  refine zorn_le_nonempty (α := SubField ℝ D) fun α hα hα' ↦ ?_
+  letI : Nonempty α := by exact Set.Nonempty.to_subtype hα'
+  use iSup_chain_subfield D α hα
+  change (iSup_chain_subfield D α hα) ∈ {L | _}
+  simp only [Set.mem_setOf_eq]
+  intro L hL
+  change L.1 ≤ (⨆ (L : α), L.1.1 : Subalgebra ℝ D)
+  exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L.1) ⟨L, hL⟩ (by rfl) |>.trans <|
+    by trivial
 
 set_option synthInstance.maxHeartbeats 40000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
@@ -898,7 +890,7 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
       simp only [Module.finrank_self, Subalgebra.finrank_eq_one_iff] at this
       exact this
     have hAA : Algebra.IsCentral ℝ A := ⟨le_of_eq this⟩
-    have hhA' (L : SubField ℝ A) (hL : IsMaximalSubfield ℝ A L) :
+    have hhA' (L : SubField ℝ A) (hL : IsMax L) :
       Module.finrank ℝ L = 1 ∨ Module.finrank ℝ L = 2 := by
       have := RealExtension_is_RorC L
       cases' this with hR hH
@@ -909,7 +901,7 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
         simp only [Complex.finrank_real_complex] at this
         exact Or.inr this
     specialize hhA'
-    obtain ⟨L, hL⟩ := exitsmaxsub A
+    obtain ⟨L, hL⟩ := exists_subfield_isMax A
     specialize hhA' L hL
     have dimeq := dim_max_subfield ℝ A L hL
     cases' hhA' with h1 h2
