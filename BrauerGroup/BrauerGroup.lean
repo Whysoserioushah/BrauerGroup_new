@@ -955,7 +955,7 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
   exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix <| AlgEquiv.symm <| baseChange_idem.Aux' ..⟩⟩
 
 def Br : FieldCat ⥤ CommGrp where
-  obj F := .of $ BrauerGroup (K := F)
+  obj F := .of $ BrauerGroup F
   map {F K} f := CommGrp.ofHom <| @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f.hom)
   map_id F := by
     ext A

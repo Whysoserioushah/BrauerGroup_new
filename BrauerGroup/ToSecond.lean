@@ -6,7 +6,7 @@ suppress_compilation
 open FiniteDimensional BrauerGroup
 
 variable {F K : Type} [Field K] [Field F] [Algebra F K]
-variable (X : BrauerGroup (K := F))
+variable (X : BrauerGroup F)
 
 variable (K) in
 structure GoodRep where
@@ -17,7 +17,7 @@ dim_eq_square : Module.finrank F carrier = (Module.finrank F K) ^ 2
 
 namespace GoodRep
 
-variable {X : BrauerGroup (K := F)} (A B : GoodRep K X)
+variable {X : BrauerGroup F} (A B : GoodRep K X)
 
 section basic
 
@@ -534,7 +534,7 @@ noncomputable def galAct : Rep ℤ (K ≃ₐ[F] K) :=
 
 variable [FiniteDimensional F K]
 
-lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrauerGroup (K := F)) :
+lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrauerGroup F) :
     X ∈ RelativeBrGroup K F ↔
     Nonempty (GoodRep K X) := by
   induction X using Quotient.inductionOn' with | h X =>
@@ -555,7 +555,7 @@ open groupCohomology
 
 namespace GoodRep
 
-variable {X : BrauerGroup (K := F)} (A : GoodRep K X)
+variable {X : BrauerGroup F} (A : GoodRep K X)
 
 def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
   Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles x_)
@@ -582,7 +582,7 @@ namespace GoodRep
 
 section galois
 
-variable {X : BrauerGroup (K := F)} (A : GoodRep K X)
+variable {X : BrauerGroup F} (A : GoodRep K X)
 
 omit [FiniteDimensional F K] in
 lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
