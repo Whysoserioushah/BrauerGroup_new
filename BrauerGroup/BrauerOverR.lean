@@ -24,8 +24,8 @@ abbrev toEnd_map_aux' (q1 : ℍ[ℝ]) : ℍ[ℝ] →ₗ[ℝ] Module.End ℝ ℍ[
 
 abbrev toEnd_map : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] →ₗ[ℝ] Module.End ℝ (ℍ[ℝ]) := TensorProduct.lift {
   toFun := fun q1 ↦ toEnd_map_aux' q1
-  map_add' := fun x1 x3 ↦ by ext : 2 ; simp [add_mul]
-  map_smul' := fun r x ↦ by ext : 2 ; simp
+  map_add' := fun x1 x3 ↦ by ext : 2; simp [add_mul]
+  map_smul' := fun r x ↦ by ext : 2; simp
 }
 
 set_option synthInstance.maxHeartbeats 40000 in

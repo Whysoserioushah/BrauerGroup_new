@@ -292,7 +292,7 @@ noncomputable abbrev toTensorMatrix_toFun_Flinear (A : Type u) (n : Type*) [Ring
     toFun := fun k ↦ {
       toFun := fun M ↦ k • Algebra.TensorProduct.includeRight.mapMatrix M
       map_add' := fun M1 M2 ↦ by
-        simp only ; rw [map_add, smul_add]
+        simp only; rw [map_add, smul_add]
       map_smul' := fun a M ↦ by
         simp only [map_smul, AlgHom.mapMatrix_apply, RingHom.id_apply]
         exact smul_comm _ _ _ }

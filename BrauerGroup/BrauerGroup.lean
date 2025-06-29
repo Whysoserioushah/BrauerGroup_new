@@ -253,7 +253,7 @@ def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A'
 
 def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
   eqv_in (one_mul_in n A) (Matrix (Fin n) (Fin n) A) $
-    by unfold one_mul_in ; exact matrixEquivTensor _ K A |>.symm
+    by unfold one_mul_in; exact matrixEquivTensor _ K A |>.symm
 
 def dim_1 (R : Type*) [Ring R] [Algebra K R] : Algebra K (Matrix (Fin 1) (Fin 1) R) where
   algebraMap := {
@@ -478,17 +478,17 @@ instance Inv: Inv (BrauerGroup (K := K)) := ⟨Quotient.lift (fun A ↦ Quotient
 theorem mul_left_inv' (A : BrauerGroup (K := K)) : A⁻¹ * A = 1 := by
   induction' A using Quotient.inductionOn' with A
   change _ = Quotient.mk'' one_in'
-  apply Quotient.sound ; exact inv_mul A
+  apply Quotient.sound; exact inv_mul A
 
 theorem one_mul' (A : BrauerGroup (K := K)) : 1 * A = A := by
   induction' A using Quotient.inductionOn' with A
-  change Quotient.mk'' one_in' * _ = _ ; apply Quotient.sound
+  change Quotient.mk'' one_in' * _ = _; apply Quotient.sound
   exact (mul_one 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     (dim_one_iso _) AlgEquiv.refl))|>.symm
 
 theorem mul_one' (A : BrauerGroup (K := K)) : A * 1 = A := by
   induction' A using Quotient.inductionOn' with A
-  change _ * Quotient.mk'' one_in' = _ ; apply Quotient.sound
+  change _ * Quotient.mk'' one_in' = _; apply Quotient.sound
   exact (one_mul 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     AlgEquiv.refl (dim_one_iso _)))|>.symm
 
@@ -504,8 +504,8 @@ lemma Alg_closed_equiv_one [IsAlgClosed K] : ∀(A : CSA K), IsBrauerEquivalent 
   exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A|>.trans iso⟩⟩
 
 lemma Alg_closed_eq_one [IsAlgClosed K] : ∀(A : BrauerGroup (K := K)), A = 1 := by
-  intro A ; induction' A using Quotient.inductionOn' with A
-  change _ = Quotient.mk'' one_in' ; apply Quotient.sound
+  intro A; induction' A using Quotient.inductionOn' with A
+  change _ = Quotient.mk'' one_in'; apply Quotient.sound
   change IsBrauerEquivalent _ _; exact Alg_closed_equiv_one A
 
 instance [IsAlgClosed K] : Unique (BrauerGroup (K := K)) where
@@ -644,7 +644,7 @@ def e3Aux4 : (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) →ₐ[E]
         Function.comp_apply, Algebra.TensorProduct.includeLeft_apply, e3Aux1, e3Aux10,
         AlgEquiv.coe_trans, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom]
       induction' x using TensorProduct.induction_on with e a e a he ha
-      · simp only [TensorProduct.zero_tmul, map_zero] ; rw [zero_mul
+      · simp only [TensorProduct.zero_tmul, map_zero]; rw [zero_mul
           (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K), mul_zero
           (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
       · simp only [Algebra.TensorProduct.assoc_tmul]
@@ -652,7 +652,7 @@ def e3Aux4 : (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) →ₐ[E]
         · simp only [TensorProduct.zero_tmul]
           trans 0
           · convert mul_zero (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K) _
-          · symm ; convert zero_mul (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K) _
+          · symm; convert zero_mul (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K) _
         · simp only [Algebra.TensorProduct.assoc_tmul, Algebra.TensorProduct.map_tmul,
           AlgHom.coe_id, id_eq, AlgHom.coe_coe, Algebra.TensorProduct.comm_tmul,
           Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
@@ -866,8 +866,8 @@ abbrev BaseChange_Q_to_C := BaseChange (K := ℚ) (E := ℂ)
 
 lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
   haveI : IsAlgClosed ℂ := Complex.isAlgClosed
-  ext A ; simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.one_apply]
-  induction' A using Quotient.inductionOn' with A ;
+  ext A; simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.one_apply]
+  induction' A using Quotient.inductionOn' with A;
   simp only [Quotient.map'_mk'']; apply Quotient.sound
   exact BrauerGroup.Alg_closed_equiv_one _
 

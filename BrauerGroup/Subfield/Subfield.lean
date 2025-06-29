@@ -61,7 +61,7 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
         have := this.2 ⟨x, hx⟩ ⟨y, hy⟩
         change (⟨x * y, Subalgebra.mul_mem _ hx hy⟩ :
           (Algebra.adjoin K (insert a k.1) : Subalgebra K D)) = ⟨_, _⟩ at this
-        simp only [Subtype.mk.injEq] at this ⊢ ; exact this
+        simp only [Subtype.mk.injEq] at this ⊢; exact this
       inverse := fun x hx hx0 ↦ by
          have := this.3 (Subtype.coe_ne_coe.1 hx0 : (⟨x, hx⟩ :
           (Algebra.adjoin K (insert a k.1) : Subalgebra K D)) ≠ 0)
@@ -98,8 +98,8 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     Subalgebra.centralizer K L.1 = L.1 ↔ Module.finrank K A =
     Module.finrank K L * Module.finrank K L :=
   ⟨fun h ↦ by
-  have := dim_centralizer K (A := A) L.1 ; rw [h] at this ; exact this.symm, fun h ↦ by
-  have := dim_centralizer K (A := A) L.1 ; rw [h] at this
+  have := dim_centralizer K (A := A) L.1; rw [h] at this; exact this.symm, fun h ↦ by
+  have := dim_centralizer K (A := A) L.1; rw [h] at this
   erw [mul_eq_mul_right_iff] at this
   cases' this with h1 h2
   · exact Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm|>.symm
@@ -152,7 +152,7 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
         (fun x y z _ _ _ hxz hyz ↦ by rw [mul_add, add_mul, hxz, hyz])
         (fun x y z _ _ _ hxz hyz ↦ by rw [mul_assoc, hyz, ← mul_assoc, hxz, mul_assoc])
         (fun x y z _ _ _ hxy hxz ↦ by rw [← mul_assoc, hxy, mul_assoc, hxz, ← mul_assoc]) hx hy)
-      (by nth_rw 1 [← Algebra.adjoin_eq L.1] ; exact Algebra.adjoin_mono (Set.subset_insert _ _))
+      (by nth_rw 1 [← Algebra.adjoin_eq L.1]; exact Algebra.adjoin_mono (Set.subset_insert _ _))
     have : L.1 ≠ Algebra.adjoin K (insert a L.1) := ne_of_mem_of_not_mem' (a := a)
       (by exact (Algebra.adjoin_le_iff |>.1 (Algebra.adjoin_mono (R := K) (s := {a})
         (Set.singleton_subset_iff.mpr (Set.mem_insert a L.1)))) rfl) ha2|>.symm

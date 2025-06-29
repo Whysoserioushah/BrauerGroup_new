@@ -339,7 +339,7 @@ lemma x_is_in_V (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x.1 = k.va
       mul_neg, neg_mul, Subalgebra.coe_val, eq_neg_iff_add_eq_zero, ← two_mul, mul_eq_zero] at hx3
     cases' hx3 with hx31 hx32
     · rw [show (2 : D) = (1 : D) + (1 : D) by norm_num, ← two_smul ℝ,
-        smul_eq_zero] at hx31 ; aesop
+        smul_eq_zero] at hx31; aesop
     · simp only [inv_eq_zero, Units.ne_zero, ZeroMemClass.coe_eq_zero,
       EmbeddingLike.map_eq_zero_iff, Complex.I_ne_zero, or_self] at hx32
   simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
@@ -486,7 +486,7 @@ lemma j_mul_i_eq_neg_i_mul_j (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z)
   have jinv : j⁻¹ = -j := by
     rw [← mul_eq_one_iff_inv_eq₀ (j_ne_zero _ _ _ hx _), mul_neg, j_mul_j _ _ _ hx]
     simp only [neg_smul, one_smul, neg_neg]
-    exact hDD ; exact hDD
+    exact hDD; exact hDD
   have iinv : ((e.symm { re := 0, im := 1 })).1⁻¹ = - (e.symm { re := 0, im := 1 }).1 := by
     rw [← mul_eq_one_iff_inv_eq₀ (i_ne_zero _ _), mul_neg, ← Subalgebra.coe_mul,
       ← map_mul e.symm, ← Complex.I, Complex.I_mul_I, map_neg, map_one, Subalgebra.coe_neg,
@@ -612,7 +612,7 @@ lemma linindepijk (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.va
       exists_exists_exists_and_eq] at h
     simp_rw [Submodule.mem_span_singleton] at h
     obtain ⟨c, d, ⟨b, d', ⟨a, hc⟩, had⟩, heq⟩ := h
-    rw [← hc] at had ; rw [had] at heq
+    rw [← hc] at had; rw [had] at heq
     rw [add_comm] at heq; nth_rw 2 [add_comm] at heq
     clear hc had
     set k := ↑(e.symm { re := 0, im := 1 }) * (((algebraMap ℝ D)
@@ -779,7 +779,7 @@ lemma bij_tofun (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val 
     ext x
     change (linEquivH _ _ _ hx h) x = (toFun _ _ _ hx h).toLinearMap x
     exact DFunLike.congr eq1.symm rfl|>.symm
-  rw [← eq2] ; exact this
+  rw [← eq2]; exact this
 
 theorem rank4_iso_H (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.val z)
     (h : Module.finrank ℝ D = 4) : Nonempty (ℍ[ℝ] ≃ₐ[ℝ] D) :=
@@ -846,7 +846,7 @@ abbrev iSup_chain_subfield (D : Type) [DivisionRing D] [Algebra ℝ D] (α : Set
       SetLike.mem_coe] at hx hy
     have := Subalgebra.coe_iSup_of_directed hα.directed
     dsimp at this
-    change x ∈ (_ : Set _) at hx ; change _ ∈ ( _ : Set _) at hy
+    change x ∈ (_ : Set _) at hx; change _ ∈ ( _ : Set _) at hy
     rw [this] at hx hy
     simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx hy
     obtain ⟨L1, hL1, hx⟩ := hx

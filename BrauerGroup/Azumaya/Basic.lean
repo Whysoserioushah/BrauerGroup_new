@@ -68,7 +68,7 @@ lemma IsCentral.left_of_tensor (B C : Type*)
     ⟨fun ⟨b1, hb1⟩ ⟨b2, hb2⟩ h12 ↦ by
       simp only [AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
         Subtype.mk.injEq, f] at h12
-      ext ; simp only [f]
+      ext; simp only [f]
       exact TensorProduct.flip_mk_injective _ one_ne_zero h12,
     f_surj⟩).symm
   have e2 := Subalgebra.equivOfEq _ _ eq |>.trans <| Algebra.botEquiv K _

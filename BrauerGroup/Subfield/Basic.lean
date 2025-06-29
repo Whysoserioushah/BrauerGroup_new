@@ -46,9 +46,9 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [Nontrivial A] : Nonemp
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : PartialOrder (SubField K A) where
   le L1 L2:= L1 ≤ L2
-  le_refl L := by change L.1 ≤ L.1 ; exact fun _ a ↦ a
+  le_refl L := by change L.1 ≤ L.1; exact fun _ a ↦ a
   le_trans L1 L2 L3 hL12 hL23 := by
-    change L1.1 ≤ L3.1 ; exact fun _ a ↦ hL23 (hL12 a)
+    change L1.1 ≤ L3.1; exact fun _ a ↦ hL23 (hL12 a)
   le_antisymm L1 L2 hL12 hL21 := by
     suffices L1.1 = L2.1 by
       ext a; exact ⟨fun a_1 ↦ hL12 (hL21 (hL12 a_1)), fun a_1 ↦ hL21 (hL12 (hL21 a_1))⟩

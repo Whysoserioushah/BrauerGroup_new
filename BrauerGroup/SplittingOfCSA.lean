@@ -203,7 +203,7 @@ def split_by_alg_closure (A : CSA k) : split k A k_bar where
   iso := by
     haveI := hk_bar.1
     choose n _ iso using simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
-    have iso' := iso.some ; clear iso
+    have iso' := iso.some; clear iso
     have e : Matrix (Fin n) (Fin n) k_bar ≃ₐ[k_bar] Matrix (Fin (deg k k_bar A))
       (Fin (deg k k_bar A)) k_bar := by
       suffices n = deg k k_bar A from Matrix.reindexAlgEquiv k_bar _ (finCongr this)
