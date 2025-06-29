@@ -16,6 +16,7 @@ import BrauerGroup.FiniteField
 import BrauerGroup.FrobeniusTheorem
 import BrauerGroup.IsoSecond
 import BrauerGroup.LemmasAboutSimpleRing
+import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.Morita.TensorProduct

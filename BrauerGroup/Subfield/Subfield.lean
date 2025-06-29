@@ -1,24 +1,8 @@
 import BrauerGroup.Subfield.Basic
 import BrauerGroup.DoubleCentralizer
+import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 
 universe u
-
-lemma comm_of_centralizer (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : Subalgebra K A)
-  (hL : ∀ (x y : L), x * y = y * x) :
-    L ≤ Subalgebra.centralizer K (A := A) L := by
-  intro l hl
-  simp only [Subalgebra.mem_centralizer_iff, SetLike.mem_coe]
-  exact fun l' hl' => by
-    have := hL ⟨l, hl⟩ ⟨l', hl'⟩|>.symm
-    have eqeq : (⟨l', hl'⟩ : L) * ⟨l, hl⟩ = ⟨l' * l, Subalgebra.mul_mem L hl' hl⟩ := by
-      have eq : ((⟨l', hl'⟩ : L) * (⟨l, hl⟩ : L)).1 = l' * l := by
-        calc
-        _ = ((⟨l', hl'⟩ : L) : A) * ((⟨l, hl⟩ : L) : A) := rfl
-        _ = _ := by push_cast ; rfl
-      rw [Subtype.ext_iff, eq]
-    have eqeq' : (⟨l, hl⟩ : L) * ⟨l', hl'⟩ = ⟨l * l', Subalgebra.mul_mem L hl hl'⟩ := rfl
-    rw [eqeq, eqeq'] at this
-    exact Subtype.ext_iff.1 this
 
 section cors_of_DC
 
@@ -29,7 +13,7 @@ theorem dim_max_subfield (k : SubField K D) (hk: IsMaximalSubfield K D k) :
     Module.finrank K D = Module.finrank K k *
     Module.finrank K k := by
   have dimdim := dim_centralizer K (A := D) k.1 |>.symm
-  have := comm_of_centralizer K D k.1 $ fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ Subtype.ext_iff.2 $ k.2 x y hx hy
+  have := le_centralizer_self.2 k.2
   have eq : k.1 = Subalgebra.centralizer K (A := D) k.1 := by
     by_contra! hneq
     have lt := LE.le.lt_iff_ne this|>.2 hneq
@@ -118,8 +102,7 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
   have := dim_centralizer K (A := A) L.1 ; rw [h] at this
   erw [mul_eq_mul_right_iff] at this
   cases' this with h1 h2
-  · exact Subalgebra.eq_of_le_of_finrank_eq (comm_of_centralizer K A L.1 fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ by
-      simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq, L.2 x y hx hy]) h1.symm|>.symm
+  · exact Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm|>.symm
   · have := Module.finrank_pos (R := K) (M := L.1)
     simp_all only [mul_zero, lt_self_iff_false]⟩
 
@@ -147,7 +130,7 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
   intro H
   refine le_antisymm ?_ ?_
   · by_contra! hL'
-    have := comm_of_centralizer K A L.1 (fun ⟨x, hx⟩ ⟨y, hy⟩ ↦ Subtype.ext_iff.2 $ L.2 x y hx hy)
+    have := Subalgebra.le_centralizer_self.2 L.2
     have Llt := lt_of_le_not_le this hL'
     have exist_ele : ∃ a ∈ Subalgebra.centralizer K L.1, a ∉ L.1 :=
       Set.ssubset_iff_of_subset this|>.1 $ Set.lt_iff_ssubset.1 Llt
@@ -174,9 +157,6 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
       (by exact (Algebra.adjoin_le_iff |>.1 (Algebra.adjoin_mono (R := K) (s := {a})
         (Set.singleton_subset_iff.mpr (Set.mem_insert a L.1)))) rfl) ha2|>.symm
     tauto
-  · apply comm_of_centralizer
-    rintro ⟨x, hx⟩ ⟨y, hy⟩
-    simp only [MulMemClass.mk_mul_mk, Subtype.mk.injEq]
-    exact L.mul_comm _ _ hx hy
+  · exact Subalgebra.le_centralizer_self.2 L.2
 
 end cors_of_DC
