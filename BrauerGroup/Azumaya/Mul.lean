@@ -443,7 +443,7 @@ abbrev EndRn (n : ℕ) [NeZero n] : Azumaya R := {
 }
 
 variable (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M] [Nontrivial M]
+    [Module.Projective R M]
 
 open MulOpposite
 
@@ -457,14 +457,12 @@ abbrev tensor_projection1': (Module.End R (Fin (nn R M) → R)) ⊗[R] (Module.E
   TensorProduct.map (projection' R M) <|
     (opLinearEquiv R).toLinearMap ∘ₗ (projection' R M) ∘ₗ (opLinearEquiv R).symm.toLinearMap
 
-omit [Nontrivial M] in
 lemma tensor_projection_inclusion1': tensor_projection1' R M ∘ₗ tensor_inclusion1' R M = .id := by
   ext f g
   simp [LinearMap.comp_assoc, fg]
   rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp, ← LinearMap.comp_assoc,
     fg, LinearMap.id_comp, op_unop]
 
-omit [Nontrivial M] in
 lemma tensor_inclusion1'_inj: Function.Injective (tensor_inclusion1' R M) := by
   exact Function.LeftInverse.injective (g := tensor_projection1' R M)
     <| DFunLike.congr_fun <| tensor_projection_inclusion1' R M
@@ -481,17 +479,14 @@ abbrev projection2': Module.End R (Module.End R (Fin (nn R M) → R)) →ₗ[R]
   map_add' _ _ := by simp [LinearMap.add_comp, LinearMap.comp_add]
   map_smul' := by simp [LinearMap.smul_comp, LinearMap.comp_smul]
 
-omit [Nontrivial M] in
 lemma projection2'_inclusion2': projection2' R M ∘ₗ inclusion2' R M = LinearMap.id := by
   ext f g : 2
   simp [LinearMap.comp_assoc, fg]
   simp [← LinearMap.comp_assoc, fg]
 
-omit [Nontrivial M] in
 lemma projection2'_surj: Function.Surjective (projection2' R M) := by
   exact Function.RightInverse.surjective <| DFunLike.congr_fun <| projection2'_inclusion2' R M
 
-omit [Nontrivial M] in
 /--
 End R M ⊗ (End R M)ᵐᵒᵖ ------------> End R (End R M)
     |         |                        |      |
@@ -514,7 +509,6 @@ lemma comm_square_endend :
   ext i j
   simp
 
-omit [Nontrivial M] in
 lemma comm_square_endend' :
     (AlgHom.mulLeftRight R (Module.End R M)).toLinearMap ∘ₗ tensor_projection1' R M =
     projection2' R M ∘ₗ (AlgHom.mulLeftRight _ _).toLinearMap := by
@@ -529,7 +523,9 @@ lemma comm_square_endend' :
   ext m
   simp
 
-instance: NeZero (nn R M) := ⟨by
+variable [Nontrivial M]
+
+instance : NeZero (nn R M) := ⟨by
   by_contra! hn
   have : Subsingleton (Fin (nn R M) → R) := by
     rw [hn]
@@ -538,29 +534,24 @@ instance: NeZero (nn R M) := ⟨by
   have : ¬ (Subsingleton M) := not_subsingleton_iff_nontrivial.2 inferInstance
   tauto⟩
 
-lemma inj_endM: Function.Injective (AlgHom.mulLeftRight R (Module.End R M)) :=
-  Function.Injective.of_comp (f := inclusion2' R M) <| by
-    suffices Function.Injective ((inclusion2' R M) ∘ₗ (AlgHom.mulLeftRight _ _).toLinearMap) by
-      rw [LinearMap.coe_comp] at this; exact this
-    rw [comm_square_endend, LinearMap.coe_comp]
-    exact Function.Injective.of_comp_iff (EndRn R (nn R M)).isAzumaya.bij.injective _ |>.2
-      <| tensor_inclusion1'_inj R M
+lemma inj_endM : Function.Injective (AlgHom.mulLeftRight R (Module.End R M)) := by
+  refine .of_comp (f := inclusion2' R M) ?_
+  suffices Function.Injective ((inclusion2' R M) ∘ₗ (AlgHom.mulLeftRight _ _).toLinearMap) by
+    rw [LinearMap.coe_comp] at this; exact this
+  rw [comm_square_endend, LinearMap.coe_comp]
+  exact (EndRn R (nn R M)).isAzumaya.bij.injective.comp <| tensor_inclusion1'_inj R M
 
-lemma surj_endM: Function.Surjective (AlgHom.mulLeftRight R (Module.End R M)) :=
-    Function.Surjective.of_comp (g := tensor_projection1' R M)
-  <| by
+lemma surj_endM : Function.Surjective (AlgHom.mulLeftRight R (Module.End R M)) := by
+  refine .of_comp (g := tensor_projection1' R M) ?_
   change Function.Surjective
     ((AlgHom.mulLeftRight R (Module.End R M)).toLinearMap ∘ₗ tensor_projection1' R M)
   rw [comm_square_endend', LinearMap.coe_comp]
-  exact Function.Surjective.of_comp_iff _ (EndRn R (nn R M)).isAzumaya.bij.surjective |>.2
-    <| projection2'_surj R M
+  exact (projection2'_surj R M).comp (EndRn R (nn R M)).isAzumaya.bij.surjective
 
-lemma bij_endM :
-  Function.Bijective (AlgHom.mulLeftRight R (Module.End R M)) :=
+lemma bij_endM : Function.Bijective (AlgHom.mulLeftRight R (Module.End R M)) :=
   ⟨inj_endM R M, surj_endM R M⟩
 
-abbrev ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M] [FaithfulSMul R M] : Azumaya R where
+abbrev ofEnd [FaithfulSMul R M] : Azumaya R where
   __ := AlgebraCat.of R (Module.End R M)
   isAzumaya.out := Module.Projective.ofEnd R M|>.out
   isAzumaya.bij := bij_endM R M
