@@ -152,7 +152,7 @@ theorem inter_tensor_union :
   |add x y hx hy =>
   apply AddMemClass.add_mem <;> assumption
 
-theorem algclosure_element_in (x : K_bar ⊗[K] A): ∃(F : IntermediateField K K_bar),
+theorem algclosure_element_in (x : K_bar ⊗[K] A) : ∃(F : IntermediateField K K_bar),
     FiniteDimensional K F ∧ x ∈ intermediateTensor K K_bar A F := by
   have mem : x ∈ (⊤ : Submodule K _) := ⟨⟩
   rw [← inter_tensor_union K K_bar A] at mem
@@ -163,7 +163,7 @@ theorem algclosure_element_in (x : K_bar ⊗[K] A): ∃(F : IntermediateField K 
 def subfieldOf (x : K_bar ⊗[K] A) : IntermediateField K K_bar :=
   algclosure_element_in K K_bar A x|>.choose
 
-instance (x : K_bar ⊗[K] A): FiniteDimensional K (subfieldOf K K_bar A x) :=
+instance (x : K_bar ⊗[K] A) : FiniteDimensional K (subfieldOf K K_bar A x) :=
   (algclosure_element_in K K_bar A _).choose_spec.1
 
 theorem mem_subfieldOf (x : K_bar ⊗[K] A) : x ∈ intermediateTensor K K_bar A

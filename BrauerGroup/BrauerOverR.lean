@@ -12,12 +12,12 @@ instance : Module ℝ (Module.End ℝ ℍ[ℝ]) := inferInstance
 set_option synthInstance.maxHeartbeats 40000 in
 instance : Algebra ℝ (Module.End ℝ ℍ[ℝ]) := inferInstance
 
-abbrev toEnd_map_aux (q1 q2 : ℍ[ℝ]): Module.End ℝ ℍ[ℝ] where
+abbrev toEnd_map_aux (q1 q2 : ℍ[ℝ]) : Module.End ℝ ℍ[ℝ] where
     toFun x := q1 * x * (star q2)
     map_add' x1 x2 := by simp [mul_add, add_mul]
     map_smul' r x := by simp
 
-abbrev toEnd_map_aux' (q1 : ℍ[ℝ]): ℍ[ℝ] →ₗ[ℝ] Module.End ℝ ℍ[ℝ] where
+abbrev toEnd_map_aux' (q1 : ℍ[ℝ]) : ℍ[ℝ] →ₗ[ℝ] Module.End ℝ ℍ[ℝ] where
   toFun q2 := toEnd_map_aux q1 q2
   map_add' x1 x2 := by ext : 1; simp [mul_add]
   map_smul' r x := by ext : 1; simp [Algebra.mul_smul_comm _ _ (star x)]
@@ -29,7 +29,7 @@ abbrev toEnd_map : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] →ₗ[ℝ] Module.End ℝ (ℍ[�
 }
 
 set_option synthInstance.maxHeartbeats 40000 in
-lemma toEnd_map.map_mul (x1 x2 : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]): toEnd_map (x1 * x2) =
+lemma toEnd_map.map_mul (x1 x2 : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) : toEnd_map (x1 * x2) =
     toEnd_map x1 * toEnd_map x2 := by
   induction x1 using TensorProduct.induction_on with
   | zero => simp

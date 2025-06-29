@@ -655,7 +655,7 @@ lemma top_eq_ring (R :Type*)[Ring R] : (⊤ : TwoSidedIdeal R) = (⊤ : Set R) :
 lemma _root_.AlgEquiv.isCentral {K B C : Type*}
     [Field K] [Ring B] [Algebra K B]
     [hc : Algebra.IsCentral K B]
-    [Ring C] [Algebra K C] (e : B ≃ₐ[K] C):
+    [Ring C] [Algebra K C] (e : B ≃ₐ[K] C) :
     Algebra.IsCentral K C where
   out z hz := by
     obtain ⟨k, hk⟩ := hc.out (show e.symm z ∈ _ by

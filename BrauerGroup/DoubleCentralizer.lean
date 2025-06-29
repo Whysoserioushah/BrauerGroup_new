@@ -675,7 +675,7 @@ set_option synthInstance.maxHeartbeats 120000 in
 set_option maxHeartbeats 400000 in
 instance : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
   constructor
-  let eqv : (A ⊗[F] Module.End.rightMul F B) ≃ₐ[F] (Bᵐᵒᵖ  ⊗[F] A):=
+  let eqv : (A ⊗[F] Module.End.rightMul F B) ≃ₐ[F] (Bᵐᵒᵖ  ⊗[F] A) :=
     AlgEquiv.trans (Algebra.TensorProduct.congr AlgEquiv.refl Module.End.rightMulEquiv)
       (Algebra.TensorProduct.comm F A Bᵐᵒᵖ)
   have := TwoSidedIdeal.orderIsoOfRingEquiv eqv.toRingEquiv

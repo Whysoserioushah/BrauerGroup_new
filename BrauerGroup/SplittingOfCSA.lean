@@ -17,7 +17,7 @@ variable (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
 open scoped TensorProduct
 open RingCon
 
-instance module_over_over (A : CSA k) (I : TwoSidedIdeal A):
+instance module_over_over (A : CSA k) (I : TwoSidedIdeal A) :
     Module k I := Module.compHom I (algebraMap k A)
 
 set_option synthInstance.maxHeartbeats 50000 in
@@ -178,12 +178,12 @@ lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlg
   simp only [Fintype.card_fin, Module.finrank_self, mul_one] at this
   exact dim_eq k k_bar A|>.trans $ LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
-def deg (A : CSA k): ℕ := dim_is_sq k A k_bar |>.choose
+def deg (A : CSA k) : ℕ := dim_is_sq k A k_bar |>.choose
 
-lemma deg_sq_eq_dim (A : CSA k): (deg k k_bar A) ^ 2 = Module.finrank k A :=
+lemma deg_sq_eq_dim (A : CSA k) : (deg k k_bar A) ^ 2 = Module.finrank k A :=
   by rw [pow_two]; exact dim_is_sq k A k_bar |>.choose_spec.symm
 
-instance deg_pos (A : CSA k): NeZero (deg k k_bar A) := by
+instance deg_pos (A : CSA k) : NeZero (deg k k_bar A) := by
   constructor
   by_contra! h
   apply_fun (λ x => x^2) at h
@@ -199,7 +199,7 @@ def isSplit (L : Type u) [Field L] [Algebra k L] : Prop :=
   ∃ (n : ℕ) (_ : NeZero n),
   Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)
 
-def split_by_alg_closure (A : CSA k): split k A k_bar where
+def split_by_alg_closure (A : CSA k) : split k A k_bar where
   n := deg k k_bar A
   iso := by
     haveI := hk_bar.1

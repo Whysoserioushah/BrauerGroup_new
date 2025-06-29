@@ -79,7 +79,7 @@ lemma IsCentral.left_of_tensor (B C : Type*)
 variable (A : Type u) [Ring A] [Algebra K A]
 
 lemma Algebra.IsCentral_ofAlgEquiv (A B : Type*) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
-    (e : A ≃ₐ[K] B) (hA : Algebra.IsCentral K A):  Algebra.IsCentral K B where
+    (e : A ≃ₐ[K] B) (hA : Algebra.IsCentral K A) :  Algebra.IsCentral K B where
   out x hx := by
     obtain ⟨k, hk⟩ := hA.1 (show e.symm x ∈ _ by
       simp only [Subalgebra.mem_center_iff] at hx ⊢
@@ -151,7 +151,7 @@ lemma IsMorita_iff_IsBrauer' (R : Type u) [CommRing R] (A B : Type v) [Ring A] [
       (MoritaEquivalence.matrix' R B m).symm⟩⟩⟩
 
 open ModuleCat in
-theorem IsMorita_iff_IsBrauer (A B : CSA.{u, v} K):
+theorem IsMorita_iff_IsBrauer (A B : CSA.{u, v} K) :
     IsMoritaEquivalent K A B ↔ IsBrauerEquivalent (K := K) A B :=
   haveI : IsArtinianRing A := .of_finite K A
   haveI : IsArtinianRing B := .of_finite K B
@@ -174,7 +174,7 @@ instance (n : ℕ) [NeZero n] : FaithfulSMul R (Matrix (Fin n) (Fin n) R) where
     exact h12
 
 open MulOpposite in
-abbrev matrixAlgEquivMatrixMop (n : ℕ):
+abbrev matrixAlgEquivMatrixMop (n : ℕ) :
   Matrix (Fin n) (Fin n) R ≃ₐ[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ :=
   (AlgEquiv.toOpposite R R).mapMatrix.trans <| AlgEquiv.ofRingEquiv
   (f := matrixEquivMatrixMop n R) <|
@@ -213,7 +213,7 @@ noncomputable section
 
 open MulOpposite Matrix
 
-abbrev Mat.inv (n : ℕ): Module.End R (Matrix (Fin n) (Fin n) R) →ₗ[R]
+abbrev Mat.inv (n : ℕ) : Module.End R (Matrix (Fin n) (Fin n) R) →ₗ[R]
     Matrix (Fin n) (Fin n) R ⊗[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
   toFun := fun f ↦ ∑ ⟨⟨i, j⟩, k, l⟩ : (Fin n × Fin n) × Fin n × Fin n,
     f (stdBasisMatrix j k 1) i l • (stdBasisMatrix i j 1) ⊗ₜ[R] op (stdBasisMatrix k l 1)
@@ -222,9 +222,9 @@ abbrev Mat.inv (n : ℕ): Module.End R (Matrix (Fin n) (Fin n) R) →ₗ[R]
   map_smul' := fun r f ↦ by
     simp [MulAction.mul_smul, Finset.smul_sum]
 
-lemma stdBasisMatrix.eq (n : ℕ) (i j : Fin n): stdBasisMatrix i j (1 : R) = of (fun i' j' => if i = i' ∧ j = j' then 1 else 0) := rfl
+lemma stdBasisMatrix.eq (n : ℕ) (i j : Fin n) : stdBasisMatrix i j (1 : R) = of (fun i' j' => if i = i' ∧ j = j' then 1 else 0) := rfl
 
-lemma Mat.inv_toFun1' (n : ℕ):
+lemma Mat.inv_toFun1' (n : ℕ) :
     (Mat.inv R n).comp (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)).toLinearMap = .id :=
   Basis.ext (Basis.tensorProduct (Matrix.stdBasis _ _ _) ((Matrix.stdBasis _ _ _).map (opLinearEquiv ..)))
   fun ⟨⟨i0, j0⟩, k0, l0⟩ ↦  by
@@ -241,7 +241,7 @@ lemma Mat.inv_toFun2' (n : ℕ) :
   simp [sum_apply, mul_apply, Finset.sum_mul, Finset.mul_sum, stdBasisMatrix,
     Fintype.sum_prod_type, ite_and]
 
-lemma Mat.bij (n : ℕ): Function.Bijective (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)) :=
+lemma Mat.bij (n : ℕ) : Function.Bijective (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)) :=
   ⟨Function.HasLeftInverse.injective ⟨Mat.inv R n, DFunLike.congr_fun (Mat.inv_toFun1' R n)⟩,
   Function.HasRightInverse.surjective ⟨Mat.inv R n, DFunLike.congr_fun (Mat.inv_toFun2' R n)⟩⟩
 

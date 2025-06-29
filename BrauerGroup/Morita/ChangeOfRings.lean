@@ -91,11 +91,11 @@ variable (A B : Type u) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
 instance (n : ℕ) [NeZero n] : Functor.Additive (moritaEquivalentToMatrix A (Fin n)).functor :=
   Functor.additive_of_preserves_binary_products _
 
--- instance (N : ModuleCat A): Module R N := Module.compHom N (algebraMap R A)
+-- instance (N : ModuleCat A) : Module R N := Module.compHom N (algebraMap R A)
 
--- instance (N : ModuleCat A): SMulCommClass A R N := sorry
+-- instance (N : ModuleCat A) : SMulCommClass A R N := sorry
 
--- instance (n : ℕ) [NeZero n] (N : ModuleCat A): SMulCommClass (Matrix (Fin n) (Fin n) A) R (Fin n → N) where
+-- instance (n : ℕ) [NeZero n] (N : ModuleCat A) : SMulCommClass (Matrix (Fin n) (Fin n) A) R (Fin n → N) where
 --   smul_comm M r v := by
 --     ext i
 --     simp only [Pi.smul_apply]
@@ -138,7 +138,7 @@ def matrix (n : ℕ) : MoritaEquivalence R A (Matrix (Fin (n+1)) (Fin (n + 1)) A
 def matrix' (n : ℕ) [hn : NeZero n] : MoritaEquivalence R A (Matrix (Fin n) (Fin n) A) where
   eqv := moritaEquivalentToMatrix A _
 end  MoritaEquivalence
--- abbrev ofIsoApp1 (e : R ≃+* S) (X : ModuleCat R): X ⟶
+-- abbrev ofIsoApp1 (e : R ≃+* S) (X : ModuleCat R) : X ⟶
 --     (ModuleCat.restrictScalars e.symm.toRingHom ⋙ ModuleCat.restrictScalars e.toRingHom).obj X :=
 --   ModuleCat.ofHom (Y := (ModuleCat.restrictScalars e.symm.toRingHom ⋙
 --     ModuleCat.restrictScalars e.toRingHom).obj X)
@@ -148,7 +148,7 @@ end  MoritaEquivalence
 --         change _ = X.isModule.smul _ x
 --         simp; rfl }
 
--- abbrev ofIsoApp2 (e : R ≃+* S) (X : ModuleCat R): (ModuleCat.restrictScalars e.symm.toRingHom ⋙
+-- abbrev ofIsoApp2 (e : R ≃+* S) (X : ModuleCat R) : (ModuleCat.restrictScalars e.symm.toRingHom ⋙
 --     ModuleCat.restrictScalars e.toRingHom).obj X ⟶ X :=
 --   ModuleCat.ofHom (X := (ModuleCat.restrictScalars e.symm.toRingHom ⋙
 --     ModuleCat.restrictScalars e.toRingHom).obj X)
@@ -315,7 +315,7 @@ def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.o
 
 -- variable [Algebra K S]
 
--- instance (M : ModuleCat S): Module K M := Module.compHom M (algebraMap K S)
+-- instance (M : ModuleCat S) : Module K M := Module.compHom M (algebraMap K S)
 
 -- -- instance : Algebra K (End (e.functor.obj (ModuleCat.of R R))) :=
 -- --     {__ := IsMoritaEquivalent.division_ring.instModuleCarrier

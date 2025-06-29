@@ -245,7 +245,7 @@ def one_mul_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
 def mul_one_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
   ⟨.of K ((Matrix (Fin n) (Fin n) K) ⊗[K] A)⟩
 
-def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A'): CSA K := {
+def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A') : CSA K := {
   __ := AlgebraCat.of K A'
   isCentral := AlgEquiv.isCentral e
   isSimple := ⟨TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv.symm |>.isSimpleOrder⟩
@@ -342,7 +342,7 @@ lemma matrixEquivForward_surjective
     refine h1 ?_ ?_ |>.elim <;> aesop
   · rfl
 
-def matrix_eqv (m n : ℕ): (Matrix (Fin m) (Fin m) K) ⊗[K] (Matrix (Fin n) (Fin n) K) ≃ₐ[K]
+def matrix_eqv (m n : ℕ) : (Matrix (Fin m) (Fin m) K) ⊗[K] (Matrix (Fin n) (Fin n) K) ≃ₐ[K]
     Matrix (Fin m × Fin n) (Fin m × Fin n) K :=
   AlgEquiv.ofBijective
     (matrixEquivForward (Fin m) (Fin n)) $ by
@@ -446,7 +446,7 @@ lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) o
 variable (K R : Type*) [CommSemiring K] [Semiring R] [Algebra K R] in
 open Matrix MulOpposite in
 /-- Mn(Rᵒᵖ) ≃ₐ[K] Mₙ(R)ᵒᵖ -/
-def matrixEquivMatrixMop_algebra (n : ℕ):
+def matrixEquivMatrixMop_algebra (n : ℕ) :
     Matrix (Fin n) (Fin n) Rᵐᵒᵖ ≃ₐ[K] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
   toFun M := op (M.transpose.map (fun d => d.unop))
   invFun M := M.unop.transpose.map (fun d => op d)
@@ -461,7 +461,7 @@ def matrixEquivMatrixMop_algebra (n : ℕ):
     else simp only [MulOpposite.algebraMap_apply, h, ↓reduceIte, unop_eq_zero_iff, ite_eq_right_iff,
       op_eq_zero_iff]; tauto
 
-lemma inv_eqv (A B: CSA K) (hAB : IsBrauerEquivalent A B):
+lemma inv_eqv (A B: CSA K) (hAB : IsBrauerEquivalent A B) :
     IsBrauerEquivalent (inv (K := K) A) (inv (K := K) B) := by
   unfold inv
   obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hAB

@@ -358,7 +358,7 @@ noncomputable abbrev toTensorMatrix (A : Type u) (n : Type*) [Ring A] [Algebra F
     · simp_all only [ne_eq, not_false_eq_true, Matrix.one_apply_ne, tmul_zero]
 
 noncomputable abbrev invFun_toFun (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]
-    (i : n) (j : n): K ⊗[F] A →ₗ[F] K ⊗[F] Matrix n n A :=
+    (i : n) (j : n) : K ⊗[F] A →ₗ[F] K ⊗[F] Matrix n n A :=
   TensorProduct.lift {
     toFun := fun k ↦ {
       toFun := fun a ↦ k ⊗ₜ Matrix.stdBasisMatrix i j a
@@ -377,7 +377,7 @@ noncomputable abbrev invFun_toFun (A : Type u) (n : Type*) [Ring A] [Algebra F A
   }
 
 noncomputable abbrev invFun_Klinear (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]
-    (i : n) (j : n): K ⊗[F] A →ₗ[K] K ⊗[F] Matrix n n A where
+    (i : n) (j : n) : K ⊗[F] A →ₗ[K] K ⊗[F] Matrix n n A where
   __ := invFun_toFun K F A n i j
   map_smul' := fun k koxa ↦ by
     simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
@@ -474,7 +474,7 @@ section DivisionRing
 variable (D : Type u) [DivisionRing D] [Algebra F D] [FiniteDimensional F D]
   [Algebra.IsCentral F D] [IsSimpleRing D]
 
-theorem maxOfDivision (L : SubField F D) (hL : IsMaximalSubfield F D L): isSplit F D L := by
+theorem maxOfDivision (L : SubField F D) (hL : IsMaximalSubfield F D L) : isSplit F D L := by
   rw [isSplit_iff_dimension L F ⟨.of F D⟩]
   exact ⟨⟨.of F D⟩, ⟨rfl, ⟨L.val, by rw [pow_two]; exact dim_max_subfield F D L hL|>.symm ⟩⟩⟩
 

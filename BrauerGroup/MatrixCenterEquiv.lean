@@ -66,7 +66,7 @@ section AlgEquiv
 
 variable (R A: Type u) [CommSemiring R] [Ring A] [Algebra R A]
 
-def Matrix.centerAlgEquiv (n : ℕ) (hn : 0 < n):
+def Matrix.centerAlgEquiv (n : ℕ) (hn : 0 < n) :
     Subalgebra.center R M[Fin n, A] ≃ₐ[R] Subalgebra.center R A := {
   __ := Matrix.centerEquivBase n hn A
   commutes' := fun _ ↦ rfl }

@@ -378,7 +378,7 @@ lemma isoConjCoeff_spec' :
   rw [A.isoConjCoeff_spec B c]
   simp [_root_.mul_assoc]
 
-lemma isoConjCoeff_spec'' (c : K) (x : A.conjFactor σ):
+lemma isoConjCoeff_spec'' (c : K) (x : A.conjFactor σ) :
     B.ι (σ c) =
     (A.isoConjCoeff B * (A.iso B <| x.1) * (A.isoConjCoeff B)⁻¹) *
       B.ι c *
@@ -433,7 +433,7 @@ abbrev pushConjFactorCoeffAsUnit (x : A.conjFactor σ) (y : B.conjFactor σ) : K
 
 lemma compare_conjFactorCompCoeff
     (xσ : A.conjFactor σ) (yσ : B.conjFactor σ) (xτ : A.conjFactor τ) (yτ : B.conjFactor τ)
-    (xστ : A.conjFactor (σ * τ)) (yστ : B.conjFactor (σ * τ)):
+    (xστ : A.conjFactor (σ * τ)) (yστ : B.conjFactor (σ * τ)) :
     B.conjFactorCompCoeff yσ yτ yστ *
     A.pushConjFactorCoeff B xστ yστ =
     A.pushConjFactorCoeff B xσ yσ *
@@ -1804,7 +1804,7 @@ lemma equal (ne_top : I ≠ ⊤) : π₁ I ne_top = π₂ I := by
     Equiv.refl_apply, Basis.coe_mk, π₂, π, RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe,
     MonoidHom.toOneHom_coe, MonoidHom.coe_coe, x_AsBasis_apply, LinearMap.coe_mk, AddHom.coe_mk]
 
-lemma π_inj (ne_top : I ≠ ⊤): Function.Injective (π I) := by
+lemma π_inj (ne_top : I ≠ ⊤) : Function.Injective (π I) := by
   change Function.Injective (π₂ I)
   rw [← equal (ne_top := ne_top)]
   exact LinearEquiv.injective _

@@ -186,7 +186,7 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
 --   -- Note: this is apparently _not_ defeq to FieldHom.instFunLike with reducible transparency
 --   ConcreteCategory.instFunLike
 
--- -- Porting note (#10754): added instance
+-- -- Porting note (#10754) : added instance
 -- instance instFieldHomClass {X Y : FieldCat} : RingHomClass (X ⟶ Y) X Y :=
 --   RingHom.instRingHomClass
 

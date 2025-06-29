@@ -40,7 +40,7 @@ instance (K A B M : Type u)
 
 def smul1AddHom'  (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] (f: B →ₐ[K] A):
+    [AddCommGroup M] [Module K M] [Module A M] (f: B →ₐ[K] A) :
     (module_inst K A B M f) → B →+ (Module.End A M) →+ (module_inst K A B M f) :=
   fun m ↦ {
     toFun := fun b ↦ {
@@ -58,7 +58,7 @@ def smul1AddHom'  (K A B M : Type u)
 
 def smul1AddHom (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A):
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A) :
     (module_inst K A B M f) → (B ⊗[K] (Module.End A M)) →+ (module_inst K A B M f) := fun m ↦
   TensorProduct.liftAddHom (smul1AddHom' K A B M f m) fun k b l ↦ by
     simp only [smul1AddHom', AddMonoidHom.coe_mk, ZeroHom.coe_mk, LinearMapClass.map_smul,
@@ -67,7 +67,7 @@ def smul1AddHom (K A B M : Type u)
 
 def smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A][Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A):
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A) :
     (module_inst K A B M f) → (B ⊗[K] (Module.End A M)) →ₗ[K] (module_inst K A B M f) :=
   fun m ↦ {
     __ := smul1AddHom K A B M f m
@@ -89,7 +89,7 @@ def smul1 (K A B M : Type u)
 
 lemma one_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B] [AddCommGroup M]
-    [Module K M] [Module A M] [IsScalarTower K A M](f: B →ₐ[K] A):
+    [Module K M] [Module A M] [IsScalarTower K A M](f: B →ₐ[K] A) :
     ∀(m : module_inst K A B M f), smul1 K A B M f m 1 = m := fun m ↦ by
   simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
     Algebra.TensorProduct.one_def, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
@@ -97,7 +97,7 @@ lemma one_smul1 (K A B M : Type u)
 
 lemma mul_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B] [AddCommGroup M]
-    [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A):
+    [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A) :
     ∀ (x y : (B ⊗[K] (Module.End A M))) (m : module_inst K A B M f),
     smul1 K A B M f m (x * y) = smul1 K A B M f (smul1 K A B M f m y) x := fun x y m ↦ by
   dsimp [smul1, smul1AddHom, smul1AddHom']
@@ -118,7 +118,7 @@ lemma mul_smul1 (K A B M : Type u)
 lemma smul1_add (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    (f: B →ₐ[K] A):  ∀ (r : (B ⊗[K] (Module.End A M))) (m1 m2 : module_inst K A B M f),
+    (f: B →ₐ[K] A) :  ∀ (r : (B ⊗[K] (Module.End A M))) (m1 m2 : module_inst K A B M f),
     smul1 K A B M f (m1 + m2) r = smul1 K A B M f m1 r + smul1 K A B M f m2 r := fun r m1 m2 ↦ by
   induction r using TensorProduct.induction_on
   · simp only [map_zero, smul_zero, add_zero]
@@ -134,7 +134,7 @@ lemma smul1_add (K A B M : Type u)
 lemma add_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    (f: B →ₐ[K] A): ∀ (r s : B ⊗[K] Module.End A M) (x : module_inst K A B M f), smul1 K A B M f x (r + s) =
+    (f: B →ₐ[K] A) : ∀ (r s : B ⊗[K] Module.End A M) (x : module_inst K A B M f), smul1 K A B M f x (r + s) =
     smul1 K A B M f x r + smul1 K A B M f x s := fun r s x ↦ by
   simp only [smul1, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add, LinearMap.coe_mk,
     AddHom.coe_mk]
@@ -258,7 +258,7 @@ theorem SkolemNoether (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Algebra.IsCentral K A] [IsSimpleRing A] [Ring B]
     [Algebra K B] [hB : IsSimpleRing B] [AddCommGroup M] [Module K M] [Module A M]
-    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A):
+    [IsScalarTower K A M] [IsSimpleModule A M] (f g : B →ₐ[K] A) :
     ∃(x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
   obtain ⟨φ⟩ := iso_fg K A B M f g
   let ISO := end_end_iso K A M
@@ -333,7 +333,7 @@ theorem SkolemNoether (K A B M : Type u)
 theorem SkolemNoether' (K A B : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Algebra.IsCentral K A] [IsSimpleRing A] [Ring B]
-    [Algebra K B] [hB : IsSimpleRing B] (f g : B →ₐ[K] A):
+    [Algebra K B] [hB : IsSimpleRing B] (f g : B →ₐ[K] A) :
     ∃ (x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
   obtain ⟨n, hn, S, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version K A
   letI := Module.compHom (Fin n → S) e.toRingEquiv.toRingHom

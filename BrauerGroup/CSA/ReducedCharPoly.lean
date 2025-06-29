@@ -35,7 +35,7 @@ lemma Algebra.TensorProduct.assoc'_apply (R S R' A B C : Type*) [CommSemiring R]
     [CommSemiring R'] [Semiring A] [Semiring B] [Semiring C] [Algebra R R'] [Algebra R A]
     [Algebra R' A] [Algebra R B] [Algebra R' B] [Algebra R C]
     [IsScalarTower R R' A] [IsScalarTower R R' B] [Algebra S A] [Algebra R S] [Algebra R' S]
-    [IsScalarTower R' S A] [IsScalarTower R S A] (a : A) (b : B) (c : C):
+    [IsScalarTower R' S A] [IsScalarTower R S A] (a : A) (b : B) (c : C) :
     (Algebra.TensorProduct.assoc' R S R' A B C) ((a ⊗ₜ b) ⊗ₜ c) = a ⊗ₜ (b ⊗ₜ c) := rfl
   -- [inst_3 : Algebra R A] [inst_4 : Algebra R B] [inst_5 : AddCommMonoid M] [inst_6 : Module R M] [inst_7 : Module A M]
   -- [inst_8 : Module B M] [inst_9 : IsScalarTower R A M] [inst_10 : IsScalarTower R B M] [inst_11 : SMulCommClass A B M]
@@ -66,7 +66,7 @@ def matrixEquivTensor'.{u_1, u_2, u_3} (n : Type u_1) (R : Type u_2) (A : Type u
     simp [matrixEquivTensor, Matrix.algebraMap_eq_diagonal, Matrix.diagonal_apply, Matrix.one_apply] ).symm
 
 @[simp] lemma matrixEquivTensor'_symm_apply.{u_1, u_2, u_3} (n : Type u_1) (R : Type u_2) (A : Type u_3) [CommSemiring R] [CommSemiring A]
-    [Algebra R A] [Fintype n] [DecidableEq n] (a : A) (m : Matrix n n R):
+    [Algebra R A] [Fintype n] [DecidableEq n] (a : A) (m : Matrix n n R) :
     (matrixEquivTensor' n R A).symm (a ⊗ₜ m) = a • (m.map (algebraMap R A)) := rfl
 
 section defs
@@ -88,7 +88,7 @@ def φ_m (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F →ₐ[K] Matrix (Fin n
 
 omit [NeZero n] in
 variable {K F E} in
-lemma φ_m_inj (φ : F →ₐ[K] E): Function.Injective (φ_m n φ) := fun M N h ↦ funext fun i ↦
+lemma φ_m_inj (φ : F →ₐ[K] E) : Function.Injective (φ_m n φ) := fun M N h ↦ funext fun i ↦
   funext fun j ↦ by simp [← Matrix.ext_iff] at h; exact (injective_φ _ _ _ φ) (h i j)
 
 variable {K F E} in
@@ -136,7 +136,7 @@ abbrev e1'' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[φ.range] Matrix (Fi
 
 set_option maxSynthPendingDepth 2 in
 variable {K F E A n} in
-abbrev g (φ : F →ₐ[K] E): E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
+abbrev g (φ : F →ₐ[K] E) : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
   Algebra.TensorProduct.congr (Algebra.TensorProduct.rid φ.range E E|>.symm) AlgEquiv.refl |>.trans
   <| Algebra.TensorProduct.assoc' K E φ.range E φ.range A|>.trans <|
   Algebra.TensorProduct.congr AlgEquiv.refl (e1'' A n e φ) |>.trans <|
@@ -146,7 +146,7 @@ end defs
 
 variable {K E F} in
 omit [NeZero n] in
-lemma mat_over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A):
+lemma mat_over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A) :
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, g (1 ⊗ₜ a) =
     φ.mapMatrix (e (1 ⊗ₜ a)) := by
   use g e φ
@@ -161,12 +161,12 @@ lemma mat_over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A):
   rfl
 
 variable {K F n A} in
-def ReducedCharPoly (a : A): Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a))
+def ReducedCharPoly (a : A) : Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a))
 
 namespace ReducedCharPoly
 
 omit [NeZero n] in
-lemma over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A):
+lemma over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A) :
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, ReducedCharPoly g a =
     Polynomial.mapAlgHom φ (ReducedCharPoly e a) := by
   obtain ⟨g, hg⟩ := mat_over_extension A n e φ a
@@ -231,14 +231,14 @@ lemma Matrix.reindex_diagonal_charpoly (r n m : ℕ) (eq : m = r * n)
   simp
 
 lemma _root_.Matrix.charpoly.similar_eq (n : ℕ) (u : (Matrix (Fin n) (Fin n) F)ˣ)
-    (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹):
+    (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹) :
     A.charpoly = B.charpoly := sorry
 
 set_option synthInstance.maxHeartbeats 80000 in
 set_option maxHeartbeats 600000 in
 include F_bar in
 omit [NeZero n] in
-lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F) [NeZero m] (a : A):
+lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F) [NeZero m] (a : A) :
     ∃(r : ℕ), NeZero r ∧ m = r * n ∧ Matrix.charpoly (g (1 ⊗ₜ a)) = (ReducedCharPoly e a)^r :=
   have iso: F ⊗[K] A ≃ₐ[F] g.range := AlgEquiv.ofInjective _ <| RingHom.injective _
   haveI : Algebra.IsCentral F g.range := .of_algEquiv F _ _ iso
@@ -297,7 +297,7 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
     exact Matrix.reindex_diagonal_charpoly F _ _ _ eq.symm (e (1 ⊗ₜ[K] a))⟩
 
 include F_bar in
-lemma eq_polys (f1 f2 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (a : A):
+lemma eq_polys (f1 f2 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (a : A) :
     ReducedCharPoly f1 a = ReducedCharPoly f2 a := by
   obtain ⟨r, _, hr1, hr2⟩ := eq_pow_reducedCharpoly K F F_bar A n n f1 f2 a
   have : r = 1 := by simpa [mul_left_eq_self₀, NeZero.ne n] using hr1.symm
@@ -320,7 +320,7 @@ lemma fixedpoints (x : F) : (∀ φ : F ≃ₐ[K] F, φ x = x) → x ∈ (Algebr
 
 -- lemma 3
 include F_bar in
-lemma mem_Kx (a : A): ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.ofId K F) := by
+lemma mem_Kx (a : A) : ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.ofId K F) := by
   have fixed : ∀ φ : F ≃ₐ[K] F, (e (1 ⊗ₜ[K] a)).charpoly = map φ (e (1 ⊗ₜ[K] a)).charpoly := fun φ ↦ by
     obtain ⟨g, hg⟩ := mat_over_extension (E := F) A n e φ a
     obtain ⟨r, _, hr1, hr⟩ := eq_pow_reducedCharpoly K F F_bar A n n e g a
@@ -363,11 +363,11 @@ lemma mem_Kx (a : A): ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.o
   exact fixed2 k|>.choose_spec.symm
 
 end
--- abbrev galois_fixed_Kx_mem (a : A): K[X] := (mem_Kx K F F_bar A n e a).choose
+-- abbrev galois_fixed_Kx_mem (a : A) : K[X] := (mem_Kx K F F_bar A n e a).choose
 
 lemma unique_onver_split (L : Type*) [Field L] [Algebra K L] [IsGalois K L]
     (e1 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (e2 : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E)
-    (e3 : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) (a : A):
+    (e3 : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) (a : A) :
     ∃ f g : K[X], ReducedCharPoly e1 a = f.mapAlgHom (Algebra.ofId K F) ∧
     ReducedCharPoly e2 a = g.mapAlgHom (Algebra.ofId K E) ∧ f = g := by
 
@@ -375,6 +375,6 @@ lemma unique_onver_split (L : Type*) [Field L] [Algebra K L] [IsGalois K L]
 
 -- lemma 4 ?????
 
-theorem equalMatrixCharpoly (M : Matrix (Fin n) (Fin n) K):
+theorem equalMatrixCharpoly (M : Matrix (Fin n) (Fin n) K) :
     @ReducedCharPoly K K _ _ _ ⟨.of K (Matrix (Fin n) (Fin n) K)⟩ n
     (Algebra.TensorProduct.lid _ _) M = M.charpoly := by simp [ReducedCharPoly]

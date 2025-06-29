@@ -66,7 +66,7 @@ instance (K A : Type u) [Field K] [Ring A] [Algebra K A] : SetLike (SubField K A
       exact le_of_eq_of_le hL12.symm fun _ a ↦ a
     exact (LE.le.le_iff_eq le).1 ge|>.symm
 
-lemma isMax_iff_isMaxSubfield (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A):
+lemma isMax_iff_isMaxSubfield (K A : Type u) [Field K] [Ring A] [Algebra K A] (L : SubField K A) :
     IsMax L ↔ IsMaximalSubfield K A L :=
   ⟨fun hL _ hB ↦ (IsMax.eq_of_le hL hB).symm, fun hL B hB ↦ le_of_eq $ hL B hB⟩
 
@@ -114,7 +114,7 @@ def toSubalgebra' : SubField K A ↪o Subalgebra K A where
 
 variable {K A} in
 instance (priority := low) algebra' {K' : Type u} [CommRing K'] [SMul K' K] [Algebra K' A]
-    [IsScalarTower K' K A] (S : SubField K A): Algebra K' S :=
+    [IsScalarTower K' K A] (S : SubField K A) : Algebra K' S :=
   S.toSubalgebra.algebra'
 
 instance (S : SubField K A) : Algebra K S := S.algebra'
@@ -145,7 +145,7 @@ instance (K A : Type u) [Field K] [Ring A] [Nontrivial A] [Algebra K A] (L : Sub
   inferInstanceAs (Field L.1)
 
 instance (K A : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
-    (L : SubField K A): FiniteDimensional K L :=
+    (L : SubField K A) : FiniteDimensional K L :=
   FiniteDimensional.finiteDimensional_subalgebra L.1
 
 end SubField

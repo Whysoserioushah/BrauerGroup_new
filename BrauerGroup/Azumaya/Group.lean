@@ -54,7 +54,7 @@ lemma Mopcomm_square (A : Type*) [Ring A] [Algebra R A] :
   · simp [-Algebra.lsmul_coe, AlgHom.mulLeftRight_apply]
   · simp [-Algebra.lsmul_coe, AlgHom.mulLeftRight_apply]
 
-lemma mop_bij (A : Azumaya R): Function.Bijective (AlgHom.mulLeftRight R Aᵐᵒᵖ) := by
+lemma mop_bij (A : Azumaya R) : Function.Bijective (AlgHom.mulLeftRight R Aᵐᵒᵖ) := by
   rw [Mopcomm_square R A]
   erw [Function.Bijective.of_comp_iff]
   · simp only [AlgEquiv.toAlgHom_eq_coe, AlgHom.coe_comp, AlgHom.coe_coe, AlgEquiv.coe_ofBijective,
@@ -68,7 +68,7 @@ lemma mop_bij (A : Azumaya R): Function.Bijective (AlgHom.mulLeftRight R Aᵐᵒ
         · exact AlgEquiv.bijective _
   · exact Function.Involutive.bijective (congrFun rfl)
 
-abbrev Azumaya.Inv (A : Azumaya R): Azumaya R :=
+abbrev Azumaya.Inv (A : Azumaya R) : Azumaya R :=
   {
     __ := AlgebraCat.of R Aᵐᵒᵖ
     isAzumaya := {
@@ -89,7 +89,7 @@ private abbrev ee : Module.End R R ≃ₐ[R] R where
   map_add' _ _ := rfl
   commutes' _ := by simp
 
-lemma Azumaya.inv_mul (A : Azumaya R): IsMoritaEquivalent R (Azumaya.mul R (Azumaya.Inv R A) A) 1 := by
+lemma Azumaya.inv_mul (A : Azumaya R) : IsMoritaEquivalent R (Azumaya.mul R (Azumaya.Inv R A) A) 1 := by
 
   sorry
 
@@ -104,7 +104,7 @@ The proof of this is by:
     induces the equation `(1 : R) = ∑ qᵢ (pⱼ)` for some `qᵢ ∈ Module.Dual R P , pⱼ ∈ P`.
 
 -/
-lemma inv_eqv (A B : Azumaya R) (e : IsMoritaEquivalent R A B):
+lemma inv_eqv (A B : Azumaya R) (e : IsMoritaEquivalent R A B) :
     IsMoritaEquivalent R (Azumaya.Inv R A) (Azumaya.Inv R B) := by
 
   sorry

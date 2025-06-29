@@ -429,7 +429,7 @@ lemma Wedderburn_Artin.aux.equivIdeal
   exact ⟨n, n_ne, ⟨LinearEquiv.ofBijective g ⟨g_inj, g_surj⟩⟩⟩
 
 def endPowEquivMatrix (A : Type*) [Ring A]
-    (M : Type*) [AddCommGroup M] [Module A M] (n : ℕ):
+    (M : Type*) [AddCommGroup M] [Module A M] (n : ℕ) :
     Module.End A (Fin n → M) ≃+* Matrix (Fin n) (Fin n) (Module.End A M) :=
   endVecAlgEquivMatrixEnd (Fin n) ℤ A M
 
