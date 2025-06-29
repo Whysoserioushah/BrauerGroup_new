@@ -280,8 +280,6 @@ example: End (ModuleCat.of A A) ≃ₐ[R] Module.End A A :=
 
 variable (e : MoritaEquivalence R A B)
 
-#synth Algebra R (End (ModuleCat.of A A))
-
 variable {R S} in
 def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.of A A) where
   toFun (f : _ ⟶ _) := e.eqv.functor.map f

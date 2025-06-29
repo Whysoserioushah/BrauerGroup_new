@@ -178,7 +178,6 @@ lemma homTensorHomMap_surj: Function.Surjective (TensorProduct.homTensorHomMap R
   rw [← LinearMap.coe_comp, comm_square4]
   exact CharacterModule.surjective_of_dual_injective LinearMap.id fun ⦃a₁ a₂⦄ a ↦ a
 
-#check homTensorHomEquiv_apply
 end formathlib
 
 open MulOpposite
