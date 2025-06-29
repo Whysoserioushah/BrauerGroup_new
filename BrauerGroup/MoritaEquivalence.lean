@@ -62,7 +62,7 @@ def toModuleCatOverMatrix : ModuleCat R ⥤ ModuleCat M[ι, R] where
 @[simps]
 def fromModuleCatOverMatrix.α [Inhabited ι] (M : Type*) [AddCommGroup M] [Module M[ι, R] M] :
     AddSubgroup M where
-  carrier := Set.range ((stdBasisMatrix (default : ι) (default : ι) (1 : R) : M[ι, R]) • ·)
+  carrier := Set.range ((single (default : ι) (default : ι) (1 : R) : M[ι, R]) • ·)
   add_mem' := by
     rintro _ _ ⟨m, rfl⟩ ⟨n, rfl⟩
     exact ⟨m + n, by simp⟩
@@ -75,10 +75,10 @@ open fromModuleCatOverMatrix
 
 instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module M[ι, R] M] :
     Module R <| α R ι M where
-  smul a x := ⟨(stdBasisMatrix default default a : M[ι, R]) • x.1, by
+  smul a x := ⟨(single default default a : M[ι, R]) • x.1, by
     obtain ⟨y, hy⟩ := x.2
     simp only [α, AddSubgroup.mem_mk, Set.mem_range]
-    refine ⟨(stdBasisMatrix default default a : M[ι, R]) • y, hy ▸ ?_⟩
+    refine ⟨(single default default a : M[ι, R]) • y, hy ▸ ?_⟩
     simp only
     rw [← MulAction.mul_smul, ← MulAction.mul_smul]
     congr 1
@@ -87,7 +87,7 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
   one_smul := by
     rintro ⟨_, ⟨x, rfl⟩⟩
     ext
-    change stdBasisMatrix _ _ _ • _ = stdBasisMatrix _ _ _ • _
+    change single _ _ _ • _ = single _ _ _ • _
     rw [← MulAction.mul_smul]
     congr 1
     ext i j
@@ -95,7 +95,7 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
   mul_smul := by
     rintro a a' ⟨_, ⟨x, rfl⟩⟩
     ext
-    change stdBasisMatrix _ _ _ • _ = stdBasisMatrix _ _ _ • (stdBasisMatrix _ _ _ • _)
+    change single _ _ _ • _ = single _ _ _ • (single _ _ _ • _)
     dsimp only [id_eq, eq_mpr_eq_cast, cast_eq]
     rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← MulAction.mul_smul]
     congr 1
@@ -103,31 +103,31 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
     simp
   smul_zero a := by
     ext
-    change stdBasisMatrix _ _ _ • 0 = 0
+    change single _ _ _ • 0 = 0
     simp
   smul_add := by
     rintro a ⟨_, ⟨x, rfl⟩⟩ ⟨_, ⟨y, rfl⟩⟩
     ext
-    change stdBasisMatrix _ _ _ • _ = stdBasisMatrix _ _ _ • _ + stdBasisMatrix _ _ _ • _
+    change single _ _ _ • _ = single _ _ _ • _ + single _ _ _ • _
     dsimp only [AddSubgroup.coe_add]
     rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← smul_add, ← smul_add, ← MulAction.mul_smul]
   add_smul := by
     rintro a b ⟨_, ⟨x, rfl⟩⟩
     ext
-    change stdBasisMatrix _ _ _ • _ = stdBasisMatrix _ _ _ • _ + stdBasisMatrix _ _ _ • _
+    change single _ _ _ • _ = single _ _ _ • _ + single _ _ _ • _
     dsimp only
     rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← MulAction.mul_smul, ← add_smul,
-      ← add_mul, ← stdBasisMatrix_add]
+      ← add_mul, ← single_add]
   zero_smul := by
     rintro ⟨_, ⟨x, rfl⟩⟩
     ext
-    change stdBasisMatrix _ _ _ • _ = _
-    simp only [stdBasisMatrix_zero, zero_smul, ZeroMemClass.coe_zero]
+    change single _ _ _ • _ = _
+    simp only [single_zero, zero_smul, ZeroMemClass.coe_zero]
 
 @[simp]
 lemma fromModuleCatOverMatrix.smul_α_coe {M : Type*} [AddCommGroup M] [Module M[ι, R] M]
     (x : R) (y : α R ι M) : ((x • y : α R ι M) : M) =
-    (stdBasisMatrix default default x : M[ι, R]) • y.1 := rfl
+    (single default default x : M[ι, R]) • y.1 := rfl
 
 open fromModuleCatOverMatrix
 
@@ -145,8 +145,8 @@ def fromModuleCatOverMatrix : ModuleCat M[ι, R] ⥤ ModuleCat R where
     map_add' := by
       rintro ⟨_, ⟨x, rfl⟩⟩ ⟨_, ⟨y, rfl⟩⟩
       refine Subtype.ext ?_
-      show f ((stdBasisMatrix _ _ _ • x) + (stdBasisMatrix _ _ _ • y)) =
-        f (stdBasisMatrix _ _ _ • x) + f (stdBasisMatrix _ _ _ • y)
+      show f ((single _ _ _ • x) + (single _ _ _ • y)) =
+        f (single _ _ _ • x) + f (single _ _ _ • y)
       rw [map_add]
     map_smul' := by
       rintro r ⟨_, ⟨x, rfl⟩⟩
@@ -175,8 +175,8 @@ def matrix.unitIsoHom :
         refine Finset.sum_congr rfl fun i _ => ?_
         rw [fromModuleCatOverMatrix.smul_α_coe, Subtype.coe_mk, ← MulAction.mul_smul]
         change ∑ _, _ = r • ∑ _, _
-        simp only [StdBasisMatrix.mul_same, mul_one]
-        simp only [stdBasisMatrix, of_apply, ite_smul, zero_smul, one_smul, Finset.smul_sum,
+        simp only [single_mul_single_same, mul_one]
+        simp only [single, of_apply, ite_smul, zero_smul, one_smul, Finset.smul_sum,
           smul_ite, smul_zero]}
   naturality {X Y} f := by
     simp only [Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
@@ -210,7 +210,7 @@ def matrix.unitIsoInv :
         refine ⟨fun _ => x, ?_⟩
         refine funext fun i ↦ ?_
         change ∑ _, _ = _
-        simp only [stdBasisMatrix, of_apply, ite_smul, one_smul, zero_smul, Function.update,
+        simp only [single, of_apply, ite_smul, one_smul, zero_smul, Function.update,
           eq_rec_constant, Pi.zero_apply, dite_eq_ite]
         split_ifs with h
         · subst h
@@ -234,13 +234,13 @@ def matrix.unitIsoInv :
           fromModuleCatOverMatrix_obj_carrier, Functor.id_obj, RingHom.id_apply]
         refine Subtype.ext $ funext fun i ↦ ?_
         simp only [toModuleCatOverMatrix_obj_carrier]
-        change _ = ∑ _, stdBasisMatrix default default r i _ • _
+        change _ = ∑ _, single default default r i _ • _
         simp only [Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite, smul_ite,
           smul_zero, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
         split_ifs with h
         · subst h
-          simp only [StdBasisMatrix.apply_same]
-        · rw [StdBasisMatrix.apply_of_row_ne, zero_smul]
+          simp only [single_apply_same]
+        · rw [single_apply_of_row_ne, zero_smul]
           exact Ne.symm h }
   naturality {X Y} f := by
     simp only [Functor.id_obj, Functor.comp_obj, toModuleCatOverMatrix_obj_carrier,
@@ -286,7 +286,7 @@ def matrix.unitIso :
     · refine Finset.sum_congr rfl fun i _ => ?_
       change ∑ _, _ = _
       subst h
-      simp only [stdBasisMatrix, of_apply, ite_smul, one_smul, zero_smul, true_and]
+      simp only [single, of_apply, ite_smul, one_smul, zero_smul, true_and]
       split_ifs with h
       · subst h
         simp only [true_and, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte]
@@ -296,7 +296,7 @@ def matrix.unitIso :
         tauto
     · symm
       refine Finset.sum_congr rfl fun j _ => ?_
-      dsimp only [stdBasisMatrix, of_apply]
+      dsimp only [single, of_apply]
       rw [if_neg, zero_smul]
       tauto
   inv_hom_id := by
@@ -313,22 +313,22 @@ def matrix.unitIso :
 noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
     M ≅ (fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι).obj M :=
   LinearEquiv.toModuleIso $ LinearEquiv.ofBijective
-    ({toFun := fun m i => ⟨(stdBasisMatrix default i 1 : M[ι, R]) • m, by
+    ({toFun := fun m i => ⟨(single default i 1 : M[ι, R]) • m, by
         simp only [α, AddSubgroup.mem_mk, Set.mem_range]
-        refine ⟨(stdBasisMatrix default i 1 : M[ι, R]) • m, ?_⟩
-        simp only [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one]⟩
+        refine ⟨(single default i 1 : M[ι, R]) • m, ?_⟩
+        simp only [← MulAction.mul_smul, single_mul_single_same, mul_one]⟩
       map_add' := fun x y => funext fun i ↦ Subtype.ext $
-        show (stdBasisMatrix default i 1 : M[ι, R]) • (x + y) =
-          (stdBasisMatrix default i 1 : M[ι, R]) • x +
-          (stdBasisMatrix default i 1 : M[ι, R]) • y from smul_add _ _ _
+        show (single default i 1 : M[ι, R]) • (x + y) =
+          (single default i 1 : M[ι, R]) • x +
+          (single default i 1 : M[ι, R]) • y from smul_add _ _ _
       map_smul' := fun x m => funext fun i ↦ Subtype.ext $ by
         simp only [RingHom.id_apply]
         change _ = Subtype.val (∑ _, _)
         simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe]
 
-        simp_rw [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one, ← Finset.sum_smul]
+        simp_rw [← MulAction.mul_smul, single_mul_single_same, mul_one, ← Finset.sum_smul]
         congr 2
-        conv_lhs => rw [Matrix.matrix_eq_sum_stdBasisMatrix x]
+        conv_lhs => rw [Matrix.matrix_eq_sum_single x]
         rw [Finset.mul_sum]
         simp_rw [Finset.mul_sum]
         rw [Finset.sum_eq_single_of_mem (a := i)]
@@ -339,17 +339,17 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         · intro j _ hj
           apply Finset.sum_eq_zero
           intro k _
-          rw [StdBasisMatrix.mul_of_ne]
+          rw [single_mul_single_of_ne]
           exact hj.symm
-        simp_rw [StdBasisMatrix.mul_same, one_mul] } : M →ₗ[M[ι, R]] ι → (α R ι ↑M))
+        simp_rw [single_mul_single_same, one_mul] } : M →ₗ[M[ι, R]] ι → (α R ι ↑M))
     ⟨by
       rw [← LinearMap.ker_eq_bot, eq_bot_iff]
       rintro x (hx : _ = 0)
       simp only [LinearMap.coe_mk, AddHom.coe_mk] at hx
-      rw [show x = ∑ i : ι, (stdBasisMatrix i i 1 : M[ι, R]) • x by
-        rw [← Finset.sum_smul, show ∑ i : ι, (stdBasisMatrix i i 1 : M[ι, R]) = 1 by
+      rw [show x = ∑ i : ι, (single i i 1 : M[ι, R]) • x by
+        rw [← Finset.sum_smul, show ∑ i : ι, (single i i 1 : M[ι, R]) = 1 by
           ext
-          simp only [sum_apply, stdBasisMatrix, one_apply]
+          simp only [sum_apply, single, one_apply]
           split_ifs with h
           · subst h
             simp only [of_apply, and_self, Finset.sum_ite_eq', Finset.mem_univ,
@@ -359,13 +359,13 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
             simp_all only [Finset.mem_univ, of_apply, ite_eq_right_iff, isEmpty_Prop, not_and, not_false_eq_true,
               implies_true, IsEmpty.forall_iff]]; rw [one_smul]]
       refine Submodule.sum_mem _ fun i _ => ?_
-      rw [show (stdBasisMatrix i i 1 : M[ι, R]) =
-        stdBasisMatrix i default 1 * stdBasisMatrix default i 1
-        by rw [StdBasisMatrix.mul_same, one_mul], MulAction.mul_smul]
+      rw [show (single i i 1 : M[ι, R]) =
+        single i default 1 * single default i 1
+        by rw [single_mul_single_same, one_mul], MulAction.mul_smul]
       refine Submodule.smul_mem _ _ ?_
       rw [show _ • x = 0 from Subtype.ext_iff.1 $ congr_fun hx i]
       rfl, fun v ↦ by
-      refine ⟨∑ k : ι, (stdBasisMatrix k default 1 : M[ι, R]) • (v k), ?_⟩
+      refine ⟨∑ k, (single k default 1 : M[ι, R]) • v k, ?_⟩
       simp only [map_sum, _root_.map_smul, LinearMap.coe_mk, AddHom.coe_mk]
       conv_rhs => rw [show v = ∑ k : ι, Function.update (0 : ι → (α R ι M)) k (v k) by
         ext i
@@ -377,20 +377,20 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
       · subst hij
         change Subtype.val (∑ _, _) = _
         simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe, Function.update_self]
-        simp_rw [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one]
-        rw [Finset.sum_eq_single_of_mem (a := default), StdBasisMatrix.apply_same]
+        simp_rw [← MulAction.mul_smul, single_mul_single_same, mul_one]
+        rw [Finset.sum_eq_single_of_mem (a := default), single_apply_same]
         pick_goal 2
         · exact Finset.mem_univ _
         pick_goal 2
         · intro j _ hj
-          simp only [stdBasisMatrix, of_apply, true_and]
+          simp only [single, of_apply, true_and]
           rw [if_neg]
           simp only [ite_self]
           rw [show (Matrix.of fun i' j' ↦ 0) = (0 : Matrix ι ι R) by rfl, zero_smul]
           exact hj.symm
         obtain ⟨y, hy⟩ := (v i).2
         rw [← hy]
-        simp only [← MulAction.mul_smul, StdBasisMatrix.mul_same, mul_one]
+        simp only [← MulAction.mul_smul, single_mul_single_same, mul_one]
       · rw [Function.update_of_ne]
         pick_goal 2
         · exact Ne.symm hij
@@ -398,7 +398,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe]
         apply Finset.sum_eq_zero
         intro k _
-        rw [StdBasisMatrix.apply_of_ne, stdBasisMatrix_zero, zero_smul]
+        rw [single_apply_of_ne, single_zero, zero_smul]
         tauto⟩
 
 @[simps]
@@ -483,7 +483,7 @@ noncomputable def moritaEquivalentToMatrix : ModuleCat R ≌ ModuleCat M[ι, R] 
     simp only [Subtype.mk.injEq]
     change _ = fun k ↦ ∑ j, _
     ext k
-    simp [Function.update_apply, stdBasisMatrix]
+    simp [Function.update_apply, single]
     split_ifs with h
     · subst h; simp
     · exact Eq.symm <| Finset.sum_eq_zero <| fun l _ ↦ by simp; tauto

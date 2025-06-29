@@ -188,7 +188,7 @@ open MulOpposite
 --   [isAlgebra : Algebra R carrier]
 --   isAzumaya : IsAzumaya R carrier
 
-structure Azumaya (R : Type u) [CommRing R] extends AlgebraCat R where
+structure Azumaya (R : Type u) [CommRing R] extends AlgCat R where
   isAzumaya : IsAzumaya R carrier
 
 @[coe]
@@ -247,20 +247,20 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 --   simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
 --     mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
 --   exact hf) <| fun x _ ↦ by
---   refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
+--   refine Submodule.mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
 --   change ∑ i : Fin n, _ • Function.update _ _ _ = x
 --   ext j
 --   simp [Function.update_apply]
 
-open Algebra.TensorProduct in
+open Algebra.TensorProduct (assoc congr opAlgEquiv) in
 variable {R A B} in
 abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
-  (Algebra.TensorProduct.assoc R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
-  (congr (AlgEquiv.refl) (Algebra.TensorProduct.assoc R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
-  Algebra.TensorProduct.congr AlgEquiv.refl (congr (Algebra.TensorProduct.comm R _ _) AlgEquiv.refl) |>.trans
-  <| Algebra.TensorProduct.congr AlgEquiv.refl (Algebra.TensorProduct.assoc R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
-  <| Algebra.TensorProduct.assoc R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
-  <| congr AlgEquiv.refl <| opAlgEquiv R R A B
+  (assoc R R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
+  (congr .refl (assoc R R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
+  congr .refl (congr (Algebra.TensorProduct.comm R _ _) .refl) |>.trans
+  <| congr .refl (assoc R R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
+  <| assoc R R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
+  <| Algebra.TensorProduct.congr .refl <| opAlgEquiv R R A B
 
 lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
   e ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) = (a ⊗ₜ b) ⊗ₜ op (a'.unop ⊗ₜ[R] b'.unop) := rfl
@@ -273,7 +273,6 @@ lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
 --   ext a0 b0
 --   simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
 
--- set_option synthInstance.maxHeartbeats 100000 in
 set_option maxHeartbeats 400000 in
 open TensorProduct.AlgebraTensorModule in
 lemma top_square_comm'' (A B : Azumaya R) :
@@ -334,7 +333,7 @@ lemma bij_mulLeftRight (A B : Azumaya.{u, v} R) :
   exact (e1 R A B).bijective.comp (e2 R A B).bijective
 
 abbrev mul (A B : Azumaya R) : Azumaya R := {
-  __ := AlgebraCat.of R (A.carrier ⊗[R] B.carrier)
+  __ := AlgCat.of R (A.carrier ⊗[R] B.carrier)
   isAzumaya := {
     out := Module.Projective.tensorProduct|>.out
     eq_of_smul_eq_smul := Azumaya.FathfulSMul.tensor|>.eq_of_smul_eq_smul
@@ -345,8 +344,7 @@ abbrev mul (A B : Azumaya R) : Azumaya R := {
 instance : Mul (Azumaya R) where
   mul A B := mul R A B
 
-lemma mul_coe (A B : Azumaya R) : (A * B) =
-    ⟨AlgebraCat.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
+lemma mul_coe (A B : Azumaya R) : (A * B) = ⟨.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
 
 instance : One (Azumaya R) where
   one := ⟨.of R R, IsAzumaya_R R⟩
@@ -358,9 +356,7 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
     simp only [unop_one, smul_eq_mul, mul_one, op_inj] at hr
     exact hr
 
--- example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N) :
---   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
-
+set_option maxSynthPendingDepth 6 in
 /--
 A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
@@ -368,11 +364,10 @@ A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
   |                        |
 End R A   ------------> End R B
-
 -/
 lemma small_comm_square (e : A ≃ₐ[R] B) :
     (AlgHom.mulLeftRight R B).comp (Algebra.TensorProduct.congr e e.op).toAlgHom =
-    (e.toLinearEquiv.algConj).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
+      (e.toLinearEquiv.algConj R).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
   apply AlgHom.ext
   intro a
   induction a using TensorProduct.induction_on with
@@ -429,15 +424,15 @@ instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M] :
   eq_of_smul_eq_smul {r1 r2} h12 := by
     specialize h12 1
     rw [LinearMap.ext_iff] at h12
-    simp only [LinearMap.smul_apply, LinearMap.one_apply] at h12
+    simp only [LinearMap.smul_apply, Module.End.one_apply] at h12
     exact eq_of_smul_eq_smul h12
 
 abbrev MatrixAlg (n : ℕ) [NeZero n] : Azumaya R := {
-  __ := AlgebraCat.of R (_root_.Matrix (Fin n) (Fin n) R)
+  __ := AlgCat.of R (_root_.Matrix (Fin n) (Fin n) R)
   isAzumaya := IsAzumaya.matrix R (Fin n) }
 
 abbrev EndRn (n : ℕ) [NeZero n] : Azumaya R := {
-  __ := AlgebraCat.of R (Module.End R (Fin n → R))
+  __ := AlgCat.of R (Module.End R (Fin n → R))
   isAzumaya := IsAzumaya.ofAlgEquiv R _ _
     LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R (Fin n)
 }
