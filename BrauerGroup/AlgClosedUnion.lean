@@ -36,7 +36,7 @@ set_option synthInstance.maxHeartbeats 100000 in
 set_option maxHeartbeats 400000 in
 def intermediateTensor' (L : IntermediateField K K_bar) : Submodule L (K_bar ⊗[K] A) :=
   LinearMap.range ({LinearMap.rTensor _ (L.val.toLinearMap) with
-    map_smul' := fun l x => by
+    map_smul' l x := by
       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
       induction x using TensorProduct.induction_on with
       | zero => simp

@@ -35,29 +35,27 @@ lemma smul_mem (r : R) {x} (hx : x ∈ I) : r • x ∈ I := by
 Any two-sided-ideal in `A` corresponds to a two-sided-ideal in `Aᵒᵖ`.
 -/
 @[simps]
-def toMop (rel : TwoSidedIdeal R) : (TwoSidedIdeal Rᵐᵒᵖ) :=
-.mk
-{ r := fun a b ↦ rel.ringCon b.unop a.unop
-  iseqv :=
-  { refl := fun a ↦ rel.ringCon.refl a.unop
-    symm := rel.ringCon.symm
-    trans := fun h1 h2 ↦ rel.ringCon.trans h2 h1 }
-  mul' := fun h1 h2 ↦ rel.ringCon.mul h2 h1
-  add' := rel.ringCon.add }
+def toMop (rel : TwoSidedIdeal R) : TwoSidedIdeal Rᵐᵒᵖ := .mk {
+  r a b := rel.ringCon b.unop a.unop
+  iseqv.refl a := rel.ringCon.refl a.unop
+  iseqv.symm := rel.ringCon.symm
+  iseqv.trans h1 h2 := rel.ringCon.trans h2 h1
+  mul' h1 h2 := rel.ringCon.mul h2 h1
+  add' := rel.ringCon.add
+}
 
 /--
 Any two-sided-ideal in `Aᵒᵖ` corresponds to a two-sided-ideal in `A`.
 -/
 @[simps]
-def fromMop (rel : TwoSidedIdeal Rᵐᵒᵖ) : (TwoSidedIdeal R) :=
-.mk
-{ r := fun a b ↦ rel.ringCon (op b) (op a)
-  iseqv :=
-  { refl := fun a ↦ rel.ringCon.refl (op a)
-    symm := rel.ringCon.symm
-    trans := fun h1 h2 ↦ rel.ringCon.trans h2 h1 }
-  mul' := fun h1 h2 ↦ rel.ringCon.mul h2 h1
-  add' := rel.ringCon.add }
+def fromMop (rel : TwoSidedIdeal Rᵐᵒᵖ) : TwoSidedIdeal R := .mk {
+  r a b := rel.ringCon (.op b) (.op a)
+  iseqv.refl a := rel.ringCon.refl (.op a)
+  iseqv.symm := rel.ringCon.symm
+  iseqv.trans h1 h2 := rel.ringCon.trans h2 h1
+  mul' h1 h2 := rel.ringCon.mul h2 h1
+  add' := rel.ringCon.add
+}
 
 /--
 Two-sided-ideals of `A` and that of `Aᵒᵖ` corresponds bijectively to each other.
@@ -126,7 +124,7 @@ def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (
       (RingEquivClass.toRingEquiv f).symm.toRingHom]
     simp only [RingEquiv.toRingHom_eq_coe, RingEquiv.symm_comp]
     rfl
-  right_inv := fun I => SetLike.ext $ fun x => by
+  right_inv I := SetLike.ext $ fun x => by
     simp only [mem_comap, RingEquiv.apply_symm_apply]
   map_rel_iff' := by
     intro I J
@@ -278,7 +276,7 @@ lemma _root_.IsSimpleRing.iff_eq_zero_or_injective'
     refine ⟨⟨fun I => ?_⟩⟩
     letI : Algebra k I.ringCon.Quotient :=
     { algebraMap := I.ringCon.mk'.comp (algebraMap k A)
-      smul := fun a => Quotient.map' (fun b => a • b) fun x y (h : I.ringCon x y) =>
+      smul a := Quotient.map' (fun b => a • b) fun x y (h : I.ringCon x y) =>
         show I.ringCon _ _ by
         simp only
         rw [Algebra.smul_def, Algebra.smul_def]
@@ -299,7 +297,7 @@ lemma _root_.IsSimpleRing.iff_eq_zero_or_injective'
           change _ = _ * I.ringCon.mk' _
           simp only [Quotient.map'_mk'', ← map_mul, Algebra.smul_def]
           rfl }
-    rcases @h I.ringCon.Quotient _ _ {I.ringCon.mk' with commutes' := fun a => rfl } with h|h
+    rcases @h I.ringCon.Quotient _ _ {I.ringCon.mk' with commutes' a := rfl } with h|h
     · right
       rw [eq_top_iff, le_iff]
       rintro x -

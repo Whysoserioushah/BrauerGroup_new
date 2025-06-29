@@ -373,7 +373,7 @@ def Module.End.rightMul : Subalgebra F (Module.End F B) where
 
 noncomputable def Module.End.rightMulEquiv : Module.End.rightMul F B ≃ₐ[F] Bᵐᵒᵖ :=
 AlgEquiv.symm <| AlgEquiv.ofBijective
-  { toFun := fun x => ⟨LinearMap.mulRight F x.unop, Set.mem_range_self _⟩
+  { toFun x := ⟨LinearMap.mulRight F x.unop, Set.mem_range_self _⟩
     map_one' := by ext; simp
     map_mul' := by intros; ext; simp
     map_zero' := by ext; simp
@@ -511,8 +511,8 @@ lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
     IsSimpleOrder (TwoSidedIdeal <| B.conj x) ↔
     IsSimpleOrder (TwoSidedIdeal B) := by
   let e : TwoSidedIdeal (B.conj x) ≃o TwoSidedIdeal B :=
-  { toFun := fun J => J.comap (B.toConj x)
-    invFun := fun J => .mk'
+  { toFun J := J.comap (B.toConj x)
+    invFun J := .mk'
       (Set.image (B.toConj x) J)
       (⟨0, TwoSidedIdeal.zero_mem _, by simp⟩)
       (by
@@ -698,7 +698,7 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
   haveI : Algebra.IsCentral F (A ⊗[F] Module.End F B) := inferInstance
 
   let f : B →ₐ[F] A ⊗[F] Module.End F B :=
-    { toFun := fun b => b.1 ⊗ₜ LinearMap.id
+    { toFun b := b.1 ⊗ₜ LinearMap.id
       map_one' := by rfl
       map_mul' := by
         intro b₁ b₂
@@ -717,14 +717,12 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
     map_one' := by
       simp only [LinearMap.mulLeft_one]
       rfl
-    map_mul' := by
-      intro x y
+    map_mul' x y := by
       simp only [LinearMap.mulLeft_mul, Algebra.TensorProduct.tmul_mul_tmul, mul_one,
         LinearMap.mul_eq_comp]
     map_zero' := by
       simp only [LinearMap.mulLeft_zero_eq_zero, tmul_zero]
-    map_add' := by
-      intro b₁ b₂
+    map_add' b₁ b₂ := by
       simp only
       rw [← tmul_add]
       congr

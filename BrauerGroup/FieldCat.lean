@@ -114,8 +114,8 @@ lemma hom_inv_apply {R S : FieldCat} (e : R ≅ S) (s : S) : e.hom (e.inv s) = s
 
 instance : HasForget.{u} FieldCat where
   forget :=
-    { obj := fun R => R
-      map := fun f => f.hom }
+    { obj R := R
+      map f := f.hom }
   forget_faithful := ⟨fun h => by ext x; simpa using congrFun h x⟩
 
 /-- This unification hint helps with problems of the form `(forget ?C).obj R =?= carrier R'`.
@@ -269,7 +269,7 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
 -- instance hasForgetToAddCommGrp : HasForget₂ FieldCat AddCommGrp where
 --   -- can't use BundledHom.mkHasForget₂, since AddCommGroup is an induced category
 --   forget₂ :=
---     { obj := fun R => AddCommGrp.of R
+--     { obj R := AddCommGrp.of R
 --       -- Porting note: use `(_ := _)` similar to above.
 --       map := fun {R₁ R₂} f => RingHom.toAddMonoidHom (α := R₁) (β := R₂) f }
 

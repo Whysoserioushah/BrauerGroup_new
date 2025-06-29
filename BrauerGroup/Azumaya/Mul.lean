@@ -560,12 +560,9 @@ lemma bij_endM :
   ⟨inj_endM R M, surj_endM R M⟩
 
 abbrev ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M] [FaithfulSMul R M]: Azumaya R := {
+    [Module.Projective R M] [FaithfulSMul R M] : Azumaya R where
   __ := AlgebraCat.of R (Module.End R M)
-  isAzumaya := {
-    out := Module.Projective.ofEnd R M|>.out
-    bij := by
-      nontriviality M
-      exact bij_endM R M}}
+  isAzumaya.out := Module.Projective.ofEnd R M|>.out
+  isAzumaya.bij := bij_endM R M
 
 end Azumaya

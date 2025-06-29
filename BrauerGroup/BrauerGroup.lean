@@ -105,25 +105,25 @@ instance st : IsScalarTower K K (Module.End K A) where
 
 def toEnd : A ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
   Algebra.TensorProduct.lift
-    { toFun := fun a =>
-        { toFun := fun x => a * x
+    { toFun a :=
+        { toFun x := a * x
           map_add' := mul_add _
           map_smul' := by simp }
       map_one' := by aesop
       map_mul' := by intros; ext; simp [mul_assoc]
       map_zero' := by aesop
       map_add' := by intros; ext; simp [add_mul]
-      commutes' := fun k => DFunLike.ext _ _ fun a => show (algebraMap K A) k * a = k • _ from
+      commutes' k := DFunLike.ext _ _ fun a => show (algebraMap K A) k * a = k • _ from
         (Algebra.smul_def _ _).symm }
-    { toFun := fun a =>
-        { toFun := fun x => x * a.unop
+    { toFun a :=
+        { toFun x := x * a.unop
           map_add' := fun x y => by simp [add_mul]
           map_smul' := by simp }
       map_one' := by aesop
       map_mul' := by intros; ext; simp [mul_assoc]
       map_zero' := by aesop
       map_add' := by intros; ext; simp [mul_add]
-      commutes' := fun k => DFunLike.ext _ _ fun a =>
+      commutes' k := DFunLike.ext _ _ fun a =>
         show a * (algebraMap K A) k = k • _ by
           rw [Algebra.smul_def, Algebra.commutes]
           rfl }
@@ -448,8 +448,8 @@ open Matrix MulOpposite in
 /-- Mn(Rᵒᵖ) ≃ₐ[K] Mₙ(R)ᵒᵖ -/
 def matrixEquivMatrixMop_algebra (n : ℕ):
     Matrix (Fin n) (Fin n) Rᵐᵒᵖ ≃ₐ[K] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
-  toFun := fun M => op (M.transpose.map (fun d => d.unop))
-  invFun := fun M => M.unop.transpose.map (fun d => op d)
+  toFun M := op (M.transpose.map (fun d => d.unop))
+  invFun M := M.unop.transpose.map (fun d => op d)
   left_inv a := by aesop
   right_inv a := by aesop
   map_mul' x y := unop_injective $ by ext; simp [transpose_map, transpose_apply, mul_apply]
@@ -538,7 +538,7 @@ def e2 :
     (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) :=
   Algebra.TensorProduct.congr AlgEquiv.refl $
     { __ := matrixEquivTensor (Fin m) K E
-      commutes' := fun e => by
+      commutes' e := by
         simp only [AlgEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe,
           matrixEquivTensor_apply, Fintype.sum_prod_type,
           Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id, RingHom.id_apply]
@@ -572,7 +572,7 @@ def e2 :
 def e3Aux0 : E ⊗[K] A →ₐ[E] E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K :=
   AlgHom.comp
     { (Algebra.TensorProduct.assoc K E A (Matrix (Fin m) (Fin m) K)).toAlgHom  with
-      commutes' := fun e => by
+      commutes' e := by
         simp only [AlgEquiv.toAlgHom_eq_coe, AlgHom.toRingHom_eq_coe, AlgEquiv.toAlgHom_toRingHom,
           RingHom.toMonoidHom_eq_coe, Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
           RingHom.id_apply, OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe, MonoidHom.coe_coe,
@@ -588,7 +588,7 @@ def e3Aux10 : (E ⊗[K] Matrix (Fin m) (Fin m) K) ⊗[K] A ≃ₐ[K]
 def e3Aux1 : E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E] E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K :=
   AlgHom.comp
     { (e3Aux10 (K := K) (E := E) A m).toAlgHom with
-      commutes' := fun e => by
+      commutes' e := by
         simp only [AlgEquiv.toAlgHom_eq_coe, e3Aux10, AlgHom.toRingHom_eq_coe,
           AlgEquiv.toAlgHom_toRingHom, RingHom.toMonoidHom_eq_coe,
           Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id, RingHom.id_apply,
@@ -742,19 +742,19 @@ def e6Aux0 :
     (E ⊗[K] A) ⊗[E] (E ⊗[K] B) →ₐ[E] E ⊗[K] (A ⊗[K] B) :=
   Algebra.TensorProduct.lift
     (Algebra.TensorProduct.lift
-      { toFun := fun e => e ⊗ₜ[K] 1 ⊗ₜ 1
+      { toFun e := e ⊗ₜ[K] 1 ⊗ₜ 1
         map_one' := rfl
         map_mul' := fun e e' => by
           simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one]
         map_zero' := by simp
         map_add' := fun e e' => by simp [TensorProduct.add_tmul]
-        commutes' := fun e => rfl }
-      { toFun := fun a => 1 ⊗ₜ[K] a ⊗ₜ 1
+        commutes' e := rfl }
+      { toFun a := 1 ⊗ₜ[K] a ⊗ₜ 1
         map_one' := rfl
         map_mul' := fun _ _ => by simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one]
         map_zero' := by simp
         map_add' := fun _ _ => by simp [TensorProduct.add_tmul, TensorProduct.tmul_add]
-        commutes' := fun k => by
+        commutes' k := by
           simp only [Algebra.TensorProduct.algebraMap_apply]
           rw [show (algebraMap K A) k ⊗ₜ[K] (1 : B) = k • (1 : A ⊗[K] B) by
             rw [Algebra.algebraMap_eq_smul_one]
@@ -765,19 +765,19 @@ def e6Aux0 :
           convert _root_.mul_one _ } fun e a =>
             show (_ ⊗ₜ[K] _) * (_ ⊗ₜ[K] _) = (_ ⊗ₜ[K] _) * (_ ⊗ₜ[K] _) by simp)
     (Algebra.TensorProduct.lift
-      { toFun := fun e => e ⊗ₜ[K] 1 ⊗ₜ 1
+      { toFun e := e ⊗ₜ[K] 1 ⊗ₜ 1
         map_one' := rfl
         map_mul' := fun e e' => by
           simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one]
         map_zero' := by simp
         map_add' := fun e e' => by simp [TensorProduct.add_tmul]
-        commutes' := fun e => rfl }
-      { toFun := fun b => 1 ⊗ₜ[K] 1 ⊗ₜ b
+        commutes' e := rfl }
+      { toFun b := 1 ⊗ₜ[K] 1 ⊗ₜ b
         map_one' := rfl
         map_mul' := fun _ _ => by simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one]
         map_zero' := by simp
         map_add' := fun _ _ => by simp [TensorProduct.add_tmul, TensorProduct.tmul_add]
-        commutes' := fun k => by
+        commutes' k := by
           simp only [Algebra.TensorProduct.algebraMap_apply]
           rw [show (1 : A) ⊗ₜ[K] (algebraMap K B) k = k • (1 : A ⊗[K] B) by
             rw [Algebra.algebraMap_eq_smul_one]

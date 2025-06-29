@@ -107,7 +107,7 @@ theorem toSubalgebra_inj {S U : SubField K A} : S.toSubalgebra = U.toSubalgebra 
 
 def toSubalgebra' : SubField K A ↪o Subalgebra K A where
   toEmbedding := {
-    toFun := fun S => {S with}
+    toFun S := {S with}
     inj' := fun _ _ h => ext' fun x => SetLike.ext_iff.1 h x
   }
   map_rel_iff' := SetLike.coe_subset_coe.symm.trans SetLike.coe_subset_coe

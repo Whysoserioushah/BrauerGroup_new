@@ -24,7 +24,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
   let iso' := iso.trans (algEquivMatrix' (R := K) (n := Fin n)).symm
   let emb : A →ₐ[F] Module.End F (Fin n → K) :=
     AlgHom.comp (AlgHom.comp
-      { toFun := fun f => f.restrictScalars F
+      { toFun f := f.restrictScalars F
         map_one' := by ext; rfl
         map_mul' := by intros; ext; rfl
         map_zero' := by ext; rfl
@@ -77,9 +77,9 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       rfl }
   haveI : IsSimpleRing B := centralizer_isSimple _ (Module.Free.chooseBasis _ _)
   refine ⟨⟨.of F B⟩, ?_,
-    { toFun := fun r =>
+    { toFun r :=
         ⟨{
-          toFun := fun a => r • a
+          toFun a := r • a
           map_add' := by simp
           map_smul' := by
             intro r v
@@ -156,7 +156,7 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
   · intro split
     obtain ⟨B, eq1, ι, eq2⟩ := exists_embedding_of_isSplit K F A split
     refine ⟨⟨.of F B.1ᵐᵒᵖ⟩, ?_, {
-      toFun := fun k => op <| ι k
+      toFun k := op <| ι k
       map_one' := by simp
       map_mul' := by intros; simp [← op_mul, ← map_mul, mul_comm]
       map_zero' := by simp
@@ -189,8 +189,8 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
         intro a b c
         simp only [smul_def, map_smul, Algebra.mul_smul_comm] }
     let μ : K →ₗ[F] B →ₗ[F] Module.End K B :=
-    { toFun := fun c =>
-      { toFun := fun a =>
+    { toFun c :=
+      { toFun a :=
         { toFun := fun a' => c • a • a'
           map_add' := by
             intro x y

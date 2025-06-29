@@ -210,8 +210,8 @@ For any ring `D`, `Mₙ(D) ≅ Mₙ(D)ᵒᵖ`.
 @[simps]
 def matrixEquivMatrixMop (n : ℕ) (D : Type*) [Ring D] :
     Matrix (Fin n) (Fin n) Dᵐᵒᵖ ≃+* (Matrix (Fin n) (Fin n) D)ᵐᵒᵖ where
-  toFun := fun M => MulOpposite.op (M.transpose.map (fun d => MulOpposite.unop d))
-  invFun := fun M => (MulOpposite.unop M).transpose.map (fun d => MulOpposite.op d)
+  toFun M := MulOpposite.op (M.transpose.map (fun d => MulOpposite.unop d))
+  invFun M := (MulOpposite.unop M).transpose.map (fun d => MulOpposite.op d)
   left_inv a := by aesop
   right_inv a := by aesop
   map_mul' x y := unop_injective $ by ext; simp [transpose_map, transpose_apply, mul_apply]
@@ -530,7 +530,7 @@ For a `K`-algebra B, there is a map from `I : Ideal B` to `End(I)ᵒᵖ` defined
 @[simps]
 def algebraMapEndIdealMop (I : Ideal B) : K →+* (Module.End B I)ᵐᵒᵖ where
   toFun k := .op $
-  { toFun := fun x => k • x
+  { toFun x := k • x
     map_add' := fun x y => by simp
     map_smul' := fun k' x => by ext; simp }
   map_one' := unop_injective $ by ext; simp
@@ -643,7 +643,7 @@ theorem is_fin_dim_of_wdb
   have := FiniteDimensional.of_injective Wdb.symm.toLinearEquiv.toLinearMap Wdb.symm.injective
   exact Module.Finite.of_injective
       ({
-        toFun := fun s => Matrix.diagonal (fun _ => s)
+        toFun s := Matrix.diagonal (fun _ => s)
         map_add' := by
           intros; ext i j; by_cases i = j  <;> aesop
         map_smul' := by intros; ext i j; by_cases i = j  <;> aesop

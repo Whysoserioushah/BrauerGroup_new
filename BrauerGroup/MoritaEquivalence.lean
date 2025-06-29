@@ -138,7 +138,7 @@ set_option maxHeartbeats 400000 in
 def fromModuleCatOverMatrix : ModuleCat M[ι, R] ⥤ ModuleCat R where
   obj M := .of _ $ α R ι M
   map f := ModuleCat.ofHom {
-    toFun := fun x => ⟨f x.1, by
+    toFun x := ⟨f x.1, by
       simp only [α, AddSubgroup.coe_set_mk, AddSubgroup.mem_mk, Set.mem_range]
       obtain ⟨y, hy⟩ := x.2
       refine ⟨f y, ?_⟩
@@ -165,7 +165,7 @@ def matrix.unitIsoHom :
     toModuleCatOverMatrix R ι ⋙ fromModuleCatOverMatrix R ι ⟶
     𝟭 (ModuleCat R) where
   app X := ModuleCat.ofHom
-    { toFun := fun x => ∑ i : ι, x.1 i
+    { toFun x := ∑ i : ι, x.1 i
       map_add' := by
         rintro ⟨_, ⟨x, rfl⟩⟩ ⟨_, ⟨y, rfl⟩⟩
         simp only [toModuleCatOverMatrix_obj_carrier, AddSubmonoid.coe_add,
@@ -207,7 +207,7 @@ def matrix.unitIsoInv :
     𝟭 (ModuleCat R) ⟶
     toModuleCatOverMatrix R ι ⋙ fromModuleCatOverMatrix R ι  where
   app X := ModuleCat.ofHom
-    { toFun := fun x => (⟨Function.update (0 : ι → X) default x, by
+    { toFun x := (⟨Function.update (0 : ι → X) default x, by
         simp only [α, AddSubgroup.mem_mk, Set.mem_range]
         refine ⟨fun _ => x, ?_⟩
         refine funext fun i => ?_

@@ -700,8 +700,8 @@ variable (a) in
 def crossProductMul :
     ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) :=
   LinearMap.lsum F _ F fun σ =>
-  { toFun := fun c => LinearMap.lsum F _ F fun τ =>
-      { toFun := fun d => Function.update 0 (σ * τ) (c * σ d * a (σ, τ))
+  { toFun c := LinearMap.lsum F _ F fun τ =>
+      { toFun d := Function.update 0 (σ * τ) (c * σ d * a (σ, τ))
         map_add' := by
           intros d d'
           conv_rhs => rw [← Function.update_add]
@@ -757,7 +757,7 @@ lemma crossProductMul_single_single (c d : K) :
 
 def crossProductSMul : F →ₗ[F] ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) where
   toFun r := LinearMap.lsum F _ F fun σ =>
-    { toFun := fun c => Function.update 0 σ (r • c)
+    { toFun c := Function.update 0 σ (r • c)
       map_add' := by
         intros
         rw [← Function.update_add]
@@ -867,7 +867,7 @@ instance addCommGroup : AddCommGroup (CrossProduct ha) :=
 
 @[simps]
 def valAddMonoidHom : (CrossProduct ha) →+ ((K ≃ₐ[F] K) → K) :=
-  { toFun := fun x => x.val,
+  { toFun x := x.val,
     map_zero' := rfl,
     map_add' := fun _ _ => rfl }
 
@@ -1430,8 +1430,8 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProduct ha) ≤ ⊥ 
     rw [← eq3, ← eq4, eq2]
 
   let e (τ : K ≃ₐ[F] K) : (K ≃ₐ[F] K) ≃ (K ≃ₐ[F] K) :=
-  { toFun := fun σ  => σ * τ⁻¹
-    invFun := fun σ => σ * τ
+  { toFun σ := σ * τ⁻¹
+    invFun σ := σ * τ
     left_inv := by intro x; simp
     right_inv := by intro x; simp }
 
@@ -1553,7 +1553,7 @@ lemma x_wd (c c' : K) (eq : πRes I ⟨ι ha c, by simp⟩ = πRes I ⟨ι ha c'
   exact I.mul_mem_right _ _ eq
 
 instance (priority := high) : SMul (RingHom.range <| πRes I) I.ringCon.Quotient where
-  smul := fun a => Quotient.map'
+  smul a := Quotient.map'
     (fun y => x a • y) (by
       rintro y y' (hy : I.ringCon _ _)
       show I.ringCon _ _
@@ -1625,7 +1625,7 @@ example : True := ⟨⟩
 
 instance : Module K (I.ringCon.Quotient) :=
   Module.compHom _ (f := show K →+* (πRes I).range from
-  { toFun := fun a => ⟨π I (ι ha a), by simpa using ⟨ι ha a, ⟨a, rfl⟩, rfl⟩⟩
+  { toFun a := ⟨π I (ι ha a), by simpa using ⟨ι ha a, ⟨a, rfl⟩, rfl⟩⟩
     map_one' := by
       simp only [map_one, RingCon.coe_one]
       rfl
@@ -1788,7 +1788,7 @@ def π₁ (ne_top : I ≠ ⊤) : CrossProduct ha ≃ₗ[K] (I.ringCon.Quotient) 
 
 def π₂ : CrossProduct ha →ₗ[K] (I.ringCon.Quotient) where
   __ := π I
-  map_smul' := fun c x => by
+  map_smul' c x := by
     simp only [RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe,
       MonoidHom.coe_coe, RingHom.id_apply]
     simp only [smul_def, K_smul_quot]
@@ -2050,7 +2050,7 @@ lemma toSnd_fromSnd :
   let A : GoodRep K (Quotient.mk'' <| asCSA ha) :=
     ⟨asCSA ha, rfl, ι ha, dim_eq_square ha⟩
 
-  let y_ : Π σ, A.conjFactor σ := fun σ => ⟨x_ ha σ, fun c => by erw [x__conj ha σ]; rfl⟩
+  let y_ σ : A.conjFactor σ := ⟨x_ ha σ, fun c => by erw [x__conj ha σ]; rfl⟩
   rw [toSnd_wd (A := A) (x_ := y_)]
   let b : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ := A.toTwoCocycles y_
 

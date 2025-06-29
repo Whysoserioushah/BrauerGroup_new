@@ -164,19 +164,19 @@ end  MoritaEquivalence
 --       inverse := ModuleCat.restrictScalars e.toRingHom
 --       unitIso :=
 --       { hom :=
---         { app := fun X => ofIsoApp1 R S e X
+--         { app X := ofIsoApp1 R S e X
 --           naturality := fun _ _ f => rfl }
 --         inv :=
---         { app := fun X => ofIsoApp2 _ _ e X
+--         { app X := ofIsoApp2 _ _ e X
 --           naturality := fun _ _ f => rfl }
 --         hom_inv_id := by ext; rfl
 --         inv_hom_id := by ext; rfl }
 --       counitIso :=
 --       { hom :=
---         { app := fun X => ofIsoApp2 _ _ e.symm X
+--         { app X := ofIsoApp2 _ _ e.symm X
 --           naturality := fun _ _ f => rfl }
 --         inv :=
---         { app := fun X => ofIsoApp1 _ _ e.symm X
+--         { app X := ofIsoApp1 _ _ e.symm X
 --           naturality := fun _ _ f => rfl }
 --         hom_inv_id := by ext; rfl
 --         inv_hom_id := by ext; rfl }

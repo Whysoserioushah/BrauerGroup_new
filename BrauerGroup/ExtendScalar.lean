@@ -13,14 +13,13 @@ set_option synthInstance.maxHeartbeats 40000 in
 def releaseAddHom : L ⊗[k] A →+ L ⊗[K] K ⊗[k] A :=
   TensorProduct.liftAddHom
   {
-    toFun := fun l ↦
-    {
-      toFun := fun a ↦ l ⊗ₜ[K] (1 : K) ⊗ₜ[k] a
+    toFun l := {
+      toFun a := l ⊗ₜ[K] (1 : K) ⊗ₜ[k] a
       map_zero' := by simp only [TensorProduct.tmul_zero]
-      map_add' := fun _ _ ↦ by simp only; repeat rw [TensorProduct.tmul_add]
+      map_add' _ _ := by simp_rw [TensorProduct.tmul_add]
     }
     map_zero' := by simp only [TensorProduct.zero_tmul]; rfl
-    map_add' := fun x y ↦ by
+    map_add' x y := by
       ext a'
       simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.add_apply]
       repeat rw [TensorProduct.add_tmul]

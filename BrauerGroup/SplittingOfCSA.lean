@@ -225,7 +225,7 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
     obtain ⟨n, iso⟩ := hA
     let e1 : L' ⊗[k] A ≃ₐ[L] L' ⊗[L] L ⊗[k] A := {
       __ := absorb_eqv k L L' A
-      commutes' := fun _ => rfl
+      commutes' _ := rfl
     }
     let e2 := e1.trans $ Algebra.TensorProduct.congr (AlgEquiv.refl) iso
     let e3 : L' ⊗[k] A ≃ₐ[L'] L' ⊗[L] Matrix (Fin n) (Fin n) L := {

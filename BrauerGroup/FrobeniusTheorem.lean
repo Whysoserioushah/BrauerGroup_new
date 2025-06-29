@@ -788,19 +788,19 @@ theorem rank4_iso_H (x : Dˣ) (hx : ∀ (z : k), (x.1⁻¹) * (f k e z) * x = k.
 set_option synthInstance.maxHeartbeats 40000 in
 abbrev SmulCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)): ℂ →+* A where
-  toFun := fun z ↦ e z
+  toFun z := e z
   map_one' := by simp
   map_mul' := by simp
   map_zero' := by simp
-  map_add' := fun z1 z2 ↦ by simp
+  map_add' z1 z2 := by simp
 
 instance AlgCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)): Algebra ℂ A where
   __ := SmulCA A e
   smul z a := (SmulCA A e z) * a
-  commutes' := fun z _ ↦ by
+  commutes' z _ := by
     simp [Subalgebra.mem_center_iff.1 (e z).2]
-  smul_def' := fun _ _ ↦ rfl
+  smul_def' _ _ := rfl
 
 set_option synthInstance.maxHeartbeats 40000 in
 lemma smulCRassoc (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
@@ -831,7 +831,7 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
     map_mul' := _
     map_zero' := _
     map_add' := _
-    commutes' := fun r => by
+    commutes' r := by
       simp; change (algebraMap ℂ A) (algebraMap ℝ ℂ r) = _;
       rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij).symm ⟩

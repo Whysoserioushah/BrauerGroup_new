@@ -263,7 +263,7 @@ theorem SkolemNoether (K A B M : Type u)
   obtain ⟨φ⟩ := iso_fg K A B M f g
   let ISO := end_end_iso K A M
   let Φ : Module.End (Module.End A M) M :=
-    { toFun := fun m => φ m
+    { toFun m := φ m
       map_add' := by simp
       map_smul' := by
         intro F (m : module_inst K A B M f)
@@ -280,7 +280,7 @@ theorem SkolemNoether (K A B M : Type u)
           AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk,
           TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_one, one_smul] }
   let Ψ : Module.End (Module.End A M) M :=
-    { toFun := fun m => φ.symm m
+    { toFun m := φ.symm m
       map_add' := by simp
       map_smul' := by
         intro F m

@@ -89,7 +89,7 @@ lemma TensorProduct.sum_tmul_basis_right_eq_zero'
   intro i
   have := TensorProduct.sum_tmul_basis_right_eq_zero (κ := ιC) 𝒞 (M := B)
     { support := s.filter fun i => b i ≠ 0
-      toFun := fun x => if x ∈ s then b x else 0
+      toFun x := if x ∈ s then b x else 0
       mem_support_toFun := by simp }
     (by
       simp only [Finsupp.sum, ne_eq, Finsupp.coe_mk, Finset.sum_filter, ite_not]
