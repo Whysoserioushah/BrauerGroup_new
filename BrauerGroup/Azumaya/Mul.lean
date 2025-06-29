@@ -392,39 +392,39 @@ lemma _root_.IsAzumaya.ofAlgEquiv (e : A ≃ₐ[R] B) (hA : IsAzumaya R A) : IsA
     simp [hA.bij]⟩
 
 abbrev inclusion' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.End R M →ₗ[R] Module.End R (Fin (nn R M) → R) where
+    [Module.Projective R M] : Module.End R M →ₗ[R] Module.End R (Fin (nn R M) → R) where
   toFun := fun f ↦ g0 R M ∘ₗ f ∘ₗ f0 R M
   map_add' := fun _ _ ↦ by simp [LinearMap.add_comp, LinearMap.comp_add]
   map_smul' := fun _ _ ↦ by simp [LinearMap.smul_comp, LinearMap.comp_smul]
 
 abbrev projection' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.End R (Fin (nn R M) → R) →ₗ[R] Module.End R M where
+    [Module.Projective R M] : Module.End R (Fin (nn R M) → R) →ₗ[R] Module.End R M where
   toFun := fun f ↦ f0 R M ∘ₗ f ∘ₗ g0 R M
   map_add' := fun _ _ ↦ by simp [LinearMap.add_comp, LinearMap.comp_add]
   map_smul' := fun _ _ ↦ by simp [LinearMap.smul_comp, LinearMap.comp_smul]
 
 lemma projection'_inclusion' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: projection' R M ∘ₗ inclusion' R M = LinearMap.id := by
+    [Module.Projective R M] : projection' R M ∘ₗ inclusion' R M = LinearMap.id := by
   ext f : 1
   simp [LinearMap.comp_assoc, fg]
   rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp]
 
 lemma projection'_surj (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Function.Surjective (projection' R M) :=
+    [Module.Projective R M] : Function.Surjective (projection' R M) :=
   Function.Surjective.of_comp (g := inclusion' R M) <| by
   rw [← LinearMap.coe_comp, projection'_inclusion']
   exact Function.surjective_id
 
 lemma _root_.Module.Projective.ofEnd (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.Projective R (Module.End R M) :=
+    [Module.Projective R M] : Module.Projective R (Module.End R M) :=
   .of_split (M := Module.End R (Fin (nn R M) → R)) (inclusion' R M) (projection' R M)
     <| projection'_inclusion' R M
 
 instance _root_.Module.Finite.End (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
-    [Module.Projective R M]: Module.Finite R (Module.End R M) :=
+    [Module.Projective R M] : Module.Finite R (Module.End R M) :=
   Module.Finite.of_surjective (projection' R M) (projection'_surj R M)
 
-instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M]:
+instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M] :
     FaithfulSMul R (Module.End R M) where
   eq_of_smul_eq_smul {r1 r2} h12 := by
     specialize h12 1
@@ -432,11 +432,11 @@ instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M]:
     simp only [LinearMap.smul_apply, LinearMap.one_apply] at h12
     exact eq_of_smul_eq_smul h12
 
-abbrev MatrixAlg (n : ℕ) [NeZero n]: Azumaya R := {
+abbrev MatrixAlg (n : ℕ) [NeZero n] : Azumaya R := {
   __ := AlgebraCat.of R (_root_.Matrix (Fin n) (Fin n) R)
   isAzumaya := IsAzumaya.matrix R (Fin n) }
 
-abbrev EndRn (n : ℕ) [NeZero n]: Azumaya R := {
+abbrev EndRn (n : ℕ) [NeZero n] : Azumaya R := {
   __ := AlgebraCat.of R (Module.End R (Fin n → R))
   isAzumaya := IsAzumaya.ofAlgEquiv R _ _
     LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R (Fin n)

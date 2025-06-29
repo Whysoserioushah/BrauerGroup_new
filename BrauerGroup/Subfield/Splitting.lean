@@ -386,7 +386,7 @@ noncomputable abbrev invFun_Klinear (A : Type u) (n : Type*) [Ring A] [Algebra F
     | tmul k a => simp only [smul_tmul', smul_eq_mul, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk]
     | add koxa1 koxa2 h1 h2 => simp only [smul_add, map_add, h1, h2]
 
-noncomputable abbrev invFun_linearMap (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]:
+noncomputable abbrev invFun_linearMap (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n] :
     Matrix n n (K ⊗[F] A) →ₗ[K] K ⊗[F] Matrix n n A where
   toFun M := ∑ p : n × n, invFun_Klinear K F A n p.1 p.2 (M p.1 p.2)
   map_add' M1 M2 := by
@@ -396,7 +396,7 @@ noncomputable abbrev invFun_linearMap (A : Type u) (n : Type*) [Ring A] [Algebra
     simp only [Matrix.smul_apply, map_smul, LinearMap.coe_mk, LinearMap.coe_toAddHom,
       Fintype.sum_prod_type, RingHom.id_apply, Finset.smul_sum]
 
-lemma Martrix.one_eq_sum (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]:
+lemma Martrix.one_eq_sum (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n] :
     (1 : Matrix n n A) = ∑ i : n, ∑ j : n, Matrix.stdBasisMatrix i j (if i = j then 1 else 0) := by
   rw [Matrix.matrix_eq_sum_stdBasisMatrix (m := n) (n := n) 1]
   refine Finset.sum_congr rfl $ fun i _ => Finset.sum_congr rfl $ fun j _ => rfl
@@ -435,7 +435,7 @@ lemma right_inv (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] 
     | add koxa1 koxa2 h1 h2 =>
       rw [Matrix.stdBasisMatrix_add, map_add, map_add, h1, h2]
 
-noncomputable def equivTensor' (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]:
+noncomputable def equivTensor' (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n] :
     K ⊗[F] Matrix n n A ≃ Matrix n n (K ⊗[F] A) where
   toFun := toTensorMatrix K F A n
   invFun := invFun_linearMap K F A n
