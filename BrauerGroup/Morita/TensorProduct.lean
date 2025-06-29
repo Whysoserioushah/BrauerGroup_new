@@ -1,4 +1,4 @@
-import BrauerGroup.Morita.ChangOfRings
+import BrauerGroup.Morita.ChangeOfRings
 
 universe u v w
 

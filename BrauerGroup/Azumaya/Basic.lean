@@ -1,4 +1,4 @@
-import BrauerGroup.Morita.ChangOfRings
+import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.BrauerGroup
 import Mathlib.Algebra.Central.Matrix
 import BrauerGroup.LemmasAboutSimpleRing
