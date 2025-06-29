@@ -97,44 +97,44 @@ jobs:
 
       # The following actions create and deploy the website.
 
-      - name: Copy documentation to website/docs
-        run: mv docs/build/* website/docs
+      # - name: Copy documentation to website/docs
+      #   run: mv docs/build/* website/docs
 
-      - name: Copy blueprint to website/blueprint
-        run: |
-          cp blueprint/print/print.pdf website/blueprint.pdf
-          cp -r blueprint/web website/blueprint
+      # - name: Copy blueprint to website/blueprint
+      #   run: |
+      #     cp blueprint/print/print.pdf website/blueprint.pdf
+      #     cp -r blueprint/web website/blueprint
 
-      - name: Copy README.md to website/index.md
-        run: cp README.md website/index.md
+      # - name: Copy README.md to website/index.md
+      #   run: cp README.md website/index.md
 
-      - name: Upstreaming dashboard
-        run: |
-          mkdir -p website/_includes
-          python3 scripts/upstreaming_dashboard.py
+      # - name: Upstreaming dashboard
+      #   run: |
+      #     mkdir -p website/_includes
+      #     python3 scripts/upstreaming_dashboard.py
 
-      - name: File dependencies
-        run: |
-          sudo apt-get update
-          sudo apt install graphviz -y
-          ~/.elan/bin/lake exe graph website/file_deps.pdf
+      # - name: File dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt install graphviz -y
+      #     ~/.elan/bin/lake exe graph website/file_deps.pdf
 
-      - name: Bundle dependencies
-        uses: ruby/setup-ruby@v1
-        with:
-          working-directory: website
-          ruby-version: "3.0" # Not needed with a .ruby-version file
-          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      # - name: Bundle dependencies
+      #   uses: ruby/setup-ruby@v1
+      #   with:
+      #     working-directory: website
+      #     ruby-version: "3.0" # Not needed with a .ruby-version file
+      #     bundler-cache: true # runs 'bundle install' and caches installed gems automatically
 
-      - name: Bundle website
-        working-directory: website
-        run: JEKYLL_ENV=production bundle exec jekyll build
+      # - name: Bundle website
+      #   working-directory: website
+      #   run: JEKYLL_ENV=production bundle exec jekyll build
 
-      - name: Upload docs & blueprint artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: website/_site
+      # - name: Upload docs & blueprint artifact
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: website/_site
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # - name: Deploy to GitHub Pages
+      #   id: deployment
+      #   uses: actions/deploy-pages@v4
