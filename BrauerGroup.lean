@@ -18,6 +18,7 @@ import BrauerGroup.IsoSecond
 import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
+import BrauerGroup.Mathlib.GroupTheory.GroupExtension.Abelian
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.Morita.TensorProduct
