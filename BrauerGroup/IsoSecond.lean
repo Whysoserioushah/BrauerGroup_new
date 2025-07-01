@@ -288,12 +288,14 @@ instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
       simp only [mul_zero, map_zero, LinearMap.zero_apply]
 
 instance : DistribMulAction (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
-  smul_zero x := show Aox_FB_smul_d _ _ = _ by simp
-  smul_add x a b := show Aox_FB_smul_d _ _ = Aox_FB_smul_d _ _ + Aox_FB_smul_d _ _ by simp
+  smul_zero x := show Aox_FB_smul_M _ _ _ _ = _ by simp
+  smul_add x a b := show Aox_FB_smul_M _ _ _ _ =
+    Aox_FB_smul_M _ _ _ _ + Aox_FB_smul_M _ _ _ _ by simp
 
 instance : Module (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
-  add_smul x y a := show Aox_FB_smul_d _ _ = Aox_FB_smul_d _ _ + Aox_FB_smul_d _ _ by simp
-  zero_smul x := show Aox_FB_smul_d _ _ = _ by simp
+  add_smul x y a := show Aox_FB_smul_M _ _ _ _ =
+    Aox_FB_smul_M _ _ _ _ + Aox_FB_smul_M _ _ _ _ by simp
+  zero_smul x := show Aox_FB_smul_M _ _ _ _ = _ by simp
 
 end Aox_FB_mod
 
@@ -588,7 +590,7 @@ noncomputable def φ0 :
     (A ⊗[F] B)ᵐᵒᵖ →ₐ[F] Module.End C (M hα hβ) where
   toFun x := {
     toFun m := x • m
-    map_add' _ _ := by rw [smul_add]
+    map_add' _ _ := by simp [smul_add]
     map_smul' c y := by
       simp only [RingHom.id_apply]
       rw [smul_comm]

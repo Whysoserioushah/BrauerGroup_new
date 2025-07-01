@@ -878,7 +878,8 @@ lemma exists_subfield_isMax (D : Type) [DivisionRing D] [Algebra ℝ D] :
   exact le_iSup_of_le (ι := α) (f := fun x ↦ x.1.1) (a := L.1) ⟨L, hL⟩ (by rfl) |>.trans <|
     by trivial
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 80000 in
+set_option maxHeartbeats 1600000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
   have hh := RealExtension_is_RorC (Subalgebra.center ℝ A)

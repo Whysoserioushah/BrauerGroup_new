@@ -36,9 +36,11 @@ lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := b
   let L : SubField F A :=
   { __ := A.ι.range
     mul_comm := by
-      rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩
+      simp only [AlgHom.range_toSubsemiring, RingHom.rangeS_toSubmonoid, RingHom.coe_coe,
+        Set.mem_range, forall_exists_index, forall_apply_eq_imp_iff]
+      rintro _ _
       simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, ← map_mul, mul_comm]
-    inverse := by
+    exists_inverse := by
       rintro _ ⟨x, rfl⟩ hx
       refine ⟨A.ι x⁻¹, ?_, ?_⟩
       · simp
