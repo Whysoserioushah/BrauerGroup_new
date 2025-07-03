@@ -28,6 +28,8 @@ group extensions in general, see `Mathlib/GroupTheory/GroupExtension/Basic.lean`
 
 suppress_compilation
 
+open groupCohomology
+
 namespace SemidirectProduct
 
 variable {N G : Type} [CommGroup N] [Group G] (φ : G →* MulAut N)
@@ -287,19 +289,31 @@ theorem inl_toTwoCocycle (g₁ g₂ : G) :
 
 end OfMulDistribMulActionWithSection
 
+variable {f : twoCocycles (.ofMulDistribMulAction G N)}
+
+variable (f) in
 /-- The type with a group structure associated to an extension corresponding to a 2-cocycle -/
 @[ext]
-structure TwistedProduct (f : groupCohomology.twoCocycles (Rep.ofMulDistribMulAction G N)) where
+structure TwistedProduct (f : twoCocycles (.ofMulDistribMulAction G N)) where
   /-- The term of `N` -/
   left : N
   /-- The term of `G` -/
   right : G
 
-variable (f : groupCohomology.twoCocycles (Rep.ofMulDistribMulAction G N))
-
 namespace TwistedProduct
 
-variable {f}
+def equivProd : TwistedProduct f ≃ N × G where
+  toFun x := ⟨x.1, x.2⟩
+  invFun x := ⟨x.1, x.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+instance [Fintype N] [Fintype G] : Fintype (TwistedProduct f) := .ofEquiv _ equivProd.symm
+instance [Finite N] [Finite G] : Finite (TwistedProduct f) := .of_equiv _ equivProd.symm
+
+@[simp] lemma fintypeCard_eq [Fintype N] [Fintype G] :
+    Fintype.card (TwistedProduct f) = Fintype.card N * Fintype.card G := by
+  simp [Fintype.card_congr equivProd]
 
 instance : Mul (TwistedProduct f) where
   mul e₁ e₂ := ⟨e₁.left * e₁.right • e₂.left * Additive.toMul (α := N) (f (e₁.right, e₂.right)),
@@ -434,6 +448,8 @@ theorem inl_smul_eq_conj_inl (g : G) (n n' : N) :
   · simp only [right_inl, mul_inv_cancel]
 
 end TwistedProduct
+
+variable (f)
 
 /-- The group extension corresponding to a 2-cocycle -/
 def extensionOfTwoCocycle : GroupExtension N (TwistedProduct f) G where
