@@ -9,6 +9,7 @@ import BrauerGroup.CSA.ReducedCharPoly
 import BrauerGroup.CentralSimple
 import BrauerGroup.Centralizer
 import BrauerGroup.Con
+import BrauerGroup.CrossProduct
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.ExtendScalar
 import BrauerGroup.FieldCat
