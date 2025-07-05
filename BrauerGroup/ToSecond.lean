@@ -579,10 +579,9 @@ lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
     apply GoodRep.compare_toTwoCocycles'
   exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
 
-namespace GoodRep
-
 section galois
 
+namespace GoodRep
 variable {X : BrauerGroup F} (A : GoodRep K X)
 
 omit [FiniteDimensional F K] in
@@ -689,6 +688,8 @@ def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis (K ≃ₐ[F] K) K A :=
     (A.conjFactor_linearIndependent x_)
     (by rw [A.dim_eq', IsGalois.card_aut_eq_finrank])
 
+end GoodRep
+
 open DirectSum
 
 variable [DecidableEq (K ≃ₐ[F] K)]
@@ -704,29 +705,32 @@ variable {ha}
 
 def π : (CrossProduct a) →+* RingCon.Quotient I.ringCon := I.ringCon.mk'
 
-def πRes : (ι ha).range →+* I.ringCon.Quotient :=
-  RingHom.domRestrict (π I) (ι ha).range
+def πRes : (ι a).range →+* I.ringCon.Quotient :=
+  RingHom.domRestrict (π I) (ι a).range
 
 variable {I} in
 def x : (πRes I).range → K := fun x ↦ x.2.choose.2.choose
 
-lemma hx (a : πRes I |>.range) : πRes I ⟨ι ha (x a), by simp⟩ = a := by
-  rw [← a.2.choose_spec]
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+lemma hx (k : πRes I |>.range) : πRes I ⟨ι a (x k), by simp⟩ = k := by
+  rw [← k.2.choose_spec]
   congr 1
   ext : 1
-  exact a.2.choose.2.choose_spec
+  exact k.2.choose.2.choose_spec
 
-lemma hx' (a : K) : πRes I ⟨ι ha a, by simp⟩ = I.ringCon.mk' (ι ha a) := by
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+lemma hx' (k : K) : πRes I ⟨ι a k, by simp⟩ = I.ringCon.mk' (ι a k) := by
   simp only [RingHom.restrict_apply, πRes, π]
 
-lemma x_wd (c c' : K) (eq : πRes I ⟨ι ha c, by simp⟩ = πRes I ⟨ι ha c', by simp⟩)
+lemma x_wd (c c' : K) (eq : πRes I ⟨ι a c, by simp⟩ = πRes I ⟨ι a c', by simp⟩)
     (y : CrossProduct a) :
     (c - c') • y ∈ I := by
-  simp only [RingHom.restrict_apply, πRes, π] at eq
-  erw [Quotient.eq''] at eq
-  change I.ringCon _ _ at eq
+  simp only [πRes, π, RingHom.restrict_apply, RingCon.mk', RingHom.coe_mk,
+    MonoidHom.coe_mk, OneHom.coe_mk, RingCon.eq] at eq
   rw [TwoSidedIdeal.rel_iff, ← map_sub] at eq
-  exact I.mul_mem_right _ _ eq
+  -- change (ι a) (c - c') * y ∈ I
+  sorry
+
 
 instance (priority := high) : SMul (RingHom.range <| πRes I) I.ringCon.Quotient where
   smul a := Quotient.map'
@@ -1011,7 +1015,7 @@ end CrossProduct
 
 end galois
 
-end GoodRep
+
 
 namespace RelativeBrGroup
 

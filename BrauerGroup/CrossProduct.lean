@@ -150,6 +150,12 @@ instance algebra [CommSemiring R] [Algebra R F] [Module R K] [IsScalarTower R F 
     Algebra R (CrossProduct f) := by
   refine .ofModule ?_ ?_ <;> intros <;> ext <;> simp [map_smul]
 
+lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower R F K] (r : R) :
+    (algebraMap R (CrossProduct f) r).val = .single 1 (algebraMap R K r * (f 1)⁻¹) := by
+  rw [Algebra.algebraMap_eq_smul_one]
+  simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single,
+    Units.val_inv_eq_inv_val, ← Algebra.smul_def]
+
 variable (f) in
 @[simps]
 def ι : K →ₐ[F] CrossProduct f where
@@ -159,6 +165,20 @@ def ι : K →ₐ[F] CrossProduct f where
   map_one' := by ext; simp
   map_mul' _ _ := by ext; simp [mul_assoc, mul_left_comm]
   commutes' _ := by ext; simp [Algebra.algebraMap_eq_smul_one]
+
+lemma smul_eq_ι_mul_aux (a : K) :
+    a • 1 = ι f a * 1 := val_injective (by simp)
+
+-- instance : IsScalarTower K (CrossProduct f) (CrossProduct f) where
+--   smul_assoc k x y := by
+--     apply val_injective
+--     simp only [smul_eq_mul, val_mul, val_smul]
+--     sorry
+
+lemma smul_eq_ι_mul (a : K) (x : CrossProduct f) :
+    a • x = ι f a * x := by
+  rw [← one_mul x]
+  sorry
 
 @[simps]
 def singleUnit (σ : K ≃ₐ[F] K) : (CrossProduct f)ˣ where
@@ -199,24 +219,30 @@ variable [Module.Finite F K] [IsGalois F K]
 instance : Module.Finite F (CrossProduct f) :=
   Module.finite_of_finrank_pos <| by simp [pow_pos_iff two_ne_zero, Module.finrank_pos]
 
-lemma center_eq_bot [IsGalois F K] : Subalgebra.center F (CrossProduct f) = ⊥ := by
+lemma center_eq_bot : Subalgebra.center F (CrossProduct f) = ⊥ := by
+  classical
   rw [← le_bot_iff]
   rintro z hz
   rw [Subalgebra.mem_center_iff] at hz
   set s : (K ≃ₐ[F] K) → K :=
-    fun σ => if σ ∈ ((x_AsBasis ha).repr z).support then (x_AsBasis ha).repr z σ else 0
+    fun σ => if σ ∈ (basis.repr z).support then basis.repr z σ else 0
 
-  have eq1 : z = ∑ σ : K ≃ₐ[F] K, s σ • ⟨Pi.single σ 1⟩ := by
-    conv_lhs => rw [← (x_AsBasis ha).linearCombination_repr z, Finsupp.linearCombination_apply,
+  have eq1 : z = ∑ σ : K ≃ₐ[F] K, s σ • ⟨Finsupp.single σ 1⟩ := by
+    conv_lhs => rw [← basis.linearCombination_repr z, Finsupp.linearCombination_apply,
       Finsupp.sum]
     apply Finset.sum_subset_zero_on_sdiff (Finset.subset_univ _)
     · intro x hx
-      simp only [Finset.mem_sdiff, Finset.mem_univ, Finsupp.mem_support_iff, ne_eq, not_not,
-        true_and, Finsupp.if_mem_support, smul_eq_zero, s] at hx ⊢
-      exact Or.inl hx
+      simp only [Finset.mem_sdiff, Finset.mem_univ, Finsupp.mem_support_iff, ne_eq,
+        Decidable.not_not, true_and, ite_not, ite_smul, zero_smul, ite_eq_left_iff, smul_eq_zero,
+        s] at hx ⊢
+      simp [hx]
     intro x _
-    simp only [x_AsBasis_apply, Finsupp.mem_support_iff, ne_eq, Finsupp.if_mem_support, s]
-  have eq1' (τ : K ≃ₐ[F] K) : z = ∑ σ, s (τ⁻¹ * σ * τ) • ⟨Pi.single (τ⁻¹ * σ * τ) 1⟩ := by
+    simp only [basis, valLinearEquiv_apply, AddEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe,
+      EquivLike.coe_coe, valAddEquiv_apply, Basis.coe_ofRepr, valLinearEquiv_symm_apply,
+      Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm, Finsupp.mem_support_iff, ne_eq, ite_not,
+      ite_smul, zero_smul, s]
+    if hz' : z.val x = 0 then simp [hz'] else apply val_injective; simp [hz']
+  have eq1' (τ : K ≃ₐ[F] K) : z = ∑ σ, s (τ⁻¹ * σ * τ) • ⟨Finsupp.single (τ⁻¹ * σ * τ) 1⟩ := by
     rw [eq1]
     fapply Finset.sum_bij
     · refine fun σ _ => τ * σ * τ⁻¹
@@ -230,35 +256,33 @@ lemma center_eq_bot [IsGalois F K] : Subalgebra.center F (CrossProduct f) = ⊥ 
       simp [← _root_.mul_assoc]
 
   have eq2 (d : K) (τ : K ≃ₐ[F] K) :
-      z * ⟨Pi.single τ d⟩ = ⟨Pi.single τ d⟩ * z := hz ⟨Pi.single τ d⟩ |>.symm
-  have eq3 (d : K) (τ : K ≃ₐ[F] K) : z * ⟨Pi.single τ d⟩ =
-      ∑ σ, (s σ * (σ d) * a (σ, τ)) • ⟨Pi.single (σ * τ) 1⟩ := by
+      z * ⟨.single τ d⟩ = ⟨.single τ d⟩ * z := hz ⟨.single τ d⟩ |>.symm
+  have eq3 (d : K) (τ : K ≃ₐ[F] K) : z * ⟨.single τ d⟩ =
+      ∑ σ, (s σ * (σ d) * f (σ, τ)) • ⟨.single (σ * τ) 1⟩ := by
     rw [eq1, Finset.sum_mul]
     refine Finset.sum_congr rfl fun σ _ => ?_
-    simp only [x_AsBasis_apply, smul_def, _root_.mul_assoc]
-    apply val_injective ha
-    simp only [mul_val, crossProductMul_single_single, _root_.one_mul, ι_apply_val, Prod.mk_one_one,
-      Units.val_inv_eq_inv_val, AlgEquiv.one_apply, _root_.mul_one, Pi.single_inj]
-    rw [a_one_left ha]
-    field_simp
+    simp only [mul_assoc, s]
+    apply val_injective
+    simp only [val_mul, val_smul, Finsupp.smul_single, smul_eq_mul, mul_one,
+      mulLinearMap_single_single, s, ← mul_assoc]
 
-  have eq4 (d : K) (τ : K ≃ₐ[F] K) : ⟨Pi.single τ d⟩ * z =
-      ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • ⟨Pi.single (σ * τ) 1⟩ := by
+  have eq4 (d : K) (τ : K ≃ₐ[F] K) : ⟨.single τ d⟩ * z =
+      ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ)) • ⟨.single (σ * τ) 1⟩ := by
     rw [eq1' τ, Finset.mul_sum]
     refine Finset.sum_congr rfl fun σ _ => ?_
-    rw [smul_def, smul_def]
+    -- rw [smul_def, smul_def]
     apply val_injective
-    simp only [← _root_.mul_assoc, mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
-      crossProductMul_single_single, _root_.mul_one, map_mul, map_inv₀, a_one_right' ha,
-      isUnit_iff_ne_zero, ne_eq, EmbeddingLike.map_eq_zero_iff, Units.ne_zero, not_false_eq_true,
-      IsUnit.inv_mul_cancel_right, mul_inv_cancel, _root_.one_mul, map_one, AlgEquiv.one_apply,
-      a_one_left ha, Pi.single_inj]
-    field_simp
+    simp [← mul_assoc, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val, mul_one,
+      map_mul, map_inv₀, isUnit_iff_ne_zero, ne_eq, EmbeddingLike.map_eq_zero_iff,
+      Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right, mul_inv_cancel, one_mul,
+      map_one, AlgEquiv.one_apply]
+
   have eq5 (d : K) (τ : K ≃ₐ[F] K) :
-      ∑ σ, (s σ * (σ d) * (a (σ, τ))) • (x_AsBasis ha (σ * τ)) =
-      ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • (x_AsBasis ha (σ * τ)) := by
-    simp_rw [x_AsBasis_apply]
-    rw [← eq3, ← eq4, eq2]
+      ∑ σ, (s σ * (σ d) * (f (σ, τ))) • (basis (f := f) (σ * τ)) =
+      ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ)) • (basis (σ * τ)) := by
+    conv_lhs => enter [2]; intro σ; rw [show basis (σ * τ) = ⟨.single (σ * τ) 1⟩ by rfl]
+    conv_rhs => enter [2]; intro σ; rw [show basis (σ * τ) = ⟨.single (σ * τ) 1⟩ by rfl]
+    rw [← eq3, ← eq4, ← eq2]
 
   let e (τ : K ≃ₐ[F] K) : (K ≃ₐ[F] K) ≃ (K ≃ₐ[F] K) :=
   { toFun σ := σ * τ⁻¹
@@ -266,23 +290,23 @@ lemma center_eq_bot [IsGalois F K] : Subalgebra.center F (CrossProduct f) = ⊥ 
     left_inv := by intro x; simp
     right_inv := by intro x; simp }
 
-  let basis' (τ : K ≃ₐ[F] K) := x_AsBasis ha |>.reindex (e τ)
+  let basis' (τ : K ≃ₐ[F] K) := basis (f := f).reindex (e τ)
   have eq5' (d : K) (τ : K ≃ₐ[F] K) :
-      ∑ σ, (s σ * (σ d) * (a (σ, τ))) • (basis' τ σ) =
-      ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • (basis' τ σ) := by
-    simp only [Basis.coe_reindex, Equiv.coe_fn_symm_mk, Function.comp_apply, x_AsBasis_apply,
+      ∑ σ, (s σ * (σ d) * (f (σ, τ))) • (basis' τ σ) =
+      ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ)) • (basis' τ σ) := by
+    simp only [Basis.coe_reindex, Equiv.coe_fn_symm_mk, Function.comp_apply, basis,
       basis', e]
-    simp_rw [x_AsBasis_apply] at eq5
+    simp_rw [basis] at eq5
     rw [eq5 d τ]
 
   have eq5'' (d : K) (τ : K ≃ₐ[F] K) :
-      ∑ σ, (s σ * (σ d) * (a (σ, τ)) - d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) •
+      ∑ σ, (s σ * (σ d) * (f (σ, τ)) - d * τ (s (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ)) •
         (basis' τ σ) = 0:= by
     simp_rw [sub_smul, Finset.sum_sub_distrib]
     rw [eq5', sub_self]
 
   have EQ0 (d : K) (σ τ : K ≃ₐ[F] K) :
-      s σ * (σ d) * (a (σ, τ)) = d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ) := by
+      s σ * (σ d) * (f (σ, τ)) = d * τ (s (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ) := by
     specialize eq5 d τ
     have EQ := (basis' τ).linearIndependent
     rw [Fintype.linearIndependent_iff] at EQ
@@ -294,7 +318,7 @@ lemma center_eq_bot [IsGalois F K] : Subalgebra.center F (CrossProduct f) = ⊥ 
   simp only [map_one, _root_.mul_one, _root_.one_mul] at EQ1
 
   have EQ2 (d : K) (σ τ : K ≃ₐ[F] K) :
-      s σ * (σ d) * (a (σ, τ)) = d * s σ * (a (σ, τ)) := by
+      s σ * (σ d) * (f (σ, τ)) = d * s σ * (f (σ, τ)) := by
     rw [EQ0, _root_.mul_assoc, ← EQ1, ← _root_.mul_assoc]
 
   have EQ3 (d : K) (σ : K ≃ₐ[F] K) (h : s σ ≠ 0) : σ d = d := by
@@ -308,11 +332,12 @@ lemma center_eq_bot [IsGalois F K] : Subalgebra.center F (CrossProduct f) = ⊥ 
     ext d
     exact EQ3 d σ h
 
-  have conclusion2 (τ : K ≃ₐ[F] K) : τ (s 1 * a 1) = s 1 * a 1 := by
+  have conclusion2 (τ : K ≃ₐ[F] K) : τ (s 1 * f 1) = s 1 * f 1 := by
     rw [map_mul]
     specialize EQ0 1 1 τ
-    simp only [AlgEquiv.one_apply, _root_.mul_one, a_one_left ha, inv_mul_cancel, _root_.one_mul,
-      a_one_right' ha] at EQ0
+    simp only [AlgEquiv.one_apply, _root_.mul_one, inv_mul_cancel, _root_.one_mul,
+      map_one_fst_of_isMulTwoCocycle Fact.out, map_one_snd_of_isMulTwoCocycle Fact.out,
+      show ((1, 1) : Gal(K, F) × Gal(K, F)) = 1 by rfl, AlgEquiv.smul_units_def, Units.coe_map] at EQ0
     exact EQ0.symm
 
   have eq_bot := IsGalois.tfae (F := F) (E := K) |>.out 0 1 |>.1
@@ -320,7 +345,7 @@ lemma center_eq_bot [IsGalois F K] : Subalgebra.center F (CrossProduct f) = ⊥ 
 
   apply_fun IntermediateField.toSubalgebra at eq_bot
   simp only [IntermediateField.bot_toSubalgebra] at eq_bot
-  have conclusion3 : (s 1 * a 1) ∈ (⊥ : Subalgebra F K) := by
+  have conclusion3 : (s 1 * f 1) ∈ (⊥ : Subalgebra F K) := by
     rw [← eq_bot,IntermediateField.mem_toSubalgebra, IntermediateField.fixedField]
     rintro ⟨σ, -⟩
     exact conclusion2 σ
@@ -331,14 +356,17 @@ lemma center_eq_bot [IsGalois F K] : Subalgebra.center F (CrossProduct f) = ⊥ 
   by_cases h : σ = 1
   · subst h
 
-    rw [smul_single, _root_.mul_one, show (⟨Pi.single 1 (s 1)⟩ : CrossProduct a) =
-      ι ha (s 1 * a 1) by apply val_injective ha; simp,
-      show ι ha (s 1 * a 1) = (s 1 * a 1) • (1 : CrossProduct a) by
-        rw [smul_def];  apply val_injective ha; simp]
-    obtain ⟨f, hf⟩ := conclusion3
-    rw [← hf, show algebraMap F K f • (1 : CrossProduct a) = f • 1 by
-      rw [Algebra.smul_def]
-      simp only [algebraMap_smul, algebraMap_val, _root_.mul_one]]
+    rw [show (s 1 • { val := Finsupp.single 1 1 } : CrossProduct f) = ⟨s 1 • .single 1 1⟩ by rfl,
+      Finsupp.smul_single, smul_eq_mul, mul_one,
+      show (⟨.single 1 (s 1)⟩ : CrossProduct f) = ι f (s 1 * (f 1).1) by apply val_injective; simp,
+      show ι f (s 1 * f 1) = (s 1 * f 1) • (1 : CrossProduct f) by apply val_injective; simp]
+    obtain ⟨g, hg⟩ := conclusion3
+    rw [← hg, show algebraMap F K g • (1 : CrossProduct f) = g • 1 by
+      rw [Algebra.smul_def, algebraMap_smul, mul_one]
+      apply val_injective;
+      simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single, algebraMap_val,
+        Units.val_inv_eq_inv_val, basis', e, s]
+      rw [← smul_eq_mul, algebraMap_smul]]
     apply Subalgebra.smul_mem _ (Subalgebra.one_mem ⊥)
   · specialize conclusion1 σ h
     rw [conclusion1]
