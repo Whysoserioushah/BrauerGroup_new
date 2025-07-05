@@ -1,3 +1,4 @@
+import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
 import Mathlib.Algebra.Algebra.Subalgebra.Basic
 
 open Function TensorProduct MulOpposite
@@ -6,43 +7,46 @@ section def_and_lemmas
 
 structure SubField (K A : Type*) [CommSemiring K] [Semiring A] [Algebra K A]
     extends Subalgebra K A where
-  mul_comm ⦃x : A⦄ (hx : x ∈ carrier) ⦃y : A⦄ (hy : y ∈ carrier) : x * y = y * x
+  protected mul_comm ⦃x : A⦄ (hx : x ∈ carrier) ⦃y : A⦄ (hy : y ∈ carrier) : x * y = y * x
   exists_inverse ⦃x : A⦄ : x ∈ carrier → x ≠ 0 → ∃ y ∈ carrier, x * y = 1
 
 /-- Reinterpret SubFields as `Subalgebras` -/
 add_decl_doc SubField.toSubalgebra
 
 namespace SubField
-variable {K A : Type*}
+variable {R K A : Type*}
 
 section CommSemiring
-variable [CommSemiring K] [Semiring A] [Algebra K A] {L L₁ L₂ : SubField K A} {a : A}
+variable [CommSemiring R] [Semiring A] [Algebra R A] {L L₁ L₂ : SubField R A} {a : A}
 
-lemma toSubalgebra_injective : Injective (toSubalgebra : SubField K A → Subalgebra K A) := by
+lemma toSubalgebra_injective : Injective (toSubalgebra : SubField R A → Subalgebra R A) := by
   rintro ⟨L⟩; congr!
 
 @[simp] lemma toSubalgebra_inj : L₁.toSubalgebra = L₂.toSubalgebra ↔ L₁ = L₂ :=
   toSubalgebra_injective.eq_iff
 
-instance : SetLike (SubField K A) A where
+instance : SetLike (SubField R A) A where
   coe L := L.1
   coe_injective' := SetLike.coe_injective.comp toSubalgebra_injective
 
 @[simp] lemma mem_carrier : a ∈ L.carrier ↔ a ∈ L := .rfl
 @[simp] lemma mem_toSubalgebra : a ∈ L.toSubalgebra ↔ a ∈ L := .rfl
 
-@[simp] lemma coe_toSubalgebra (L : SubField K A) : (L.toSubalgebra : Set A) = L := rfl
+@[simp] lemma coe_toSubalgebra (L : SubField R A) : (L.toSubalgebra : Set A) = L := rfl
 
 @[ext] lemma ext (h : ∀ x, x ∈ L₁ ↔ x ∈ L₂) : L₁ = L₂ := SetLike.ext h
 
-instance : SubsemiringClass (SubField K A) A where
+@[simp] lemma toSubalgebra_le_toSubalgebra : L₁.toSubalgebra ≤ L₂.toSubalgebra ↔ L₁ ≤ L₂ := .rfl
+@[simp] lemma toSubalgebra_lt_toSubalgebra : L₁.toSubalgebra < L₂.toSubalgebra ↔ L₁ < L₂ := .rfl
+
+instance : SubsemiringClass (SubField R A) A where
   mul_mem {s} := mul_mem (s := s.1)
   one_mem {s} := one_mem (s := s.1)
   add_mem {s} := add_mem (s := s.1)
   zero_mem {s} := zero_mem (s := s.1)
 
-instance (priority := low) algebra' {K' : Type*} [CommSemiring K'] [SMul K' K] [Algebra K' A]
-    [IsScalarTower K' K A] (S : SubField K A) : Algebra K' S := S.toSubalgebra.algebra'
+instance (priority := low) algebra' {K' : Type*} [CommSemiring K'] [SMul K' R] [Algebra K' A]
+    [IsScalarTower K' R A] (S : SubField R A) : Algebra K' S := S.toSubalgebra.algebra'
 
 open scoped Classical in
 noncomputable instance carrier.instSemifield [Nontrivial A] : Semifield L.1 where
@@ -58,12 +62,36 @@ noncomputable instance carrier.instSemifield [Nontrivial A] : Semifield L.1 wher
       Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ↓reduceDIte]
   nnqsmul := _
 
+/-- The directed supremum of a set of subfields. -/
+@[simps toSubalgebra]
+def dSup (s : Set (SubField R A)) (hs : s.Nonempty) (hsdir : DirectedOn (· ≤ ·) s) :
+    SubField R A where
+  toSubalgebra := ⨆ L ∈ s, L.1
+  mul_comm := by
+    simp only [Subsemiring.coe_carrier_toSubmonoid, Subalgebra.coe_toSubsemiring,
+      Subalgebra.coe_biSup_of_directedOn hs hsdir, coe_toSubalgebra, Set.iSup_eq_iUnion,
+      Set.mem_iUnion, SetLike.mem_coe, exists_prop, forall_exists_index, and_imp]
+    rintro x L₁ hL₁ hx y L₂ hL₂ hy
+    obtain ⟨L, hL, hLL₁, hLL₂⟩ := hsdir _ hL₁ _ hL₂
+    exact L.mul_comm (hLL₁ hx) (hLL₂ hy)
+  exists_inverse := by
+    simp only [Subsemiring.coe_carrier_toSubmonoid, Subalgebra.coe_toSubsemiring,
+      Subalgebra.coe_biSup_of_directedOn hs hsdir, coe_toSubalgebra, Set.iSup_eq_iUnion,
+      Set.mem_iUnion, SetLike.mem_coe, exists_prop, ne_eq, forall_exists_index, and_imp]
+    rintro x L hL hx hx₀
+    obtain ⟨y, hy, hxy⟩ := L.exists_inverse hx hx₀
+    exact ⟨y, ⟨L, hL, hy⟩, hxy⟩
+
+lemma isLUB_dSup (s : Set (SubField R A)) (hs hsdir) : IsLUB s (dSup s hs hsdir) := by
+  simpa [IsLUB, IsLeast, lowerBounds, upperBounds, ← toSubalgebra_le_toSubalgebra]
+    using isLUB_biSup (s := s) (f := toSubalgebra)
+
 end CommSemiring
 
 section CommRing
-variable [CommRing K] [Ring A] [Algebra K A] {L : SubField K A} {a : A}
+variable [CommRing R] [Ring A] [Algebra R A] {L : SubField R A} {a : A}
 
-instance : SubringClass (SubField K A) A where
+instance : SubringClass (SubField R A) A where
   mul_mem {s} := mul_mem (s := s.1)
   one_mem {s} := one_mem (s := s.1)
   add_mem {s} := add_mem (s := s.1)
@@ -71,7 +99,7 @@ instance : SubringClass (SubField K A) A where
   neg_mem {s} := neg_mem (s := s.1)
 
 @[simp] lemma mem_toSubring : a ∈ L.toSubring ↔ a ∈ L := .rfl
-@[simp] lemma coe_toSubring (L : SubField K A) : (L.toSubring : Set A) = L := rfl
+@[simp] lemma coe_toSubring (L : SubField R A) : (L.toSubring : Set A) = L := rfl
 
 noncomputable instance carrier.instField [Nontrivial A] : Field L where
   __ : Ring L := inferInstance
@@ -92,6 +120,10 @@ instance : Bot (SubField K A) where
     exact fun x hx ↦ ⟨x⁻¹, by rw [← map_mul, mul_inv_cancel₀ (by aesop), map_one]⟩
 
 instance : Nonempty (SubField K A) := ⟨⊥⟩
+
+variable (K A) in
+lemma exists_isMax : ∃ L : SubField K A, IsMax L :=
+  zorn_le_nonempty fun s hschain hs ↦ ⟨dSup s hs hschain.directedOn, (isLUB_dSup ..).1⟩
 
 end Semifield
 end SubField
