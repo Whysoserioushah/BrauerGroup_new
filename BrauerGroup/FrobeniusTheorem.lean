@@ -665,8 +665,7 @@ lemma linindepijk (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons] at h1
     rw [add_comm, ← add_assoc, neg_smul, one_smul, smul_neg, ← neg_smul] at heq
     specialize h1 heq ⟨1, by omega⟩
-    simp only [Fin.mk_one, Fin.isValue, Matrix.cons_val_one, Matrix.head_cons, neg_eq_zero] at h1
-    exact h1
+    simpa using h1
   obtain rfl : c = 0 := by
     simp only [zero_smul, zero_add] at heq
     rw [Algebra.smul_def, k_eq, mul_eq_mul_right_iff] at heq
@@ -731,7 +730,7 @@ lemma linEquivH_eq_toFun (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z
       map_one, zero_smul, add_zero]
     rw [← Fin.succ_one_eq_two, Fin.cons_succ, ← Fin.succ_zero_eq_one, Fin.cons_succ]; simp
   · erw [Basis.equiv_apply]
-    simp only [Fin.isValue, Fin.mk_one, Equiv.coe_fn_mk, Matrix.cons_val_one, Matrix.head_cons,
+    simp only [Fin.isValue, Fin.mk_one, Equiv.coe_fn_mk, Matrix.cons_val_one, Matrix.cons_val_zero,
       Basis.coe_mk, basisijk, map_inv₀, QuaternionAlgebra.lift_apply,
       QuaternionAlgebra.Basis.liftHom, QuaternionAlgebra.basisOneIJK, Basis.coe_ofEquivFun,
       QuaternionAlgebra.coe_linearEquivTuple_symm, QuaternionAlgebra.equivTuple_symm_apply, ne_eq,
@@ -776,6 +775,7 @@ instance AlgCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional �
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)) : Algebra ℂ A where
   __ := SmulCA A e
   smul z a := (SmulCA A e z) * a
+  algebraMap := _
   commutes' z _ := by
     simp [Subalgebra.mem_center_iff.1 (e z).2]
   smul_def' _ _ := rfl
@@ -802,7 +802,7 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
       Subalgebra.coe_one, smul_mul_assoc, one_mul]
   haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 $ fin
   haveI : FiniteDimensional ℂ A := Module.Finite.right ℝ ℂ A
-  have bij := bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed ℂ A
+  have bij := IsAlgClosed.algebraMap_bijective_of_isIntegral (k := ℂ) (K := A)
   exact ⟨.symm <| .ofBijective {
     toFun := algebraMap ℂ A
     map_one' := _
@@ -815,7 +815,7 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij⟩
 
 set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 600000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
   have hh := RealExtension_is_RorC (Subalgebra.center ℝ A)

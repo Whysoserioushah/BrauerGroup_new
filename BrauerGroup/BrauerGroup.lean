@@ -2,12 +2,10 @@ import BrauerGroup.CentralSimple
 import BrauerGroup.FieldCat
 import Mathlib.Algebra.BrauerGroup.Defs
 import Mathlib.Algebra.Central.Matrix
-import Mathlib.Algebra.GroupWithZero.Action.Faithful
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
-import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
-import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.SimpleRing.Matrix
 
 suppress_compilation
 universe u v v₁ v₂ w
@@ -897,7 +895,7 @@ def baseChange_idem.Aux (F K E : Type u) [Field F] [Field K] [Field E]
   TensorProduct.AlgebraTensorModule.congr
     (TensorProduct.AlgebraTensorModule.rid _ _ _) (LinearEquiv.refl _ _)
 
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 800000 in
 def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
     [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] (A : CSA F) :
     E ⊗[K] K ⊗[F] A ≃ₐ[E] (E ⊗[F] A.carrier) :=
