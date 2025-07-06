@@ -217,9 +217,9 @@ variable [Module.Finite F K] [IsGalois F K]
 instance : Module.Finite F (CrossProduct f) :=
   Module.finite_of_finrank_pos <| by simp [pow_pos_iff two_ne_zero, Module.finrank_pos]
 
-lemma center_eq_bot : Subalgebra.center F (CrossProduct f) = ⊥ := by
+instance : Algebra.IsCentral F (CrossProduct f) := by
   classical
-  rw [← le_bot_iff]
+  constructor
   rintro z hz
   rw [Subalgebra.mem_center_iff] at hz
   set s : (K ≃ₐ[F] K) → K :=
