@@ -720,6 +720,8 @@ lemma x_wd (c c' : K) (eq : πRes I ⟨ι f c, by simp⟩ = πRes I ⟨ι f c', 
   simp only [πRes, π, RingHom.restrict_apply, RingCon.mk', RingHom.coe_mk,
     MonoidHom.coe_mk, OneHom.coe_mk, RingCon.eq] at eq
   rw [TwoSidedIdeal.rel_iff, ← map_sub] at eq
+  haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+    smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
   simpa using I.mul_mem_right _ _ eq
 
 instance (priority := high) : SMul (πRes I).range I.ringCon.Quotient where
@@ -730,6 +732,8 @@ instance (priority := high) : SMul (πRes I).range I.ringCon.Quotient where
       simp only
       rw [TwoSidedIdeal.rel_iff] at hy ⊢
       rw [← smul_sub]
+      haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+        smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
       simpa using I.mul_mem_left (ι f _) _ hy)
 
 omit [FiniteDimensional F K] in
@@ -756,9 +760,24 @@ lemma smul_def_quot'' (a : K) (y : CrossProduct f) :
     (Quotient.mk'' (a • y) :  I.ringCon.Quotient) :=
   smul_def_quot' I a y
 
+abbrev πRes_Kalgmap : K →+* (πRes I).range :=
+  { toFun := fun a => ⟨π I (ι f a), by simpa using ⟨ι f a, ⟨a, rfl⟩, rfl⟩⟩
+    map_one' := by
+      simp only [map_one, RingCon.coe_one]
+      rfl
+    map_mul' := by
+      intros
+      simp only [map_mul, RingCon.coe_mul, MulMemClass.mk_mul_mk]
+    map_zero' := by
+      simp only [map_zero, RingCon.coe_zero]
+      rfl
+    map_add' := by
+      intros
+      simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] }
+
 instance : Module K I.ringCon.Quotient :=
   .compHom _ (f := show K →+* (πRes I).range from
-  { toFun a := ⟨π I (ι f a), by simpa using ⟨ι f a, ⟨a, rfl⟩, rfl⟩⟩
+  { toFun := fun a => ⟨π I (ι f a), by simpa using ⟨ι f a, ⟨a, rfl⟩, rfl⟩⟩
     map_one' := by
       simp only [map_one, RingCon.coe_one]
       rfl
@@ -772,17 +791,39 @@ instance : Module K I.ringCon.Quotient :=
       intros
       simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] })
 
-lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) :
-    c • x = (⟨π I (ι f c), by simpa using ⟨ι f c, ⟨c, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := rfl
+lemma Module.compHom_apply {R S : Type*} (M : Type*) [Semiring R] [AddCommMonoid M] [Module R M]
+  [Semiring S] (f : S →+* R) (s : S) (m : M):
+  letI : Module S M := Module.compHom _ f
+  s • m = f s • m := by rfl
 
-set_option maxHeartbeats 400000 in
+omit [FiniteDimensional F K] in
+lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) :
+    c • x = (⟨π I (ι f c), by simpa using ⟨ι f c, ⟨c, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := by
+  induction x using Quotient.inductionOn' with
+  | h x =>
+    rw [smul_def_quot'' I c x]
+    rw [Module.compHom_apply]
+    simp
+    change _ * _ = _
+    simp [π]
+    change I.ringCon.mk' _ * I.ringCon.mk' _ = _
+    rw [← map_mul]
+    change Quotient.mk'' _ = _
+    haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+      smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+    congr
+    exact smul_one_mul c x
+
+-- ## THIS PROOF NEEDS FIXING!!!
+set_option maxHeartbeats 800000 in
+set_option synthInstance.maxHeartbeats 80000 in
 def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
-  .mk (v := fun σ => I.ringCon.mk' (x_ ha σ))
+  .mk (v := fun σ => I.ringCon.mk' (CrossProduct.basis σ))
     (by
       classical
       by_contra rid
       obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : Gal(K, F)) =>
-        I.ringCon.mk' (x_ ha i))
+        I.ringCon.mk' (CrossProduct.basis i))
       have ne : J ≠ Set.univ := by
         rintro rfl
         refine rid ?_
@@ -794,65 +835,124 @@ def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
       obtain ⟨c, c_ne_zero, hc⟩ := maximal σ hσ
       let B := Basis.span LI
       replace hc := Submodule.smul_mem _ c⁻¹ hc
-      rw [← mul_smul, inv_mul_cancel₀ c_ne_zero, one_smul] at hc
+      replace hc : (c⁻¹ * c) • I.ringCon.mk' (CrossProduct.basis σ) ∈ Submodule.span K
+        ((fun i ↦ I.ringCon.mk' (CrossProduct.basis i)) '' J) := by -- this is seriously fucked up, NEEDS FIXING
+        haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+          smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+        convert hc using 1
+        convert mul_smul c⁻¹ c (I.ringCon.mk' (CrossProduct.basis σ))
+        · ext k x
+          induction x using Quotient.inductionOn' with
+          | h x =>
+            change _ = Quotient.mk'' (k • x)
+            rw [@SMul.smul_eq_hSMul K I.ringCon.Quotient, Module.compHom_apply]
+            simp
+            change _ * I.ringCon.mk' x = _
+            simp [π]
+            rw [← map_mul, smul_one_mul]
+            rfl
+        · ext k x
+          induction x using Quotient.inductionOn' with
+          | h x =>
+            change _ = Quotient.mk'' (k • x)
+            rw [@SMul.smul_eq_hSMul K I.ringCon.Quotient, Module.compHom_apply]
+            simp
+            change _ * I.ringCon.mk' x = _
+            simp [π]
+            rw [← map_mul, smul_one_mul]
+            rfl
+        · ext k x
+          induction x using Quotient.inductionOn' with
+          | h x =>
+            change _ = Quotient.mk'' (k • x)
+            rw [@SMul.smul_eq_hSMul K I.ringCon.Quotient, Module.compHom_apply]
+            simp
+            change _ * I.ringCon.mk' x = _
+            simp [π]
+            rw [← map_mul, smul_one_mul]
+            rfl
+      rw [inv_mul_cancel₀ c_ne_zero, one_smul] at hc
       clear c c_ne_zero
-      have mem1 : I.ringCon.mk' (x_ ha σ) ∈ Submodule.span K
-          (Set.range fun (σ : J) ↦ I.ringCon.mk' (x_ ha σ)) := by
+      have mem1 : I.ringCon.mk' (CrossProduct.basis σ) ∈ Submodule.span K
+          (Set.range fun (σ : J) ↦ I.ringCon.mk' (CrossProduct.basis σ)) := by
         convert hc; aesop
-      have eq0 : (⟨I.ringCon.mk' (x_ ha σ), mem1⟩ : Submodule.span K
-          (Set.range fun (σ : J) ↦ I.ringCon.mk' (x_ ha σ))) =
-          ∑ τ ∈ (B.repr ⟨_, mem1⟩).support, B.repr ⟨_, mem1⟩ τ • I.ringCon.mk' (x_ ha τ) := by
-        conv_lhs => rw [← B.linearCombination_repr ⟨I.ringCon.mk' (x_ ha σ), mem1⟩,
+      have eq0 : (⟨I.ringCon.mk' (CrossProduct.basis σ), mem1⟩ : Submodule.span K
+          (Set.range fun (σ : J) ↦ I.ringCon.mk' (CrossProduct.basis σ))) =
+          ∑ τ ∈ (B.repr ⟨_, mem1⟩).support, B.repr ⟨_, mem1⟩ τ • I.ringCon.mk' (CrossProduct.basis τ) := by
+        conv_lhs => rw [← B.linearCombination_repr ⟨I.ringCon.mk' (CrossProduct.basis σ), mem1⟩,
           Finsupp.linearCombination_apply, Finsupp.sum]
         rw [AddSubmonoidClass.coe_finset_sum]
         refine Finset.sum_congr rfl fun i _ => ?_
-        simp only [SetLike.val_smul, smul_def]
+        simp only [SetLike.val_smul]
         congr 1
-        simp only [B, Basis.span_apply]
+        simp [B, Basis.span_apply]
+
       simp only at eq0
 
-      have eq1 (c : K) := calc I.ringCon.mk' (ι f (σ c)) * I.ringCon.mk' (x_ ha σ)
-          _ = I.ringCon.mk' (x_ ha σ) * I.ringCon.mk' (ι f c) := by
-            rw [← map_mul, ← x__conj' ha, map_mul]
+      have eq1 (c : K) := calc I.ringCon.mk' (ι f (σ c)) * I.ringCon.mk' (CrossProduct.basis σ)
+          _ = I.ringCon.mk' (CrossProduct.basis σ) * I.ringCon.mk' (ι f c) := by
+            rw [← map_mul, ← map_mul]
+            congr 1
+            apply val_injective
+            simp [CrossProduct.basis, map_one_snd_of_isMulTwoCocycle (f := f) Fact.out σ,
+              map_one_fst_of_isMulTwoCocycle (f := f) Fact.out σ]
           _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
-                I.ringCon.mk' (ι f (B.repr ⟨_, mem1⟩ τ)) * I.ringCon.mk' (x_ ha τ) *
+                I.ringCon.mk' (ι f (B.repr ⟨_, mem1⟩ τ)) * I.ringCon.mk' (CrossProduct.basis τ) *
                   I.ringCon.mk' (ι f c) := by
             conv_lhs => rw [eq0, Finset.sum_mul]
             refine Finset.sum_congr rfl fun τ _ => ?_
-            simp only [K_smul_quot, smul_def_quot' I, smul_def, ← map_mul]
+            simp only [K_smul_quot, smul_def_quot' I, ← map_mul]
+            congr 1
+            haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+              smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+            simp [ι_apply, B, smul_one_mul]
           _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
                 I.ringCon.mk' (ι f (B.repr ⟨_, mem1⟩ τ)) *
-                I.ringCon.mk' (ι f (τ.1 c)) * I.ringCon.mk' (x_ ha τ) :=
+                I.ringCon.mk' (ι f (τ.1 c)) * I.ringCon.mk' (CrossProduct.basis τ) :=
             Finset.sum_congr rfl fun i _ => by
             simp only [_root_.mul_assoc]
             congr 1
-            rw [← map_mul, x__conj', ← map_mul]
+            rw [← map_mul, ← map_mul]
+            congr 1
+            apply val_injective
+            simp [CrossProduct.basis]
+            congr 1
+            rw [_root_.mul_assoc, _root_.mul_assoc]
+            congr 1
+            rw [map_one_snd_of_isMulTwoCocycle (f := f) Fact.out i.1,
+              map_one_fst_of_isMulTwoCocycle (f := f) Fact.out i.1]
+            simp
           _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
                 I.ringCon.mk' (ι f (B.repr ⟨_, mem1⟩ τ * τ.1 c)) *
-                I.ringCon.mk' (x_ ha τ) :=
+                I.ringCon.mk' (CrossProduct.basis τ) :=
             Finset.sum_congr rfl fun i _ => by rw [map_mul, map_mul]
 
-      have eq2 (c : K) := calc I.ringCon.mk' (ι f (σ c)) * I.ringCon.mk' (x_ ha σ)
+      have eq2 (c : K) := calc I.ringCon.mk' (ι f (σ c)) * I.ringCon.mk' (CrossProduct.basis σ)
           _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
               I.ringCon.mk' (ι f (σ c * (B.repr ⟨_, mem1⟩) τ)) *
-              I.ringCon.mk' (x_ ha τ) := by
+              I.ringCon.mk' (CrossProduct.basis τ) := by
             conv_lhs => rw [eq0, Finset.mul_sum]
             refine Finset.sum_congr rfl fun τ _ => ?_
-            simp only [K_smul_quot, smul_def_quot' I, smul_def, ← map_mul, ← _root_.mul_assoc]
+            simp only [K_smul_quot, smul_def_quot' I, ← map_mul, ← _root_.mul_assoc]
+            congr 1
+            haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+              smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+            simp only [ι_apply, smul_one_mul, B]
+            rw [mul_smul]
 
       have eq3 (c : K) :
           ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
                 I.ringCon.mk' (ι f (B.repr ⟨_, mem1⟩ τ * τ.1 c)) *
-                I.ringCon.mk' (x_ ha τ) =
+                I.ringCon.mk' (CrossProduct.basis τ) =
           ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
               I.ringCon.mk' (ι f (σ c * (B.repr ⟨_, mem1⟩) τ)) *
-              I.ringCon.mk' (x_ ha τ) :=
+              I.ringCon.mk' (CrossProduct.basis τ) :=
         eq1 c |>.symm.trans <| eq2 c
 
       have eq4 (c : K) :
           ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
               I.ringCon.mk' (ι f (B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ)) *
-              I.ringCon.mk' (x_ ha τ) = 0 := by
+              I.ringCon.mk' (CrossProduct.basis τ) = 0 := by
         simp only [map_sub, map_mul, sub_mul, Finset.sum_sub_distrib]
         rw [sub_eq_zero]
         convert eq3 c
@@ -862,10 +962,14 @@ def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
       have eq5 (c : K) :
           ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
               (B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ) •
-              I.ringCon.mk' (x_ ha τ) = 0 := by
+              I.ringCon.mk' (CrossProduct.basis τ) = 0 := by
         rw [← eq4 c]
         refine Finset.sum_congr rfl fun τ _ => ?_
-        simp only [K_smul_quot, smul_def_quot' I, smul_def, ← map_mul]
+        simp only [K_smul_quot, smul_def_quot' I,  ← map_mul]
+        congr 1
+        haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+          smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+        simp
       have eq6 (c : K) := linearIndependent_iff'' |>.1 LI (B.repr ⟨_, mem1⟩).support
         (fun τ => B.repr ⟨_, mem1⟩ τ * τ.1 c - σ c * (B.repr ⟨_, mem1⟩) τ)
         (by
@@ -880,10 +984,17 @@ def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
         erw [Quotient.eq''] at eq0
         change I.ringCon _ _ at eq0
         rw [I.rel_iff, sub_zero] at eq0
-        have mem' := I.mul_mem_left (x_ ha σ)⁻¹.1 _ eq0
+        have mem' := I.mul_mem_left (CrossProduct.singleUnit σ)⁻¹.1 _ eq0
         simp only [Units.inv_mul] at mem'
         refine ne_top <| eq_top_iff.2 fun x _ => ?_
-        simpa using I.mul_mem_left x _ mem'
+        have : ((singleUnit (f := f) σ)⁻¹.1 * CrossProduct.basis σ) = 1 := by
+          apply val_injective
+          simp only [CrossProduct.basis, Basis.coe_ofRepr, valLinearEquiv_symm_apply,
+            AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm, val_mul,
+            val_inv_singleUnit_val, Units.val_inv_eq_inv_val, valAddEquiv_symm_apply_val,
+            mulLinearMap_single_single, inv_mul_cancel, map_one, _root_.mul_one, val_one, B]
+          congr 1; field_simp
+        simpa [this] using I.mul_mem_left x _ mem'
 
       obtain ⟨τ, τ_mem⟩ := Finset.nonempty_of_ne_empty this
       have eq7 : σ = τ := by
@@ -912,9 +1023,9 @@ def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
           refine ⟨(CrossProduct.basis.repr z σ), rfl⟩⟩ : (πRes I).range) •
           I.ringCon.mk' (CrossProduct.basis σ) by
           rw [smul_def_quot']]
+      rw [← K_smul_quot]
       refine Submodule.smul_mem _ _ <| Submodule.subset_span ⟨σ, ?_⟩
-      simp only [x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀, Units.val_ofLeftRightInverse,
-        basis_apply])
+      simp)
 
 def π₁ (ne_top : I ≠ ⊤) : CrossProduct f ≃ₗ[K] I.ringCon.Quotient :=
   CrossProduct.basis.equiv (basis I ne_top) (Equiv.refl _)
@@ -924,19 +1035,19 @@ def π₂ : CrossProduct f →ₗ[K] I.ringCon.Quotient where
   map_smul' c x := by
     simp only [RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe, MonoidHom.toOneHom_coe,
       MonoidHom.coe_coe, RingHom.id_apply]
-    simp only [smul_def, K_smul_quot]
+    simp only [K_smul_quot]
     erw [smul_def_quot' I]
     rfl
 
+omit [FiniteDimensional F K] in
 lemma equal (ne_top : I ≠ ⊤) : π₁ I ne_top = π₂ I := by
   apply Basis.ext (b := CrossProduct.basis)
   intro σ
   delta π₁
   erw [Basis.equiv_apply]
-  simp only [basis, x_, Units.val_inv_eq_inv_val, map_mul, map_inv₀,
-    Equiv.refl_apply, Basis.coe_mk, π₂, π, RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe,
-    MonoidHom.toOneHom_coe, MonoidHom.coe_coe, basis_apply, LinearMap.coe_mk, AddHom.coe_mk]
+  simp [basis, CrossProduct.basis, map_mul, map_inv₀, π₂, π]
 
+omit [FiniteDimensional F K] in
 lemma π_inj (ne_top : I ≠ ⊤) : Function.Injective (π I) := by
   change Function.Injective (π₂ I)
   rw [← equal (ne_top := ne_top)]
@@ -977,11 +1088,13 @@ open CrossProduct
 variable [IsGalois F K] [DecidableEq Gal(K, F)]
 
 def fromTwoCocycles (f : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
-⟨Quotient.mk'' (asCSA f), by
-  rw [mem_relativeBrGroup_iff_nonempty_goodRep]
-  exact ⟨⟨(asCSA f), rfl,
-    ι f,
-    dim_eq_sq f⟩⟩⟩
+  haveI := groupCohomology.isMulTwoCocycle_of_mem_twoCocycles _ f.2
+  haveI : Fact (@IsMulTwoCocycle (K ≃ₐ[F] K) Kˣ MulOneClass.toMul
+    Units.instCommGroupUnits MulAction.toSMul (⇑Additive.toMul ∘ ↑f)) := ⟨this⟩
+  ⟨Quotient.mk'' (asCSA (⇑Additive.toMul ∘ f.1)), by
+    rw [mem_relativeBrGroup_iff_nonempty_goodRep]
+    exact ⟨⟨(asCSA (⇑Additive.toMul ∘ f)), rfl,
+      ι (⇑Additive.toMul ∘ f), finrank_eq_sq⟩⟩⟩
 
 variable (F K) in
 set_option maxHeartbeats 500000 in
@@ -1007,48 +1120,32 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
 
     obtain ⟨c, hc⟩ := hc
     simp only [fromTwoCocycles, Subtype.mk.injEq, Quotient.eq'']
-    let A := asCSA ha
-    let B := asCSA hb
+    let A := @asCSA _ _ _ _ _ _ a ⟨ha⟩ _
+    let B := @asCSA _ _ _ _ _ _ b ⟨hb⟩ _
     change IsBrauerEquivalent A B
-    letI : Module K A := inferInstanceAs <| Module K (CrossProduct f)
+    letI : Module K A := inferInstanceAs <| Module K (CrossProduct a)
     letI : Module K B := inferInstanceAs <| Module K (CrossProduct b)
 
     let basis : Basis Gal(K, F) K B :=
-      Basis.unitsSMul (basis hb) c
+      Basis.unitsSMul (basis (f := b)) c
     let φ0 : A ≃ₗ[K] B :=
       Basis.equiv CrossProduct.basis basis (Equiv.refl _)
     haveI : LinearMap.CompatibleSMul A B F K := by
       constructor
       have eq (c : F) (a : A) : c • a = algebraMap F K c • a := by
-        induction a using CrossProduct.single_induction with
-        | single σ a =>
-          simp only [Algebra.smul_def]
-          rw [CrossProduct.smul_def]
-          congr 1
-          delta ι
-          simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]
-          rw [Algebra.algebraMap_eq_smul_one]
-        | add x y hx hy =>
-          change c • (x + y) = _ • (x + y)
-          rw [smul_add, smul_add, hx, hy]
-        | zero =>
-          change c • 0 = _ • 0
-          simp
+        apply val_injective
+        rw [val_smul, val_smul]
+        induction a.val using Finsupp.induction_linear with
+        | h0 => simp
+        | hadd f g _ _ => simp_all
+        | hsingle σ k => simp
       have eq' (c : F) (a : B) : c • a = algebraMap F K c • a := by
-        induction a using CrossProduct.single_induction with
-        | single σ a =>
-          simp only [Algebra.smul_def]
-          rw [CrossProduct.smul_def]
-          congr 1
-          delta ι
-          simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]
-          rw [Algebra.algebraMap_eq_smul_one]
-        | add x y hx hy =>
-          change c • (x + y) = _ • (x + y)
-          rw [smul_add, smul_add, hx, hy]
-        | zero =>
-          change c • 0 = _ • 0
-          simp
+        apply val_injective
+        rw [val_smul, val_smul]
+        induction a.val using Finsupp.induction_linear with
+        | h0 => simp
+        | hadd f g _ _ => simp_all
+        | hsingle σ k => simp
 
       intro l c a
       rw [eq, eq', map_smul]
@@ -1057,108 +1154,86 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
       (by
         change φ0 1 = 1
         rw [show (1 : A) = (a 1)⁻¹.1 • (CrossProduct.basis 1 : A) by
-          apply val_injective ha
-          erw [CrossProduct.smul_def]
-          simp only [one_val, Prod.mk_one_one, Units.val_inv_eq_inv_val, basis_apply, mul_val,
-            ι_apply_val, crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
-            isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
-            IsUnit.inv_mul_cancel_right], map_smul]
+          apply val_injective
+          simp [CrossProduct.basis], map_smul]
         erw [Basis.equiv_apply]
         simp only [Units.val_inv_eq_inv_val, Equiv.refl_apply, Basis.unitsSMul_apply, basis]
-        apply val_injective hb
-        erw [CrossProduct.smul_def, CrossProduct.smul_def]
-        erw [mul_val, mul_val]
-        erw [basis_apply]
-        simp only [ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
-          crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
-          isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right,
-          map_inv₀, one_val, Pi.single_inj]
+        apply val_injective
+        rw [val_smul]
+        change _ • ((c 1).1 • CrossProduct.basis 1).val = _
+        simp only [CrossProduct.basis, Basis.coe_ofRepr, valLinearEquiv_symm_apply,
+          AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm, val_smul,
+          valAddEquiv_symm_apply_val, Finsupp.smul_single, smul_eq_mul, _root_.mul_one, val_one, *]
         specialize hc 1 1
         simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Prod.mk_one_one,
           Pi.div_apply] at hc
         simp only [hc, Units.val_div_eq_div_val]
         field_simp)
       (by
+        haveI (f : ((K ≃ₐ[F] K) × K ≃ₐ[F] K) → Kˣ) [Fact <| IsMulTwoCocycle f]:
+          IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+          smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+        specialize @this a ⟨ha⟩
         intro α β
-        change φ0 _ = φ0 _ * φ0 _
-        induction α using CrossProduct.single_induction with
-        | single σ α =>
-          induction β using CrossProduct.single_induction with
-          | single τ β =>
-            rw [show (⟨Pi.single σ α⟩ : CrossProduct f) * ⟨Pi.single τ β⟩ =
-              ⟨Pi.single (σ * τ) (α * σ β * a (σ, τ))⟩ by
-              apply val_injective
-              simp only [mul_val, crossProductMul_single_single],
-              show (⟨Pi.single (σ * τ) (α * σ β * a (σ, τ))⟩ : CrossProduct f) =
-                (α * σ β * a (σ, τ)) • ((CrossProduct.basis (σ * τ)) : CrossProduct f) by
-              apply val_injective
-              simp only [basis_apply, smul_def, map_mul, mul_val, ι_apply_val, Prod.mk_one_one,
-                Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.mul_one,
-                AlgEquiv.one_apply, map_inv₀, _root_.one_mul, Pi.single_inj]
-              rw [a_one_left ha]
-              simp only [_root_.mul_assoc]
-              congr 1
-              simp only [← _root_.mul_assoc]
-              simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
-                IsUnit.inv_mul_cancel_right]
-              field_simp, map_smul,
-              show (⟨Pi.single σ α⟩ : CrossProduct f) = α • (CrossProduct.basis σ) by
-              apply val_injective
-              simp only [basis_apply, smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
-                Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.one_mul,
-                AlgEquiv.one_apply, _root_.mul_one, a_one_left ha, isUnit_iff_ne_zero, ne_eq,
-                Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right], map_smul,
-              show (⟨Pi.single τ β⟩ : CrossProduct f) = β • (CrossProduct.basis τ) by
-              apply val_injective
-              simp only [basis_apply, smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
-                Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.one_mul,
-                AlgEquiv.one_apply, _root_.mul_one, a_one_left ha, isUnit_iff_ne_zero, ne_eq,
-                Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right], map_smul]
+        change φ0 ((⟨α.val⟩ : CrossProduct a) * (⟨β.val⟩ : CrossProduct a)) =
+          φ0 (⟨α.val⟩ : CrossProduct a) * φ0 (⟨β.val⟩ : CrossProduct a)
+        induction α.val using Finsupp.induction_linear with
+        | h0 => change φ0 (0 * _) = φ0 0 * _; simp
+        | hadd f g _ _ =>
+          change φ0 ((_ + _) * _) = φ0 (_ + _) * φ0 _
+          simp_all [add_mul]
+        | hsingle σ k1 =>
+          induction β.val using Finsupp.induction_linear with
+          | h0 => change φ0 (_ * 0) = _ * φ0 0; simp
+          | hadd f g _ _ =>
+            change φ0 (_ * (_ + _)) = φ0 _ * φ0 (_ + _)
+            simp_all [mul_add]
+          | hsingle τ k2 =>
+            change φ0 (⟨mulLinearMap a _ _⟩ : CrossProduct a) = _
+            simp only [mulLinearMap_single_single, *]
+            rw [← mul_one (k1 * σ k2 * ↑(a (σ, τ))), ← smul_eq_mul _ 1, ← Finsupp.smul_single,
+              show (⟨_ • .single _ 1⟩ : CrossProduct a) =
+                (k1 * σ k2 * ↑(a (σ, τ))) • (CrossProduct.basis (σ * τ)) by
+                apply val_injective; simp [CrossProduct.basis],
+              show (⟨.single σ k1⟩ : CrossProduct a) = k1 • (CrossProduct.basis σ) by
+                apply val_injective; simp [CrossProduct.basis],
+              show (⟨.single τ k2⟩ : CrossProduct a) = k2 • (CrossProduct.basis τ) by
+                apply val_injective; simp [CrossProduct.basis],
+              map_smul, map_smul, map_smul]
             erw [Basis.equiv_apply, Basis.equiv_apply, Basis.equiv_apply]
-            simp only [Equiv.refl_apply, Basis.unitsSMul_apply, basis]
-            erw [basis_apply, basis_apply, basis_apply]
-            erw [CrossProduct.smul_def, CrossProduct.smul_def,
-              CrossProduct.smul_def, CrossProduct.smul_def,
-              CrossProduct.smul_def, CrossProduct.smul_def]
+            simp only [Equiv.refl_apply]
             apply val_injective
-            simp only [map_mul, mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
-              crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
-              _root_.one_mul]
-            repeat erw [mul_val]
-            simp only [ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
-              crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply,
-              _root_.mul_one, map_mul, map_inv₀, Pi.single_inj]
-            simp only [a_one_left hb, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
-              IsUnit.inv_mul_cancel_right, EmbeddingLike.map_eq_zero_iff]
+            rw [val_smul, val_mul]
+            unfold basis
+            simp [Basis.unitsSMul_apply]
+            rw [val_smul, val_smul, CrossProduct.unit_smul, CrossProduct.unit_smul,
+              CrossProduct.unit_smul, val_smul, val_smul, val_smul]
+            erw [CrossProduct.basis_val (f := b) (σ := σ * τ), CrossProduct.basis_val, CrossProduct.basis_val]
+            simp only [Finsupp.smul_single, smul_eq_mul, _root_.mul_one, mulLinearMap_single_single,
+              map_mul, *]
+            congr 1
             specialize hc σ τ
             rw [Units.ext_iff] at hc
             field_simp at hc
-            simp only [_root_.mul_assoc]
-            congr 2
-            simp only [← _root_.mul_assoc]
-            rw [_root_.mul_assoc (σ β)]
-            simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
-              IsUnit.inv_mul_cancel, _root_.mul_one, IsUnit.inv_mul_cancel_right]
-            rw [_root_.mul_assoc (σ β), ← hc]
-            field_simp
-            ring
-          | add x y hx hy =>
-            change φ0 ((⟨Pi.single σ α⟩ : A) * (x + y)) = φ0 ⟨Pi.single σ α⟩ * (φ0 (x + y))
-            simp only [mul_add, map_add, hx, hy]
-          | zero =>
-            erw [mul_zero, map_zero, mul_zero]
-        | add α α' hα hα' =>
-          erw [add_mul, map_add, hα, hα', map_add, add_mul]
-        | zero =>
-          erw [zero_mul, map_zero, zero_mul])
+            rw [← _root_.mul_assoc, _root_.mul_assoc k1 (c σ).1 (σ k2), mul_comm (c σ).1 (σ k2),
+              ← _root_.mul_assoc, _root_.mul_assoc (k1 * σ k2), _root_.mul_assoc (k1 * σ k2),
+              _root_.mul_assoc (k1 * σ k2)]
+            congr 1
+            rw [← hc]
+            field_simp [mul_comm])
 
     apply IsBrauerEquivalent.iso_to_eqv (h := φ2)
 
+end from_two
+
+variable [IsGalois F K]
 lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
+    haveI : Fact (@IsMulTwoCocycle (K ≃ₐ[F] K) Kˣ MulOneClass.toMul Units.instCommGroupUnits
+      MulAction.toSMul (⇑Additive.toMul ∘ ↑a)) := ⟨isMulTwoCocycle_of_mem_twoCocycles _ a.2⟩
     (fromSnd F K <| Quotient.mk'' a) =
-    ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)),
-      mem_relativeBrGroup_iff_nonempty_goodRep _ |>.2 ⟨_, rfl, ι _, dim_eq_sq _⟩⟩ := by
-  rfl
+    ⟨Quotient.mk'' (CrossProduct.asCSA (⇑Additive.toMul ∘ ↑a)),
+      mem_relativeBrGroup_iff_nonempty_goodRep _ |>.2 ⟨_, rfl, CrossProduct.ι _,
+      CrossProduct.finrank_eq_sq⟩⟩ := by rfl
 
 open GoodRep in
 lemma toSnd_fromSnd :
@@ -1167,11 +1242,13 @@ lemma toSnd_fromSnd :
   induction a using Quotient.inductionOn' with | h a =>
   rcases a with ⟨(a : _ → Kˣ), ha'⟩
   have ha : IsMulTwoCocycle a := isMulTwoCocycle_of_mem_twoCocycles a ha'
+  haveI : Fact _ := ⟨ha⟩
   simp only [Function.comp_apply, fromSnd_wd, id_eq]
-  let A : GoodRep K (Quotient.mk'' <| asCSA ha) :=
-    ⟨asCSA ha, rfl, ι f a, dim_eq_sq ha⟩
+  let A : GoodRep K (Quotient.mk'' <| CrossProduct.asCSA a) :=
+    ⟨CrossProduct.asCSA a, rfl, CrossProduct.ι a, CrossProduct.finrank_eq_sq⟩
 
-  let y_ σ : A.conjFactor σ := ⟨x_ ha σ, fun c ↦ by erw [x__conj ha σ]; rfl⟩
+  let y_ σ : A.conjFactor σ := ⟨CrossProduct.singleUnit σ, fun c ↦ by
+    erw [CrossProduct.singleUnit_conj]; rfl⟩
   rw [toSnd_wd (A := A) (x_ := y_)]
   let b : Gal(K, F) × Gal(K, F) → Kˣ := A.toTwoCocycles y_
 
@@ -1197,8 +1274,12 @@ lemma toSnd_fromSnd :
   simp only [AlgEquiv.mul_apply, y_]
   change _ = A.conjFactorCompCoeff (y_ σ) (y_ τ) (y_ (σ * τ))
   apply_fun A.ι using RingHom.injective _
-  rw [conjFactorCompCoeff_spec'', x__mul ha σ τ, Units.mul_inv_cancel_right]
-  rfl
+  rw [conjFactorCompCoeff_spec'', CrossProduct.singleUnit_mul_singleUnit, _root_.mul_assoc]
+  field_simp; rfl
+
+instance Crossproduct_scalar_tower (f : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) [Fact (IsMulTwoCocycle f)]:
+    IsScalarTower K (CrossProduct f) (CrossProduct f) where
+  smul_assoc k x y := by simp only [smul_eq_mul, CrossProduct.smul_eq_ι_mul, mul_smul, _root_.mul_assoc]
 
 set_option maxHeartbeats 500000 in
 lemma fromSnd_toSnd :
@@ -1216,33 +1297,40 @@ lemma fromSnd_toSnd :
   change lhs ≃ₐ[F] A
   letI : Module K lhs := inferInstanceAs <| Module K (CrossProduct _)
   let φ0 : lhs ≃ₗ[K] A :=
-    Basis.equiv (basis _) (A.conjFactorBasis (A.arbitraryConjFactor)) (Equiv.refl _)
+    Basis.equiv CrossProduct.basis (A.conjFactorBasis (A.arbitraryConjFactor)) (Equiv.refl _)
   haveI : LinearMap.CompatibleSMul lhs A.toCSA.carrier F K := by
     constructor
     have eq (c : F) (a : A) : c • a = algebraMap F K c • a := by
       simp only [algebraMap_smul]
     have eq' (c : F) (a : lhs) : c • a = algebraMap F K c • a := by
-      induction a using CrossProduct.single_induction with
-      | single σ a =>
-        simp only [Algebra.smul_def]
-        rw [CrossProduct.smul_def]
-        congr 1
-        delta ι
-        simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]
-        rw [Algebra.algebraMap_eq_smul_one]
-      | add x y hx hy =>
-        change c • (x + y) = _ • (x + y)
-        rw [smul_add, smul_add, hx, hy]
-      | zero =>
-        change c • 0 = _ • 0
-        simp
+      apply CrossProduct.val_injective
+      rw [CrossProduct.val_smul, CrossProduct.val_smul]
+      induction a.val using Finsupp.induction_linear with
+      | h0 => simp
+      | hadd f g _ _ => simp_all
+      | hsingle σ k => simp
 
     intro l c a
     rw [eq, eq', map_smul]
   let φ1 : lhs ≃ₗ[F] A := φ0.restrictScalars F
   refine AlgEquiv.ofLinearEquiv φ1 ?_ ?_
-  · change φ0 1 = 1
-    rw [one_in_basis]
+  · haveI : Fact (@IsMulTwoCocycle (K ≃ₐ[F] K) Kˣ MulOneClass.toMul Units.instCommGroupUnits
+      MulAction.toSMul (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle
+      (GoodRep.isMulTwoCocycle A.arbitraryConjFactor)))) :=
+      ⟨isMulTwoCocycle_of_mem_twoCocycles _ (twoCocyclesOfIsMulTwoCocycle
+        (GoodRep.isMulTwoCocycle A.arbitraryConjFactor)).2⟩
+    haveI := Crossproduct_scalar_tower (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle (GoodRep.isMulTwoCocycle A.arbitraryConjFactor)))
+    change φ0 1 = 1
+    conv_lhs =>
+      enter [2]
+      rw [show (1 : lhs) = ((A.toTwoCocycles A.arbitraryConjFactor) (1, 1))⁻¹.1 • (CrossProduct.basis 1) by
+        apply CrossProduct.val_injective
+        rw [← smul_one_mul, ← CrossProduct.ι_apply, CrossProduct.val_mul]
+        simp [CrossProduct.basis]
+        congr]
+
+
+    -- rw [one_in_basis]
     change φ0 ((_ : K) • _) = _
     rw [map_smul]
     simp only [LinearEquiv.restrictScalars_apply, φ1, φ0]
@@ -1261,38 +1349,48 @@ lemma fromSnd_toSnd :
     erw [_root_.one_mul]
     simp only [AlgEquiv.one_apply, ← _root_.mul_assoc, Units.mul_inv, _root_.one_mul, Units.inv_mul]
   · intro x y
-    change φ0 _ = φ0 _ * φ0 _
-    induction x using CrossProduct.single_induction with
-    | single x c =>
-      induction y using CrossProduct.single_induction with
-      | single y d =>
-        rw [mul_single_in_xAsBasis]
-        rw [single_in_xAsBasis, single_in_xAsBasis]
-        rw [map_smul, map_smul, map_smul]
-        simp only [Function.comp_apply, GoodRep.smul_def, map_mul, φ0]
+    change φ0 (⟨x.val⟩ * ⟨y.val⟩) = φ0 ⟨x.val⟩ * φ0 ⟨y.val⟩
+    induction x.val using Finsupp.induction_linear with
+    | h0 => change φ0 (0 * _) = φ0 0 * _; simp
+    | hadd f g _ _ =>
+      change φ0 ((_ + _) * _) = φ0 (_ + _) * φ0 _
+      simp_all [add_mul]
+    | hsingle σ a =>
+      induction y.val using Finsupp.induction_linear with
+      | h0 => change φ0 (_ * 0) = _ * φ0 0; simp
+      | hadd f g _ _ =>
+        change φ0 (_ * (_ + _)) = φ0 _ * φ0 (_ + _)
+        simp_all [mul_add]
+      | hsingle τ b =>
+        set f : ((K ≃ₐ[F] K) × K ≃ₐ[F] K) → Kˣ := (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle
+          (GoodRep.isMulTwoCocycle A.arbitraryConjFactor))) with f_eq
+        change φ0 (⟨CrossProduct.mulLinearMap _ _ _⟩ : CrossProduct _) = _
+        simp only [CrossProduct.mulLinearMap_single_single, *]
+        conv_lhs => enter [2, 1, 2, 2, 1]; erw [← f_eq]
+        rw [← mul_one (a * σ b * _), ← smul_eq_mul _ 1, ← Finsupp.smul_single,
+          show (⟨_ • .single _ 1⟩ : CrossProduct _) =
+            (a * σ b * (f (σ, τ)).1) • (CrossProduct.basis (σ * τ)) by
+            apply CrossProduct.val_injective; simp [CrossProduct.basis],
+          show (⟨.single σ a⟩ : CrossProduct _) = a • (CrossProduct.basis σ) by
+            apply CrossProduct.val_injective; simp [CrossProduct.basis],
+          show (⟨.single τ b⟩ : CrossProduct _) = b • (CrossProduct.basis τ) by
+            apply CrossProduct.val_injective; simp [CrossProduct.basis],
+          map_smul, map_smul, map_smul]
         erw [Basis.equiv_apply, Basis.equiv_apply, Basis.equiv_apply]
-        simp only [GoodRep.conjFactorBasis, Equiv.refl_apply,
-          coe_basisOfLinearIndependentOfCardEqFinrank, AlgEquiv.mul_apply]
-        change A.ι c * A.ι (x d) * A.ι (A.toTwoCocycles _ _) * _ = _
-        simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit]
-        simp only [_root_.mul_assoc]
+        simp only [Equiv.refl_apply]
+        simp only [f_eq, Function.comp_apply, GoodRep.conjFactorBasis,
+          coe_basisOfLinearIndependentOfCardEqFinrank, AlgEquiv.mul_apply, GoodRep.smul_def,
+          map_mul, φ0]
+        change _ * _ * A.ι (A.toTwoCocycles _ (σ, τ)) * _ = _
+        simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, _root_.mul_assoc]
         erw [A.conjFactorCompCoeff_spec'']
         simp only [_root_.mul_assoc]
-        simp only [AlgEquiv.mul_apply, Units.inv_mul, _root_.mul_one]
-        simp only [← _root_.mul_assoc]
+        simp only [AlgEquiv.mul_apply, Units.inv_mul, _root_.mul_one, ← _root_.mul_assoc]
         congr 1
         simp only [_root_.mul_assoc]
         congr 1
-        rw [(A.arbitraryConjFactor x).2 d]
+        rw [(A.arbitraryConjFactor _).2 b]
         field_simp
-      | add y y' hy hy' =>
-        erw [mul_add, map_add, hy, hy', map_add, mul_add]
-      | zero =>
-        erw [mul_zero, map_zero, mul_zero]
-    | add x x' hx hx' =>
-      erw [add_mul, map_add, hx, hx', map_add, add_mul]
-    | zero =>
-      erw [zero_mul, map_zero, zero_mul]
 
 @[simp]
 def equivSnd : RelativeBrGroup K F ≃ H2 (galAct F K) where
@@ -1300,7 +1398,5 @@ def equivSnd : RelativeBrGroup K F ≃ H2 (galAct F K) where
   invFun := fromSnd F K
   left_inv := congr_fun fromSnd_toSnd
   right_inv := congr_fun toSnd_fromSnd
-
-end from_two
 
 end RelativeBrGroup

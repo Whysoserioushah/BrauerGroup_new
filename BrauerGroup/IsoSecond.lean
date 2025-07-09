@@ -128,17 +128,16 @@ namespace map_mul_proof
 section map_mul
 
 variable (α β : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ)
-variable (hα : IsMulTwoCocycle α) (hβ : IsMulTwoCocycle β)
+variable [Fact <|IsMulTwoCocycle α] [Fact <|IsMulTwoCocycle β]
 
 variable {K F α β}
 
-include hα hβ in
 lemma hαβ : IsMulTwoCocycle (α * β) := isMulTwoCocycle_of_mem_twoCocycles _ <|
-  ((twoCocyclesOfIsMulTwoCocycle hα) + (twoCocyclesOfIsMulTwoCocycle hβ)).2
+  ((twoCocyclesOfIsMulTwoCocycle Fact.out) + (twoCocyclesOfIsMulTwoCocycle Fact.out)).2
 
-local notation "A" => CrossProduct hα
-local notation "B" => CrossProduct hβ
-local notation "C" => CrossProduct (hαβ hα hβ)
+local notation "A" => CrossProduct α
+local notation "B" => CrossProduct β
+local notation "C" => @CrossProduct _ _ _ _ _ (α * β) (Fact.mk hαβ)
 
 open CrossProduct TensorProduct
 
@@ -148,41 +147,30 @@ abbrev S : Set (A ⊗[F] B) :=
   Set.range (fun (cba : K × A × B) =>
     (cba.1 • cba.2.1) ⊗ₜ[F] cba.2.2 - cba.2.1 ⊗ₜ[F] (cba.1 • cba.2.2))
 
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
 @[simp]
-lemma mem_S (x : A ⊗[F] B) : x ∈ S hα hβ ↔
+lemma mem_S (x : A ⊗[F] B) : x ∈ S ↔
     ∃ (k : K) (a : A) (b : B), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b) := by
   simp only [S, Set.mem_range, Prod.exists]
   aesop
 
-abbrev M := (A ⊗[F] B) ⧸ Submodule.span F (S hα hβ)
+variable (α β) in
+abbrev M := (A ⊗[F] B) ⧸ Submodule.span F S
+
+-- instance : AddCommGroup (M α β) := inferInstance
+
+-- instance : Module F (M α β) := inferInstance
 
 open MulOpposite
 
 instance : IsScalarTower K A A where
-  smul_assoc k a a' := by
-    induction a using single_induction with
-    | single σ a =>
-      induction a' using single_induction with
-      | single τ a' =>
-        ext : 1
-        simp only [CrossProduct.smul_def, smul_eq_mul, mul_val, ι_apply_val, Prod.mk_one_one,
-          Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.one_mul,
-          AlgEquiv.one_apply, Pi.single_inj]
-        field_simp
-        ring
-      | add x y hx hy =>
-        erw [smul_add, smul_add, hx, hy, smul_add]
-      | zero =>
-        erw [smul_zero, smul_zero, smul_zero]
-    | add x y hx hy =>
-      erw [smul_add, add_smul, hx, hy, add_smul, smul_add]
-    | zero =>
-      erw [smul_zero, zero_smul, smul_zero]
+  smul_assoc k a a' := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]
 
 section Aox_FB_mod
 
-def Aox_FB_smul_M_aux (a' : A) (b' : B) : M hα hβ →ₗ[F] M hα hβ :=
-  Submodule.mapQ (Submodule.span F (S hα hβ)) (Submodule.span F (S hα hβ))
+variable (α β) in
+def Aox_FB_smul_M_aux (a' : A) (b' : B) : (M α β) →ₗ[F] (M α β)  :=
+  Submodule.mapQ (Submodule.span F S) (Submodule.span F S)
     (TensorProduct.lift
       { toFun a :=
         { toFun b := (a * a') ⊗ₜ (b * b')
@@ -206,10 +194,10 @@ def Aox_FB_smul_M_aux (a' : A) (b' : B) : M hα hβ →ₗ[F] M hα hβ :=
         AddHom.coe_mk, SetLike.mem_coe]
       refine Submodule.subset_span ⟨⟨k, a * a', b * b'⟩, by simp [smul_mul_assoc]⟩)
 
-def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M hα hβ →ₗ[F] M hα hβ :=
+def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M α β →ₗ[F] M α β :=
   TensorProduct.lift
   { toFun a' :=
-    { toFun b' := Aox_FB_smul_M_aux _ _ a' b'
+    { toFun b' := Aox_FB_smul_M_aux α β a' b'
       map_add' b1' b2' := by
         ext a b
         simp only [Aox_FB_smul_M_aux, AlgebraTensorModule.curry_apply, curry_apply,
@@ -240,14 +228,16 @@ def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M hα hβ →ₗ[F] M hα hβ :=
       rw [← smul_tmul']
       simp only [Submodule.Quotient.mk_smul] }
 
+omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
 @[simp]
 lemma Aox_FB_smul_M_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
-    Aox_FB_smul_M hα hβ (a' ⊗ₜ[F] b') (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
+    Aox_FB_smul_M (a' ⊗ₜ[F] b') (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M α β) =
     Submodule.Quotient.mk ((a * a') ⊗ₜ[F] (b * b')) := rfl
 
-instance : SMul (A ⊗[F] B)ᵐᵒᵖ (M hα hβ) where
-  smul x y := Aox_FB_smul_M _ _ x.unop y
+instance : SMul (A ⊗[F] B)ᵐᵒᵖ (M α β) where
+  smul x y := Aox_FB_smul_M x.unop y
 
+#exit
 @[simp]
 lemma Aox_FB_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
     op (a' ⊗ₜ[F] b') • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =

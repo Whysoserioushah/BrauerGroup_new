@@ -72,6 +72,10 @@ def valLinearEquiv [Semiring R] [Module R K] : CrossProduct f ≃ₗ[R] (Gal(K, 
 def basis : Basis Gal(K, F) K (CrossProduct f) where
   repr := valLinearEquiv
 
+lemma basis_val {σ : Gal(K, F)} :
+    (basis (f := f) σ).val = Finsupp.single σ 1 := by
+  simp [basis]
+
 variable (f) in
 def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) :=
   Finsupp.lsum F fun σ =>
@@ -155,7 +159,7 @@ lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower
   rw [Algebra.algebraMap_eq_smul_one]
   simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single,
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
-
+#synth SMul K (CrossProduct f)
 variable (f) in
 /-- The inclusion from `K` into `CrossProduct f`.
 
@@ -179,8 +183,8 @@ lemma smul_eq_ι_mul (k : K) (x : CrossProduct f) : k • x = ι f k * x := by
   | hadd => simp [*]
   | hsingle σ b => simp [map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ _ b]
 
-instance : IsScalarTower K (CrossProduct f) (CrossProduct f) where
-  smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]
+-- scoped instance : IsScalarTower K (CrossProduct f) (CrossProduct f) where
+--   smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]
 
 @[simps]
 def singleUnit (σ : K ≃ₐ[F] K) : (CrossProduct f)ˣ where
@@ -205,6 +209,8 @@ def singleUnit (σ : K ≃ₐ[F] K) : (CrossProduct f)ˣ where
 
 lemma singleUnit_mul_singleUnit (σ τ : K ≃ₐ[F] K) :
     (singleUnit σ).val * (singleUnit τ).val = ι f (f (σ, τ)) * (singleUnit (σ * τ)).val := by
+  haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+    smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]}
   ext : 1
   simp
 
@@ -369,5 +375,49 @@ instance : Algebra.IsCentral F (CrossProduct f) := by
     rw [conclusion1]
     rw [zero_smul]
     exact Subalgebra.zero_mem _
+
+
+-- instance : SMulCommClass K (CrossProduct f) (CrossProduct f) where
+--   smul_comm k x y := by
+--     apply val_injective
+--     simp only [smul_eq_mul, val_smul, val_mul]
+--     induction x.val using Finsupp.induction_linear with
+--     | h0 => simp
+--     | hadd f g _ _ => simp_all
+--     | hsingle σ k1 =>
+--       induction y.val using Finsupp.induction_linear with
+--       | h0 => simp
+--       | hadd f g _ _ => simp_all
+--       | hsingle τ k2 =>
+--         simp [Finsupp.smul_single]
+--         congr 1
+--         simp [← mul_assoc]
+--         sorry
+omit [Fact (IsMulTwoCocycle f)] [Module.Finite F K] [IsGalois F K] in
+lemma unit_smul (u : Kˣ) (x : CrossProduct f) : u • x = u.1 • x := by rfl
+
+omit [Module.Finite F K] [IsGalois F K] in
+lemma identity_double_cross (σ : K ≃ₐ[F] K) (b : K) :
+    ι f b * ⟨Finsupp.single σ 1⟩ = ⟨Finsupp.single σ b⟩ := by
+  ext α
+  simp [ι_apply, val_mul, val_smul, val_one, Finsupp.smul_single, smul_eq_mul,
+    mulLinearMap_single_single, one_mul, AlgEquiv.one_apply, mul_one,
+    map_one_fst_of_isMulTwoCocycle Fact.out]
+
+omit [Module.Finite F K] [IsGalois F K] in
+lemma singleUnit_conj (σ : K ≃ₐ[F] K) (c : K) : (singleUnit σ).1 * ι f c * (singleUnit σ)⁻¹.1 = ι f (σ c) := by
+  have eq1 :=
+    calc (singleUnit σ).1 * ι f c
+    _ = ⟨Finsupp.single σ ((σ (c * (f (1, 1))⁻¹.1)) * (f (σ, 1)).1)⟩ := val_injective <| by simp
+    _ = ⟨Finsupp.single σ (σ c)⟩ := val_injective <| by
+      simp [Prod.mk_one_one, Units.val_inv_eq_inv_val, map_mul, map_inv₀,
+        map_one_snd_of_isMulTwoCocycle Fact.out]
+  rw [eq1, ← identity_double_cross, mul_assoc]
+  haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+    smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]}
+  simp only [ι_apply, smul_one_mul]
+  congr
+  change (singleUnit σ).1 * _ = _
+  simp
 
 end CrossProduct
