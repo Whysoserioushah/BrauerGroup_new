@@ -132,9 +132,6 @@ variable [Fact <| IsMulTwoCocycle α] [Fact <| IsMulTwoCocycle β]
 
 variable {K F α β}
 
-instance hαβ : Fact <| IsMulTwoCocycle (α * β) := ⟨isMulTwoCocycle_of_mem_twoCocycles _ <|
-  ((twoCocyclesOfIsMulTwoCocycle Fact.out) + (twoCocyclesOfIsMulTwoCocycle Fact.out)).2⟩
-
 local notation "A" => CrossProductAlgebra α
 local notation "B" => CrossProductAlgebra β
 local notation "C" => CrossProductAlgebra (α * β)
