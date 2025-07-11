@@ -22,6 +22,9 @@ lemma val_bijective : Bijective (val (f := f)) := ⟨val_injective, val_surjecti
 
 @[simp] lemma val_inj : x.val = y.val ↔ x = y := val_injective.eq_iff
 
+lemma «forall» {P : CrossProductAlgebra f → Prop} : (∀ x, P x) ↔ ∀ x, P (mk x) := by
+  rw [val_surjective.forall]
+
 instance : Nontrivial (CrossProductAlgebra f) := val_surjective.nontrivial
 
 instance : Zero (CrossProductAlgebra f) where
@@ -43,10 +46,17 @@ instance [Semiring R] [Module R K] : SMul R (CrossProductAlgebra f) where
 @[simp] lemma val_add (x y : CrossProductAlgebra f) : (x + y).val = x.val + y.val := rfl
 @[simp] lemma val_smul [Semiring R] [Module R K] (r : R) (x : CrossProductAlgebra f) :
     (r • x).val = r • x.val := rfl
-lemma smul_val [Semiring R] [Module R K] (r : R) (x : CrossProductAlgebra f) :
-    r • x = ⟨r • x.val⟩ := rfl
 @[simp] lemma val_neg (x : CrossProductAlgebra f) : (-x).val = -x.val := rfl
 @[simp] lemma val_sub (x y : CrossProductAlgebra f) : (x - y).val = x.val - y.val := rfl
+
+@[simp] lemma mk_zero : (mk 0 : CrossProductAlgebra f) = 0 := rfl
+@[simp] lemma mk_add_mk (x y : Gal(K, F) →₀ K) :
+    (mk x + mk y : CrossProductAlgebra f) = mk (x + y) := rfl
+@[simp] lemma smul_mk [Semiring R] [Module R K] (r : R) (x : Gal(K, F) →₀ K) :
+    (r • mk x : CrossProductAlgebra f) = mk (r • x) := rfl
+@[simp] lemma neg_mk (x : Gal(K, F) →₀ K) : (- mk x : CrossProductAlgebra f) = mk (-x) := rfl
+@[simp] lemma mk_sub_mk (x y : Gal(K, F) →₀ K) :
+    (mk x - mk y : CrossProductAlgebra f) = mk (x - y) := rfl
 
 instance addCommGroup : AddCommGroup (CrossProductAlgebra f) :=
   val_injective.addCommGroup val val_zero val_add val_neg val_sub (fun _ _ ↦ rfl) (fun _ _ ↦ rfl)
@@ -71,12 +81,9 @@ def valLinearEquiv [Semiring R] [Module R K] : CrossProductAlgebra f ≃ₗ[R] (
   __ := valAddEquiv
   map_smul' := val_smul
 
+@[simps]
 def basis : Basis Gal(K, F) K (CrossProductAlgebra f) where
   repr := valLinearEquiv
-
-lemma basis_val {σ : Gal(K, F)} :
-    (basis (f := f) σ).val = Finsupp.single σ 1 := by
-  simp [basis]
 
 variable (f) in
 def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) :=
@@ -88,8 +95,15 @@ def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F]
     map_add' _ _ := by ext; simp [mul_add, add_mul]
     map_smul' _ _ := by ext; simp }
 
+variable (f) in
 @[simp]
-lemma mulLinearMap_single_single (c d : K) (σ τ : Gal(K, F)):
+lemma mulLinearMap_single_single (c d : K) (σ τ : Gal(K, F)) :
+    mulLinearMap f (.single σ c) (.single τ d) = .single (σ * τ) (c * σ d * f (σ, τ)) := by
+  simp [mulLinearMap]
+
+variable (f) in
+@[simp]
+lemma mulLinearMap_apply (x y : Gal(K, F) →₀ K) :
     mulLinearMap f (.single σ c) (.single τ d) = .single (σ * τ) (c * σ d * f (σ, τ)) := by
   simp [mulLinearMap]
 
@@ -101,6 +115,9 @@ instance : Mul (CrossProductAlgebra f) where
 
 @[simp] lemma val_one : (1 : CrossProductAlgebra f).val = .single 1 (f 1)⁻¹ := rfl
 @[simp] lemma val_mul (x y : CrossProductAlgebra f) : (x * y).val = mulLinearMap f x.val y.val := rfl
+
+@[simp] lemma mk_mul_mk (x y : Gal(K, F) →₀ K) :
+    (mk x * mk y : CrossProductAlgebra f) = mk (mulLinearMap f x y) := rfl
 
 variable [Fact <| IsMulTwoCocycle f]
 
@@ -162,21 +179,6 @@ lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower
   simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single,
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
 
-omit [Fact (IsMulTwoCocycle f)] in
-lemma basis_coe_eq (σ : K ≃ₐ[F] K): (⟨.single σ 1⟩ : CrossProductAlgebra f) = basis σ := rfl
-
-omit [Fact (IsMulTwoCocycle f)] in
-theorem single_induction {p : CrossProductAlgebra f → Prop} (x : CrossProductAlgebra f) (h0 : p 0)
-    (hadd : ∀ x y, p x → p y → p (x + y))
-    (hsingle : ∀ σ : Gal(K, F), ∀ k : K, p (k • basis σ)) : p x := show p (⟨x.val⟩) by
-  induction x.val using Finsupp.induction_linear with
-  | h0 => show p 0; assumption
-  | hadd f g hf hg => show p (⟨f⟩ + ⟨g⟩); exact hadd _ _ hf hg
-  | hsingle σ k =>
-    simpa [← basis_coe_eq, smul_val] using hsingle σ k
-
--- p (x + y) => p ⟨x + y⟩ => p ⟨x⟩ + ⟨y⟩
-
 variable (f) in
 /-- The inclusion from `K` into `CrossProductAlgebra f`.
 
@@ -200,11 +202,14 @@ lemma smul_eq_ι_mul (k : K) (x : CrossProductAlgebra f) : k • x = ι f k * x 
   | hadd => simp [*]
   | hsingle σ b => simp [map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ _ b]
 
--- scoped instance : IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) where
---   smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]
+instance [CommSemiring R] [Algebra R K] :
+    IsScalarTower R (CrossProductAlgebra f) (CrossProductAlgebra f) where
+  smul_assoc r x y := by
+    simp only [← algebraMap_smul K r, smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]
 
+variable (f) in
 @[simps]
-def singleUnit (σ : K ≃ₐ[F] K) : (CrossProductAlgebra f)ˣ where
+def of (σ : Gal(K, F)) : (CrossProductAlgebra f)ˣ where
   val.val := .single σ 1
   inv.val := .single σ⁻¹ <| (f (σ⁻¹, σ))⁻¹ * (f 1)⁻¹
   val_inv := by
@@ -224,12 +229,11 @@ def singleUnit (σ : K ≃ₐ[F] K) : (CrossProductAlgebra f)ˣ where
           simp [map_one_fst_of_isMulTwoCocycle Fact.out, map_one_snd_of_isMulTwoCocycle Fact.out]
   inv_val := by ext : 1; simp [mul_right_comm _ (f _ : K)⁻¹]
 
-lemma singleUnit_mul_singleUnit (σ τ : K ≃ₐ[F] K) :
-    (singleUnit σ).val * (singleUnit τ).val = ι f (f (σ, τ)) * (singleUnit (σ * τ)).val := by
-  haveI : IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) := {
-    smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]}
-  ext : 1
-  simp
+variable (f) in
+lemma of_mul_of (σ τ : Gal(K, F)) : of f σ * of f τ = ι f (f (σ, τ)) * of f (σ * τ) := by ext; simp
+
+lemma of_mul_ι (σ : Gal(K, F)) (c : K) : of f σ * ι f c = ι f (σ c) * of f σ := by
+  ext; simp [map_one_snd_of_isMulTwoCocycle Fact.out]
 
 variable [Module.Finite F K] [IsGalois F K]
 
