@@ -10,68 +10,68 @@ notation "Gal("K ", "F")" => K ≃ₐ[F] K
 variable {R S F K : Type*} [Field F] [Field K] [Algebra F K] {f : Gal(K, F) × Gal(K, F) → Kˣ}
 
 @[ext]
-structure CrossProduct (f : Gal(K, F) × Gal(K, F) → Kˣ) where
+structure CrossProductAlgebra (f : Gal(K, F) × Gal(K, F) → Kˣ) where
   val : Gal(K, F) →₀ K
 
-namespace CrossProduct
-variable {x y : CrossProduct f}
+namespace CrossProductAlgebra
+variable {x y : CrossProductAlgebra f}
 
-lemma val_injective : Injective (val (f := f)) := fun _ _ ↦ CrossProduct.ext
+lemma val_injective : Injective (val (f := f)) := fun _ _ ↦ CrossProductAlgebra.ext
 lemma val_surjective : Surjective (val (f := f)) := fun x ↦ ⟨⟨x⟩, rfl⟩
 lemma val_bijective : Bijective (val (f := f)) := ⟨val_injective, val_surjective⟩
 
 @[simp] lemma val_inj : x.val = y.val ↔ x = y := val_injective.eq_iff
 
-instance : Nontrivial (CrossProduct f) := val_surjective.nontrivial
+instance : Nontrivial (CrossProductAlgebra f) := val_surjective.nontrivial
 
-instance : Zero (CrossProduct f) where
+instance : Zero (CrossProductAlgebra f) where
   zero := ⟨0⟩
 
-instance : Add (CrossProduct f) where
+instance : Add (CrossProductAlgebra f) where
   add x y := ⟨x.val + y.val⟩
 
-instance : Neg (CrossProduct f) where
+instance : Neg (CrossProductAlgebra f) where
   neg x := ⟨-x.val⟩
 
-instance : Sub (CrossProduct f) where
+instance : Sub (CrossProductAlgebra f) where
   sub x y := ⟨x.val - y.val⟩
 
-instance [Semiring R] [Module R K] : SMul R (CrossProduct f) where
+instance [Semiring R] [Module R K] : SMul R (CrossProductAlgebra f) where
   smul r x := ⟨r • x.val⟩
 
-@[simp] lemma val_zero : (0 : CrossProduct f).val = 0 := rfl
-@[simp] lemma val_add (x y : CrossProduct f) : (x + y).val = x.val + y.val := rfl
-@[simp] lemma val_smul [Semiring R] [Module R K] (r : R) (x : CrossProduct f) :
+@[simp] lemma val_zero : (0 : CrossProductAlgebra f).val = 0 := rfl
+@[simp] lemma val_add (x y : CrossProductAlgebra f) : (x + y).val = x.val + y.val := rfl
+@[simp] lemma val_smul [Semiring R] [Module R K] (r : R) (x : CrossProductAlgebra f) :
     (r • x).val = r • x.val := rfl
-lemma smul_val [Semiring R] [Module R K] (r : R) (x : CrossProduct f) :
+lemma smul_val [Semiring R] [Module R K] (r : R) (x : CrossProductAlgebra f) :
     r • x = ⟨r • x.val⟩ := rfl
-@[simp] lemma val_neg (x : CrossProduct f) : (-x).val = -x.val := rfl
-@[simp] lemma val_sub (x y : CrossProduct f) : (x - y).val = x.val - y.val := rfl
+@[simp] lemma val_neg (x : CrossProductAlgebra f) : (-x).val = -x.val := rfl
+@[simp] lemma val_sub (x y : CrossProductAlgebra f) : (x - y).val = x.val - y.val := rfl
 
-instance addCommGroup : AddCommGroup (CrossProduct f) :=
+instance addCommGroup : AddCommGroup (CrossProductAlgebra f) :=
   val_injective.addCommGroup val val_zero val_add val_neg val_sub (fun _ _ ↦ rfl) (fun _ _ ↦ rfl)
 
 @[simps]
-def valAddEquiv : CrossProduct f ≃+ (Gal(K, F) →₀ K) where
+def valAddEquiv : CrossProductAlgebra f ≃+ (Gal(K, F) →₀ K) where
   toFun := val
   invFun := mk
   left_inv _ := rfl
   right_inv _ := rfl
   map_add' := val_add
 
-instance [Semiring R] [Module R K] : Module R (CrossProduct f) :=
+instance [Semiring R] [Module R K] : Module R (CrossProductAlgebra f) :=
   val_injective.module _ valAddEquiv.toAddMonoidHom val_smul
 
 instance [Semiring R] [Semiring S] [Module R K] [Module S K] [Module R S] [IsScalarTower R S K] :
-    IsScalarTower R S (CrossProduct f) where
+    IsScalarTower R S (CrossProductAlgebra f) where
   smul_assoc r s x := by ext; simp [smul_assoc]
 
 @[simps]
-def valLinearEquiv [Semiring R] [Module R K] : CrossProduct f ≃ₗ[R] (Gal(K, F) →₀ K) where
+def valLinearEquiv [Semiring R] [Module R K] : CrossProductAlgebra f ≃ₗ[R] (Gal(K, F) →₀ K) where
   __ := valAddEquiv
   map_smul' := val_smul
 
-def basis : Basis Gal(K, F) K (CrossProduct f) where
+def basis : Basis Gal(K, F) K (CrossProductAlgebra f) where
   repr := valLinearEquiv
 
 lemma basis_val {σ : Gal(K, F)} :
@@ -93,18 +93,18 @@ lemma mulLinearMap_single_single (c d : K) (σ τ : Gal(K, F)):
     mulLinearMap f (.single σ c) (.single τ d) = .single (σ * τ) (c * σ d * f (σ, τ)) := by
   simp [mulLinearMap]
 
-instance : One (CrossProduct f) where
+instance : One (CrossProductAlgebra f) where
   one := ⟨.single 1 (f 1)⁻¹⟩
 
-instance : Mul (CrossProduct f) where
+instance : Mul (CrossProductAlgebra f) where
   mul x y := ⟨mulLinearMap f x.val y.val⟩
 
-@[simp] lemma val_one : (1 : CrossProduct f).val = .single 1 (f 1)⁻¹ := rfl
-@[simp] lemma val_mul (x y : CrossProduct f) : (x * y).val = mulLinearMap f x.val y.val := rfl
+@[simp] lemma val_one : (1 : CrossProductAlgebra f).val = .single 1 (f 1)⁻¹ := rfl
+@[simp] lemma val_mul (x y : CrossProductAlgebra f) : (x * y).val = mulLinearMap f x.val y.val := rfl
 
 variable [Fact <| IsMulTwoCocycle f]
 
-instance monoid : Monoid (CrossProduct f) where
+instance monoid : Monoid (CrossProductAlgebra f) where
   one_mul := by
     rintro ⟨x⟩
     ext : 1
@@ -142,7 +142,7 @@ instance monoid : Monoid (CrossProduct f) where
     congr 4
     simpa [mul_comm] using congr(($((Fact.out : IsMulTwoCocycle f) σ τ ν)).val)
 
-instance : Ring (CrossProduct f) where
+instance : Ring (CrossProductAlgebra f) where
   __ := addCommGroup
   __ := monoid
   left_distrib := by intros; ext; simp
@@ -153,20 +153,20 @@ instance : Ring (CrossProduct f) where
   neg_add_cancel := by intros; ext; simp
 
 instance algebra [CommSemiring R] [Algebra R F] [Module R K] [IsScalarTower R F K] :
-    Algebra R (CrossProduct f) := by
+    Algebra R (CrossProductAlgebra f) := by
   refine .ofModule ?_ ?_ <;> intros <;> ext <;> simp [map_smul]
 
 lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower R F K] (r : R) :
-    (algebraMap R (CrossProduct f) r).val = .single 1 (algebraMap R K r * (f 1)⁻¹) := by
+    (algebraMap R (CrossProductAlgebra f) r).val = .single 1 (algebraMap R K r * (f 1)⁻¹) := by
   rw [Algebra.algebraMap_eq_smul_one]
   simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single,
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
 
 omit [Fact (IsMulTwoCocycle f)] in
-lemma basis_coe_eq (σ : K ≃ₐ[F] K): (⟨.single σ 1⟩ : CrossProduct f) = basis σ := rfl
+lemma basis_coe_eq (σ : K ≃ₐ[F] K): (⟨.single σ 1⟩ : CrossProductAlgebra f) = basis σ := rfl
 
 omit [Fact (IsMulTwoCocycle f)] in
-theorem single_induction {p : CrossProduct f → Prop} (x : CrossProduct f) (h0 : p 0)
+theorem single_induction {p : CrossProductAlgebra f → Prop} (x : CrossProductAlgebra f) (h0 : p 0)
     (hadd : ∀ x y, p x → p y → p (x + y))
     (hsingle : ∀ σ : Gal(K, F), ∀ k : K, p (k • basis σ)) : p x := show p (⟨x.val⟩) by
   induction x.val using Finsupp.induction_linear with
@@ -178,12 +178,12 @@ theorem single_induction {p : CrossProduct f → Prop} (x : CrossProduct f) (h0 
 -- p (x + y) => p ⟨x + y⟩ => p ⟨x⟩ + ⟨y⟩
 
 variable (f) in
-/-- The inclusion from `K` into `CrossProduct f`.
+/-- The inclusion from `K` into `CrossProductAlgebra f`.
 
-Note that this does *not* make `CrossProduct f` into a `K`-algebra, because that would require
+Note that this does *not* make `CrossProductAlgebra f` into a `K`-algebra, because that would require
 `ι k * x = x * ι k`. -/
 @[simps]
-def ι : K →ₐ[F] CrossProduct f where
+def ι : K →ₐ[F] CrossProductAlgebra f where
   toFun k := k • 1
   map_zero' := by ext; simp
   map_add' _ _ := by ext; simp [add_mul]
@@ -191,7 +191,7 @@ def ι : K →ₐ[F] CrossProduct f where
   map_mul' _ _ := by ext; simp [mul_assoc, mul_left_comm]
   commutes' _ := by ext; simp [Algebra.algebraMap_eq_smul_one]
 
-lemma smul_eq_ι_mul (k : K) (x : CrossProduct f) : k • x = ι f k * x := by
+lemma smul_eq_ι_mul (k : K) (x : CrossProductAlgebra f) : k • x = ι f k * x := by
   obtain ⟨x⟩ := x
   ext : 1
   dsimp
@@ -200,11 +200,11 @@ lemma smul_eq_ι_mul (k : K) (x : CrossProduct f) : k • x = ι f k * x := by
   | hadd => simp [*]
   | hsingle σ b => simp [map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ _ b]
 
--- scoped instance : IsScalarTower K (CrossProduct f) (CrossProduct f) where
+-- scoped instance : IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) where
 --   smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]
 
 @[simps]
-def singleUnit (σ : K ≃ₐ[F] K) : (CrossProduct f)ˣ where
+def singleUnit (σ : K ≃ₐ[F] K) : (CrossProductAlgebra f)ˣ where
   val.val := .single σ 1
   inv.val := .single σ⁻¹ <| (f (σ⁻¹, σ))⁻¹ * (f 1)⁻¹
   val_inv := by
@@ -226,21 +226,21 @@ def singleUnit (σ : K ≃ₐ[F] K) : (CrossProduct f)ˣ where
 
 lemma singleUnit_mul_singleUnit (σ τ : K ≃ₐ[F] K) :
     (singleUnit σ).val * (singleUnit τ).val = ι f (f (σ, τ)) * (singleUnit (σ * τ)).val := by
-  haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+  haveI : IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) := {
     smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]}
   ext : 1
   simp
 
 variable [Module.Finite F K] [IsGalois F K]
 
-@[simp] lemma finrank_eq_sq : Module.finrank F (CrossProduct f) = Module.finrank F K ^ 2 := by
+@[simp] lemma finrank_eq_sq : Module.finrank F (CrossProductAlgebra f) = Module.finrank F K ^ 2 := by
   rw [← Module.finrank_mul_finrank _ K, Module.finrank_eq_card_basis basis,
     IsGalois.card_aut_eq_finrank, sq]
 
-instance : Module.Finite F (CrossProduct f) :=
+instance : Module.Finite F (CrossProductAlgebra f) :=
   Module.finite_of_finrank_pos <| by simp [pow_pos_iff two_ne_zero, Module.finrank_pos]
 
-instance : Algebra.IsCentral F (CrossProduct f) := by
+instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
   classical
   constructor
   rintro z hz
@@ -376,12 +376,12 @@ instance : Algebra.IsCentral F (CrossProduct f) := by
   by_cases h : σ = 1
   · subst h
 
-    rw [show (s 1 • { val := Finsupp.single 1 1 } : CrossProduct f) = ⟨s 1 • .single 1 1⟩ by rfl,
+    rw [show (s 1 • { val := Finsupp.single 1 1 } : CrossProductAlgebra f) = ⟨s 1 • .single 1 1⟩ by rfl,
       Finsupp.smul_single, smul_eq_mul, mul_one,
-      show (⟨.single 1 (s 1)⟩ : CrossProduct f) = ι f (s 1 * (f 1).1) by apply val_injective; simp,
-      show ι f (s 1 * f 1) = (s 1 * f 1) • (1 : CrossProduct f) by apply val_injective; simp]
+      show (⟨.single 1 (s 1)⟩ : CrossProductAlgebra f) = ι f (s 1 * (f 1).1) by apply val_injective; simp,
+      show ι f (s 1 * f 1) = (s 1 * f 1) • (1 : CrossProductAlgebra f) by apply val_injective; simp]
     obtain ⟨g, hg⟩ := conclusion3
-    rw [← hg, show algebraMap F K g • (1 : CrossProduct f) = g • 1 by
+    rw [← hg, show algebraMap F K g • (1 : CrossProductAlgebra f) = g • 1 by
       rw [Algebra.smul_def, algebraMap_smul, mul_one]
       apply val_injective;
       simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single, algebraMap_val,
@@ -394,7 +394,7 @@ instance : Algebra.IsCentral F (CrossProduct f) := by
     exact Subalgebra.zero_mem _
 
 
--- instance : SMulCommClass K (CrossProduct f) (CrossProduct f) where
+-- instance : SMulCommClass K (CrossProductAlgebra f) (CrossProductAlgebra f) where
 --   smul_comm k x y := by
 --     apply val_injective
 --     simp only [smul_eq_mul, val_smul, val_mul]
@@ -411,7 +411,7 @@ instance : Algebra.IsCentral F (CrossProduct f) := by
 --         simp [← mul_assoc]
 --         sorry
 omit [Fact (IsMulTwoCocycle f)] [Module.Finite F K] [IsGalois F K] in
-lemma unit_smul (u : Kˣ) (x : CrossProduct f) : u • x = u.1 • x := by rfl
+lemma unit_smul (u : Kˣ) (x : CrossProductAlgebra f) : u • x = u.1 • x := by rfl
 
 omit [Module.Finite F K] [IsGalois F K] in
 lemma identity_double_cross (σ : K ≃ₐ[F] K) (b : K) :
@@ -430,7 +430,7 @@ lemma singleUnit_conj (σ : K ≃ₐ[F] K) (c : K) : (singleUnit σ).1 * ι f c 
       simp [Prod.mk_one_one, Units.val_inv_eq_inv_val, map_mul, map_inv₀,
         map_one_snd_of_isMulTwoCocycle Fact.out]
   rw [eq1, ← identity_double_cross, mul_assoc]
-  haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+  haveI : IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) := {
     smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]}
   simp only [ι_apply, smul_one_mul]
   congr
@@ -438,13 +438,13 @@ lemma singleUnit_conj (σ : K ≃ₐ[F] K) (c : K) : (singleUnit σ).1 * ι f c 
   simp
 
 omit [Fact (IsMulTwoCocycle f)] [Module.Finite F K] [IsGalois F K] in
-theorem basis_smul_comm (k : K) (b : CrossProduct f) (σ : K ≃ₐ[F] K):
+theorem basis_smul_comm (k : K) (b : CrossProductAlgebra f) (σ : K ≃ₐ[F] K):
     σ k • basis σ * b = basis σ * k • b := by
   apply val_injective
-  simp [CrossProduct.basis]
+  simp [CrossProductAlgebra.basis]
   induction b.val using Finsupp.induction_linear with
   | h0 => simp
   | hadd f g _ _ => simp_all
   | hsingle τ a => simp
 
-end CrossProduct
+end CrossProductAlgebra

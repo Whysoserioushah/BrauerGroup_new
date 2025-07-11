@@ -8,7 +8,7 @@ import BrauerGroup.BrauerOverR
 import BrauerGroup.CSA.ReducedCharPoly
 import BrauerGroup.CentralSimple
 import BrauerGroup.Centralizer
-import BrauerGroup.CrossProduct
+import BrauerGroup.CrossProductAlgebra
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.ExtendScalar
 import BrauerGroup.FieldCat
