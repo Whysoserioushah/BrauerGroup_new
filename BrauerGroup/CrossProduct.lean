@@ -43,6 +43,8 @@ instance [Semiring R] [Module R K] : SMul R (CrossProduct f) where
 @[simp] lemma val_add (x y : CrossProduct f) : (x + y).val = x.val + y.val := rfl
 @[simp] lemma val_smul [Semiring R] [Module R K] (r : R) (x : CrossProduct f) :
     (r • x).val = r • x.val := rfl
+lemma smul_val [Semiring R] [Module R K] (r : R) (x : CrossProduct f) :
+    r • x = ⟨r • x.val⟩ := rfl
 @[simp] lemma val_neg (x : CrossProduct f) : (-x).val = -x.val := rfl
 @[simp] lemma val_sub (x y : CrossProduct f) : (x - y).val = x.val - y.val := rfl
 
@@ -159,7 +161,22 @@ lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower
   rw [Algebra.algebraMap_eq_smul_one]
   simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single,
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
-#synth SMul K (CrossProduct f)
+
+omit [Fact (IsMulTwoCocycle f)] in
+lemma basis_coe_eq (σ : K ≃ₐ[F] K): (⟨.single σ 1⟩ : CrossProduct f) = basis σ := rfl
+
+omit [Fact (IsMulTwoCocycle f)] in
+theorem single_induction {p : CrossProduct f → Prop} (x : CrossProduct f) (h0 : p 0)
+    (hadd : ∀ x y, p x → p y → p (x + y))
+    (hsingle : ∀ σ : Gal(K, F), ∀ k : K, p (k • basis σ)) : p x := show p (⟨x.val⟩) by
+  induction x.val using Finsupp.induction_linear with
+  | h0 => show p 0; assumption
+  | hadd f g hf hg => show p (⟨f⟩ + ⟨g⟩); exact hadd _ _ hf hg
+  | hsingle σ k =>
+    simpa [← basis_coe_eq, smul_val] using hsingle σ k
+
+-- p (x + y) => p ⟨x + y⟩ => p ⟨x⟩ + ⟨y⟩
+
 variable (f) in
 /-- The inclusion from `K` into `CrossProduct f`.
 
@@ -419,5 +436,15 @@ lemma singleUnit_conj (σ : K ≃ₐ[F] K) (c : K) : (singleUnit σ).1 * ι f c 
   congr
   change (singleUnit σ).1 * _ = _
   simp
+
+omit [Fact (IsMulTwoCocycle f)] [Module.Finite F K] [IsGalois F K] in
+theorem basis_smul_comm (k : K) (b : CrossProduct f) (σ : K ≃ₐ[F] K):
+    σ k • basis σ * b = basis σ * k • b := by
+  apply val_injective
+  simp [CrossProduct.basis]
+  induction b.val using Finsupp.induction_linear with
+  | h0 => simp
+  | hadd f g _ _ => simp_all
+  | hsingle τ a => simp
 
 end CrossProduct

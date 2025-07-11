@@ -775,44 +775,62 @@ abbrev πRes_Kalgmap : K →+* (πRes I).range :=
       intros
       simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] }
 
-instance : Module K I.ringCon.Quotient :=
-  .compHom _ (f := show K →+* (πRes I).range from
-  { toFun := fun a => ⟨π I (ι f a), by simpa using ⟨ι f a, ⟨a, rfl⟩, rfl⟩⟩
-    map_one' := by
-      simp only [map_one, RingCon.coe_one]
-      rfl
-    map_mul' := by
-      intros
-      simp only [map_mul, RingCon.coe_mul, MulMemClass.mk_mul_mk]
-    map_zero' := by
-      simp only [map_zero, RingCon.coe_zero]
-      rfl
-    map_add' := by
-      intros
-      simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] })
+instance : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+  smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+
+omit [FiniteDimensional F K] in
+lemma K_smul_quot (k : K) (x : I.ringCon.Quotient) :
+    k • x = (⟨π I (ι f k), by simpa using ⟨ι f k, ⟨k, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := by
+  induction x using Quotient.inductionOn' with
+  | h x =>
+    rw [smul_def_quot'' I k x]
+    rfl
+
+instance : Module K I.ringCon.Quotient where
+  one_smul := sorry
+  mul_smul := sorry
+  smul_zero := sorry
+  smul_add := sorry
+  add_smul := sorry
+  zero_smul := sorry
+
+  -- .compHom _ (f := show K →+* (πRes I).range from
+  -- { toFun := fun a => ⟨π I (ι f a), by simpa using ⟨ι f a, ⟨a, rfl⟩, rfl⟩⟩
+  --   map_one' := by
+  --     simp only [map_one, RingCon.coe_one]
+  --     rfl
+  --   map_mul' := by
+  --     intros
+  --     simp only [map_mul, RingCon.coe_mul, MulMemClass.mk_mul_mk]
+  --   map_zero' := by
+  --     simp only [map_zero, RingCon.coe_zero]
+  --     rfl
+  --   map_add' := by
+  --     intros
+  --     simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] })
 
 lemma Module.compHom_apply {R S : Type*} (M : Type*) [Semiring R] [AddCommMonoid M] [Module R M]
   [Semiring S] (f : S →+* R) (s : S) (m : M):
   letI : Module S M := Module.compHom _ f
   s • m = f s • m := by rfl
 
-omit [FiniteDimensional F K] in
-lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) :
-    c • x = (⟨π I (ι f c), by simpa using ⟨ι f c, ⟨c, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := by
-  induction x using Quotient.inductionOn' with
-  | h x =>
-    rw [smul_def_quot'' I c x]
-    rw [Module.compHom_apply]
-    simp
-    change _ * _ = _
-    simp [π]
-    change I.ringCon.mk' _ * I.ringCon.mk' _ = _
-    rw [← map_mul]
-    change Quotient.mk'' _ = _
-    haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
-      smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
-    congr
-    exact smul_one_mul c x
+-- omit [FiniteDimensional F K] in
+-- lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) :
+--     c • x = (⟨π I (ι f c), by simpa using ⟨ι f c, ⟨c, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := by
+--   induction x using Quotient.inductionOn' with
+--   | h x =>
+--     rw [smul_def_quot'' I c x]
+--     rw [Module.compHom_apply]
+--     simp
+--     change _ * _ = _
+--     simp [π]
+--     change I.ringCon.mk' _ * I.ringCon.mk' _ = _
+--     rw [← map_mul]
+--     change Quotient.mk'' _ = _
+--     haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
+--       smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
+--     congr
+--     exact smul_one_mul c x
 
 -- ## THIS PROOF NEEDS FIXING!!!
 set_option maxHeartbeats 800000 in
@@ -835,42 +853,7 @@ def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
       obtain ⟨c, c_ne_zero, hc⟩ := maximal σ hσ
       let B := Basis.span LI
       replace hc := Submodule.smul_mem _ c⁻¹ hc
-      replace hc : (c⁻¹ * c) • I.ringCon.mk' (CrossProduct.basis σ) ∈ Submodule.span K
-        ((fun i ↦ I.ringCon.mk' (CrossProduct.basis i)) '' J) := by -- this is seriously fucked up, NEEDS FIXING
-        haveI : IsScalarTower K (CrossProduct f) (CrossProduct f) := {
-          smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
-        convert hc using 1
-        convert mul_smul c⁻¹ c (I.ringCon.mk' (CrossProduct.basis σ))
-        · ext k x
-          induction x using Quotient.inductionOn' with
-          | h x =>
-            change _ = Quotient.mk'' (k • x)
-            rw [@SMul.smul_eq_hSMul K I.ringCon.Quotient, Module.compHom_apply]
-            simp
-            change _ * I.ringCon.mk' x = _
-            simp [π]
-            rw [← map_mul, smul_one_mul]
-            rfl
-        · ext k x
-          induction x using Quotient.inductionOn' with
-          | h x =>
-            change _ = Quotient.mk'' (k • x)
-            rw [@SMul.smul_eq_hSMul K I.ringCon.Quotient, Module.compHom_apply]
-            simp
-            change _ * I.ringCon.mk' x = _
-            simp [π]
-            rw [← map_mul, smul_one_mul]
-            rfl
-        · ext k x
-          induction x using Quotient.inductionOn' with
-          | h x =>
-            change _ = Quotient.mk'' (k • x)
-            rw [@SMul.smul_eq_hSMul K I.ringCon.Quotient, Module.compHom_apply]
-            simp
-            change _ * I.ringCon.mk' x = _
-            simp [π]
-            rw [← map_mul, smul_one_mul]
-            rfl
+      rw [smul_smul] at hc
       rw [inv_mul_cancel₀ c_ne_zero, one_smul] at hc
       clear c c_ne_zero
       have mem1 : I.ringCon.mk' (CrossProduct.basis σ) ∈ Submodule.span K
@@ -917,10 +900,8 @@ def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
             apply val_injective
             simp [CrossProduct.basis]
             congr 1
-            rw [_root_.mul_assoc, _root_.mul_assoc]
-            congr 1
-            rw [map_one_snd_of_isMulTwoCocycle (f := f) Fact.out i.1,
-              map_one_fst_of_isMulTwoCocycle (f := f) Fact.out i.1]
+            rw [_root_.mul_assoc]
+            rw [map_one_snd_of_isMulTwoCocycle (f := f) Fact.out i.1]
             simp
           _ = ∑ τ ∈ (B.repr ⟨_, mem1⟩).support,
                 I.ringCon.mk' (ι f (B.repr ⟨_, mem1⟩ τ * τ.1 c)) *
