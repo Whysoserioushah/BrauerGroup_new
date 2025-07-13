@@ -965,14 +965,14 @@ def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
         erw [Quotient.eq''] at eq0
         change I.ringCon _ _ at eq0
         rw [I.rel_iff, sub_zero] at eq0
-        have mem' := I.mul_mem_left (CrossProductAlgebra.singleUnit σ)⁻¹.1 _ eq0
+        have mem' := I.mul_mem_left (CrossProductAlgebra.of f σ)⁻¹.1 _ eq0
         simp only [Units.inv_mul] at mem'
         refine ne_top <| eq_top_iff.2 fun x _ => ?_
-        have : ((singleUnit (f := f) σ)⁻¹.1 * CrossProductAlgebra.basis σ) = 1 := by
+        have : ((of (f := f) σ)⁻¹.1 * CrossProductAlgebra.basis σ) = 1 := by
           apply val_injective
           simp only [CrossProductAlgebra.basis, Basis.coe_ofRepr, valLinearEquiv_symm_apply,
             AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm, val_mul,
-            val_inv_singleUnit_val, Units.val_inv_eq_inv_val, valAddEquiv_symm_apply_val,
+            val_inv_of_val, Units.val_inv_eq_inv_val, valAddEquiv_symm_apply_val,
             mulLinearMap_single_single, inv_mul_cancel, map_one, _root_.mul_one, val_one, B]
           congr 1; field_simp
         simpa [this] using I.mul_mem_left x _ mem'
@@ -1187,8 +1187,8 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
             rw [val_smul, val_mul]
             unfold basis
             simp [Basis.unitsSMul_apply]
-            rw [val_smul, val_smul, CrossProductAlgebra.unit_smul, CrossProductAlgebra.unit_smul,
-              CrossProductAlgebra.unit_smul, val_smul, val_smul, val_smul]
+            rw [val_smul, val_smul, Units.smul_def, Units.smul_def, Units.smul_def, val_smul,
+              val_smul, val_smul]
             erw [CrossProductAlgebra.basis_val (f := b) (σ := σ * τ), CrossProductAlgebra.basis_val, CrossProductAlgebra.basis_val]
             simp only [Finsupp.smul_single, smul_eq_mul, _root_.mul_one, mulLinearMap_single_single,
               map_mul, *]
@@ -1217,8 +1217,7 @@ lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
       CrossProductAlgebra.finrank_eq_sq⟩⟩ := by rfl
 
 open GoodRep in
-lemma toSnd_fromSnd :
-    toSnd ∘ fromSnd F K = id := by
+lemma toSnd_fromSnd : toSnd ∘ fromSnd F K = id := by
   ext a
   induction a using Quotient.inductionOn' with | h a =>
   rcases a with ⟨(a : _ → Kˣ), ha'⟩
@@ -1228,8 +1227,8 @@ lemma toSnd_fromSnd :
   let A : GoodRep K (Quotient.mk'' <| CrossProductAlgebra.asCSA a) :=
     ⟨CrossProductAlgebra.asCSA a, rfl, CrossProductAlgebra.ι a, CrossProductAlgebra.finrank_eq_sq⟩
 
-  let y_ σ : A.conjFactor σ := ⟨CrossProductAlgebra.singleUnit σ, fun c ↦ by
-    erw [CrossProductAlgebra.singleUnit_conj]; rfl⟩
+  let y_ σ : A.conjFactor σ := ⟨CrossProductAlgebra.of f σ, fun c ↦ by
+    erw [CrossProductAlgebra.of_conj]; rfl⟩
   rw [toSnd_wd (A := A) (x_ := y_)]
   let b : Gal(K, F) × Gal(K, F) → Kˣ := A.toTwoCocycles y_
 
@@ -1255,7 +1254,7 @@ lemma toSnd_fromSnd :
   simp only [AlgEquiv.mul_apply, y_]
   change _ = A.conjFactorCompCoeff (y_ σ) (y_ τ) (y_ (σ * τ))
   apply_fun A.ι using RingHom.injective _
-  rw [conjFactorCompCoeff_spec'', CrossProductAlgebra.singleUnit_mul_singleUnit, _root_.mul_assoc]
+  rw [conjFactorCompCoeff_spec'', CrossProductAlgebra.of_mul_of, _root_.mul_assoc]
   field_simp; rfl
 
 instance Crossproduct_scalar_tower (f : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) [Fact (IsMulTwoCocycle f)]:
