@@ -309,15 +309,36 @@ instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
 
 /-! ### Simplicity -/
 
+instance {I : TwoSidedIdeal (CrossProductAlgebra f)} : Module K I.ringCon.Quotient where
+  one_smul x := by simp
+  mul_smul k1 k2 x := by
+    induction x using Quot.induction_on with
+    | h g =>
+      simp only [Con.rel_eq_coe, RingCon.toCon_coe_eq_coe, RingCon.quot_mk_eq_coe]
+      change ((_ : CrossProductAlgebra f) : I.ringCon.Quotient) = _ ;
+      simp [mul_smul]
+  smul_zero k := by simp
+  smul_add k x y := by simp
+  add_smul k1 k2 x := by
+    induction x using Quot.induction_on with
+    | h g =>
+      change ((_ : CrossProductAlgebra f) : I.ringCon.Quotient) = _
+      simp [add_smul]
+  zero_smul x := by
+    induction x using Quot.induction_on with
+    | h g =>
+      change ((_ : CrossProductAlgebra f) : I.ringCon.Quotient) = _
+      simp [zero_smul]
+
 /-- The -/
 def quotientBasis {I : TwoSidedIdeal (CrossProductAlgebra f)} (hI : I ≠ ⊤) :
-    Basis Gal(K, F) K I.ringCon.Quotient where
-  .mk (v := fun σ => I.ringCon.mk' (CrossProductAlgebra.basis σ))
+    Basis Gal(K, F) K I.ringCon.Quotient :=
+  Basis.mk (v := fun σ => I.ringCon.mk' (CrossProductAlgebra.basis σ)) sorry sorry
 
-instance : IsSimpleRing (CrossProductAlgebra f) := by
-  refine ⟨⟨fun I ↦ ?_⟩⟩
-  by_contra! hI
-  suffices h : LinearIndependent
+instance : IsSimpleRing (CrossProductAlgebra f) := by sorry
+  -- refine ⟨⟨fun I ↦ ?_⟩⟩
+  -- by_contra! hI
+  -- suffices h : LinearIndependent
 -- ⟨⟨by
 --     intro I
 
