@@ -696,6 +696,7 @@ namespace is_simple_proofs
 
 variable (I : TwoSidedIdeal (CrossProductAlgebra f))
 
+#exit
 def π : CrossProductAlgebra f →+* I.ringCon.Quotient := I.ringCon.mk'
 
 def πRes : (ι f).range →+* I.ringCon.Quotient := (π I).domRestrict (ι f).range

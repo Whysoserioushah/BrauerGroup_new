@@ -330,6 +330,49 @@ instance {I : TwoSidedIdeal (CrossProductAlgebra f)} : Module K I.ringCon.Quotie
       change ((_ : CrossProductAlgebra f) : I.ringCon.Quotient) = _
       simp [zero_smul]
 
+section smul_def
+
+variable (I : TwoSidedIdeal (CrossProductAlgebra f))
+
+def π : CrossProductAlgebra f →+* I.ringCon.Quotient := I.ringCon.mk'
+
+def πRes : (incl f).range →+* I.ringCon.Quotient := RingHom.domRestrict (π I) _
+
+variable {I} in
+def xx : (πRes I).range → K := fun x ↦ x.2.choose.2.choose
+
+omit [FiniteDimensional F K] [IsGalois F K] in
+lemma hx (k : πRes I |>.range) : πRes I ⟨incl f (xx k), by simp⟩ = k := by
+  rw [← k.2.choose_spec]
+  congr 1
+  ext : 1
+  exact k.2.choose.2.choose_spec
+
+omit [FiniteDimensional F K] [IsGalois F K] in
+lemma hx' (k : K) : πRes I ⟨incl f k, by simp⟩ = I.ringCon.mk' (incl f k) := by
+  simp only [RingHom.restrict_apply, πRes, π]
+
+omit [FiniteDimensional F K] [IsGalois F K] in
+lemma x_wd (c c' : K) (eq : πRes I ⟨incl f c, by simp⟩ = πRes I ⟨incl f c', by simp⟩) (y : CrossProductAlgebra f) :
+    (c - c') • y ∈ I := by
+  simp only [πRes, π, RingHom.restrict_apply, RingCon.mk', RingHom.coe_mk,
+    MonoidHom.coe_mk, OneHom.coe_mk, RingCon.eq] at eq
+  rw [TwoSidedIdeal.rel_iff, ← map_sub] at eq
+  simpa using I.mul_mem_right _ _ eq
+
+instance (priority := high) : SMul (RingHom.range <| πRes I) I.ringCon.Quotient where
+  smul a := Quotient.map'
+    (fun y => xx a • y) (by
+      rintro y y' (hy : I.ringCon _ _)
+      show I.ringCon _ _
+      simp only
+      rw [TwoSidedIdeal.rel_iff] at hy ⊢
+      rw [← smul_sub]
+      -- apply I.mul_mem_left _ _ h
+      sorry
+      )
+
+end smul_def
 /-- The -/
 def quotientBasis {I : TwoSidedIdeal (CrossProductAlgebra f)} (hI : I ≠ ⊤) :
     Basis Gal(K, F) K I.ringCon.Quotient :=
