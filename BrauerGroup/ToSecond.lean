@@ -732,8 +732,8 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
 
     obtain ⟨c, hc⟩ := hc
     simp only [fromTwoCocycles, Subtype.mk.injEq, Quotient.eq'']
-    let A := @asCSA _ _ _ _ _ _ a ⟨ha⟩ _
-    let B := @asCSA _ _ _ _ _ _ b ⟨hb⟩ _
+    let A := @asCSA _ _ _ _ _ a ⟨ha⟩ _
+    let B := @asCSA _ _ _ _ _ b ⟨hb⟩ _
     change IsBrauerEquivalent A B
     letI : Module K A := inferInstanceAs <| Module K (CrossProductAlgebra a)
     letI : Module K B := inferInstanceAs <| Module K (CrossProductAlgebra b)
@@ -782,24 +782,20 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
         simp only [hc, Units.val_div_eq_div_val]
         field_simp)
       (by
-        haveI (f : ((K ≃ₐ[F] K) × K ≃ₐ[F] K) → Kˣ) [Fact <| IsMulTwoCocycle f]:
-          IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) := {
-          smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
-        specialize @this a ⟨ha⟩
         intro α β
         change φ0 ((⟨α.val⟩ : CrossProductAlgebra a) * (⟨β.val⟩ : CrossProductAlgebra a)) =
           φ0 (⟨α.val⟩ : CrossProductAlgebra a) * φ0 (⟨β.val⟩ : CrossProductAlgebra a)
         induction α.val using Finsupp.induction_linear with
         | h0 => change φ0 (0 * _) = φ0 0 * _; simp
-        | hadd f g _ _ =>
+        | hadd f g hf hg =>
           change φ0 ((_ + _) * _) = φ0 (_ + _) * φ0 _
-          simp_all [add_mul]
+          simp [add_mul, hf, hg]
         | hsingle σ k1 =>
           induction β.val using Finsupp.induction_linear with
           | h0 => change φ0 (_ * 0) = _ * φ0 0; simp
-          | hadd f g _ _ =>
+          | hadd f g hf hg =>
             change φ0 (_ * (_ + _)) = φ0 _ * φ0 (_ + _)
-            simp_all [mul_add]
+            simp [mul_add, hf, hg]
           | hsingle τ k2 =>
             change φ0 (⟨mulLinearMap a _ _⟩ : CrossProductAlgebra a) = _
             simp only [mulLinearMap_single_single, *]
@@ -820,19 +816,21 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
             simp [Basis.unitsSMul_apply]
             rw [val_smul, val_smul, Units.smul_def, Units.smul_def, Units.smul_def, val_smul,
               val_smul, val_smul]
-            erw [CrossProductAlgebra.basis_val (f := b) (σ := σ * τ), CrossProductAlgebra.basis_val, CrossProductAlgebra.basis_val]
-            simp only [Finsupp.smul_single, smul_eq_mul, _root_.mul_one, mulLinearMap_single_single,
-              map_mul, *]
-            congr 1
-            specialize hc σ τ
-            rw [Units.ext_iff] at hc
-            field_simp at hc
-            rw [← _root_.mul_assoc, _root_.mul_assoc k1 (c σ).1 (σ k2), mul_comm (c σ).1 (σ k2),
-              ← _root_.mul_assoc, _root_.mul_assoc (k1 * σ k2), _root_.mul_assoc (k1 * σ k2),
-              _root_.mul_assoc (k1 * σ k2)]
-            congr 1
-            rw [← hc]
-            field_simp [mul_comm])
+            -- erw [CrossProductAlgebra.basis_val (f := b) (σ := σ * τ), CrossProductAlgebra.basis_val, CrossProductAlgebra.basis_val]
+            -- simp only [Finsupp.smul_single, smul_eq_mul, _root_.mul_one, mulLinearMap_single_single,
+            --   map_mul, *]
+            -- congr 1
+            -- specialize hc σ τ
+            -- rw [Units.ext_iff] at hc
+            -- field_simp at hc
+            -- rw [← _root_.mul_assoc, _root_.mul_assoc k1 (c σ).1 (σ k2), mul_comm (c σ).1 (σ k2),
+            --   ← _root_.mul_assoc, _root_.mul_assoc (k1 * σ k2), _root_.mul_assoc (k1 * σ k2),
+            --   _root_.mul_assoc (k1 * σ k2)]
+            -- congr 1
+            -- rw [← hc]
+            -- field_simp [mul_comm]
+            sorry
+            )
 
     apply IsBrauerEquivalent.iso_to_eqv (h := φ2)
 
@@ -844,7 +842,7 @@ lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
       MulAction.toSMul (⇑Additive.toMul ∘ ↑a)) := ⟨isMulTwoCocycle_of_mem_twoCocycles _ a.2⟩
     (fromSnd F K <| Quotient.mk'' a) =
     ⟨Quotient.mk'' (CrossProductAlgebra.asCSA (⇑Additive.toMul ∘ ↑a)),
-      mem_relativeBrGroup_iff_nonempty_goodRep _ |>.2 ⟨_, rfl, CrossProductAlgebra.ι _,
+      mem_relativeBrGroup_iff_nonempty_goodRep _ |>.2 ⟨_, rfl, CrossProductAlgebra.incl _,
       CrossProductAlgebra.finrank_eq_sq⟩⟩ := by rfl
 
 open GoodRep in
@@ -856,10 +854,11 @@ lemma toSnd_fromSnd : toSnd ∘ fromSnd F K = id := by
   haveI : Fact _ := ⟨ha⟩
   simp only [Function.comp_apply, fromSnd_wd, id_eq]
   let A : GoodRep K (Quotient.mk'' <| CrossProductAlgebra.asCSA a) :=
-    ⟨CrossProductAlgebra.asCSA a, rfl, CrossProductAlgebra.ι a, CrossProductAlgebra.finrank_eq_sq⟩
+    ⟨CrossProductAlgebra.asCSA a, rfl, CrossProductAlgebra.incl a, CrossProductAlgebra.finrank_eq_sq⟩
 
-  let y_ σ : A.conjFactor σ := ⟨CrossProductAlgebra.of f σ, fun c ↦ by
-    erw [CrossProductAlgebra.of_conj]; rfl⟩
+  let y_ σ : A.conjFactor σ := ⟨CrossProductAlgebra.of a σ, fun c ↦ by
+    -- erw [CrossProductAlgebra.of_conj]; rfl
+    sorry⟩
   rw [toSnd_wd (A := A) (x_ := y_)]
   let b : Gal(K, F) × Gal(K, F) → Kˣ := A.toTwoCocycles y_
 
@@ -887,10 +886,6 @@ lemma toSnd_fromSnd : toSnd ∘ fromSnd F K = id := by
   apply_fun A.ι using RingHom.injective _
   rw [conjFactorCompCoeff_spec'', CrossProductAlgebra.of_mul_of, _root_.mul_assoc]
   field_simp; rfl
-
-instance Crossproduct_scalar_tower (f : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ) [Fact (IsMulTwoCocycle f)]:
-    IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) where
-  smul_assoc k x y := by simp only [smul_eq_mul, CrossProductAlgebra.smul_eq_ι_mul, mul_smul, _root_.mul_assoc]
 
 set_option maxHeartbeats 500000 in
 lemma fromSnd_toSnd :
@@ -930,35 +925,35 @@ lemma fromSnd_toSnd :
       (GoodRep.isMulTwoCocycle A.arbitraryConjFactor)))) :=
       ⟨isMulTwoCocycle_of_mem_twoCocycles _ (twoCocyclesOfIsMulTwoCocycle
         (GoodRep.isMulTwoCocycle A.arbitraryConjFactor)).2⟩
-    haveI := Crossproduct_scalar_tower (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle (GoodRep.isMulTwoCocycle A.arbitraryConjFactor)))
     change φ0 1 = 1
-    conv_lhs =>
-      enter [2]
-      rw [show (1 : lhs) = ((A.toTwoCocycles A.arbitraryConjFactor) (1, 1))⁻¹.1 • (CrossProductAlgebra.basis 1) by
-        apply CrossProductAlgebra.val_injective
-        rw [← smul_one_mul, ← CrossProductAlgebra.ι_apply, CrossProductAlgebra.val_mul]
-        simp [CrossProductAlgebra.basis]
-        congr]
+    sorry
+    -- conv_lhs =>
+    --   enter [2]
+    --   rw [show (1 : lhs) = ((A.toTwoCocycles A.arbitraryConjFactor) (1, 1))⁻¹.1 • (CrossProductAlgebra.basis 1) by
+    --     apply CrossProductAlgebra.val_injective
+    --     rw [← smul_one_mul, ← CrossProductAlgebra.incl_apply, CrossProductAlgebra.val_mul]
+    --     simp [CrossProductAlgebra.basis]
+    --     congr]
 
 
-    -- rw [one_in_basis]
-    change φ0 ((_ : K) • _) = _
-    rw [map_smul]
-    simp only [LinearEquiv.restrictScalars_apply, φ1, φ0]
-    erw [Basis.equiv_apply]
-    simp only [Prod.mk_one_one, Function.comp_apply, Units.val_inv_eq_inv_val,
-      GoodRep.conjFactorBasis, Equiv.refl_apply, coe_basisOfLinearIndependentOfCardEqFinrank,
-      AlgEquiv.one_apply, GoodRep.smul_def]
-    change A.ι (A.toTwoCocycles _ (1, 1))⁻¹ * _ = 1
-    simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, Prod.mk_one_one,
-      Prod.fst_one, Prod.snd_one, AlgEquiv.one_apply]
-    have := A.conjFactorCompCoeff_spec' (A.arbitraryConjFactor 1)
-      (A.arbitraryConjFactor 1)
-      (A.arbitraryConjFactor (1 * 1))
-    simp only [AlgEquiv.one_apply, AlgEquiv.mul_apply] at this
-    rw [GoodRep.conjFactorCompCoeff_inv]
-    erw [_root_.one_mul]
-    simp only [AlgEquiv.one_apply, ← _root_.mul_assoc, Units.mul_inv, _root_.one_mul, Units.inv_mul]
+    -- -- rw [one_in_basis]
+    -- change φ0 ((_ : K) • _) = _
+    -- rw [map_smul]
+    -- simp only [LinearEquiv.restrictScalars_apply, φ1, φ0]
+    -- erw [Basis.equiv_apply]
+    -- simp only [Prod.mk_one_one, Function.comp_apply, Units.val_inv_eq_inv_val,
+    --   GoodRep.conjFactorBasis, Equiv.refl_apply, coe_basisOfLinearIndependentOfCardEqFinrank,
+    --   AlgEquiv.one_apply, GoodRep.smul_def]
+    -- change A.ι (A.toTwoCocycles _ (1, 1))⁻¹ * _ = 1
+    -- simp only [GoodRep.toTwoCocycles, GoodRep.conjFactorCompCoeffAsUnit, Prod.mk_one_one,
+    --   Prod.fst_one, Prod.snd_one, AlgEquiv.one_apply]
+    -- have := A.conjFactorCompCoeff_spec' (A.arbitraryConjFactor 1)
+    --   (A.arbitraryConjFactor 1)
+    --   (A.arbitraryConjFactor (1 * 1))
+    -- simp only [AlgEquiv.one_apply, AlgEquiv.mul_apply] at this
+    -- rw [GoodRep.conjFactorCompCoeff_inv]
+    -- erw [_root_.one_mul]
+    -- simp only [AlgEquiv.one_apply, ← _root_.mul_assoc, Units.mul_inv, _root_.one_mul, Units.inv_mul]
   · intro x y
     change φ0 (⟨x.val⟩ * ⟨y.val⟩) = φ0 ⟨x.val⟩ * φ0 ⟨y.val⟩
     induction x.val using Finsupp.induction_linear with
