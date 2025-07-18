@@ -8,7 +8,6 @@ import BrauerGroup.BrauerOverR
 import BrauerGroup.CSA.ReducedCharPoly
 import BrauerGroup.CentralSimple
 import BrauerGroup.Centralizer
-import BrauerGroup.Con
 import BrauerGroup.CrossProductAlgebra
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.ExtendScalar
@@ -24,6 +23,10 @@ import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
 import BrauerGroup.Mathlib.FieldTheory.Galois.Basic
 import BrauerGroup.Mathlib.GroupTheory.GroupExtension.Abelian
 import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
+import BrauerGroup.Mathlib.RingTheory.Congruence.Defs
+import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Basic
+import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Kernel
+import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Operations
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.Morita.TensorProduct
@@ -36,6 +39,7 @@ import BrauerGroup.Subfield.FiniteDimensional
 import BrauerGroup.Subfield.Splitting
 import BrauerGroup.Subfield.Subfield
 import BrauerGroup.ToSecond
+import BrauerGroup.TwoSidedIdeal
 import BrauerGroup.Wedderburn
 import BrauerGroup.ZeroSevenFourE
 import BrauerGroup.examples.CohomologyofCyclic

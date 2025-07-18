@@ -1,4 +1,5 @@
 import BrauerGroup.CrossProductAlgebra
+import BrauerGroup.Mathlib.RingTheory.Congruence.Defs
 import BrauerGroup.Subfield.Splitting
 import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 

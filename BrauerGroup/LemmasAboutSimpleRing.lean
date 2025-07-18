@@ -1,4 +1,5 @@
 import BrauerGroup.CentralSimple
+import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Operations
 import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
 
 universe u
