@@ -98,6 +98,9 @@ def valLinearEquiv [Semiring R] [Module R K] : CrossProductAlgebra f ≃ₗ[R] (
 def basis : Basis Gal(K, F) K (CrossProductAlgebra f) where
   repr := valLinearEquiv
 
+lemma basis_val (σ : Gal(K, F)) :
+    (basis (f := f) σ).val = .single σ 1 := by simp [basis]
+
 variable (f) in
 def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) :=
   Finsupp.lsum F fun σ =>
@@ -261,6 +264,9 @@ lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) 
 lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f σ).val) = x := by
   ext; simp
 
+lemma of_conj (σ : Gal(K, F)) (k : K) : of f σ * incl f k * (of f σ)⁻¹ =
+    incl f (σ k) := by rw [of_mul_incl]; field_simp
+
 variable [Module.Finite F K] [IsGalois F K]
 
 /-! ### Finite dimensionality -/
@@ -401,8 +407,6 @@ lemma K_smul_quot (k : K) (x : I.ringCon.Quotient) :
   | h g =>
     rw [smul_def_quot'' I k g]
     rfl
-
-
 
 end smul_def
 
