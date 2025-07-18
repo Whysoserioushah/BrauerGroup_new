@@ -3,8 +3,6 @@ Copyright (c) 2024 Kevin Buzzard. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yunzhou Xie, Jujian Zhang, Kevin Buzzard
 -/
-
-import BrauerGroup.Con
 import BrauerGroup.Wedderburn
 import Mathlib.RingTheory.Flat.Basic
 import Mathlib.LinearAlgebra.TensorProduct.RightExactness

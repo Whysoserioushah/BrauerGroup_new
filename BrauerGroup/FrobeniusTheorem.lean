@@ -1,5 +1,6 @@
 import BrauerGroup.Subfield.FiniteDimensional
 import BrauerGroup.Subfield.Subfield
+import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Algebra.QuaternionBasis
 import Mathlib.Analysis.Quaternion
 import Mathlib.Data.Complex.FiniteDimensional
@@ -800,8 +801,8 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
     change r • a = (e (algebraMap ℝ ℂ r)) * a
     rw [Algebra.algebraMap_eq_smul_one, _root_.map_smul e, map_one, Subalgebra.coe_smul,
       Subalgebra.coe_one, smul_mul_assoc, one_mul]
-  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 $ fin
-  haveI : FiniteDimensional ℂ A := Module.Finite.right ℝ ℂ A
+  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 fin
+  haveI : FiniteDimensional ℂ A := .right ℝ ℂ A
   have bij := bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed ℂ A
   exact ⟨.symm <| .ofBijective {
     toFun := algebraMap ℂ A

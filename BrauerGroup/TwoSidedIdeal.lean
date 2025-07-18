@@ -1,7 +1,9 @@
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Order.CompletePartialOrder
+import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Kernel
+import Mathlib.Algebra.Algebra.Hom
+import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Data.Fintype.BigOperators
+import Mathlib.RingTheory.SimpleRing.Defs
 import Mathlib.RingTheory.TwoSidedIdeal.BigOperators
-import Mathlib.RingTheory.TwoSidedIdeal.Instances
 import Mathlib.RingTheory.TwoSidedIdeal.Operations
 
 variable {M : Type*} [AddCommMonoid M] (r : AddCon M) {ι : Type*} (s : Finset ι)
@@ -9,151 +11,17 @@ variable {R : Type*} [Ring R] (t : TwoSidedIdeal R)
 
 open MulOpposite
 
-namespace RingCon
-
-@[elab_as_elim]
-lemma quot_ind (r : RingCon R) {motive : r.Quotient → Prop}
-  (basic : ∀ (x : R), motive (r.mk' x)) : ∀ (x : r.Quotient), motive x := by
-  intro x
-  induction x using Quotient.inductionOn' with | h x =>
-  exact basic x
-
-end RingCon
-
 namespace TwoSidedIdeal
 
-variable {t s}
-
-variable (t)
+variable {s}
 
 variable (I : TwoSidedIdeal R)
 
-lemma smul_mem (r : R) {x} (hx : x ∈ I) : r • x ∈ I := by
-  simpa using I.ringCon.mul (I.ringCon.refl r) hx
-
-/--
-Any two-sided-ideal in `A` corresponds to a two-sided-ideal in `Aᵒᵖ`.
--/
-@[simps]
-def toMop (rel : TwoSidedIdeal R) : TwoSidedIdeal Rᵐᵒᵖ := .mk {
-  r a b := rel.ringCon b.unop a.unop
-  iseqv.refl a := rel.ringCon.refl a.unop
-  iseqv.symm := rel.ringCon.symm
-  iseqv.trans h1 h2 := rel.ringCon.trans h2 h1
-  mul' h1 h2 := rel.ringCon.mul h2 h1
-  add' := rel.ringCon.add
-}
-
-/--
-Any two-sided-ideal in `Aᵒᵖ` corresponds to a two-sided-ideal in `A`.
--/
-@[simps]
-def fromMop (rel : TwoSidedIdeal Rᵐᵒᵖ) : TwoSidedIdeal R := .mk {
-  r a b := rel.ringCon (.op b) (.op a)
-  iseqv.refl a := rel.ringCon.refl (.op a)
-  iseqv.symm := rel.ringCon.symm
-  iseqv.trans h1 h2 := rel.ringCon.trans h2 h1
-  mul' h1 h2 := rel.ringCon.mul h2 h1
-  add' := rel.ringCon.add
-}
-
-/--
-Two-sided-ideals of `A` and that of `Aᵒᵖ` corresponds bijectively to each other.
--/
-@[simps]
-def toMopOrderIso : TwoSidedIdeal R ≃o TwoSidedIdeal Rᵐᵒᵖ where
-  toFun := toMop
-  invFun := fromMop
-  left_inv := unop_op
-  right_inv := unop_op
-  map_rel_iff' {a b} := by
-    constructor
-    · intro h x H
-      have := @h (.op x) (by simp only [toMop, mem_iff] at H ⊢; exact a.ringCon.symm H)
-      simp only [Equiv.coe_fn_mk, toMop, mem_iff, RingCon.rel_mk, Con.rel_mk, unop_zero,
-        unop_op] at this ⊢
-      exact b.ringCon.symm this
-    · intro h x H
-      have := @h (x.unop) (by simp only [toMop, mem_iff] at H ⊢; exact a.ringCon.symm H)
-      simp only [Equiv.coe_fn_mk, toMop, mem_iff, RingCon.rel_mk, Con.rel_mk, unop_zero,
-        unop_op] at this ⊢
-      exact b.ringCon.symm this
-
 variable {R' : Type*} [Ring R']
-
-lemma comap_injective {F : Type*} [FunLike F R R'] [RingHomClass F R R']
-    (f : F) (hf : Function.Surjective f) :
-    Function.Injective (fun J : TwoSidedIdeal _ ↦ J.comap f) := by
-  intro I J h
-  refine SetLike.ext fun x ↦ ?_
-  simp only [mem_comap] at h
-  obtain ⟨x, rfl⟩ := hf x
-  rw [← mem_comap, ← mem_comap, h]
-
-instance : Module Rᵐᵒᵖ I where
-  smul r x := ⟨x.1 * r.unop, I.mul_mem_right _ _ x.2⟩
-  one_smul x := by ext; show x.1 * 1 = x.1; simp
-  mul_smul x y z := by
-    ext; show z.1 * (y.unop * x.unop) = (z.1 * y.unop) * x.unop; simp only [mul_assoc]
-  smul_zero x := by
-    ext; show 0 * _ = 0; simp only [zero_mul]
-  smul_add x y z := by
-    ext; show (y.1 + z.1) * _ = (y * _) + (z * _); simp only [right_distrib]
-  add_smul x y z := by
-    ext; show _ * (_ + _) = _ * _ + _ * _; simp only [left_distrib]
-  zero_smul x := by
-    ext; show _ * 0 = 0; simp only [mul_zero]
-
--- lemma comap_comap
---     {S T : Type*} [Ring S] [Ring T]
---     (f : R →+* S) (g : S →+* T) (I : TwoSidedIdeal T) :
---   TwoSidedIdeal.comap f (TwoSidedIdeal.comap g I) = TwoSidedIdeal.comap (g.comp f) I := rfl
-
-@[simp]
-def orderIsoOfRingEquiv {F : Type*} [EquivLike F R R'] [RingEquivClass F R R'] (f : F) :
-    TwoSidedIdeal R ≃o TwoSidedIdeal R' where
-  toFun := comap (RingEquivClass.toRingEquiv f).symm
-  invFun := comap (RingEquivClass.toRingEquiv f)
-  left_inv I := by
-    have :=
-      TwoSidedIdeal.comap_comap (R := R) (S := R') I
-        (RingEquivClass.toRingEquiv f) (RingEquivClass.toRingEquiv f).symm
-
-    simp at this
-    erw [TwoSidedIdeal.comap_comap _ (RingEquivClass.toRingEquiv f).toRingHom
-      (RingEquivClass.toRingEquiv f).symm.toRingHom]
-    simp only [RingEquiv.toRingHom_eq_coe, RingEquiv.symm_comp]
-    rfl
-  right_inv I := SetLike.ext $ fun x ↦ by
-    simp only [mem_comap, RingEquiv.apply_symm_apply]
-  map_rel_iff' := by
-    intro I J
-    rw [le_iff, le_iff]
-    constructor
-    · rintro h x hx
-
-      specialize @h (RingEquivClass.toRingEquiv f x) (by simpa [TwoSidedIdeal.mem_comap])
-      simpa [TwoSidedIdeal.mem_comap] using h
-    · intro h x hx
-      simp only [Equiv.coe_fn_mk, SetLike.mem_coe, mem_comap] at hx ⊢
-      exact h hx
-
-lemma injective_iff_ker_eq_bot {F : Type*} [FunLike F R R'] [RingHomClass F R R'] (f : F) :
-    Function.Injective f ↔ TwoSidedIdeal.ker f = ⊥ := by
-  rw [Function.Injective, eq_bot_iff, le_iff]
-  change _ ↔ ∀ _, _
-  simp only [SetLike.mem_coe, mem_ker]
-  constructor
-  · intro h x hx
-    specialize @h x 0 (by simpa using hx)
-    rw [h]; rfl
-  · intro h a b hab
-    specialize h (a - b) (by rwa [map_sub, sub_eq_zero])
-    rw [← sub_eq_zero]
-    exact h
 
 -- def span (s : Set R) : TwoSidedIdeal R :=
 -- .mk $ ringConGen (fun a b ↦ a - b ∈ s)
+
 
 -- lemma subset_span (s : Set R) : s ⊆ span s := by
 --   intro x hx

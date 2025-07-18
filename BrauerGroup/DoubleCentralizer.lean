@@ -682,7 +682,7 @@ instance : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
   rw [OrderIso.isSimpleOrder_iff this]
   haveI : IsSimpleRing Bᵐᵒᵖ := by
     constructor
-    rw [← OrderIso.isSimpleOrder_iff (TwoSidedIdeal.toMopOrderIso)]
+    rw [← TwoSidedIdeal.opOrderIso.isSimpleOrder_iff]
     exact IsSimpleRing.simple
   apply (IsCentralSimple.TensorProduct.simple F _ _).simple
 

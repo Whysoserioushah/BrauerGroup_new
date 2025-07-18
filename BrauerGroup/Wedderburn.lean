@@ -1,5 +1,6 @@
-import BrauerGroup.Con
+import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Basic
 import BrauerGroup.MatrixCenterEquiv
+import BrauerGroup.TwoSidedIdeal
 import Mathlib.Algebra.Azumaya.Basic
 import Mathlib.Algebra.Central.Defs
 import Mathlib.FieldTheory.IsAlgClosed.Basic
@@ -154,7 +155,7 @@ variable (K D : Type*) [Field K] [IsSimpleRing A] [Algebra K A] [DivisionRing D]
 --       refine r.mul_mem_right _ _ <| r.mul_mem_left _ _ (by tauto)
 
 instance op_simple : IsSimpleRing Aᵐᵒᵖ :=
-  ⟨TwoSidedIdeal.toMopOrderIso.symm.isSimpleOrder⟩
+  ⟨TwoSidedIdeal.opOrderIso.symm.isSimpleOrder⟩
 
 /--
 The canonical map from `Aᵒᵖ` to `Hom(A, A)`

@@ -1,5 +1,6 @@
 import BrauerGroup.CentralSimple
 import BrauerGroup.FieldCat
+import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Operations
 import Mathlib.Algebra.BrauerGroup.Defs
 import Mathlib.Algebra.Central.Matrix
 import Mathlib.Algebra.GroupWithZero.Action.Faithful
