@@ -4,6 +4,13 @@ import BrauerGroup.Mathlib.FieldTheory.Galois.Basic
 import BrauerGroup.Subfield.Splitting
 import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 
+/-!
+# Cross product algebra
+
+This file constructs the cross product algebra associated to a 2-cocycle of a field extension
+`K / F` and shows that it is a central simple `F`-algebra of dimension `dim(K / F) ^ 2`.
+-/
+
 open groupCohomology Function
 
 suppress_compilation
@@ -195,9 +202,9 @@ variable (f) in
 /-- The inclusion from `K` into `CrossProductAlgebra f`.
 
 Note that this does *not* make `CrossProductAlgebra f` into a `K`-algebra, because that would require
-`ι k * x = x * ι k`. -/
+`incl k * x = x * incl k`. -/
 @[simps]
-def ι : K →ₐ[F] CrossProductAlgebra f where
+def incl : K →ₐ[F] CrossProductAlgebra f where
   toFun k := k • 1
   map_zero' := by ext; simp
   map_add' _ _ := by ext; simp [add_mul]
@@ -205,7 +212,7 @@ def ι : K →ₐ[F] CrossProductAlgebra f where
   map_mul' _ _ := by ext; simp [mul_assoc, mul_left_comm]
   commutes' _ := by ext; simp [Algebra.algebraMap_eq_smul_one]
 
-lemma smul_eq_ι_mul (k : K) (x : CrossProductAlgebra f) : k • x = ι f k * x := by
+lemma smul_eq_incl_mul (k : K) (x : CrossProductAlgebra f) : k • x = incl f k * x := by
   obtain ⟨x⟩ := x
   ext : 1
   dsimp
@@ -217,7 +224,7 @@ lemma smul_eq_ι_mul (k : K) (x : CrossProductAlgebra f) : k • x = ι f k * x 
 instance [CommSemiring R] [Algebra R K] :
     IsScalarTower R (CrossProductAlgebra f) (CrossProductAlgebra f) where
   smul_assoc r x y := by
-    simp only [← algebraMap_smul K r, smul_eq_mul, smul_eq_ι_mul, mul_smul, mul_assoc]
+    simp only [← algebraMap_smul K r, smul_eq_mul, smul_eq_incl_mul, mul_smul, mul_assoc]
 
 variable (f) in
 @[simps]
@@ -242,13 +249,13 @@ def of (σ : Gal(K, F)) : (CrossProductAlgebra f)ˣ where
   inv_val := by ext : 1; simp [mul_right_comm _ (f _ : K)⁻¹]
 
 variable (f) in
-@[simp] lemma of_one : of f 1 = ι f (f 1) := by ext; simp
+@[simp] lemma of_one : of f 1 = incl f (f 1) := by ext; simp
 
 variable (f) in
-@[simp] lemma of_mul_of (σ τ : Gal(K, F)) : of f σ * of f τ = ι f (f (σ, τ)) * of f (σ * τ) := by
+@[simp] lemma of_mul_of (σ τ : Gal(K, F)) : of f σ * of f τ = incl f (f (σ, τ)) * of f (σ * τ) := by
   ext; simp
 
-lemma of_mul_ι (σ : Gal(K, F)) (c : K) : of f σ * ι f c = ι f (σ c) * of f σ := by
+lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) * of f σ := by
   ext; simp [map_one_snd_of_isMulTwoCocycle Fact.out]
 
 lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f σ).val) = x := by
@@ -256,12 +263,16 @@ lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f �
 
 variable [Module.Finite F K] [IsGalois F K]
 
+/-! ### Finite dimensionality -/
+
 @[simp] lemma finrank_eq_sq : Module.finrank F (CrossProductAlgebra f) = Module.finrank F K ^ 2 := by
   rw [← Module.finrank_mul_finrank _ K, Module.finrank_eq_card_basis basis,
     IsGalois.card_aut_eq_finrank, sq]
 
 instance : Module.Finite F (CrossProductAlgebra f) :=
   Module.finite_of_finrank_pos <| by simp [pow_pos_iff two_ne_zero, Module.finrank_pos]
+
+/-! ### Centrality -/
 
 instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
   classical
@@ -273,7 +284,7 @@ instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
   -- we get `d τ(c_{τ⁻¹στ}) f(τ, τ⁻¹στ) = c_σ σ(d) f(σ, τ)`.
   have key (d : K) (σ τ : Gal(K, F)) :
       d * τ (c.val (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ) = c.val σ * σ d * f (σ, τ) := by
-    simpa [mul_assoc] using congr(($(hc <| ι f d * (of f τ).val)).val (σ * τ))
+    simpa [mul_assoc] using congr(($(hc <| incl f d * (of f τ).val)).val (σ * τ))
   -- By substituting `d = 1` in the previous equality,
   -- we get `τ(c_{τ⁻¹στ}) f(τ, τ⁻¹στ) = c_σ f(σ, τ)`.
   have key₁ (σ τ : Gal(K, F)) :
@@ -295,5 +306,35 @@ instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
   obtain ⟨a, ha⟩ := key₁₁
   refine finsuppSum_mem fun σ hσ ↦ ?_
   simpa [hc₁ hσ, of_one, ← mul_smul, ← ha, Algebra.ofId] using Subalgebra.smul_mem _ (one_mem _) _
+
+/-! ### Simplicity -/
+
+/-- The -/
+def quotientBasis {I : TwoSidedIdeal (CrossProductAlgebra f)} (hI : I ≠ ⊤) :
+    Basis Gal(K, F) K I.ringCon.Quotient where
+  .mk (v := fun σ => I.ringCon.mk' (CrossProductAlgebra.basis σ))
+
+instance : IsSimpleRing (CrossProductAlgebra f) := by
+  refine ⟨⟨fun I ↦ ?_⟩⟩
+  by_contra! hI
+  suffices h : LinearIndependent
+-- ⟨⟨by
+--     intro I
+
+--     have inj : Function.Injective (π I) := π_inj I h.2
+--     rw [TwoSidedIdeal.injective_iff_ker_eq_bot] at inj
+--     refine h.1 <| inj ▸ ?_
+--     ext x
+--     simp only [π, TwoSidedIdeal.mem_ker]
+--     change _ ↔ _ = I.ringCon.mk' 0
+--     erw [Quotient.eq'']
+--     change _ ↔ I.ringCon _ _
+--     rw [I.rel_iff, sub_zero]⟩⟩
+
+/-! ### The cross product algebra as a central simple algebra -/
+
+variable (f) in
+def asCSA [IsGalois F K] : CSA F :=
+  ⟨.of F (CrossProductAlgebra f)⟩
 
 end CrossProductAlgebra

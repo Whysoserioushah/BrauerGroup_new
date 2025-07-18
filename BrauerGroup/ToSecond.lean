@@ -775,9 +775,6 @@ abbrev πRes_Kalgmap : K →+* (πRes I).range :=
       intros
       simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] }
 
-instance : IsScalarTower K (CrossProductAlgebra f) (CrossProductAlgebra f) := {
-  smul_assoc k x y := by simp only [smul_eq_mul, smul_eq_ι_mul, mul_smul, _root_.mul_assoc]}
-
 omit [FiniteDimensional F K] in
 lemma K_smul_quot (k : K) (x : I.ringCon.Quotient) :
     k • x = (⟨π I (ι f k), by simpa using ⟨ι f k, ⟨k, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := by
@@ -786,13 +783,10 @@ lemma K_smul_quot (k : K) (x : I.ringCon.Quotient) :
     rw [smul_def_quot'' I k x]
     rfl
 
-instance : Module K I.ringCon.Quotient where
-  one_smul := sorry
-  mul_smul := sorry
-  smul_zero := sorry
-  smul_add := sorry
-  add_smul := sorry
-  zero_smul := sorry
+#synth DistribMulAction K I.ringCon.Quotient
+
+instance : MulAction K I.ringCon.Quotient := by  exact inferInstance
+instance : Module K I.ringCon.Quotient := inferInstance
 
   -- .compHom _ (f := show K →+* (πRes I).range from
   -- { toFun := fun a => ⟨π I (ι f a), by simpa using ⟨ι f a, ⟨a, rfl⟩, rfl⟩⟩
@@ -808,11 +802,6 @@ instance : Module K I.ringCon.Quotient where
   --   map_add' := by
   --     intros
   --     simp only [map_add, RingCon.coe_add, AddMemClass.mk_add_mk] })
-
-lemma Module.compHom_apply {R S : Type*} (M : Type*) [Semiring R] [AddCommMonoid M] [Module R M]
-  [Semiring S] (f : S →+* R) (s : S) (m : M):
-  letI : Module S M := Module.compHom _ f
-  s • m = f s • m := by rfl
 
 -- omit [FiniteDimensional F K] in
 -- lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) :
@@ -1035,26 +1024,6 @@ lemma π_inj (ne_top : I ≠ ⊤) : Function.Injective (π I) := by
   exact LinearEquiv.injective _
 
 end is_simple_proofs
-
-open is_simple_proofs in
-instance is_simple : IsSimpleRing (CrossProductAlgebra f) :=
-⟨⟨by
-    intro I
-    by_contra! h
-
-    have inj : Function.Injective (π I) := π_inj I h.2
-    rw [TwoSidedIdeal.injective_iff_ker_eq_bot] at inj
-    refine h.1 <| inj ▸ ?_
-    ext x
-    simp only [π, TwoSidedIdeal.mem_ker]
-    change _ ↔ _ = I.ringCon.mk' 0
-    erw [Quotient.eq'']
-    change _ ↔ I.ringCon _ _
-    rw [I.rel_iff, sub_zero]⟩⟩
-
-variable (f) in
-def asCSA [IsGalois F K] : CSA F :=
-  ⟨.of F (CrossProductAlgebra f)⟩
 
 end CrossProductAlgebra
 
