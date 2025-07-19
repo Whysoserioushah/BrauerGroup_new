@@ -101,6 +101,9 @@ def basis : Basis Gal(K, F) K (CrossProductAlgebra f) where
 lemma basis_val (σ : Gal(K, F)) :
     (basis (f := f) σ).val = .single σ 1 := by simp [basis]
 
+lemma mk_basis (σ : Gal(K, F)) :
+    mk (.single σ 1) = basis (f := f) σ := by rfl
+
 variable (f) in
 def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) :=
   Finsupp.lsum F fun σ =>
@@ -200,6 +203,19 @@ lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower
   rw [Algebra.algebraMap_eq_smul_one]
   simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single,
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
+
+omit [Fact <| IsMulTwoCocycle f] in
+lemma basis_smul_comm (σ : K ≃ₐ[F] K) (k1 k2 : K) (x : CrossProductAlgebra f) :
+    (k1 • basis (f := f) σ) * (k2 • x) = σ k2 • k1 • basis σ * x := by
+  apply val_injective
+  simp only [basis, Basis.coe_ofRepr, valLinearEquiv_symm_apply, AddEquiv.toEquiv_eq_coe,
+    Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm, val_mul, val_smul, valAddEquiv_symm_apply_val,
+    Finsupp.smul_single, smul_eq_mul, _root_.mul_one]
+  induction x.val using Finsupp.induction_linear with
+  | h0 => simp
+  | hadd _ _ _ _ => simp_all[smul_add]
+  | hsingle a b =>
+    simp [← _root_.mul_assoc, mul_comm k1 (σ k2)]
 
 variable (f) in
 /-- The inclusion from `K` into `CrossProductAlgebra f`.
