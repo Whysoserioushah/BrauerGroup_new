@@ -832,7 +832,7 @@ section C_iso
 instance [DecidableEq (Module.End C SM)] : DivisionRing (Module.End C SM) :=
   Module.End.divisionRing
 
-variable [DecidableEq (Module.End C SM)]
+-- variable [DecidableEq (Module.End C SM)]
 
 instance : Algebra F (Module.End C SM) := Module.End.instAlgebra F C SM
 
@@ -886,7 +886,7 @@ example : True := ⟨⟩
 def C_iso_aux' : Cᵐᵒᵖ ≃ₐ[F] Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM) :=
   C_iso_aux.trans <| isoDagger _
 
--- omit [DecidableEq (Module.End C SM)] in
+omit [DecidableEq (K ≃ₐ[F] K)] in
 lemma dim_endCSM : (finrank F K)^2 =
   (Fintype.card ι) ^ 2 * finrank F (Module.End C SM) := by
   have eq1 := (C_iso_aux' (α := α) (β := β)).toLinearEquiv.finrank_eq
@@ -905,8 +905,8 @@ lemma dim_endCSM : (finrank F K)^2 =
 
 set_option maxHeartbeats 1200000 in
 def C_iso_aux'' : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM))ᵐᵒᵖ where
-  toFun c := op <| C_iso_aux' _ _ (op c)
-  invFun m := (C_iso_aux' _ _ |>.symm m.unop).unop
+  toFun c := op <| C_iso_aux' (op c)
+  invFun m := (C_iso_aux'.symm m.unop).unop
   left_inv := by
     intro c
     simp only [unop_op, AlgEquiv.symm_apply_apply]
@@ -915,28 +915,22 @@ def C_iso_aux'' : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card
     simp only [op_unop, AlgEquiv.apply_symm_apply]
   map_mul' := by
     intro c c'
-    simp only [op_mul, map_mul]
-    erw [map_mul (C_iso_aux' _ _).toAlgHom, op_mul]
-    rfl
+    simp [op_mul, map_mul]
   map_add' := by
     intro c c'
-    simp only [op_add, map_add]
-    erw [map_add (C_iso_aux' _ _).toLinearMap, op_add]
-    rfl
+    simp [op_add, map_add]
   commutes' := by
     intro f
-    simp only [algebraMap_val, op_smul, op_one]
-    erw [map_smul (C_iso_aux' _ _).toLinearMap, map_one (C_iso_aux' _ _).toAlgHom, MulOpposite.algebraMap_apply]
-    rw [Algebra.smul_def]
-    simp only [MulOpposite.algebraMap_apply, _root_.mul_one]
+    simp [MulOpposite.algebraMap_apply, op_inj, Algebra.algebraMap_eq_smul_one]
 
 def C_iso : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM)ᵐᵒᵖ) :=
-  C_iso_aux'' hα hβ |>.trans ((matrixEquivMatrixMop_algebra F _ _).symm)
+  C_iso_aux''.trans ((matrixEquivMatrixMop_algebra F _ _).symm)
 
 end C_iso
 
-lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃ₗ[C] ιM →₀ SM) := by
-  obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (M hα hβ) SM
+omit [DecidableEq (K ≃ₐ[F] K)] in
+lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M α β ≃ₗ[C] ιM →₀ SM) := by
+  obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (M α β) SM
   refine ⟨ιM, ?_, ⟨iso⟩⟩
 
   haveI : LinearMap.CompatibleSMul C (ιM →₀ SM) F C := by
@@ -944,14 +938,16 @@ lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃�
     intro l f x
     change _ = algebraMap F C f • l x
     rw [← map_smul]
-    simp only [algebraMap_val, smul_assoc, one_smul]
-  let iso' : M hα hβ ≃ₗ[F] (ιM →₀ SM) := iso.restrictScalars F
+    congr 1
+    apply val_injective
+    simp [Algebra.algebraMap_eq_smul_one]
+
+  let iso' : M α β ≃ₗ[F] (ιM →₀ SM) := iso.restrictScalars F
   haveI : IsScalarTower F C (ιM →₀ SM) := by
     constructor
     intro f c x
     change _ = algebraMap F C f • _ • x
     rw [Algebra.smul_def, mul_smul]
-  haveI : Module.Finite C (M hα hβ) := Module.Finite.right F C (M hα hβ)
   haveI : Module.Finite C (ιM →₀ SM) := Module.Finite.equiv iso
   haveI : Module.Finite F (ιM →₀ SM) := Module.Finite.trans C (ιM →₀ SM)
   have eq := LinearEquiv.finrank_eq iso'
@@ -979,14 +975,14 @@ lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M hα hβ ≃�
   rw [mul_comm] at ineq2
   exact lt_of_le_of_lt ineq2 ineq
 
-def indexingSetM : Type := (M_directSum hα hβ).choose
+variable (α β) in
+def indexingSetM : Type := (M_directSum (α := α) (β := β)).choose
 
-local notation "ιM" => indexingSetM hα hβ
+local notation "ιM" => indexingSetM α β
 
-instance : Fintype ιM := (M_directSum hα hβ).choose_spec.choose
+instance : Fintype ιM := M_directSum.choose_spec.choose
 
-def M_iso_directSum : M hα hβ ≃ₗ[C] ιM →₀ SM :=
-  (M_directSum hα hβ).choose_spec.choose_spec.some
+def M_iso_directSum : M α β ≃ₗ[C] ιM →₀ SM := M_directSum.choose_spec.choose_spec.some
 
 instance : Module.Finite C SM := by
   rw [Module.finite_def, Submodule.fg_def]
@@ -995,9 +991,10 @@ instance : Module.Finite C SM := by
 
 instance : Module.Finite F SM := Module.Finite.trans C SM
 
+omit [DecidableEq (K ≃ₐ[F] K)] in
 lemma SM_F_dim : Fintype.card ι * finrank F SM = finrank F K ^ 2 := by
-  have eq1 := LinearEquiv.finrank_eq (isoιSMPow' hα hβ |>.restrictScalars F)
-  rw [CrossProductAlgebra.dim_eq_square] at eq1
+  have eq1 := LinearEquiv.finrank_eq (isoιSMPow' (α := α) (β := β) |>.restrictScalars F)
+  rw [CrossProductAlgebra.finrank_eq_sq] at eq1
   have eq2 := rank_fun (η := (Fin (Fintype.card ι))) (M := SM) (R := F)
   rw [Fintype.card_fin, ← finrank_eq_rank F SM,
     show (Fintype.card ι : Cardinal) * (finrank F SM : Cardinal) =
@@ -1014,7 +1011,8 @@ instance : Module.Finite C (Fin (Fintype.card ι * finrank F K) → SM) := by
   have := Finsupp.linearEquivFunOnFinite C SM (Fin (Fintype.card ι * finrank F K))
   refine Module.Finite.equiv this
 
-lemma M_iso_powAux : Nonempty (M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM) := by
+omit [DecidableEq (K ≃ₐ[F] K)] in
+lemma M_iso_powAux : Nonempty (M α β ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM) := by
   rw [linearEquiv_iff_finrank_eq_over_simple_ring F C]
   have eq2 := rank_fun (η := (Fin (finrank F K * Fintype.card ι))) (M := SM) (R := F)
   rw [Fintype.card_fin, ← finrank_eq_rank F SM,
@@ -1024,17 +1022,17 @@ lemma M_iso_powAux : Nonempty (M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.ca
   have := finrank_eq_of_rank_eq eq2
   rw [this, M_F_dim, _root_.mul_assoc, SM_F_dim, pow_three, pow_two]
 
-def M_iso_pow : M hα hβ ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM :=
-  M_iso_powAux _ _ |>.some
+variable (α β) in
+def M_iso_pow : M α β ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM := M_iso_powAux.some
 
-def M_iso_pow' : M hα hβ ≃ₗ[F] Fin (finrank F K * Fintype.card ι) → SM :=
-M_iso_pow _ _ |>.restrictScalars F
+def M_iso_pow' : M α β ≃ₗ[F] Fin (finrank F K * Fintype.card ι) → SM :=
+  M_iso_pow α β|>.restrictScalars F
 
 -- set_option maxHeartbeats 600000 in
 def endCMIso :
-    Module.End C (M hα hβ) ≃ₐ[F] Module.End C (Fin (finrank F K * Fintype.card ι) → SM) where
-  toFun x := (M_iso_pow hα hβ) ∘ₗ x ∘ₗ (M_iso_pow hα hβ).symm
-  invFun x := (M_iso_pow hα hβ).symm ∘ₗ x ∘ₗ (M_iso_pow hα hβ)
+    Module.End C (M α β) ≃ₐ[F] Module.End C (Fin (finrank F K * Fintype.card ι) → SM) where
+  toFun x := (M_iso_pow α β) ∘ₗ x ∘ₗ (M_iso_pow α β).symm
+  invFun x := (M_iso_pow α β).symm ∘ₗ x ∘ₗ (M_iso_pow α β)
   left_inv := by
     intro x
     simp only [← LinearMap.comp_assoc, LinearEquiv.comp_coe, LinearEquiv.self_trans_symm,
@@ -1060,7 +1058,7 @@ def endCMIso :
     refine DFunLike.ext _ _ fun z ↦ ?_
     simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
       Module.algebraMap_end_apply]
-    change  (M_iso_pow' hα hβ) (f • (M_iso_pow' hα hβ).symm z) = f • z
+    change  (M_iso_pow') (f • (M_iso_pow').symm z) = f • z
     rw [map_smul]
     simp only [algebraMap_val, LinearEquiv.apply_symm_apply, smul_assoc, one_smul]
 
@@ -1073,14 +1071,15 @@ instance : NeZero (finrank F K * Fintype.card ι) := by
   omega
 
 def endCMIso' :
-    Module.End C (M hα hβ) ≃ₐ[F]
+    Module.End C (M α β) ≃ₐ[F]
     Matrix (Fin (finrank F K * Fintype.card ι))
       (Fin (finrank F K * Fintype.card ι)) (Module.End C SM) :=
-  endCMIso hα hβ  |>.trans <| isoDagger _ _ _
+  endCMIso.trans <| isoDagger _
 
+omit [DecidableEq (K ≃ₐ[F] K)] in
 lemma dim_endCM :
-    finrank F (Module.End C (M hα hβ)) = (finrank F K)^4 := by
-  have := LinearEquiv.finrank_eq (endCMIso' hα hβ).toLinearEquiv
+    finrank F (Module.End C (M α β)) = (finrank F K)^4 := by
+  have := LinearEquiv.finrank_eq (endCMIso' (α := α) (β := β)).toLinearEquiv
   rw [this]
   have := matrixEquivTensor (Fin (finrank F K * Fintype.card ι)) F (Module.End C SM)
     |>.toLinearEquiv.finrank_eq
@@ -1092,9 +1091,12 @@ lemma dim_endCM :
     ← dim_endCSM, pow_two, pow_succ, pow_three]
   group
 
+-- set_option maxHeartbeats 600000 in
+set_option maxSynthPendingDepth 3 in
 def φ1 :
-    (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M hα hβ) :=
-  AlgEquiv.ofBijective (φ0 hα hβ) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
+    (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M α β) :=
+  AlgEquiv.ofBijective (φ0 (α := α) (β := β)) <|
+  bijective_of_dim_eq_of_isCentralSimple F (A ⊗[F] B)ᵐᵒᵖ (Module.End C (M α β)) φ0 <| by
     rw [dim_endCM, show finrank F (A ⊗[F] B)ᵐᵒᵖ = finrank F (A ⊗[F] B) by
       refine LinearEquiv.finrank_eq
         { toFun := unop
@@ -1102,49 +1104,45 @@ def φ1 :
           map_smul' _ _ := rfl
           invFun := op
           left_inv := unop_op
-          right_inv _ := rfl }, finrank_tensorProduct, CrossProductAlgebra.dim_eq_square,
-      CrossProductAlgebra.dim_eq_square, pow_two, pow_succ]
-    group)
+          right_inv _ := rfl }, finrank_tensorProduct, CrossProductAlgebra.finrank_eq_sq,
+      CrossProductAlgebra.finrank_eq_sq, pow_two, pow_succ]
+    group
 
 def φ2 :
-    (A ⊗[F] B) ≃ₐ[F] (Module.End C (M hα hβ))ᵐᵒᵖ where
-  toFun a := op <| φ1 _ _ (op a)
-  invFun g := (φ1 _ _ |>.symm g.unop).unop
+    (A ⊗[F] B) ≃ₐ[F] (Module.End C (M α β))ᵐᵒᵖ where
+  toFun a := op <| φ1 (op a)
+  invFun g := (φ1.symm g.unop).unop
   left_inv := by intro x; simp
   right_inv := by intro x; simp
   map_mul' := by intros; simp
   map_add' := by intros; simp
-  commutes' := by
-    intro f
-    simp only [Algebra.TensorProduct.algebraMap_apply, algebraMap_val, MulOpposite.algebraMap_apply,
-      op_inj]
-    rw [← smul_tmul', op_smul]
-    have := (φ0 hα hβ).commutes f
-    rw [← this]
-    rw [Algebra.algebraMap_eq_smul_one]
+  commutes' := fun f ↦ by
+    simp only [Algebra.TensorProduct.algebraMap_apply, MulOpposite.algebraMap_apply, op_inj]
+    rw [Algebra.algebraMap_eq_smul_one, ← smul_tmul', op_smul, ← (φ0 (α := α) (β := β)).commutes f,
+      Algebra.algebraMap_eq_smul_one]
     rfl
 
 def φ3 :
     (A ⊗[F] B) ≃ₐ[F]
     (Matrix (Fin (finrank F K * Fintype.card ι)) (Fin (finrank F K * Fintype.card ι))
-      (Module.End C SM))ᵐᵒᵖ :=
-  φ2 _ _ |>.trans (AlgEquiv.op <| endCMIso' _ _)
+      (Module.End C SM))ᵐᵒᵖ := φ2.trans endCMIso'.op
 
 def φ4 :
     (A ⊗[F] B) ≃ₐ[F]
     (Matrix (Fin (finrank F K * Fintype.card ι)) (Fin (finrank F K * Fintype.card ι))
       (Module.End C SM)ᵐᵒᵖ) :=
-  φ3 _ _ |>.trans ((matrixEquivMatrixMop_algebra F _ _).symm)
+  φ3.trans ((matrixEquivMatrixMop_algebra F _ _).symm)
 
 instance [DecidableEq (Module.End C SM)] : DivisionRing ((Module.End C SM)ᵐᵒᵖ) := by
   letI : DivisionRing (Module.End C SM) := Module.End.divisionRing
   infer_instance
 
+omit [DecidableEq (K ≃ₐ[F] K)] in
 lemma isBrauerEquivalent : IsBrauerEquivalent (⟨.of F (A ⊗[F] B)⟩ : CSA F) ⟨.of F C⟩ := by
-  let iso1 := C_iso hα hβ |>.mapMatrix (m := Fin (finrank F K))
+  let iso1 := C_iso (α := α) (β := β) |>.mapMatrix (m := Fin (finrank F K))
   let iso11 := iso1.trans (Matrix.compAlgEquiv _ _ _ _) |>.trans
     (Matrix.reindexAlgEquiv _ _ finProdFinEquiv)
-  let iso2 := φ4 hα hβ
+  let iso2 := φ4 (α := α) (β := β)
   let iso3 := iso11.trans iso2.symm
   haveI : NeZero (finrank F K) := ⟨by have : 0 < finrank F K := finrank_pos; omega⟩
   exact ⟨1, finrank F K, one_ne_zero, (NeZero.ne' (finrank F K)).symm,
@@ -1222,7 +1220,8 @@ def isoSnd :
     refine Subtype.ext ?_
     change _ = Quotient.mk'' _
     rw [Quotient.eq'']
-    exact map_mul_proof.isBrauerEquivalent hx hy |>.symm
+    change IsBrauerEquivalent _ _
+    exact @map_mul_proof.isBrauerEquivalent _ _ _ _ _ _ _ ⟨hx⟩ ⟨hy⟩ _ _ |>.symm
 
 #print axioms isoSnd
 
