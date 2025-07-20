@@ -14,7 +14,7 @@ open scoped TensorProduct
 -- namespace map_one_proof
 -- section map_one
 
--- variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+-- variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K, F)]
 
 -- set_option maxHeartbeats 1000000 in
 -- def φ0 :
@@ -127,7 +127,7 @@ open scoped TensorProduct
 namespace map_mul_proof
 section map_mul
 
-variable (α β : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ)
+variable (α β : Gal(K, F) × Gal(K, F) → Kˣ)
 variable (hα : IsMulTwoCocycle α) (hβ : IsMulTwoCocycle β)
 
 variable {K F α β}
@@ -142,7 +142,7 @@ local notation "C" => CrossProductAlgebra (hαβ hα hβ)
 
 open CrossProductAlgebra TensorProduct
 
-variable [FiniteDimensional F K]  [DecidableEq (K ≃ₐ[F] K)]
+variable [FiniteDimensional F K]  [DecidableEq Gal(K, F)]
 
 abbrev S : Set (A ⊗[F] B) :=
   Set.range (fun (cba : K × A × B) =>
@@ -309,7 +309,7 @@ def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
   Submodule.mapQ (Submodule.span F (S hα hβ)) (Submodule.span F (S hα hβ))
     (TensorProduct.lift
       { toFun a := {
-          toFun b := ∑ σ : K ≃ₐ[F] K, ((c.1 σ • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)
+          toFun b := ∑ σ : Gal(K, F), ((c.1 σ • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)
           map_add' b b' := by
             rw [← Finset.sum_add_distrib]
             refine Finset.sum_congr rfl fun σ _ => ?_
@@ -347,7 +347,7 @@ def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
       x_AsBasis_conj''] <;>
     simp only [← _root_.mul_assoc, ← map_mul, mul_comm (σ k)])
 
-lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
+lemma C_smul_aux_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
     C_smul_aux _ _ (k • x_AsBasis (hαβ hα hβ) σ) (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
     Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) := by
   delta C_smul_aux
@@ -411,7 +411,7 @@ def C_smul : C →ₗ[F] M hα hβ →ₗ[F] M hα hβ where
 instance : SMul C (M hα hβ) where
   smul c x := C_smul hα hβ c x
 
-lemma C_smul_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
+lemma C_smul_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
     (k • x_AsBasis (hαβ hα hβ) σ) • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M hα hβ) =
     Submodule.Quotient.mk (((k • x_AsBasis hα σ) * a) ⊗ₜ (x_AsBasis hβ σ * b)) :=
   C_smul_aux_calc hα hβ k σ a b
@@ -1171,7 +1171,7 @@ end map_mul_proof
 
 namespace RelativeBrGroup
 
-variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K, F)]
 
 -- @[simps]
 -- def fromSndAddMonoidHom :

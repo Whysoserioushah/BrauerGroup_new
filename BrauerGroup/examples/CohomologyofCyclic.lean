@@ -508,7 +508,7 @@ instance CommG (G : Type*) (σ : G) [Group G] (hσ : Submonoid.powers σ = ⊤) 
     obtain ⟨m, rfl⟩ := SetLike.ext_iff.1 hσ b|>.2 (by trivial)
     simp [← pow_add, add_comm]
 
-variable (F K : Type) [Field F] [Field K] [Algebra F K] [IsGalois F K] (τ : K ≃ₐ[F] K)
+variable (F K : Type) [Field F] [Field K] [Algebra F K] [IsGalois F K] (τ : Gal(K, F))
     (hτ : Submonoid.powers τ = ⊤) [FiniteDimensional F K]
 
 open scoped Classical in
@@ -520,14 +520,14 @@ abbrev BrauerOverCyclic'  :
     Additive (RelativeBrGroup K F) ≃ₗ[ℤ]
     ((galAct F K).ρ.invariants ⧸ (LinearMap.range (N' _ ℤ _).1.hom).comap
     (galAct F K).ρ.invariants.subtype) :=
-  letI : CommGroup (K ≃ₐ[F] K) := CommG (K ≃ₐ[F] K) τ hτ
+  letI : CommGroup Gal(K, F) := CommG Gal(K, F) τ hτ
   ({__ := RelativeBrGroup.isoSnd K F
     map_smul' z a := by simp} : _ ≃ₗ[ℤ] _ ) ≪≫ₗ
   (Iso.toLinearEquiv (groupCohomology.isoH2 (galAct F K)).symm) ≪≫ₗ
-  (Iso.toLinearEquiv (CyclicCoh.groupCohEven 2 (K ≃ₐ[F] K) ℤ τ (by simp) (galAct F K) hτ))
+  (Iso.toLinearEquiv (CyclicCoh.groupCohEven 2 Gal(K, F) ℤ τ (by simp) (galAct F K) hτ))
 
 abbrev invariants_eq : ((galAct F K).ρ.invariants : Submodule ℤ
-  (Rep.ofMulDistribMulAction (K ≃ₐ[F] K) Kˣ).V) = sorry := sorry
+  (Rep.ofMulDistribMulAction Gal(K, F) Kˣ).V) = sorry := sorry
 
 set_option synthInstance.maxHeartbeats 40000 in
 abbrev BrauerOverCyclic : Additive (RelativeBrGroup K F) ≃+

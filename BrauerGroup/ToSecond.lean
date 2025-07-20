@@ -1,3 +1,4 @@
+import BrauerGroup.Mathlib.Algebra.Algebra.Equiv
 import BrauerGroup.Mathlib.RingTheory.Congruence.Defs
 import BrauerGroup.Subfield.Splitting
 import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
@@ -83,9 +84,9 @@ end basic
 
 section single
 
-variable (ρ σ τ : K ≃ₐ[F] K)
+variable (ρ σ τ : Gal(K, F))
 
-def conjFactor : (σ : K ≃ₐ[F] K) → Type :=
+def conjFactor : (σ : Gal(K, F)) → Type :=
   fun σ => { a : Aˣ //  ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹ }
 
 def arbitraryConjFactor : A.conjFactor σ :=
@@ -311,7 +312,7 @@ lemma conjFactorCompCoeff_comp_comp
   simpa using conjFactorCompCoeff_comp_comp₃ xρ xσ xτ xρσ xστ xρστ
 
 variable (A) in
-def toTwoCocycles (x_ : Π σ, A.conjFactor σ) : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
+def toTwoCocycles (x_ : Π σ, A.conjFactor σ) : Gal(K, F) × Gal(K, F) → Kˣ :=
 fun p =>
   conjFactorCompCoeffAsUnit
     (x_ p.1)
@@ -339,7 +340,7 @@ end single
 
 section double
 
-variable {σ τ : K ≃ₐ[F] K}
+variable {σ τ : Gal(K, F)}
 
 lemma exists_iso :
     Nonempty (A ≃ₐ[F] B) := by
@@ -482,7 +483,7 @@ lemma compare_conjFactorCompCoeff
   apply_fun A.ι using RingHom.injective _
   simp only [map_mul, eq1]
 
-def trivialFactorSet (c : (K ≃ₐ[F] K) → Kˣ) : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ :=
+def trivialFactorSet (c : Gal(K, F) → Kˣ) : Gal(K, F) × Gal(K, F) → Kˣ :=
   fun p ↦ c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
 
 lemma compare_toTwoCocycles (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFactor σ) :
@@ -525,10 +526,10 @@ end double
 end GoodRep
 
 variable (F K) in
-noncomputable def galAct : Rep ℤ (K ≃ₐ[F] K) :=
-  Rep.ofMulDistribMulAction (K ≃ₐ[F] K) Kˣ
+noncomputable def galAct : Rep ℤ Gal(K, F) :=
+  Rep.ofMulDistribMulAction Gal(K, F) Kˣ
 
-@[simp] lemma galAct_ρ_apply (σ : K ≃ₐ[F] K) (x : Kˣ) :
+@[simp] lemma galAct_ρ_apply (σ : Gal(K, F)) (x : Kˣ) :
     (galAct F K).ρ σ (.ofMul x) = .ofMul (Units.map σ x) := rfl
 
 variable [FiniteDimensional F K]
@@ -573,7 +574,7 @@ lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
   rw [← sub_eq_zero, ← map_sub]
   rw [H2π_eq_zero_iff]
   set lhs := _; change lhs ∈ _
-  have : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (lhs) := by
+  have : IsMulTwoCoboundary (G := Gal(K, F)) (M := Kˣ) (lhs) := by
     apply GoodRep.compare_toTwoCocycles'
   exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
 
@@ -585,14 +586,14 @@ variable {X : BrauerGroup F} (A : GoodRep K X)
 
 omit [FiniteDimensional F K] in
 lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
-    LinearIndependent K (v := fun (i : K ≃ₐ[F] K) => (x_ i).1.1) := by
+    LinearIndependent K (v := fun (i : Gal(K, F)) => (x_ i).1.1) := by
   classical
   by_contra! rid
-  obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : K ≃ₐ[F] K) => (x_ i).1.1)
+  obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : Gal(K, F)) => (x_ i).1.1)
   have ne : J ≠ Set.univ := by
     rintro rfl
     refine rid ?_
-    let e : (Set.univ : Set (K ≃ₐ[F] K)) ≃ (K ≃ₐ[F] K) := Equiv.Set.univ (K ≃ₐ[F] K)
+    let e : (Set.univ : Set Gal(K, F)) ≃ Gal(K, F) := Equiv.Set.univ Gal(K, F)
     have := linearIndependent_equiv e.symm |>.2 LI
     exact this
   rw [Set.ne_univ_iff_exists_not_mem] at ne
@@ -681,23 +682,23 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
 
 variable [IsGalois F K] in
 
-def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis (K ≃ₐ[F] K) K A :=
+def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis Gal(K, F) K A :=
   basisOfLinearIndependentOfCardEqFinrank
-    (b := fun (i : K ≃ₐ[F] K) => (x_ i).1.1)
+    (b := fun (i : Gal(K, F)) => (x_ i).1.1)
     (A.conjFactor_linearIndependent x_)
     (by rw [A.dim_eq', IsGalois.card_aut_eq_finrank])
 
 open DirectSum
 
-variable [DecidableEq (K ≃ₐ[F] K)]
+variable [DecidableEq Gal(K, F)]
 
-variable {a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ} (ha : IsMulTwoCocycle a)
+variable {a : Gal(K, F) × Gal(K, F) → Kˣ} (ha : IsMulTwoCocycle a)
 
-variable (σ τ : K ≃ₐ[F] K)
+variable (σ τ : Gal(K, F))
 
 variable (a) in
 def crossProductMul :
-    ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) :=
+    (Gal(K, F) → K) →ₗ[F] (Gal(K, F) → K) →ₗ[F] (Gal(K, F) → K) :=
   LinearMap.lsum F _ F fun σ =>
   { toFun c := LinearMap.lsum F _ F fun τ =>
       { toFun d := Function.update 0 (σ * τ) (c * σ d * a (σ, τ))
@@ -742,10 +743,10 @@ lemma crossProductMul_single_single (c d : K) :
     LinearMap.coe_mk, AddHom.coe_mk, LinearMap.coe_proj, Finset.sum_apply, Function.comp_apply,
     Function.eval]
   rw [← Finset.sum_product']
-  rw [show (Pi.single (σ * τ) (c * σ d * a (σ, τ)) : (K ≃ₐ[F] K) → K) =
-    Function.update (0 : (K ≃ₐ[F] K) → K) ((σ, τ).1 * (σ, τ).2)
-      ((Pi.single σ c : (K ≃ₐ[F] K) → K) (σ, τ).1 *
-      (σ, τ).1 ((Pi.single τ d : (K ≃ₐ[F] K) → K) τ) * a ((σ, τ).1, (σ, τ).2)) by
+  rw [show (Pi.single (σ * τ) (c * σ d * a (σ, τ)) : Gal(K, F) → K) =
+    Function.update (0 : Gal(K, F) → K) ((σ, τ).1 * (σ, τ).2)
+      ((Pi.single σ c : Gal(K, F) → K) (σ, τ).1 *
+      (σ, τ).1 ((Pi.single τ d : Gal(K, F) → K) τ) * a ((σ, τ).1, (σ, τ).2)) by
     simp only [Pi.single_eq_same]; rfl]
   apply Finset.sum_eq_single_of_mem (h := by simp)
   rintro ⟨σ', τ'⟩ - neq
@@ -754,7 +755,7 @@ lemma crossProductMul_single_single (c d : K) :
     Units.ne_zero, or_false, Pi.single_apply]
   split_ifs <;> aesop
 
-def crossProductSMul : F →ₗ[F] ((K ≃ₐ[F] K) → K) →ₗ[F] ((K ≃ₐ[F] K) → K) where
+def crossProductSMul : F →ₗ[F] (Gal(K, F) → K) →ₗ[F] (Gal(K, F) → K) where
   toFun r := LinearMap.lsum F _ F fun σ =>
     { toFun c := Function.update 0 σ (r • c)
       map_add' := by
@@ -794,65 +795,65 @@ lemma crossProductSMul_single (r : F) (c : K) :
     LinearMap.coeFn_sum, LinearMap.coe_comp, LinearMap.coe_proj, Finset.sum_apply,
     Function.comp_apply, Function.eval]
 
-  rw [show (Pi.single σ (r • c) : (K ≃ₐ[F] K) → K) =
-    Function.update (0 : (K ≃ₐ[F] K) → K) σ (r • (Pi.single σ c : (K ≃ₐ[F] K) → K) σ) by
+  rw [show (Pi.single σ (r • c) : Gal(K, F) → K) =
+    Function.update (0 : Gal(K, F) → K) σ (r • (Pi.single σ c : Gal(K, F) → K) σ) by
     aesop]
   apply Finset.sum_eq_single_of_mem (h := by simp)
   intros
   aesop
 
-structure CrossProductAlgebra {a : (K ≃ₐ[F] K) × (K ≃ₐ[F] K) → Kˣ} (ha : IsMulTwoCocycle a) where
-  (val : (K ≃ₐ[F] K) → K)
+structure CrossProductAlgebra {a : Gal(K, F) × Gal(K, F) → Kˣ} (ha : IsMulTwoCocycle a) where
+  (val : Gal(K, F) → K)
 
 namespace CrossProductAlgebra
 
 instance : Add (CrossProductAlgebra ha) where
   add x y := ⟨x.val + y.val⟩
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp] lemma add_val (x y : CrossProductAlgebra ha) :
     (x + y).val = x.val + y.val := rfl
 
 instance : Zero (CrossProductAlgebra ha) where
   zero := ⟨0⟩
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp] lemma zero_val : (0 : CrossProductAlgebra ha).val = 0 := rfl
 
 instance : SMul ℕ (CrossProductAlgebra ha) where
   smul n x := ⟨n • x.val⟩
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp] lemma nsmul_val (n : ℕ) (x : CrossProductAlgebra ha) :
     (n • x).val = n • x.val := rfl
 
 instance : Neg (CrossProductAlgebra ha) where
   neg x := ⟨-x.val⟩
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp] lemma neg_val (x : CrossProductAlgebra ha) :
     (-x).val = -x.val := rfl
 
 instance : Sub (CrossProductAlgebra ha) where
   sub x y := ⟨x.val - y.val⟩
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp] lemma sub_val (x y : CrossProductAlgebra ha) :
     (x - y).val = x.val - y.val := rfl
 
 instance : SMul ℤ (CrossProductAlgebra ha) where
   smul n x := ⟨n • x.val⟩
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp] lemma zsmul_val (n : ℤ) (x : CrossProductAlgebra ha) :
     (n • x).val = n • x.val := rfl
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 lemma val_injective : Function.Injective (CrossProductAlgebra.val (ha := ha)) := by
   rintro ⟨x⟩ ⟨y⟩ rfl
   rfl
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[ext]
 lemma ext (x y : CrossProductAlgebra ha) : x.val = y.val → x = y := by
   cases x; cases y
@@ -865,17 +866,17 @@ instance addCommGroup : AddCommGroup (CrossProductAlgebra ha) :=
     (fun _ _ => rfl)
 
 @[simps]
-def valAddMonoidHom : (CrossProductAlgebra ha) →+ ((K ≃ₐ[F] K) → K) :=
+def valAddMonoidHom : (CrossProductAlgebra ha) →+ (Gal(K, F) → K) :=
   { toFun x := x.val,
     map_zero' := rfl,
     map_add' := fun _ _ => rfl }
 
 @[elab_as_elim]
 lemma single_induction (x : CrossProductAlgebra ha) {motive : CrossProductAlgebra ha → Prop}
-    (single : ∀ (σ : K ≃ₐ[F] K) (c : K), motive ⟨Pi.single σ c⟩)
+    (single : ∀ (σ : Gal(K, F)) (c : K), motive ⟨Pi.single σ c⟩)
     (add : ∀ x y, motive x → motive y → motive ⟨x.val + y.val⟩)
     (zero : motive ⟨0⟩) : motive x := by
-  have : x = ∑ σ : K ≃ₐ[F] K, ⟨Pi.single σ (x.val σ)⟩ := by
+  have : x = ∑ σ : Gal(K, F), ⟨Pi.single σ (x.val σ)⟩ := by
     ext σ
     change valAddMonoidHom ha _ _ = valAddMonoidHom ha _ _
     rw [map_sum]
@@ -903,7 +904,7 @@ instance : One (CrossProductAlgebra ha) where
 
 omit  [FiniteDimensional F K] in
 @[simp] lemma one_val : (1 : CrossProductAlgebra ha).val =
-    Pi.single (1 : K ≃ₐ[F] K) (a (1, 1))⁻¹ := rfl
+    Pi.single (1 : Gal(K, F)) (a (1, 1))⁻¹ := rfl
 
 attribute [local simp] mul_def in
 instance monoid : Monoid (CrossProductAlgebra ha) where
@@ -1109,21 +1110,21 @@ lemma ι_apply_val (b : K) :
     (ι ha b).val = Pi.single 1 (b * (a (1, 1))⁻¹) := rfl
 
 include ha in
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp] lemma a_one_left : a (1, σ) = a 1 := by
   have := ha 1 1 σ
   simp only [_root_.mul_one, Prod.mk_one_one, one_smul, _root_.one_mul, mul_right_inj] at this
   exact this.symm
 
 include ha in
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 lemma a_one_right : a (σ, 1) = Units.map σ (a 1) := by
   have := ha σ 1 1
   simp only [_root_.mul_one, Prod.mk_one_one, AlgEquiv.smul_units_def, mul_left_inj] at this
   exact this
 
 include ha in
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 lemma a_one_right' : (a (σ, 1)).1 = σ (a 1) := congr($(a_one_right ha σ).1)
 
 lemma identity_double_cross (b : K) :
@@ -1159,7 +1160,7 @@ lemma Units.ofLeftRightInverse_inv_eq1 (G : Type*) [Monoid G] (a b c : G) (h : a
 lemma Units.ofLeftRightInverse_inv_eq2 (G : Type*) [Monoid G] (a b c : G) (h : a * b = 1) (h' : c * a = 1) :
     (Units.ofLeftRightInverse G a b c h h').inv = c := by simp [left_inv_eq_right_inv h' h]
 
-def x_ (σ : K ≃ₐ[F] K) : (CrossProductAlgebra ha)ˣ :=
+def x_ (σ : Gal(K, F)) : (CrossProductAlgebra ha)ˣ :=
   Units.ofLeftRightInverse (CrossProductAlgebra ha) ⟨Pi.single σ 1⟩
     ⟨Pi.single σ⁻¹ ((σ⁻¹ ((a (σ, σ⁻¹))⁻¹ * (a 1)⁻¹)))⟩
     ⟨Pi.single σ⁻¹ ((a (σ⁻¹, σ))⁻¹ * (a 1)⁻¹)⟩
@@ -1199,15 +1200,15 @@ def x_ (σ : K ≃ₐ[F] K) : (CrossProductAlgebra ha)ˣ :=
 
 set_option linter.style.nameCheck false in
 @[simp]
-lemma x__val (σ : K ≃ₐ[F] K) :
+lemma x__val (σ : Gal(K, F)) :
     (x_ ha σ).val.val = Pi.single σ 1 := rfl
 
 set_option linter.style.nameCheck false in
-lemma x__inv (σ : K ≃ₐ[F] K) :
+lemma x__inv (σ : Gal(K, F)) :
     (x_ ha σ).inv.val = Pi.single σ⁻¹ ((σ⁻¹ ((a (σ, σ⁻¹))⁻¹ * (a 1)⁻¹)) : K) := rfl
 
 set_option linter.style.nameCheck false in
-lemma x__inv' (σ : K ≃ₐ[F] K) :
+lemma x__inv' (σ : Gal(K, F)) :
     (x_ ha σ).inv.1 = Pi.single σ⁻¹ ((a (σ⁻¹, σ))⁻¹ * (a 1)⁻¹) := by
   delta x_
   rw [Units.ofLeftRightInverse_inv_eq2]
@@ -1257,7 +1258,7 @@ instance module : Module K (CrossProductAlgebra ha) where
 lemma smul_def (c : K) (x : CrossProductAlgebra ha) :
     c • x = ι ha c * x := rfl
 
-lemma smul_single (c d : K) (σ : K ≃ₐ[F] K) :
+lemma smul_single (c d : K) (σ : Gal(K, F)) :
     c • (⟨Pi.single σ d⟩ : CrossProductAlgebra ha) = ⟨Pi.single σ (c * d)⟩ := by
   apply val_injective ha
   simp only [smul_def, mul_val, ι_apply_val, Prod.mk_one_one, Units.val_inv_eq_inv_val,
@@ -1266,7 +1267,7 @@ lemma smul_single (c d : K) (σ : K ≃ₐ[F] K) :
   simp only [isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel,
     _root_.mul_one]
 
-def x_AsBasis : Basis (K ≃ₐ[F] K) K (CrossProductAlgebra ha) :=
+def x_AsBasis : Basis Gal(K, F) K (CrossProductAlgebra ha) :=
 .mk (v := fun σ => (x_ ha σ).1)
   (by
     rw [linearIndependent_iff']
@@ -1303,7 +1304,7 @@ instance : IsScalarTower F K (CrossProductAlgebra ha) where
       Units.val_inv_eq_inv_val]
 
 @[simp]
-lemma x_AsBasis_apply (σ : K ≃ₐ[F] K) :
+lemma x_AsBasis_apply (σ : Gal(K, F)) :
     x_AsBasis ha σ = ⟨Pi.single σ 1⟩ := by simp [x_AsBasis, x_]
 
 lemma one_in_x_AsBasis :
@@ -1314,7 +1315,7 @@ lemma one_in_x_AsBasis :
     ι_apply_val, crossProductMul_single_single, _root_.mul_one, AlgEquiv.one_apply,
     isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_right]
 
-lemma single_in_xAsBasis (c : K) (σ : K ≃ₐ[F] K) :
+lemma single_in_xAsBasis (c : K) (σ : Gal(K, F)) :
     ⟨Pi.single σ c⟩ = c • x_AsBasis ha σ := by
   apply val_injective ha
   simp only [x_AsBasis_apply, smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
@@ -1322,7 +1323,7 @@ lemma single_in_xAsBasis (c : K) (σ : K ≃ₐ[F] K) :
     _root_.mul_one, a_one_left ha, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
     IsUnit.inv_mul_cancel_right]
 
-lemma mul_single_in_xAsBasis (c d : K) (σ τ : K ≃ₐ[F] K) :
+lemma mul_single_in_xAsBasis (c d : K) (σ τ : Gal(K, F)) :
     ⟨Pi.single σ c⟩ * ⟨Pi.single τ d⟩ = (c * σ d * a (σ, τ)) • x_AsBasis ha (σ * τ) := by
   apply val_injective ha
   simp only [mul_val, crossProductMul_single_single, x_AsBasis_apply, smul_def, map_mul,
@@ -1371,10 +1372,10 @@ lemma x_AsBasis_mul : x_AsBasis ha σ * x_AsBasis ha τ = (a (σ, τ)).1 • x_A
 lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProductAlgebra ha) ≤ ⊥ := by
   rintro z hz
   rw [Subalgebra.mem_center_iff] at hz
-  set s : (K ≃ₐ[F] K) → K :=
+  set s : Gal(K, F) → K :=
     fun σ => if σ ∈ ((x_AsBasis ha).repr z).support then (x_AsBasis ha).repr z σ else 0
 
-  have eq1 : z = ∑ σ : K ≃ₐ[F] K, s σ • ⟨Pi.single σ 1⟩ := by
+  have eq1 : z = ∑ σ : Gal(K, F), s σ • ⟨Pi.single σ 1⟩ := by
     conv_lhs => rw [← (x_AsBasis ha).linearCombination_repr z, Finsupp.linearCombination_apply,
       Finsupp.sum]
     apply Finset.sum_subset_zero_on_sdiff (Finset.subset_univ _)
@@ -1384,7 +1385,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProductAlgebra ha) �
       exact Or.inl hx
     intro x _
     simp only [x_AsBasis_apply, Finsupp.mem_support_iff, ne_eq, Finsupp.if_mem_support, s]
-  have eq1' (τ : K ≃ₐ[F] K) : z = ∑ σ, s (τ⁻¹ * σ * τ) • ⟨Pi.single (τ⁻¹ * σ * τ) 1⟩ := by
+  have eq1' (τ : Gal(K, F)) : z = ∑ σ, s (τ⁻¹ * σ * τ) • ⟨Pi.single (τ⁻¹ * σ * τ) 1⟩ := by
     rw [eq1]
     fapply Finset.sum_bij
     · refine fun σ _ => τ * σ * τ⁻¹
@@ -1397,9 +1398,9 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProductAlgebra ha) �
     · rintro σ -
       simp [← _root_.mul_assoc]
 
-  have eq2 (d : K) (τ : K ≃ₐ[F] K) :
+  have eq2 (d : K) (τ : Gal(K, F)) :
       z * ⟨Pi.single τ d⟩ = ⟨Pi.single τ d⟩ * z := hz ⟨Pi.single τ d⟩ |>.symm
-  have eq3 (d : K) (τ : K ≃ₐ[F] K) : z * ⟨Pi.single τ d⟩ =
+  have eq3 (d : K) (τ : Gal(K, F)) : z * ⟨Pi.single τ d⟩ =
       ∑ σ, (s σ * (σ d) * a (σ, τ)) • ⟨Pi.single (σ * τ) 1⟩ := by
     rw [eq1, Finset.sum_mul]
     refine Finset.sum_congr rfl fun σ _ => ?_
@@ -1410,7 +1411,7 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProductAlgebra ha) �
     rw [a_one_left ha]
     field_simp
 
-  have eq4 (d : K) (τ : K ≃ₐ[F] K) : ⟨Pi.single τ d⟩ * z =
+  have eq4 (d : K) (τ : Gal(K, F)) : ⟨Pi.single τ d⟩ * z =
       ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • ⟨Pi.single (σ * τ) 1⟩ := by
     rw [eq1' τ, Finset.mul_sum]
     refine Finset.sum_congr rfl fun σ _ => ?_
@@ -1422,20 +1423,20 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProductAlgebra ha) �
       IsUnit.inv_mul_cancel_right, mul_inv_cancel, _root_.one_mul, map_one, AlgEquiv.one_apply,
       a_one_left ha, Pi.single_inj]
     field_simp
-  have eq5 (d : K) (τ : K ≃ₐ[F] K) :
+  have eq5 (d : K) (τ : Gal(K, F)) :
       ∑ σ, (s σ * (σ d) * (a (σ, τ))) • (x_AsBasis ha (σ * τ)) =
       ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • (x_AsBasis ha (σ * τ)) := by
     simp_rw [x_AsBasis_apply]
     rw [← eq3, ← eq4, eq2]
 
-  let e (τ : K ≃ₐ[F] K) : (K ≃ₐ[F] K) ≃ (K ≃ₐ[F] K) :=
+  let e (τ : Gal(K, F)) : Gal(K, F) ≃ Gal(K, F) :=
   { toFun σ := σ * τ⁻¹
     invFun σ := σ * τ
     left_inv := by intro x; simp
     right_inv := by intro x; simp }
 
-  let basis' (τ : K ≃ₐ[F] K) := x_AsBasis ha |>.reindex (e τ)
-  have eq5' (d : K) (τ : K ≃ₐ[F] K) :
+  let basis' (τ : Gal(K, F)) := x_AsBasis ha |>.reindex (e τ)
+  have eq5' (d : K) (τ : Gal(K, F)) :
       ∑ σ, (s σ * (σ d) * (a (σ, τ))) • (basis' τ σ) =
       ∑ σ, (d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) • (basis' τ σ) := by
     simp only [Basis.coe_reindex, Equiv.coe_fn_symm_mk, Function.comp_apply, x_AsBasis_apply,
@@ -1443,13 +1444,13 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProductAlgebra ha) �
     simp_rw [x_AsBasis_apply] at eq5
     rw [eq5 d τ]
 
-  have eq5'' (d : K) (τ : K ≃ₐ[F] K) :
+  have eq5'' (d : K) (τ : Gal(K, F)) :
       ∑ σ, (s σ * (σ d) * (a (σ, τ)) - d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ)) •
         (basis' τ σ) = 0:= by
     simp_rw [sub_smul, Finset.sum_sub_distrib]
     rw [eq5', sub_self]
 
-  have EQ0 (d : K) (σ τ : K ≃ₐ[F] K) :
+  have EQ0 (d : K) (σ τ : Gal(K, F)) :
       s σ * (σ d) * (a (σ, τ)) = d * τ (s (τ⁻¹ * σ * τ)) * a (τ, τ⁻¹ * σ * τ) := by
     specialize eq5 d τ
     have EQ := (basis' τ).linearIndependent
@@ -1461,22 +1462,22 @@ lemma is_central [IsGalois F K] : Subalgebra.center F (CrossProductAlgebra ha) �
   have EQ1 := EQ0 1
   simp only [map_one, _root_.mul_one, _root_.one_mul] at EQ1
 
-  have EQ2 (d : K) (σ τ : K ≃ₐ[F] K) :
+  have EQ2 (d : K) (σ τ : Gal(K, F)) :
       s σ * (σ d) * (a (σ, τ)) = d * s σ * (a (σ, τ)) := by
     rw [EQ0, _root_.mul_assoc, ← EQ1, ← _root_.mul_assoc]
 
-  have EQ3 (d : K) (σ : K ≃ₐ[F] K) (h : s σ ≠ 0) : σ d = d := by
+  have EQ3 (d : K) (σ : Gal(K, F)) (h : s σ ≠ 0) : σ d = d := by
     specialize EQ2 d σ 1
     rw [mul_comm (s σ) (σ d)] at EQ2
     simp only [mul_eq_mul_right_iff, Units.ne_zero, or_false] at EQ2
     exact EQ2.resolve_right h
 
-  have conclusion1 (σ : K ≃ₐ[F] K) (h : σ ≠ 1) : s σ = 0 := by
+  have conclusion1 (σ : Gal(K, F)) (h : σ ≠ 1) : s σ = 0 := by
     contrapose! h
     ext d
     exact EQ3 d σ h
 
-  have conclusion2 (τ : K ≃ₐ[F] K) : τ (s 1 * a 1) = s 1 * a 1 := by
+  have conclusion2 (τ : Gal(K, F)) : τ (s 1 * a 1) = s 1 * a 1 := by
     rw [map_mul]
     specialize EQ0 1 1 τ
     simp only [AlgEquiv.one_apply, _root_.mul_one, a_one_left ha, inv_mul_cancel, _root_.one_mul,
@@ -1642,17 +1643,17 @@ lemma K_smul_quot (c : K) (x : I.ringCon.Quotient) : c • x =
   (⟨π I (ι ha c), by simpa using ⟨ι ha c, ⟨c, rfl⟩, rfl⟩⟩ : (πRes I).range) • x := rfl
 
 set_option maxHeartbeats 400000 in
-def basis (ne_top : I ≠ ⊤) : Basis (K ≃ₐ[F] K) K I.ringCon.Quotient :=
+def basis (ne_top : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient :=
   .mk (v := fun σ => I.ringCon.mk' (x_ ha σ))
     (by
       classical
       by_contra rid
-      obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : K ≃ₐ[F] K) =>
+      obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : Gal(K, F)) =>
         I.ringCon.mk' (x_ ha i))
       have ne : J ≠ Set.univ := by
         rintro rfl
         refine rid ?_
-        let e : (Set.univ : Set (K ≃ₐ[F] K)) ≃ (K ≃ₐ[F] K) := Equiv.Set.univ (K ≃ₐ[F] K)
+        let e : (Set.univ : Set Gal(K, F)) ≃ Gal(K, F) := Equiv.Set.univ Gal(K, F)
         have := linearIndependent_equiv e.symm |>.2 LI
         exact this
       rw [Set.ne_univ_iff_exists_not_mem] at ne
@@ -1852,7 +1853,7 @@ section from_two
 
 open GoodRep.CrossProductAlgebra
 
-variable [IsGalois F K] [DecidableEq (K ≃ₐ[F] K)]
+variable [IsGalois F K] [DecidableEq Gal(K, F)]
 
 def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
 ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)), by
@@ -1877,10 +1878,10 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
       rfl
 
     rw [← map_sub, H2π_eq_zero_iff] at H'
-    have ha : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) a := isMulTwoCocycle_of_mem_twoCocycles a ha
-    have hb : IsMulTwoCocycle (G := K ≃ₐ[F] K) (M := Kˣ) b := isMulTwoCocycle_of_mem_twoCocycles b hb
-    have hc : IsMulTwoCoboundary (G := K ≃ₐ[F] K) (M := Kˣ) (a / b) := by
-      exact isMulTwoCoboundary_of_mem_twoCoboundaries (G := K ≃ₐ[F] K) (M := Kˣ)
+    have ha : IsMulTwoCocycle (G := Gal(K, F)) (M := Kˣ) a := isMulTwoCocycle_of_mem_twoCocycles a ha
+    have hb : IsMulTwoCocycle (G := Gal(K, F)) (M := Kˣ) b := isMulTwoCocycle_of_mem_twoCocycles b hb
+    have hc : IsMulTwoCoboundary (G := Gal(K, F)) (M := Kˣ) (a / b) := by
+      exact isMulTwoCoboundary_of_mem_twoCoboundaries (G := Gal(K, F)) (M := Kˣ)
         _ H'
 
     obtain ⟨c, hc⟩ := hc
@@ -1891,7 +1892,7 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
     letI : Module K A := inferInstanceAs <| Module K (GoodRep.CrossProductAlgebra ha)
     letI : Module K B := inferInstanceAs <| Module K (GoodRep.CrossProductAlgebra hb)
 
-    let basis : Basis (K ≃ₐ[F] K) K B :=
+    let basis : Basis Gal(K, F) K B :=
       Basis.unitsSMul (x_AsBasis hb) c
     let φ0 : A ≃ₗ[K] B :=
       Basis.equiv (x_AsBasis ha) basis (Equiv.refl _)
@@ -2051,7 +2052,7 @@ lemma toSnd_fromSnd :
 
   let y_ σ : A.conjFactor σ := ⟨x_ ha σ, fun c ↦ by erw [x__conj ha σ]; rfl⟩
   rw [toSnd_wd (A := A) (x_ := y_)]
-  let b : ((K ≃ₐ[F] K) × (K ≃ₐ[F] K)) → Kˣ := A.toTwoCocycles y_
+  let b : Gal(K, F) × Gal(K, F) → Kˣ := A.toTwoCocycles y_
 
   rw [show A.toH2 y_ = Quotient.mk'' ⟨b, _⟩ by rfl]
   -- rw [Quotient.eq'']

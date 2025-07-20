@@ -15,6 +15,7 @@ import BrauerGroup.FiniteField
 import BrauerGroup.FrobeniusTheorem
 import BrauerGroup.IsoSecond
 import BrauerGroup.LemmasAboutSimpleRing
+import BrauerGroup.Mathlib.Algebra.Algebra.Equiv
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
 import BrauerGroup.Mathlib.GroupTheory.GroupExtension.Abelian
