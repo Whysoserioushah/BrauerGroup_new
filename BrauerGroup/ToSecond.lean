@@ -10,11 +10,10 @@ variable {F K : Type} [Field K] [Field F] [Algebra F K]
 variable (X : BrauerGroup F)
 
 variable (K) in
-structure GoodRep where
-carrier : CSA.{0, 0} F
-quot_eq : (Quotient.mk'' carrier) = X
-ι : K →ₐ[F] carrier
-dim_eq_square : Module.finrank F carrier = (Module.finrank F K) ^ 2
+structure GoodRep extends CSA.{0, 0} F where
+  quot_eq : Quotient.mk'' toCSA = X
+  ι : K →ₐ[F] toAlgebraCat
+  dim_eq_square : Module.finrank F carrier = (Module.finrank F K) ^ 2
 
 namespace GoodRep
 
@@ -64,7 +63,7 @@ instance : Module K A where
 @[simp]
 lemma smul_def (c : K) (a : A) : c • a = A.ι c * a := rfl
 
-instance : FiniteDimensional F A := A.carrier.fin_dim
+instance : FiniteDimensional F A := A.fin_dim
 
 instance : IsScalarTower F K A where
   smul_assoc a b c := by simp
@@ -73,7 +72,7 @@ instance : FiniteDimensional K A := FiniteDimensional.right F K A
 
 lemma dim_eq' [FiniteDimensional F K] : Module.finrank K A = Module.finrank F K := by
   have : Module.finrank F A = Module.finrank F K * Module.finrank K A :=
-    Eq.symm (Module.finrank_mul_finrank F K A.carrier.carrier)
+    Eq.symm (Module.finrank_mul_finrank F K A.carrier)
   rw [A.dim_eq_square, pow_two] at this
   simp only [mul_eq_mul_left_iff] at this
   refine this.recOn Eq.symm fun rid ↦ ?_
@@ -345,7 +344,7 @@ variable {σ τ : K ≃ₐ[F] K}
 lemma exists_iso :
     Nonempty (A ≃ₐ[F] B) := by
   obtain ⟨D, _, _, m, n, hm, hn, ⟨isoA⟩, ⟨isoB⟩⟩ :=
-    IsBrauerEquivalent.exists_common_division_algebra F A.carrier B.carrier
+    IsBrauerEquivalent.exists_common_division_algebra F A.toCSA B.toCSA
       (Quotient.eq''.1 (A.quot_eq.trans B.quot_eq.symm))
   have eq1 := isoA.toLinearEquiv.finrank_eq
   have eq2 := isoB.toLinearEquiv.finrank_eq
@@ -363,7 +362,7 @@ lemma exists_iso :
   subst eq3
   exact ⟨isoA.trans isoB.symm⟩
 
-def iso : A.carrier ≃ₐ[F] B.carrier := exists_iso A B |>.some
+def iso : A ≃ₐ[F] B := exists_iso A B |>.some
 
 def isoConjCoeff : Bˣ :=
   SkolemNoether' F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose
@@ -2095,8 +2094,8 @@ lemma fromSnd_toSnd :
   change lhs ≃ₐ[F] A
   letI : Module K lhs := inferInstanceAs <| Module K (GoodRep.CrossProductAlgebra _)
   let φ0 : lhs ≃ₗ[K] A :=
-    Basis.equiv (x_AsBasis _) (A.conjFactorBasis (A.arbitraryConjFactor)) (Equiv.refl _)
-  haveI : LinearMap.CompatibleSMul lhs A.carrier.carrier F K := by
+    Basis.equiv (x_AsBasis _) (A.conjFactorBasis A.arbitraryConjFactor) (Equiv.refl _)
+  haveI : LinearMap.CompatibleSMul lhs A F K := by
     constructor
     have eq (c : F) (a : A) : c • a = algebraMap F K c • a := by
       simp only [algebraMap_smul]
