@@ -560,14 +560,14 @@ noncomputable def φ0 :
     (A ⊗[F] B)ᵐᵒᵖ →ₐ[F] Module.End C (M α β) where
   toFun x := {
     toFun m := x • m
-    map_add' _ _ := by simp [@smul_add (A ⊗[F] B)ᵐᵒᵖ (M α β) _ _]
+    map_add' _ _ := by simp [@smul_add (A ⊗[F] B)ᵐᵒᵖ (M α β)]
     map_smul' c y := by
       simp only [RingHom.id_apply]
       rw [smul_comm]
     }
   map_one' := by
     refine LinearMap.ext fun _ ↦ ?_
-    simp [@one_smul (A ⊗[F] B)ᵐᵒᵖ (M α β) _ _]
+    simp [@one_smul (A ⊗[F] B)ᵐᵒᵖ (M α β)]
   map_mul' x y := by
     refine LinearMap.ext fun m ↦ ?_
     simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply]
@@ -1073,7 +1073,7 @@ lemma dim_endCM :
 set_option maxSynthPendingDepth 3 in
 def φ1 :
     (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M α β) :=
-  AlgEquiv.ofBijective (φ0 (α := α) (β := β)) <|
+  .ofBijective (φ0 (α := α) (β := β)) <|
   bijective_of_dim_eq_of_isCentralSimple F (A ⊗[F] B)ᵐᵒᵖ (Module.End C (M α β)) φ0 <| by
     rw [dim_endCM, show finrank F (A ⊗[F] B)ᵐᵒᵖ = finrank F (A ⊗[F] B) by
       refine LinearEquiv.finrank_eq
