@@ -25,10 +25,9 @@ section basic
 instance : CoeSort (GoodRep K X) Type where
   coe A := A.carrier
 
-def ιRange : K ≃ₐ[F] A.ι.range :=
-AlgEquiv.ofInjective _ (RingHom.injective _)
+def ιRange : K ≃ₐ[F] A.ι.range := .ofInjective _ (RingHom.injective _)
 
-instance : Algebra F A := inferInstanceAs <| Algebra F A.carrier
+instance : Algebra F A := inferInstanceAs <| Algebra F A
 
 instance : IsSimpleOrder (TwoSidedIdeal A.ι.range) :=
   TwoSidedIdeal.orderIsoOfRingEquiv A.ιRange.symm |>.isSimpleOrder
@@ -86,12 +85,11 @@ section single
 
 variable (ρ σ τ : Gal(K, F))
 
-def conjFactor : (σ : Gal(K, F)) → Type :=
-  fun σ => { a : Aˣ //  ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹ }
+def conjFactor (σ : Gal(K, F)) : Type := {a : Aˣ // ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹}
 
-def arbitraryConjFactor : A.conjFactor σ :=
-⟨SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose, fun x ↦
-  SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose_spec x⟩
+def arbitraryConjFactor : A.conjFactor σ where
+  val := SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose
+  property x := SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose_spec x
 
 variable {A ρ σ τ}
 
@@ -328,7 +326,7 @@ lemma toTwoCocycles_cond (x_ : Π σ, A.conjFactor σ) :
   rw [conjFactorCompCoeff_comp_comp]
   rfl
 
-lemma isTwoCocyles (x_ : Π σ, A.conjFactor σ) :
+lemma isMulTwoCocycle (x_ : Π σ, A.conjFactor σ) :
     groupCohomology.IsMulTwoCocycle (A.toTwoCocycles x_) := by
   intro ρ σ τ
   ext : 1
@@ -526,17 +524,15 @@ end double
 end GoodRep
 
 variable (F K) in
-noncomputable def galAct : Rep ℤ Gal(K, F) :=
-  Rep.ofMulDistribMulAction Gal(K, F) Kˣ
+noncomputable def galAct : Rep ℤ Gal(K, F) := .ofMulDistribMulAction Gal(K, F) Kˣ
 
 @[simp] lemma galAct_ρ_apply (σ : Gal(K, F)) (x : Kˣ) :
-    (galAct F K).ρ σ (.ofMul x) = .ofMul (Units.map σ x) := rfl
+    (galAct F K).ρ σ (.ofMul x) = .ofMul (x.map σ) := rfl
 
 variable [FiniteDimensional F K]
 
-lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrauerGroup F) :
-    X ∈ RelativeBrGroup K F ↔
-    Nonempty (GoodRep K X) := by
+lemma mem_relativeBrGroup_iff_nonempty_goodRep {X : BrauerGroup F} :
+    X ∈ RelativeBrGroup K F ↔ Nonempty (GoodRep K X) := by
   induction X using Quotient.inductionOn' with | h X =>
   simp only [RelativeBrGroup, MonoidHom.mem_ker, MonoidHom.coe_mk, OneHom.coe_mk,
     Quotient.map'_mk'']
@@ -549,7 +545,7 @@ lemma mem_relativeBrGroup_iff_exists_goodRep (X : BrauerGroup F) :
     exact ⟨A, eq.symm, i, dim.symm⟩
 
 def RelativeBrGroup.goodRep (X : RelativeBrGroup K F) : GoodRep K X.1 :=
-  mem_relativeBrGroup_iff_exists_goodRep X.1 |>.1 X.2 |>.some
+  mem_relativeBrGroup_iff_nonempty_goodRep.1 X.2 |>.some
 
 open groupCohomology
 
@@ -559,7 +555,7 @@ variable {X : BrauerGroup F} (A : GoodRep K X)
 
 def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
   Quotient.mk'' <| twoCocyclesOfIsMulTwoCocycle (f := A.toTwoCocycles x_)
-    (A.isTwoCocyles x_)
+    (A.isMulTwoCocycle x_)
 
 end GoodRep
 
@@ -1857,7 +1853,7 @@ variable [IsGalois F K] [DecidableEq Gal(K, F)]
 
 def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
 ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)), by
-  rw [mem_relativeBrGroup_iff_exists_goodRep]
+  rw [mem_relativeBrGroup_iff_nonempty_goodRep]
   exact ⟨⟨(asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)), rfl,
     ι (isMulTwoCocycle_of_mem_twoCocycles _ a.2),
     dim_eq_sq (isMulTwoCocycle_of_mem_twoCocycles _ a.2)⟩⟩⟩
@@ -2036,12 +2032,11 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
 lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
     (fromSnd F K <| Quotient.mk'' a) =
     ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)),
-      mem_relativeBrGroup_iff_exists_goodRep _ |>.2 ⟨_, rfl, ι _, dim_eq_sq _⟩⟩ := by
+      mem_relativeBrGroup_iff_nonempty_goodRep.2 ⟨_, rfl, ι _, dim_eq_sq _⟩⟩ := by
   rfl
 
 open GoodRep in
-lemma toSnd_fromSnd :
-    toSnd ∘ fromSnd F K = id := by
+lemma toSnd_fromSnd : toSnd ∘ fromSnd F K = id := by
   ext a
   induction a using Quotient.inductionOn' with | h a =>
   rcases a with ⟨(a : _ → Kˣ), ha'⟩
@@ -2080,10 +2075,9 @@ lemma toSnd_fromSnd :
   rfl
 
 set_option maxHeartbeats 500000 in
-lemma fromSnd_toSnd :
-    fromSnd F K ∘ toSnd = id := by
+lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
   ext X
-  obtain ⟨A⟩ := mem_relativeBrGroup_iff_exists_goodRep X.1 |>.1 X.2
+  obtain ⟨A⟩ := mem_relativeBrGroup_iff_nonempty_goodRep.1 X.2
   simp only [Function.comp_apply, id_eq, SetLike.coe_eq_coe]
   rw [toSnd_wd (A := A) (x_ := A.arbitraryConjFactor)]
   ext : 1

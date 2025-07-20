@@ -824,9 +824,8 @@ instance : IsScalarTower F C SM := by
     change _ = algebraMap F C f • _ • x
     rw [Algebra.smul_def, mul_smul]
 
-instance : Module.Finite C (ι →₀ SM) := Module.Finite.equiv (isoιSM hα hβ)
-
-instance : Module.Finite F (ι →₀ SM) := Module.Finite.trans C (ι →₀ SM)
+instance : Module.Finite C (ι →₀ SM) := .equiv (isoιSM hα hβ)
+instance : Module.Finite F (ι →₀ SM) := .trans C (ι →₀ SM)
 
 instance : SMulCommClass C F SM where
   smul_comm c f a := by
@@ -835,16 +834,8 @@ instance : SMulCommClass C F SM where
 
 section C_iso
 
-instance [DecidableEq (Module.End C SM)] : DivisionRing (Module.End C SM) :=
-  Module.End.divisionRing
-
-variable [DecidableEq (Module.End C SM)]
-
-instance : Algebra F (Module.End C SM) := Module.End.instAlgebra F C SM
-
 def isoDagger (m : ℕ) [NeZero m] :
-    (Module.End C (Fin m → SM)) ≃ₐ[F]
-    Matrix (Fin m) (Fin m) (Module.End C SM) where
+    Module.End C (Fin m → SM) ≃ₐ[F] Matrix (Fin m) (Fin m) (Module.End C SM) where
   __ := endPowEquivMatrix C SM m
   commutes' := by
     intro f
