@@ -574,9 +574,10 @@ lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
     apply GoodRep.compare_toTwoCocycles'
   exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
 
+namespace GoodRep
+
 section galois
 
-namespace GoodRep
 variable {X : BrauerGroup F} (A : GoodRep K X)
 
 omit [FiniteDimensional F K] in
@@ -683,8 +684,9 @@ def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis Gal(K, F) K A :=
     (A.conjFactor_linearIndependent x_)
     (by rw [A.dim_eq', IsGalois.card_aut_eq_finrank])
 
-end GoodRep
 end galois
+
+end GoodRep
 
 namespace RelativeBrGroup
 
@@ -725,8 +727,8 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
 
     obtain ⟨c, hc⟩ := hc
     simp only [fromTwoCocycles, Subtype.mk.injEq, Quotient.eq'']
-    let A := @asCSA _ _ _ _ _ a ⟨ha⟩ _
-    let B := @asCSA _ _ _ _ _ b ⟨hb⟩ _
+    let A := asCSA a
+    let B := asCSA b
     change IsBrauerEquivalent A B
     letI : Module K A := inferInstanceAs <| Module K (CrossProductAlgebra a)
     letI : Module K B := inferInstanceAs <| Module K (CrossProductAlgebra b)
