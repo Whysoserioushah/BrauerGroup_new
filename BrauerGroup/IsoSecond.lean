@@ -144,7 +144,7 @@ abbrev S : Set (A ⊗[F] B) :=
   Set.range (fun (cba : K × A × B) =>
     (cba.1 • cba.2.1) ⊗ₜ[F] cba.2.2 - cba.2.1 ⊗ₜ[F] (cba.1 • cba.2.2))
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp]
 lemma mem_S (x : A ⊗[F] B) : x ∈ S ↔
     ∃ (k : K) (a : A) (b : B), x = (k • a) ⊗ₜ b - a ⊗ₜ (k • b) := by
@@ -156,10 +156,6 @@ variable (α β) in
 
 instance : Fact (IsMulTwoCocycle (α * β)) := ⟨isMulTwoCocycle_of_mem_twoCocycles _ <|
   (twoCocyclesOfIsMulTwoCocycle Fact.out) + (twoCocyclesOfIsMulTwoCocycle Fact.out)|>.2⟩
-
--- instance : AddCommGroup (M α β) := inferInstance
-
--- instance : Module F (M α β) := inferInstance
 
 open MulOpposite
 
@@ -227,7 +223,7 @@ def Aox_FB_smul_M : A ⊗[F] B →ₗ[F] M α β →ₗ[F] M α β :=
       rw [← smul_tmul']
       simp only [Submodule.Quotient.mk_smul] }
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp]
 lemma Aox_FB_smul_M_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
     Aox_FB_smul_M (a' ⊗ₜ[F] b') (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M α β) =
@@ -236,7 +232,7 @@ lemma Aox_FB_smul_M_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
 instance : SMul (A ⊗[F] B)ᵐᵒᵖ (M α β) where
   smul x y := Aox_FB_smul_M x.unop y
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
+omit [FiniteDimensional F K] [DecidableEq Gal(K, F)] in
 @[simp]
 lemma Aox_FB_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
     op (a' ⊗ₜ[F] b') • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M α β) =
@@ -338,7 +334,7 @@ def C_smul_aux (c : C) : M α β →ₗ[F] M α β :=
       congr 1
       field_simp [← _root_.mul_assoc])
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma C_smul_aux_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
     C_smul_aux (k • CrossProductAlgebra.basis σ) (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M α β) =
     Submodule.Quotient.mk (((k • CrossProductAlgebra.basis σ) * a) ⊗ₜ (CrossProductAlgebra.basis σ * b)) := by
@@ -390,22 +386,16 @@ def C_smul : C →ₗ[F] M α β →ₗ[F] M α β where
 instance : SMul C (M α β) where
   smul c x := C_smul c x
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma C_smul_def (c : C) (x : M α β) : c • x = C_smul c x := rfl
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma C_smul_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
     (k • (CrossProductAlgebra.basis σ : C)) • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M α β) =
     Submodule.Quotient.mk (((k • CrossProductAlgebra.basis σ) * a) ⊗ₜ (CrossProductAlgebra.basis σ * b)) :=
   C_smul_aux_calc k σ a b
 
-omit [FiniteDimensional F K] [DecidableEq (K ≃ₐ[F] K)] in
-lemma CrossProductAlgebra.basis_mul_basis {f : Gal(K, F) × Gal(K, F) → Kˣ} (σ τ : Gal(K, F)) :
-    basis (f := f) σ * basis τ = (f (σ, τ)).1 • basis (σ * τ) := by
-  apply val_injective
-  simp [basis]
-
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 set_option maxHeartbeats 1200000 in
 theorem C_mul_smul' (x y : C) (ab : M α β) : (x * y) • ab = x • y • ab := by
   change ((⟨x.val⟩ : C) * ⟨y.val⟩) • ab = (⟨x.val⟩ : C) • (⟨y.val⟩ : C) • ab
@@ -678,7 +668,7 @@ def Aox_KBEquivM : M α β ≃ₗ[F] A ⊗[K] B :=
 
 open Module
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma M_F_dim [IsGalois F K] : finrank F (M α β) = (finrank F K)^3 := by
   rw [LinearEquiv.finrank_eq Aox_KBEquivM,
     show finrank F (A ⊗[K] B) = finrank F K * finrank K (A ⊗[K] B) from
@@ -696,7 +686,7 @@ instance [IsGalois F K] : FiniteDimensional F C :=
 instance [IsGalois F K] : Module.Finite C (M α β) :=
   Module.Finite.right F C (M α β)
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma exists_simple_module_directSum [IsGalois F K] :
   ∃ (S : Type) (_ : AddCommGroup S) (_ : Module C S) (_ : IsSimpleModule C S)
     (ι : Type) (_ : Fintype ι),
@@ -874,7 +864,7 @@ example : True := ⟨⟩
 def C_iso_aux' : Cᵐᵒᵖ ≃ₐ[F] Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM) :=
   C_iso_aux.trans <| isoDagger _
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma dim_endCSM : (finrank F K)^2 =
   (Fintype.card ι) ^ 2 * finrank F (Module.End C SM) := by
   have eq1 := (C_iso_aux' (α := α) (β := β)).toLinearEquiv.finrank_eq
@@ -916,7 +906,7 @@ def C_iso : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) 
 
 end C_iso
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M α β ≃ₗ[C] ιM →₀ SM) := by
   obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (M α β) SM
   refine ⟨ιM, ?_, ⟨iso⟩⟩
@@ -979,7 +969,7 @@ instance : Module.Finite C SM := by
 
 instance : Module.Finite F SM := Module.Finite.trans C SM
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma SM_F_dim : Fintype.card ι * finrank F SM = finrank F K ^ 2 := by
   have eq1 := LinearEquiv.finrank_eq (isoιSMPow' hα hβ |>.restrictScalars F)
   rw [CrossProductAlgebra.dim_eq_sq] at eq1
@@ -999,7 +989,7 @@ instance : Module.Finite C (Fin (Fintype.card ι * finrank F K) → SM) := by
   have := Finsupp.linearEquivFunOnFinite C SM (Fin (Fintype.card ι * finrank F K))
   refine Module.Finite.equiv this
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma M_iso_powAux : Nonempty (M α β ≃ₗ[C] Fin (finrank F K * Fintype.card ι) → SM) := by
   rw [linearEquiv_iff_finrank_eq_over_simple_ring F C]
   have eq2 := rank_fun (η := (Fin (finrank F K * Fintype.card ι))) (M := SM) (R := F)
@@ -1064,7 +1054,7 @@ def endCMIso' :
       (Fin (finrank F K * Fintype.card ι)) (Module.End C SM) :=
   endCMIso.trans <| isoDagger _
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma dim_endCM :
     finrank F (Module.End C (M α β)) = (finrank F K)^4 := by
   have := LinearEquiv.finrank_eq (endCMIso' (α := α) (β := β)).toLinearEquiv
@@ -1125,7 +1115,7 @@ instance [DecidableEq (Module.End C SM)] : DivisionRing ((Module.End C SM)ᵐᵒ
   letI : DivisionRing (Module.End C SM) := Module.End.divisionRing
   infer_instance
 
-omit [DecidableEq (K ≃ₐ[F] K)] in
+omit [DecidableEq Gal(K, F)] in
 lemma isBrauerEquivalent : IsBrauerEquivalent (⟨.of F (A ⊗[F] B)⟩ : CSA F) ⟨.of F C⟩ := by
   let iso1 := C_iso (α := α) (β := β) |>.mapMatrix (m := Fin (finrank F K))
   let iso11 := iso1.trans (Matrix.compAlgEquiv _ _ _ _) |>.trans

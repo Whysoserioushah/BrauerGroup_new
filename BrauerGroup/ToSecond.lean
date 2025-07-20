@@ -698,7 +698,7 @@ variable [IsGalois F K] [DecidableEq Gal(K, F)]
 
 def fromTwoCocycles (f : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
   haveI := groupCohomology.isMulTwoCocycle_of_mem_twoCocycles _ f.2
-  haveI : Fact (@IsMulTwoCocycle (K ≃ₐ[F] K) Kˣ MulOneClass.toMul
+  haveI : Fact (@IsMulTwoCocycle Gal(K, F) Kˣ MulOneClass.toMul
     Units.instCommGroupUnits MulAction.toSMul (⇑Additive.toMul ∘ ↑f)) := ⟨this⟩
   ⟨Quotient.mk'' (asCSA (⇑Additive.toMul ∘ f.1)), mem_relativeBrGroup_iff_nonempty_goodRep.2 <|
     ⟨⟨asCSA (Additive.toMul ∘ f), rfl, incl (Additive.toMul ∘ f), dim_eq_sq⟩⟩⟩
@@ -831,7 +831,7 @@ end from_two
 
 variable [IsGalois F K]
 lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
-    haveI : Fact (@IsMulTwoCocycle (K ≃ₐ[F] K) Kˣ MulOneClass.toMul Units.instCommGroupUnits
+    haveI : Fact (@IsMulTwoCocycle Gal(K, F) Kˣ MulOneClass.toMul Units.instCommGroupUnits
       MulAction.toSMul (⇑Additive.toMul ∘ ↑a)) := ⟨isMulTwoCocycle_of_mem_twoCocycles _ a.2⟩
     (fromSnd F K <| Quotient.mk'' a) =
     ⟨Quotient.mk'' (CrossProductAlgebra.asCSA (Additive.toMul ∘ a)),
@@ -911,7 +911,7 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
     rw [eq, eq', map_smul]
   let φ1 : lhs ≃ₗ[F] A := φ0.restrictScalars F
   refine AlgEquiv.ofLinearEquiv φ1 ?_ ?_
-  · haveI : Fact (@IsMulTwoCocycle (K ≃ₐ[F] K) Kˣ MulOneClass.toMul Units.instCommGroupUnits
+  · haveI : Fact (@IsMulTwoCocycle Gal(K, F) Kˣ MulOneClass.toMul Units.instCommGroupUnits
       MulAction.toSMul (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle
       (GoodRep.isMulTwoCocycle A.arbitraryConjFactor)))) :=
       ⟨isMulTwoCocycle_of_mem_twoCocycles _ (twoCocyclesOfIsMulTwoCocycle
@@ -955,7 +955,7 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
         change φ0 (_ * (_ + _)) = φ0 _ * φ0 (_ + _)
         simp_all [mul_add]
       | hsingle τ b =>
-        set f : ((K ≃ₐ[F] K) × K ≃ₐ[F] K) → Kˣ := (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle
+        set f : (Gal(K, F) × Gal(K, F)) → Kˣ := (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle
           (GoodRep.isMulTwoCocycle A.arbitraryConjFactor))) with f_eq
         change φ0 (⟨CrossProductAlgebra.mulLinearMap _ _ _⟩ : CrossProductAlgebra _) = _
         simp only [CrossProductAlgebra.mulLinearMap_single_single, *]

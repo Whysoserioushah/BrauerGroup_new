@@ -210,7 +210,7 @@ lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
 
 omit [Fact <| IsMulTwoCocycle f] in
-lemma basis_smul_comm (σ : K ≃ₐ[F] K) (k1 k2 : K) (x : CrossProductAlgebra f) :
+lemma basis_smul_comm (σ : Gal(K, F)) (k1 k2 : K) (x : CrossProductAlgebra f) :
     (k1 • basis (f := f) σ) * (k2 • x) = σ k2 • k1 • basis σ * x := by
   apply val_injective
   simp only [basis, Basis.coe_ofRepr, valLinearEquiv_symm_apply, AddEquiv.toEquiv_eq_coe,
@@ -280,6 +280,10 @@ variable (f) in
 variable (f) in
 @[simp] lemma of_mul_of (σ τ : Gal(K, F)) : of f σ * of f τ = incl f (f (σ, τ)) * of f (σ * τ) := by
   ext; simp [incl_apply]
+
+@[simp]
+lemma basis_mul_basis (σ τ : Gal(K, F)) :
+    basis (f := f) σ * basis τ = (f (σ, τ)).1 • basis (σ * τ) := of_mul_of ..
 
 lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) * of f σ := by
   ext; simp [map_one_snd_of_isMulTwoCocycle Fact.out, incl_apply]
