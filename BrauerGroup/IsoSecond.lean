@@ -100,7 +100,7 @@ open scoped TensorProduct
 --     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
 --     Module.End F K :=
 --   AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
---     rw [CrossProductAlgebra.dim_eq_square]
+--     rw [CrossProductAlgebra.dim_eq_sq]
 --     rw [Module.finrank_linearMap, pow_two])
 
 -- def φ4 :
@@ -711,7 +711,7 @@ lemma M_F_dim [IsGalois F K] : finrank F (M hα hβ) = (finrank F K)^3 := by
 
 instance [IsGalois F K] : FiniteDimensional F C :=
   .of_finrank_eq_succ (n := (finrank F K)^2 - 1) <| by
-    rw [CrossProductAlgebra.dim_eq_square (hαβ hα hβ)]
+    rw [CrossProductAlgebra.dim_eq_sq (hαβ hα hβ)]
     refine Nat.succ_pred_eq_of_pos (pow_two_pos_of_ne_zero ?_) |>.symm
     have : 0 < finrank F K := finrank_pos
     omega
@@ -910,7 +910,7 @@ lemma dim_endCSM : (finrank F K)^2 =
         map_smul' _ _ := rfl
         invFun := op
         left_inv := unop_op
-        right_inv _ := rfl }, CrossProductAlgebra.dim_eq_square] at eq1
+        right_inv _ := rfl }, CrossProductAlgebra.dim_eq_sq] at eq1
   rw [eq1, matrixEquivTensor (Fin (Fintype.card ι)) F (Module.End C SM)  |>.toLinearEquiv.finrank_eq,
     finrank_tensorProduct, finrank_matrix]
   simp only [Fintype.card_fin, finrank_self, _root_.mul_one, pow_two]
@@ -1010,7 +1010,7 @@ instance : Module.Finite F SM := Module.Finite.trans C SM
 
 lemma SM_F_dim : Fintype.card ι * finrank F SM = finrank F K ^ 2 := by
   have eq1 := LinearEquiv.finrank_eq (isoιSMPow' hα hβ |>.restrictScalars F)
-  rw [CrossProductAlgebra.dim_eq_square] at eq1
+  rw [CrossProductAlgebra.dim_eq_sq] at eq1
   have eq2 := rank_fun (η := (Fin (Fintype.card ι))) (M := SM) (R := F)
   rw [Fintype.card_fin, ← finrank_eq_rank F SM,
     show (Fintype.card ι : Cardinal) * (finrank F SM : Cardinal) =
@@ -1115,8 +1115,8 @@ def φ1 :
           map_smul' _ _ := rfl
           invFun := op
           left_inv := unop_op
-          right_inv _ := rfl }, finrank_tensorProduct, CrossProductAlgebra.dim_eq_square,
-      CrossProductAlgebra.dim_eq_square, pow_two, pow_succ]
+          right_inv _ := rfl }, finrank_tensorProduct, CrossProductAlgebra.dim_eq_sq,
+      CrossProductAlgebra.dim_eq_sq, pow_two, pow_succ]
     group)
 
 def φ2 :

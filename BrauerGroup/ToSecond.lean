@@ -13,7 +13,7 @@ variable (K) in
 structure GoodRep extends CSA.{0, 0} F where
   quot_eq : Quotient.mk'' toCSA = X
   ι : K →ₐ[F] toAlgebraCat
-  dim_eq_square : Module.finrank F carrier = (Module.finrank F K) ^ 2
+  dim_eq_sq : Module.finrank F carrier = (Module.finrank F K) ^ 2
 
 namespace GoodRep
 
@@ -49,7 +49,7 @@ lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := b
   apply cor_two_3to1
   apply cor_two_2to3
   change Module.finrank F A = Module.finrank F A.ι.range * Module.finrank F A.ι.range
-  rw [A.dim_eq_square, pow_two, LinearEquiv.finrank_eq (f := A.ιRange.toLinearEquiv.symm)]
+  rw [A.dim_eq_sq, pow_two, LinearEquiv.finrank_eq (f := A.ιRange.toLinearEquiv.symm)]
 
 instance : Module K A where
   smul c a := A.ι c * a
@@ -73,7 +73,7 @@ instance : FiniteDimensional K A := FiniteDimensional.right F K A
 lemma dim_eq' [FiniteDimensional F K] : Module.finrank K A = Module.finrank F K := by
   have : Module.finrank F A = Module.finrank F K * Module.finrank K A :=
     Eq.symm (Module.finrank_mul_finrank F K A.carrier)
-  rw [A.dim_eq_square, pow_two] at this
+  rw [A.dim_eq_sq, pow_two] at this
   simp only [mul_eq_mul_left_iff] at this
   refine this.recOn Eq.symm fun rid ↦ ?_
   have : 0 < Module.finrank F K := Module.finrank_pos
@@ -348,10 +348,10 @@ lemma exists_iso :
       (Quotient.eq''.1 (A.quot_eq.trans B.quot_eq.symm))
   have eq1 := isoA.toLinearEquiv.finrank_eq
   have eq2 := isoB.toLinearEquiv.finrank_eq
-  simp only [A.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor (Fin m) F D).toLinearEquiv,
+  simp only [A.dim_eq_sq, LinearEquiv.finrank_eq (matrixEquivTensor (Fin m) F D).toLinearEquiv,
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq1
-  simp only [B.dim_eq_square, LinearEquiv.finrank_eq (matrixEquivTensor (Fin n) F D).toLinearEquiv,
+  simp only [B.dim_eq_sq, LinearEquiv.finrank_eq (matrixEquivTensor (Fin n) F D).toLinearEquiv,
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq2
   have eq3 := eq1.symm.trans eq2
@@ -1344,7 +1344,7 @@ lemma x_AsBasis_conj' (c : K) : x_AsBasis ha σ * ι ha c = (σ c) • (x_AsBasi
 lemma x_AsBasis_conj'' (c : K) : x_AsBasis ha σ * ι ha c = (ι ha <| σ c) * (x_AsBasis ha σ) :=
   x_AsBasis_conj' ha σ c
 
-lemma dim_eq_square [IsGalois F K] : Module.finrank F (CrossProductAlgebra ha) =
+lemma dim_eq_sq [IsGalois F K] : Module.finrank F (CrossProductAlgebra ha) =
     (Module.finrank F K)^2 := by
   have eq1 : Module.finrank F (CrossProductAlgebra ha) = Module.finrank F K *
       Module.finrank K (CrossProductAlgebra ha) := by
@@ -1831,7 +1831,7 @@ instance [IsGalois F K] : Algebra.IsCentral F (CrossProductAlgebra ha) where
 
 instance [IsGalois F K] : FiniteDimensional F (CrossProductAlgebra ha) :=
   .of_finrank_eq_succ (n := (Module.finrank F K)^2 - 1) (by
-    rw [dim_eq_square]
+    rw [dim_eq_sq]
     rw [← Nat.pred_eq_sub_one, Nat.succ_pred_eq_of_pos]
     apply pow_two_pos_of_ne_zero
     have : 0 < Module.finrank F K := Module.finrank_pos
@@ -1859,7 +1859,7 @@ def fromTwoCocycles (a : twoCocycles (galAct F K)) : RelativeBrGroup K F :=
   rw [mem_relativeBrGroup_iff_exists_goodRep]
   exact ⟨⟨(asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)), rfl,
     ι (isMulTwoCocycle_of_mem_twoCocycles _ a.2),
-    dim_eq_square (isMulTwoCocycle_of_mem_twoCocycles _ a.2)⟩⟩⟩
+    dim_eq_sq (isMulTwoCocycle_of_mem_twoCocycles _ a.2)⟩⟩⟩
 
 variable (F K) in
 set_option maxHeartbeats 500000 in
@@ -2035,7 +2035,7 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
 lemma fromSnd_wd (a : twoCocycles (galAct F K)) :
     (fromSnd F K <| Quotient.mk'' a) =
     ⟨Quotient.mk'' (asCSA (isMulTwoCocycle_of_mem_twoCocycles _ a.2)),
-      mem_relativeBrGroup_iff_exists_goodRep _ |>.2 ⟨_, rfl, ι _, dim_eq_square _⟩⟩ := by
+      mem_relativeBrGroup_iff_exists_goodRep _ |>.2 ⟨_, rfl, ι _, dim_eq_sq _⟩⟩ := by
   rfl
 
 open GoodRep in
@@ -2047,7 +2047,7 @@ lemma toSnd_fromSnd :
   have ha : IsMulTwoCocycle a := isMulTwoCocycle_of_mem_twoCocycles a ha'
   simp only [Function.comp_apply, fromSnd_wd, id_eq]
   let A : GoodRep K (Quotient.mk'' <| asCSA ha) :=
-    ⟨asCSA ha, rfl, ι ha, dim_eq_square ha⟩
+    ⟨asCSA ha, rfl, ι ha, dim_eq_sq ha⟩
 
   let y_ σ : A.conjFactor σ := ⟨x_ ha σ, fun c ↦ by erw [x__conj ha σ]; rfl⟩
   rw [toSnd_wd (A := A) (x_ := y_)]
