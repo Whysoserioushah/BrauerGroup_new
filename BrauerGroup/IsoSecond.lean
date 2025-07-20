@@ -18,25 +18,25 @@ open scoped TensorProduct
 
 -- set_option maxHeartbeats 1000000 in
 -- def φ0 :
---     CrossProduct (F := F) (K := K) (a := 1)
+--     CrossProductAlgebra (F := F) (K := K) (a := 1)
 --       (ha := isMulTwoCocycle_of_mem_twoCocycles 0 <| Submodule.zero_mem _) →ₗ[K]
 --     Module.End F K :=
---   (CrossProduct.x_AsBasis (F := F) (K := K) (a := 1)
+--   (CrossProductAlgebra.x_AsBasis (F := F) (K := K) (a := 1)
 --     (ha := isMulTwoCocycle_of_mem_twoCocycles 0 <| Submodule.zero_mem _)).constr F
 --     fun σ => σ.toLinearMap
 
 -- def φ1 :
---     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[F]
 --     Module.End F K :=
 --   φ0 K F |>.restrictScalars F
 
 -- def φ2 :
---     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₐ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₐ[F]
 --     Module.End F K :=
 --   AlgHom.ofLinearMap (φ1 K F)
 --     (by
 --       generalize_proofs h
---       rw [show (1 : CrossProduct h) = .x_AsBasis h 1 by
+--       rw [show (1 : CrossProductAlgebra h) = .x_AsBasis h 1 by
 --         ext1
 --         simp]
 --       delta φ1 φ0
@@ -46,28 +46,28 @@ open scoped TensorProduct
 --       rintro x y
 --       change φ0 K F _ = φ0 K F _ * φ0 K F _
 --       generalize_proofs h
---       induction x using CrossProduct.single_induction h with
+--       induction x using CrossProductAlgebra.single_induction h with
 --       | single x c =>
---         rw [show (⟨Pi.single x c⟩ : CrossProduct h) =
+--         rw [show (⟨Pi.single x c⟩ : CrossProductAlgebra h) =
 --           c • .x_AsBasis h x by
 --           ext : 1
---           simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
---             CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+--           simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def, CrossProductAlgebra.mul_val,
+--             CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
 --             crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
 --         rw [map_smul]
---         induction y using CrossProduct.single_induction h with
+--         induction y using CrossProductAlgebra.single_induction h with
 --         | single y d =>
---           rw [show (⟨Pi.single y d⟩ : CrossProduct h) =
+--           rw [show (⟨Pi.single y d⟩ : CrossProductAlgebra h) =
 --             d • .x_AsBasis h y by
 --             ext : 1
---             simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
---               CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+--             simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def, CrossProductAlgebra.mul_val,
+--               CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
 --               crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
---           rw [show (c • CrossProduct.x_AsBasis h x) * (d • .x_AsBasis h y) =
+--           rw [show (c • CrossProductAlgebra.x_AsBasis h x) * (d • .x_AsBasis h y) =
 --             (c * x d) • .x_AsBasis h (x * y) by
 --             ext : 1
---             simp only [CrossProduct.x_AsBasis_apply, CrossProduct.smul_def, CrossProduct.mul_val,
---               CrossProduct.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
+--             simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def, CrossProductAlgebra.mul_val,
+--               CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
 --               crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply, map_mul]]
 --           rw [map_smul, map_smul]
 --           delta φ0
@@ -97,14 +97,14 @@ open scoped TensorProduct
 --         rw [zero_mul])
 
 -- def φ3 :
---     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
 --     Module.End F K :=
 --   AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
---     rw [CrossProduct.dim_eq_square]
+--     rw [CrossProductAlgebra.dim_eq_square]
 --     rw [Module.finrank_linearMap, pow_two])
 
 -- def φ4 :
---     CrossProduct (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
 --     Matrix (Fin <| Module.finrank F K) (Fin <| Module.finrank F K) F :=
 --   φ3 K F |>.trans <| LinearMap.toMatrixAlgEquiv <| Module.finBasis F K
 
@@ -116,7 +116,7 @@ open scoped TensorProduct
 --   haveI : NeZero (Module.finrank F K) := ⟨by omega⟩
 --   change IsBrauerEquivalent _ _
 --   refine ⟨1, Module.finrank F K, AlgEquiv.trans ?_ <| φ4 K F⟩
---   exact dim_one_iso (CSA.mk (CrossProduct.asCSA _).carrier).carrier
+--   exact dim_one_iso (CSA.mk (CrossProductAlgebra.asCSA _).carrier).carrier
 
 -- lemma fromSnd_zero : RelativeBrGroup.fromSnd (F := F) (K := K) 0 = 1 := map_one' K F
 
@@ -136,11 +136,11 @@ include hα hβ in
 lemma hαβ : IsMulTwoCocycle (α * β) := isMulTwoCocycle_of_mem_twoCocycles _ <|
   ((twoCocyclesOfIsMulTwoCocycle hα) + (twoCocyclesOfIsMulTwoCocycle hβ)).2
 
-local notation "A" => CrossProduct hα
-local notation "B" => CrossProduct hβ
-local notation "C" => CrossProduct (hαβ hα hβ)
+local notation "A" => CrossProductAlgebra hα
+local notation "B" => CrossProductAlgebra hβ
+local notation "C" => CrossProductAlgebra (hαβ hα hβ)
 
-open CrossProduct TensorProduct
+open CrossProductAlgebra TensorProduct
 
 variable [FiniteDimensional F K]  [DecidableEq (K ≃ₐ[F] K)]
 
@@ -165,7 +165,7 @@ instance : IsScalarTower K A A where
       induction a' using single_induction with
       | single τ a' =>
         ext : 1
-        simp only [CrossProduct.smul_def, smul_eq_mul, mul_val, ι_apply_val, Prod.mk_one_one,
+        simp only [CrossProductAlgebra.smul_def, smul_eq_mul, mul_val, ι_apply_val, Prod.mk_one_one,
           Units.val_inv_eq_inv_val, crossProductMul_single_single, _root_.one_mul,
           AlgEquiv.one_apply, Pi.single_inj]
         field_simp
@@ -341,7 +341,7 @@ def C_smul_aux (c : C) : M hα hβ →ₗ[F] M hα hβ :=
     rw [← Finset.sum_sub_distrib]
     refine Submodule.sum_mem _ fun σ _ =>
       Submodule.subset_span ⟨⟨σ k, c.1 σ • (x_AsBasis hα σ * a), x_AsBasis hβ σ * b⟩, ?_⟩
-    simp only [← smul_mul_assoc, CrossProduct.smul_def, _root_.mul_assoc, ← map_mul]
+    simp only [← smul_mul_assoc, CrossProductAlgebra.smul_def, _root_.mul_assoc, ← map_mul]
     congr 2 <;>
     simp only [← _root_.mul_assoc ((x_AsBasis hα) σ), ← _root_.mul_assoc ((x_AsBasis hβ) σ),
       x_AsBasis_conj''] <;>
@@ -358,12 +358,12 @@ lemma C_smul_aux_calc (k : K) (σ : K ≃ₐ[F] K) (a : A) (b : B) :
   swap
   · rintro τ - h
     erw [show (k • (x_AsBasis (hαβ hα hβ)) σ).val τ = 0 by
-      simp only [x_AsBasis_apply, CrossProduct.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+      simp only [x_AsBasis_apply, CrossProductAlgebra.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
         Pi.mul_apply, mul_inv_rev, Units.val_mul, Units.val_inv_eq_inv_val,
         crossProductMul_single_single, AlgEquiv.one_apply, _root_.mul_one]
       rw [_root_.one_mul, Pi.single_apply, if_neg h], zero_smul, zero_mul, zero_tmul]
   congr 2
-  simp only [x_AsBasis_apply, CrossProduct.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
+  simp only [x_AsBasis_apply, CrossProductAlgebra.smul_def, mul_val, ι_apply_val, Prod.mk_one_one,
     Pi.mul_apply, mul_inv_rev, Units.val_mul, Units.val_inv_eq_inv_val,
     crossProductMul_single_single, AlgEquiv.one_apply, _root_.mul_one]
   rw [_root_.one_mul, Pi.single_eq_same, a_one_left hα, a_one_left hβ]
@@ -424,11 +424,11 @@ instance : MulAction C (M hα hβ) where
     induction x using TensorProduct.induction_on with
     | tmul a b =>
       rw [show (1 : C) = ((β 1).1⁻¹ * (α 1).1⁻¹) • x_AsBasis (hαβ hα hβ) 1 by
-        simp only [CrossProduct.one_def, Pi.mul_apply, Units.val_mul, mul_inv_rev, x_AsBasis_apply,
-          mul_smul], C_smul_calc, mul_smul, ← CrossProduct.one_def, smul_mul_assoc, _root_.one_mul,
+        simp only [CrossProductAlgebra.one_def, Pi.mul_apply, Units.val_mul, mul_inv_rev, x_AsBasis_apply,
+          mul_smul], C_smul_calc, mul_smul, ← CrossProductAlgebra.one_def, smul_mul_assoc, _root_.one_mul,
           Submodule.Quotient.eq]
       refine Submodule.subset_span ⟨⟨(β 1).1⁻¹, a, x_AsBasis hβ 1 * b⟩, ?_⟩
-      simp only [← smul_mul_assoc, ← CrossProduct.one_def, _root_.one_mul]
+      simp only [← smul_mul_assoc, ← CrossProductAlgebra.one_def, _root_.one_mul]
     | add x y hx hy =>
       simp only [Submodule.Quotient.mk_add]
       conv_rhs => rw [← hx, ← hy]
@@ -448,11 +448,11 @@ instance : MulAction C (M hα hβ) where
         | tmul a b =>
           change _ • Submodule.Quotient.mk _ = _ • _ • Submodule.Quotient.mk _
           rw [single_in_xAsBasis, single_in_xAsBasis, smul_mul_assoc,
-            CrossProduct.smul_def _ y, ← _root_.mul_assoc, x__conj'',
+            CrossProductAlgebra.smul_def _ y, ← _root_.mul_assoc, x__conj'',
             smul_mul_assoc, x_AsBasis_mul, Pi.mul_apply, mul_comm _ (β _),
-            Units.val_mul, ← mul_smul, ← mul_smul, C_smul_calc, ← CrossProduct.smul_def,
+            Units.val_mul, ← mul_smul, ← mul_smul, C_smul_calc, ← CrossProductAlgebra.smul_def,
             C_smul_calc, C_smul_calc, smul_mul_assoc, smul_mul_assoc, smul_mul_assoc,
-            CrossProduct.smul_def _ y, ← _root_.mul_assoc _ (ι hα y), x__conj'',
+            CrossProductAlgebra.smul_def _ y, ← _root_.mul_assoc _ (ι hα y), x__conj'',
             smul_mul_assoc, ← _root_.mul_assoc _ _ a, x_AsBasis_mul, ← _root_.mul_assoc _ _ b,
             x_AsBasis_mul, Submodule.Quotient.eq, ← mul_smul]
           refine Submodule.subset_span ⟨⟨β (σ, τ), (x * σ y * α (σ, τ)) •
@@ -555,15 +555,15 @@ instance : IsScalarTower F C (M hα hβ) where
         rw [single_in_xAsBasis, C_smul_calc]
         rw [show f • c • (x_AsBasis (hαβ hα hβ)) σ = algebraMap F K f • c • (x_AsBasis (hαβ hα hβ)) σ by
           simp only [Algebra.smul_def]
-          rw [GoodRep.CrossProduct.smul_def]
+          rw [GoodRep.CrossProductAlgebra.smul_def]
           congr 1
-          delta CrossProduct.ι
+          delta CrossProductAlgebra.ι
           simp only [Prod.mk_one_one, Units.val_inv_eq_inv_val, AlgHom.commutes, algebraMap_val]]
         rw [← smul_assoc, C_smul_calc, ← Submodule.Quotient.mk_smul]
         congr 2
         simp only [smul_eq_mul, x_AsBasis_apply]
         ext τ
-        simp only [CrossProduct.smul_def, map_mul, AlgHom.commutes, algebraMap_val,
+        simp only [CrossProductAlgebra.smul_def, map_mul, AlgHom.commutes, algebraMap_val,
           Algebra.smul_mul_assoc, _root_.one_mul, smul_val, crossProductSMul, LinearMap.lsum_apply,
           LinearMap.coe_mk, AddHom.coe_mk, mul_val, ι_apply_val, Prod.mk_one_one,
           Units.val_inv_eq_inv_val, crossProductMul_single_single, AlgEquiv.one_apply,
@@ -711,7 +711,7 @@ lemma M_F_dim [IsGalois F K] : finrank F (M hα hβ) = (finrank F K)^3 := by
 
 instance [IsGalois F K] : FiniteDimensional F C :=
   .of_finrank_eq_succ (n := (finrank F K)^2 - 1) <| by
-    rw [CrossProduct.dim_eq_square (hαβ hα hβ)]
+    rw [CrossProductAlgebra.dim_eq_square (hαβ hα hβ)]
     refine Nat.succ_pred_eq_of_pos (pow_two_pos_of_ne_zero ?_) |>.symm
     have : 0 < finrank F K := finrank_pos
     omega
@@ -910,7 +910,7 @@ lemma dim_endCSM : (finrank F K)^2 =
         map_smul' _ _ := rfl
         invFun := op
         left_inv := unop_op
-        right_inv _ := rfl }, CrossProduct.dim_eq_square] at eq1
+        right_inv _ := rfl }, CrossProductAlgebra.dim_eq_square] at eq1
   rw [eq1, matrixEquivTensor (Fin (Fintype.card ι)) F (Module.End C SM)  |>.toLinearEquiv.finrank_eq,
     finrank_tensorProduct, finrank_matrix]
   simp only [Fintype.card_fin, finrank_self, _root_.mul_one, pow_two]
@@ -1010,7 +1010,7 @@ instance : Module.Finite F SM := Module.Finite.trans C SM
 
 lemma SM_F_dim : Fintype.card ι * finrank F SM = finrank F K ^ 2 := by
   have eq1 := LinearEquiv.finrank_eq (isoιSMPow' hα hβ |>.restrictScalars F)
-  rw [CrossProduct.dim_eq_square] at eq1
+  rw [CrossProductAlgebra.dim_eq_square] at eq1
   have eq2 := rank_fun (η := (Fin (Fintype.card ι))) (M := SM) (R := F)
   rw [Fintype.card_fin, ← finrank_eq_rank F SM,
     show (Fintype.card ι : Cardinal) * (finrank F SM : Cardinal) =
@@ -1115,8 +1115,8 @@ def φ1 :
           map_smul' _ _ := rfl
           invFun := op
           left_inv := unop_op
-          right_inv _ := rfl }, finrank_tensorProduct, CrossProduct.dim_eq_square,
-      CrossProduct.dim_eq_square, pow_two, pow_succ]
+          right_inv _ := rfl }, finrank_tensorProduct, CrossProductAlgebra.dim_eq_square,
+      CrossProductAlgebra.dim_eq_square, pow_two, pow_succ]
     group)
 
 def φ2 :
