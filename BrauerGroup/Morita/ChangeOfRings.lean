@@ -269,8 +269,8 @@ lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
 noncomputable def mopAlgEquivEnd : Aᵐᵒᵖ ≃ₐ[R] End (ModuleCat.of A A) :=
   AlgEquiv.ofBijective (mopToEnd R A) <| moptoend_bij R A
 
-example: End (ModuleCat.of A A) ≃ₐ[R] Module.End A A :=
-  mopAlgEquivEnd R A|>.symm.trans <| {__ := Module.moduleEndSelf A, commutes' r := by ext; simp [Algebra.smul_def]}
+example : End (ModuleCat.of A A) ≃ₐ[R] Module.End A A :=
+  mopAlgEquivEnd R A|>.symm.trans <| {__ := RingEquiv.moduleEndSelf A, commutes' r := by ext; simp [Algebra.smul_def]}
 
 variable (e : MoritaEquivalence R A B)
 
@@ -291,9 +291,8 @@ def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.o
       Category.assoc, Equivalence.counitInv_functor_comp, Category.comp_id]
     exact e.eqv.functor_unit_comp_assoc (ModuleCat.of A A) g
   map_mul' x y := by simp
-  map_add' x y := by simp only; rw [e.eqv.functor.map_add]
+  map_add' x y := by rw [e.eqv.functor.map_add]
   commutes' r := by
-    simp only
     rw [Algebra.algebraMap_eq_smul_one, e.linear.map_smul, Algebra.algebraMap_eq_smul_one]
     simp only [End.one_def, CategoryTheory.Functor.map_id]
 
@@ -340,7 +339,7 @@ def aux2 (M N : ModuleCat B) (f : M ≅ N) : End M ≃ₐ[R] End N where
   left_inv x := by simp
   right_inv x := by simp
   map_mul' x y := by simp
-  map_add' x y := by simp only; rw [Preadditive.add_comp, Preadditive.comp_add]
+  map_add' x y := by rw [Preadditive.add_comp, Preadditive.comp_add]
   commutes' r := by
     apply hom_ext
     ext n
@@ -365,7 +364,6 @@ noncomputable def toRingEquiv : A ≃ₐ[R] B where
   map_mul' a b := by simp only [MulOpposite.op_mul, _root_.map_mul, MulOpposite.unop_mul]
   map_add' a b := by simp only [MulOpposite.op_add, map_add, MulOpposite.unop_add]
   commutes' r := by
-    dsimp
     rw [show (MulOpposite.op <| algebraMap R A r) = algebraMap R Aᵐᵒᵖ r by rfl]
     rw [AlgEquiv.commutes]
     rfl

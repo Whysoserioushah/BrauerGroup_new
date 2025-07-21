@@ -14,8 +14,8 @@ abbrev N [Group G] : Rep.ofMulAction k G G ⟶ Rep.ofMulAction k G G where
   comm g := by
     ext g1 :3
     dsimp [ModuleCat.endRingEquiv]
-    rw [← Representation.asAlgebraHom_single_one, ← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
-    rw [← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Representation.asAlgebraHom_single_one, ← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
     congr 2
     ext g2
     simp
@@ -33,8 +33,8 @@ abbrev sigmaminus1 [CommGroup G] : Rep.ofMulAction k G G ⟶ Rep.ofMulAction k G
   comm g := by
     ext g1 :3
     dsimp [ModuleCat.endRingEquiv]
-    rw [← Representation.asAlgebraHom_single_one, ← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
-    rw [← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Representation.asAlgebraHom_single_one, ← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
     congr 2
     ext g2
     simp [mul_comm]
@@ -52,7 +52,7 @@ def ChainComplexAbel [CommGroup G] : ChainComplex (Rep k G) ℕ where
     · ext : 2
       simp only [Action.comp_hom, one_smul,
         ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
-      rw [← LinearMap.mul_eq_comp, ← map_mul]
+      rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G)) * ∑ i : G, MonoidAlgebra.single i 1) = 0 by
         rw [this, map_zero]
       rw [sub_mul, sub_eq_zero]
@@ -63,7 +63,7 @@ def ChainComplexAbel [CommGroup G] : ChainComplex (Rep k G) ℕ where
     · ext : 2
       simp only [Action.comp_hom, one_smul,
         ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
-      rw [← LinearMap.mul_eq_comp, ← map_mul]
+      rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((∑ i : G, MonoidAlgebra.single i 1 ) * (MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G))) = 0 by
         rw [this, map_zero]
       rw [mul_sub, sub_eq_zero]
@@ -110,7 +110,7 @@ def CyclicCoh.π [CommGroup G] : (ChainComplexAbel G k σ) ⟶
       Action.comp_hom, map_sub, Representation.asAlgebraHom_single, one_smul, map_one,
       ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp, Pi.one_apply,
       Function.comp_apply, Finsupp.lsingle_apply, LinearMap.sub_apply,
-      Representation.ofMulAction_single, smul_eq_mul, LinearMap.one_apply]
+      Representation.ofMulAction_single, smul_eq_mul, Module.End.one_apply]
     erw [Finsupp.lsum_single, Finsupp.lsum_single]
     simp
 
@@ -331,8 +331,8 @@ abbrev N' [Group G] (A : Rep k G) : A ⟶ A where
   comm g := by
     ext x
     dsimp
-    rw [← Representation.asAlgebraHom_single_one, ← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
-    rw [← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Representation.asAlgebraHom_single_one, ← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
     congr 2
     ext g2
     simp
@@ -345,8 +345,8 @@ abbrev sigmaminus1' [CommGroup G] (A : Rep k G) : A ⟶ A where
   comm g := by
     ext g1 :3
     dsimp [ModuleCat.endRingEquiv]
-    rw [← Representation.asAlgebraHom_single_one, ← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
-    rw [← LinearMap.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Representation.asAlgebraHom_single_one, ← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
+    rw [← Module.End.mul_apply, ← map_mul (Representation.asAlgebraHom _)]
     congr 2
     ext g2
     simp [mul_comm]
@@ -363,7 +363,7 @@ def Acomplex [CommGroup G] (A : Rep k G) : CochainComplex (Rep k G) ℕ where
     · ext : 2
       simp only [Action.comp_hom, one_smul,
         ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
-      rw [← LinearMap.mul_eq_comp, ← map_mul]
+      rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G)) * ∑ i : G, MonoidAlgebra.single i 1) = 0 by
         rw [this, map_zero]
       rw [sub_mul, sub_eq_zero]
@@ -374,7 +374,7 @@ def Acomplex [CommGroup G] (A : Rep k G) : CochainComplex (Rep k G) ℕ where
     · ext : 2
       simp only [Action.comp_hom, one_smul,
         ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
-      rw [← LinearMap.mul_eq_comp, ← map_mul]
+      rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((∑ i : G, MonoidAlgebra.single i 1 ) * (MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G))) = 0 by
         rw [this, map_zero]
       rw [mul_sub, sub_eq_zero]
@@ -481,7 +481,7 @@ abbrev CyclicCoh.groupCohEven (hn : Even n) [h : NeZero n] [CommGroup G] (A : Re
         rintro x ⟨y, rfl⟩
         simp
         intro g
-        simp_rw [←  LinearMap.mul_apply, ← map_mul]
+        simp_rw [←  Module.End.mul_apply, ← map_mul]
         conv_rhs => rw [← Equiv.sum_comp (Equiv.mulLeft g) _]
         rfl)).homologyIso
 
@@ -498,7 +498,7 @@ abbrev CyclicCoh.groupCohOdd (hn : Odd n) [h : NeZero n] [CommGroup G] (A : Rep 
       simp [Acomplex, ← Nat.even_add_one, ← Nat.not_odd_iff_even, hn]
       rintro x ⟨y, rfl⟩
       simp [sub_eq_zero]
-      simp_rw [←  LinearMap.mul_apply, ← map_mul]
+      simp_rw [←  Module.End.mul_apply, ← map_mul]
       conv_rhs => rw [← Equiv.sum_comp (Equiv.mulRight σ) _]
       rfl)).homologyIso
 

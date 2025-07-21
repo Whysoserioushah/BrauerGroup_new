@@ -216,10 +216,10 @@ lemma centralizer_mulLeft_le_of_isCentralSimple :
       simp only [LinearMap.mulLeft_apply]
       simp only [tensor_self_op.equivEnd, tensor_self_op.toEnd, AlgEquiv.coe_ofBijective,
         Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-        OneHom.coe_mk, MulOpposite.unop_one, mul_one, LinearMap.mul_apply, LinearMap.coe_mk,
+        OneHom.coe_mk, MulOpposite.unop_one, mul_one, Module.End.mul_apply, LinearMap.coe_mk,
         AddHom.coe_mk, eqv] ]
     ext b
-    simp only [LinearMap.mul_apply, LinearMap.mulLeft_apply]
+    simp only [Module.End.mul_apply, LinearMap.mulLeft_apply]
     -- change y * (eqv (eqv.symm x)) b = (eqv (eqv.symm x)) (y * b)
     rw [eqv.apply_symm_apply]
     exact congr($(hx (LinearMap.mulLeft F y) (by simp)) b)
@@ -267,7 +267,7 @@ lemma centralizer_mulLeft_le_of_isCentralSimple :
   ext c
   simp only [LinearMap.mulRight_apply, tensor_self_op.equivEnd, tensor_self_op.toEnd,
     AlgEquiv.coe_ofBijective, Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk,
-    MonoidHom.coe_mk, OneHom.coe_mk, one_mul, LinearMap.mul_apply, LinearMap.coe_mk, AddHom.coe_mk,
+    MonoidHom.coe_mk, OneHom.coe_mk, one_mul, Module.End.mul_apply, LinearMap.coe_mk, AddHom.coe_mk,
     eqv]
 
 end central_simple_case
@@ -413,7 +413,7 @@ lemma centralizer_mulLeft :
       obtain ⟨b, hb⟩ := @eq a' (by
         rintro _ ⟨y, rfl⟩
         ext b
-        simp only [LinearMap.mul_apply, LinearMap.coe_mk, LinearMap.coe_toAddHom,
+        simp only [Module.End.mul_apply, LinearMap.coe_mk, LinearMap.coe_toAddHom,
           LinearMap.mulLeft_apply, a']
         exact congr($(ha (LinearMap.mulLeft F y) (by simp)) b))
       refine ⟨b, ?_⟩
@@ -429,7 +429,7 @@ lemma centralizer_mulLeft :
 
   · rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩
     ext z
-    simp only [LinearMap.mul_apply, LinearMap.mulRight_apply, LinearMap.mulLeft_apply, mul_assoc]
+    simp only [Module.End.mul_apply, LinearMap.mulRight_apply, LinearMap.mulLeft_apply, mul_assoc]
 
 end lemma2
 
@@ -701,7 +701,7 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
       map_one' := by rfl
       map_mul' := by
         intro b₁ b₂
-        simp only [MulMemClass.coe_mul, Algebra.TensorProduct.tmul_mul_tmul, LinearMap.mul_eq_comp,
+        simp only [MulMemClass.coe_mul, Algebra.TensorProduct.tmul_mul_tmul, Module.End.mul_eq_comp,
           LinearMap.comp_id]
       map_zero' := by simp only [ZeroMemClass.coe_zero, zero_tmul]
       map_add' := by
@@ -718,11 +718,10 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
       rfl
     map_mul' x y := by
       simp only [LinearMap.mulLeft_mul, Algebra.TensorProduct.tmul_mul_tmul, mul_one,
-        LinearMap.mul_eq_comp]
+        Module.End.mul_eq_comp]
     map_zero' := by
       simp only [LinearMap.mulLeft_zero_eq_zero, tmul_zero]
     map_add' b₁ b₂ := by
-      simp only
       rw [← tmul_add]
       congr
       ext
@@ -735,7 +734,7 @@ lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
       congr
       ext
       simp only [LinearMap.mulLeft_apply, Algebra.smul_mul_assoc, one_mul, SetLike.val_smul,
-        LinearMap.smul_apply, LinearMap.one_apply] }
+        LinearMap.smul_apply, Module.End.one_apply] }
 
   obtain ⟨x, hx⟩ := SkolemNoether' F (A ⊗[F] Module.End F B) B g f
   use x

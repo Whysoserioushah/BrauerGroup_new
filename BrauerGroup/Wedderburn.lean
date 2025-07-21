@@ -1,4 +1,3 @@
-import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Basic
 import BrauerGroup.MatrixCenterEquiv
 import BrauerGroup.TwoSidedIdeal
 import Mathlib.Algebra.Azumaya.Basic
@@ -642,16 +641,11 @@ theorem is_fin_dim_of_wdb {n : ℕ} (hn : n ≠ 0) (S : Type*) [h : DivisionRing
         map_smul' := by intros; ext i j; by_cases i = j  <;> aesop
       } : S →ₗ[K] Matrix (Fin n) (Fin n) S) fun x y h => Matrix.ext_iff.2 h 0 0
 
-lemma bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed
-    (K D : Type*) [Field K] [IsAlgClosed K] [Ring D] [IsSimpleRing D] [IsDomain D] [Algebra K D]
-    [FiniteDimensional K D] : Function.Bijective (algebraMap K D) :=
-  ⟨(algebraMap K D).injective, IsAlgClosed.algebraMap_surjective_of_isIntegral⟩
-
 theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :
     ∃ n ≠ 0, Nonempty (B ≃ₐ[K] M[Fin n, K]) := by
   rcases Wedderburn_Artin_algebra_version K B with ⟨n, hn, S, ins1, ins2, ⟨e⟩⟩
   have := is_fin_dim_of_wdb K B hn S e
-  exact ⟨n, hn, ⟨e.trans $ AlgEquiv.mapMatrix $ .symm $ .ofBijective (Algebra.ofId _ _) $
-      bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed _ _⟩⟩
+  exact ⟨n, hn, ⟨e.trans $ .mapMatrix $ .symm $
+    .ofBijective (Algebra.ofId _ _) IsAlgClosed.algebraMap_bijective_of_isIntegral⟩⟩
 
 end central_simple

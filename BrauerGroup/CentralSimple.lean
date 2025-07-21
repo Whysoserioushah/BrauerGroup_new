@@ -568,7 +568,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
         exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
       | add x y hx hy => exact TwoSidedIdeal.add_mem _ hx hy
 
-  · rw [← TwoSidedIdeal.span_le]
+  · rw [TwoSidedIdeal.span_le]
     rintro _ ⟨x, hx, rfl⟩
     rw [SetLike.mem_coe, TwoSidedIdeal.mem_comap] at hx
     exact hx

@@ -92,16 +92,6 @@ lemma mem_span_ideal_iff_exists_fin (s : Ideal R) (x : R) :
   · rintro ⟨n, fin, xR, y, rfl⟩
     exact ⟨n, fin, 1, xR, y, by simp⟩
 
-lemma span_le {s : Set R} {I : TwoSidedIdeal R} : s ⊆ I ↔ span s ≤ I := by
-  rw [le_iff]
-  constructor
-  · intro h x hx
-    rw [SetLike.mem_coe, mem_span_iff_exists_fin] at hx
-    obtain ⟨n, finn, xL, xR, y, rfl⟩ := hx
-    exact I.finsetSum_mem _ _ fun i _ => I.mul_mem_right _ _ (I.mul_mem_left _ _ <| h (y i).2)
-  · intro h x hx
-    exact h <| subset_span hx
-
 lemma coe_bot_set : ((⊥ : TwoSidedIdeal R) : Set R) = {0} := by
   ext x
   simp only [SetLike.mem_coe, Set.mem_singleton_iff]
