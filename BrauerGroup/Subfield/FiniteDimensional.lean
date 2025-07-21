@@ -1,5 +1,5 @@
 import BrauerGroup.Subfield.Defs
-import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+import Mathlib.LinearAlgebra.FiniteDimensional.Basic
 
 namespace SubField
 variable {K A : Type*} [Field K] [Ring A] [Algebra K A] {L : SubField K A}

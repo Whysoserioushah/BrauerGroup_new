@@ -431,20 +431,17 @@ def end_simple_mod_of_wedderburn (n : ℕ) (hn : n ≠ 0) (D : Type v) [Division
           }
     { toFun f := (E.functor.map <| ModuleCat.ofHom f).hom
       map_one' := by
-        simp only [Functor.comp_obj, smul_eq_mul]
         erw [E.functor.map_id]
         rfl
       map_mul' := fun f g => by
-        simp only [Functor.comp_obj, smul_eq_mul]
         rw [show ModuleCat.ofHom (f * g) = ModuleCat.ofHom g ≫ ModuleCat.ofHom f by rfl,
           E.functor.map_comp]
         rfl
       map_zero' := by
-        ext dn i
+        ext dn
         simp [moritaEquivalentToMatrix, toModuleCatOverMatrix_map,
-          LinearMap.zero_apply, Pi.zero_apply, E]
+          LinearMap.zero_apply, E, Pi.zero_def]
       map_add' := fun f g => by
-        simp only [Functor.comp_obj, smul_eq_mul]
         rw [show ModuleCat.ofHom (f + g) = ModuleCat.ofHom f + ModuleCat.ofHom g from rfl,
           E.functor.map_add]; rfl
       commutes' a := by
@@ -547,14 +544,14 @@ lemma end_simple_mod_of_wedderburn' (n : ℕ) (hn : n ≠ 0) (D : Type v) [Divis
     simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
       AlgEquiv.toRingEquiv_toRingHom, Pi.smul_apply, smul_eq_mul, id_eq, Matrix.smul_apply,
       eq_mpr_eq_cast, LinearEquiv.ofLinear_apply, LinearMap.coe_mk, AddHom.coe_mk,
-      LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.one_apply,
+      LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, Module.End.one_apply,
       LinearEquiv.apply_symm_apply]
   · intros f g
     ext
     simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
       AlgEquiv.toRingEquiv_toRingHom, Pi.smul_apply, smul_eq_mul, id_eq, Matrix.smul_apply,
       eq_mpr_eq_cast, LinearEquiv.ofLinear_apply, LinearMap.coe_mk, AddHom.coe_mk,
-      LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.mul_apply,
+      LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply, Module.End.mul_apply,
       LinearEquiv.symm_apply_apply]
 
 instance end_simple_mod_finite
@@ -616,12 +613,12 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
     { toFun m := a • m
       map_add' := by simp only [smul_add, implies_true]
       map_smul' := by
-        simp only [LinearMap.smul_def, RingHom.id_apply, LinearMap.map_smul_of_tower,
+        simp only [Module.End.smul_def, RingHom.id_apply, LinearMap.map_smul_of_tower,
           implies_true] }
-    map_one' := by ext; simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.one_apply]
+    map_one' := by ext; simp only [one_smul, LinearMap.coe_mk, AddHom.coe_mk, Module.End.one_apply]
     map_mul' := by
       intros; ext
-      simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearMap.mul_apply, LinearMap.map_smul_of_tower]
+      simp only [LinearMap.coe_mk, AddHom.coe_mk, Module.End.mul_apply, LinearMap.map_smul_of_tower]
       rw [mul_comm, mul_smul]
     map_zero' := by ext; simp only [zero_smul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply]
     map_add' := by
@@ -632,7 +629,7 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
   commutes' := by
     intros r f
     ext m
-    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.mul_apply,
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, Module.End.mul_apply,
       LinearMap.coe_mk, AddHom.coe_mk]
     let s : Module.End A M :=
     { toFun x := r • x
@@ -649,7 +646,7 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
     map_add' := by simp
     map_smul' := by
       intro g m
-      simp only [LinearMap.smul_def, RingHom.id_apply]
+      simp only [Module.End.smul_def, RingHom.id_apply]
       let s : Module.End A M :=
       { toFun x := r • x
         map_add' := by simp
@@ -660,7 +657,7 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
           exact Algebra.commutes r a }
       change f (s • g m) = g (f $ s • m)
       rw [f.map_smul, f.map_smul]
-      simp only [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.map_smul_of_tower,
+      simp only [Module.End.smul_def, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.map_smul_of_tower,
         s]
       change r • f (g • m) = _
       rw [f.map_smul]
@@ -668,7 +665,7 @@ instance (M : Type v) [AddCommGroup M] [Module A M] [Module k M] [IsScalarTower 
   smul_def' := by
     intro r f
     ext m
-    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, LinearMap.mul_apply,
+    simp only [RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, Module.End.mul_apply,
       LinearMap.coe_mk, AddHom.coe_mk]
     let s : Module.End A M :=
       { toFun x := r • x
@@ -747,7 +744,7 @@ instance : IsBalanced A A where
     ext x
     simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply, smul_eq_mul]
     let X : Module.End A A := LinearMap.mulRight _ x
-    simpa [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, one_mul, X]
+    simpa [Module.End.smul_def, LinearMap.coe_mk, AddHom.coe_mk, one_mul, X]
       using (f.map_smul X 1).symm
 
 omit [IsSimpleRing A] in
@@ -758,10 +755,10 @@ lemma IsBalanced.congr_aux (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Mod
   { toFun m := l.symm <| a (l m)
     map_add' := by simp
     map_smul' := fun x y => by
-      simp only [LinearMap.smul_def, RingHom.id_apply]
+      simp only [Module.End.smul_def, RingHom.id_apply]
       let L := l.toLinearMap ∘ₗ x ∘ₗ l.symm.toLinearMap
       have := a.map_smul L (l y)
-      simp only [LinearMap.smul_def, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+      simp only [Module.End.smul_def, LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
         LinearEquiv.symm_apply_apply, L] at this
       simp [this] }
   obtain ⟨b, hb⟩ := h.1 a'
@@ -796,7 +793,7 @@ lemma isBalanced_of_simpleMod (M : Type v) [AddCommGroup M] [Module A M] [IsSimp
     map_smul' := by
       intro f v
       ext i
-      simp only [LinearMap.smul_def, Finsupp.mapRange_apply, RingHom.id_apply]
+      simp only [Module.End.smul_def, Finsupp.mapRange_apply, RingHom.id_apply]
       let x (i j : ι) : Module.End A M :=
       { toFun m := f (Finsupp.single i m) j
         map_add' := by simp
@@ -806,7 +803,7 @@ lemma isBalanced_of_simpleMod (M : Type v) [AddCommGroup M] [Module A M] [IsSimp
           rw [← Finsupp.smul_single, map_smul]
           rfl }
       have eq (i j k : ι) := g.map_smul (x i j) (v k)
-      simp only [LinearMap.smul_def, LinearMap.coe_mk, AddHom.coe_mk, x] at eq
+      simp only [Module.End.smul_def, LinearMap.coe_mk, AddHom.coe_mk, x] at eq
       conv_lhs => rw [show v = ∑ i ∈ v.support, Finsupp.single i (v i) by
         ext j
         simp only [Finsupp.coe_finset_sum, Finset.sum_apply, Finsupp.single_apply,

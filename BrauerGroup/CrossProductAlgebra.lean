@@ -88,7 +88,7 @@ def valAddEquiv : CrossProductAlgebra f ≃+ (Gal(K, F) →₀ K) where
 @[simp]
 lemma val_finsuppSum {α M : Type*} [AddCommMonoid M] (g : α →₀ M)
     (h : α → M → CrossProductAlgebra f) :
-    (g.sum h).val = g.sum (fun a m ↦ (h a m).val) := map_finsupp_sum valAddEquiv ..
+    (g.sum h).val = g.sum (fun a m ↦ (h a m).val) := map_finsuppSum valAddEquiv ..
 
 instance [Semiring R] [Module R K] : Module R (CrossProductAlgebra f) :=
   val_injective.module _ valAddEquiv.toAddMonoidHom val_smul
@@ -120,12 +120,14 @@ def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F]
     map_smul' _ _ := by ext; simp }
 
 variable (f) in
+set_option synthInstance.maxHeartbeats 60000 in
 @[simp]
 lemma mulLinearMap_single_single (c d : K) (σ τ : Gal(K, F)) :
     mulLinearMap f (.single σ c) (.single τ d) = .single (σ * τ) (c * σ d * f (σ, τ)) := by
   simp [mulLinearMap]
 
 variable (f) in
+set_option synthInstance.maxHeartbeats 60000 in
 @[simp]
 lemma mulLinearMap_single_left_apply (c : K) (σ : Gal(K, F)) (x : Gal(K, F) →₀ K) (τ : Gal(K, F)) :
     mulLinearMap f (.single σ c) x τ = c * σ (x (σ⁻¹ * τ)) * f (σ, σ⁻¹ * τ) := by
@@ -159,33 +161,33 @@ instance monoid : Monoid (CrossProductAlgebra f) where
     ext : 1
     dsimp
     induction x using Finsupp.induction_linear with
-    | h0 => simp
-    | hadd => simp [*]
-    | hsingle σ a => simp [map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ a]
+    | zero => simp
+    | add => simp [*]
+    | single σ a => simp [map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ a]
   mul_one := by
     rintro ⟨x⟩
     ext : 1
     dsimp
     induction x using Finsupp.induction_linear with
-    | h0 => simp
-    | hadd => simp [*]
-    | hsingle σ a => simp [map_one_snd_of_isMulTwoCocycle Fact.out]
+    | zero => simp
+    | add => simp [*]
+    | single σ a => simp [map_one_snd_of_isMulTwoCocycle Fact.out]
   mul_assoc := by
     rintro ⟨x⟩ ⟨y⟩ ⟨z⟩
     ext : 1
     dsimp
     induction x using Finsupp.induction_linear with
-    | h0 => simp
-    | hadd => simp [*]
-    | hsingle σ a =>
+    | zero => simp
+    | add => simp [*]
+    | single σ a =>
     induction y using Finsupp.induction_linear with
-    | h0 => simp
-    | hadd => simp [*]
-    | hsingle τ b =>
+    | zero => simp
+    | add => simp [*]
+    | single τ b =>
     induction z using Finsupp.induction_linear with
-    | h0 => simp
-    | hadd => simp [-mulLinearMap_single_single, *]
-    | hsingle ν c =>
+    | zero => simp
+    | add => simp [-mulLinearMap_single_single, *]
+    | single ν c =>
     simp only [mulLinearMap_single_single, mul_assoc, AlgEquiv.mul_apply, map_mul,
       mul_left_comm _ (σ (τ c))]
     congr 4
@@ -219,9 +221,9 @@ lemma basis_smul_comm (σ : Gal(K, F)) (k1 k2 : K) (x : CrossProductAlgebra f) :
     Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm, val_mul, val_smul, valAddEquiv_symm_apply_val,
     Finsupp.smul_single, smul_eq_mul, _root_.mul_one]
   induction x.val using Finsupp.induction_linear with
-  | h0 => simp
-  | hadd _ _ _ _ => simp_all[smul_add]
-  | hsingle a b =>
+  | zero => simp
+  | add _ _ _ _ => simp_all[smul_add]
+  | single a b =>
     simp [← _root_.mul_assoc, mul_comm k1 (σ k2)]
 
 variable (f) in
@@ -243,9 +245,9 @@ lemma smul_eq_incl_mul (k : K) (x : CrossProductAlgebra f) : k • x = incl f k 
   ext : 1
   dsimp
   induction x using Finsupp.induction_linear with
-  | h0 => simp
-  | hadd => simp [*]
-  | hsingle σ b => simp [incl_apply, map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ _ b]
+  | zero => simp
+  | add => simp [*]
+  | single σ b => simp [incl_apply, map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ _ b]
 
 instance [CommSemiring R] [Algebra R K] :
     IsScalarTower R (CrossProductAlgebra f) (CrossProductAlgebra f) where

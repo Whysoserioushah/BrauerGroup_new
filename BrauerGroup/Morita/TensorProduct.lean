@@ -24,15 +24,15 @@ instance (N : ModuleCat B) : IsScalarTower R B N :=
 
 abbrev aux0 (N : ModuleCat A) : Module.End A N →ₐ[R] Module.End B (e1.obj N) where
   toFun f := (e1.map (ModuleCat.ofHom f)).hom
-  map_one' := by ext; simp [LinearMap.one_eq_id]
-  map_mul' f1 f2 := by ext; simp [LinearMap.mul_eq_comp]
+  map_one' := by ext; simp [Module.End.one_eq_id]
+  map_mul' f1 f2 := by ext; simp [Module.End.mul_eq_comp]
   map_zero' := by ext; simp [show ModuleCat.ofHom 0 = 0 from rfl]
   map_add' f1 f2 := by simp [show ModuleCat.ofHom (f1 + f2) = ModuleCat.ofHom f1 +
     ModuleCat.ofHom f2 from rfl]
   commutes' r := by
     ext n; simp [Algebra.algebraMap_eq_smul_one]
     rw [show ModuleCat.ofHom (r • 1) = r • ModuleCat.ofHom 1 by ext; simp,
-      e1.map_smul, LinearMap.one_eq_id, ModuleCat.ofHom_id, e1.map_id, ModuleCat.hom_smul]
+      e1.map_smul, Module.End.one_eq_id, ModuleCat.ofHom_id, e1.map_id, ModuleCat.hom_smul]
     rfl
 
 abbrev _root_.Module.End.restrictScalars (R S M R₁: Type*) [Ring R] [Ring S] [CommRing R₁]
@@ -122,8 +122,8 @@ instance : Category (TensorModule R A C) where
     hom := f.hom ≫ g.hom
     commutes _ := by simp
   }
-  id_comp f := by simp; rfl
-  comp_id f := by simp; rfl
+  id_comp f := by simp
+  comp_id f := by simp
   assoc _ _ := by simp
 
 @[simp]

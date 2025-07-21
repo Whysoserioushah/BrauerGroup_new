@@ -740,16 +740,16 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
         apply val_injective
         rw [val_smul, val_smul]
         induction a.val using Finsupp.induction_linear with
-        | h0 => simp
-        | hadd f g _ _ => simp_all
-        | hsingle σ k => simp
+        | zero => simp
+        | add f g _ _ => simp_all
+        | single σ k => simp
       have eq' (c : F) (a : B) : c • a = algebraMap F K c • a := by
         apply val_injective
         rw [val_smul, val_smul]
         induction a.val using Finsupp.induction_linear with
-        | h0 => simp
-        | hadd f g _ _ => simp_all
-        | hsingle σ k => simp
+        | zero => simp
+        | add f g _ _ => simp_all
+        | single σ k => simp
 
       intro l c a
       rw [eq, eq', map_smul]
@@ -779,17 +779,17 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
         change φ0 ((⟨α.val⟩ : CrossProductAlgebra a) * (⟨β.val⟩ : CrossProductAlgebra a)) =
           φ0 (⟨α.val⟩ : CrossProductAlgebra a) * φ0 (⟨β.val⟩ : CrossProductAlgebra a)
         induction α.val using Finsupp.induction_linear with
-        | h0 => change φ0 (0 * _) = φ0 0 * _; simp
-        | hadd f g hf hg =>
+        | zero => change φ0 (0 * _) = φ0 0 * _; simp
+        | add f g hf hg =>
           change φ0 ((_ + _) * _) = φ0 (_ + _) * φ0 _
           simp [add_mul, hf, hg]
-        | hsingle σ k1 =>
+        | single σ k1 =>
           induction β.val using Finsupp.induction_linear with
-          | h0 => change φ0 (_ * 0) = _ * φ0 0; simp
-          | hadd f g hf hg =>
+          | zero => change φ0 (_ * 0) = _ * φ0 0; simp
+          | add f g hf hg =>
             change φ0 (_ * (_ + _)) = φ0 _ * φ0 (_ + _)
             simp [mul_add, hf, hg]
-          | hsingle τ k2 =>
+          | single τ k2 =>
             change φ0 (⟨mulLinearMap a _ _⟩ : CrossProductAlgebra a) = _
             simp only [mulLinearMap_single_single, *]
             rw [← mul_one (k1 * σ k2 * ↑(a (σ, τ))), ← smul_eq_mul _ 1, ← Finsupp.smul_single,
@@ -902,9 +902,9 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
       apply CrossProductAlgebra.val_injective
       rw [CrossProductAlgebra.val_smul, CrossProductAlgebra.val_smul]
       induction a.val using Finsupp.induction_linear with
-      | h0 => simp
-      | hadd f g _ _ => simp_all
-      | hsingle σ k => simp
+      | zero => simp
+      | add f g _ _ => simp_all
+      | single σ k => simp
 
     intro l c a
     rw [eq, eq', map_smul]
@@ -943,17 +943,17 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
   · intro x y
     change φ0 (⟨x.val⟩ * ⟨y.val⟩) = φ0 ⟨x.val⟩ * φ0 ⟨y.val⟩
     induction x.val using Finsupp.induction_linear with
-    | h0 => change φ0 (0 * _) = φ0 0 * _; simp
-    | hadd f g _ _ =>
+    | zero => change φ0 (0 * _) = φ0 0 * _; simp
+    | add f g _ _ =>
       change φ0 ((_ + _) * _) = φ0 (_ + _) * φ0 _
       simp_all [add_mul]
-    | hsingle σ a =>
+    | single σ a =>
       induction y.val using Finsupp.induction_linear with
-      | h0 => change φ0 (_ * 0) = _ * φ0 0; simp
-      | hadd f g _ _ =>
+      | zero => change φ0 (_ * 0) = _ * φ0 0; simp
+      | add f g _ _ =>
         change φ0 (_ * (_ + _)) = φ0 _ * φ0 (_ + _)
         simp_all [mul_add]
-      | hsingle τ b =>
+      | single τ b =>
         set f : (Gal(K, F) × Gal(K, F)) → Kˣ := (⇑Additive.toMul ∘ ⇑(twoCocyclesOfIsMulTwoCocycle
           (GoodRep.isMulTwoCocycle A.arbitraryConjFactor))) with f_eq
         change φ0 (⟨CrossProductAlgebra.mulLinearMap _ _ _⟩ : CrossProductAlgebra _) = _
