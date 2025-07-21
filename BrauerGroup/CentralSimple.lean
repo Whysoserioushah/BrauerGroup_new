@@ -3,12 +3,10 @@ Copyright (c) 2024 Kevin Buzzard. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yunzhou Xie, Jujian Zhang, Kevin Buzzard
 -/
-import BrauerGroup.Wedderburn
-import Mathlib.RingTheory.Flat.Basic
-import Mathlib.LinearAlgebra.TensorProduct.RightExactness
-import Mathlib.RingTheory.SimpleRing.Matrix
-import Mathlib.Algebra.Central.Basic
 import BrauerGroup.Centralizer
+import BrauerGroup.Wedderburn
+import Mathlib.Algebra.Central.Basic
+import Mathlib.RingTheory.Flat.Basic
 
 /-!
 # Characteristic predicate for central simple algebras
@@ -665,7 +663,6 @@ theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
     (n : ℕ) (D : Type*) [NeZero n] (h : DivisionRing D) [Algebra K D]
     (Wdb: B ≃ₐ[K] (Matrix (Fin n) (Fin n) D)) [Algebra.IsCentral K B] [IsSimpleRing B] :
     Algebra.IsCentral K D := by
-  haveI := TwoSidedIdeal.equivRingConMatrix' D (ι := (Fin n)) 0 |>.isSimpleOrder
   refine ⟨fun d hd => ?_⟩
   obtain ⟨k, hk⟩ := Wdb.isCentral.1
     (show (Matrix.diagonal fun _ ↦ d) ∈ _ by

@@ -151,4 +151,17 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     tauto
   · exact Subalgebra.le_centralizer_self.2 L.2
 
+lemma maxsubfield_of_div_iff (L : SubField K D) : (∀ (L' : Subalgebra K D)
+    (_ : ∀ x ∈ L', ∀ y ∈ L',  x * y = y * x), L.1 ≤ L' → L.1 = L') ↔
+    IsMax L :=
+  ⟨fun h ↦ fun L' hL' ↦ le_of_eq <| SubField.toSubalgebra_inj.1 <| h L'.1 (fun _ a _ a_1 ↦ L'.2 a a_1) hL'|>.symm,
+  fun h ↦ cor_two_2to3 K D L <| dim_max_subfield K D L h⟩
+
+lemma IsMaxSubfield.ofAlgEquiv (L1 L2 : SubField K D) (e : L1 ≃ₐ[K] L2)
+    (hL1 : IsMax L1) : IsMax L2 := by
+  have hL11 := dim_max_subfield K D L1 hL1
+  have dim_eq := e.toLinearEquiv.finrank_eq
+  simp [dim_eq] at hL11
+  exact maxsubfield_of_div_iff K D L2|>.1 <| cor_two_2to3 K D L2 hL11
+
 end cors_of_DC

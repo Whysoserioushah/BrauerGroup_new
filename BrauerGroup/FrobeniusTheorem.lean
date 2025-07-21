@@ -666,8 +666,7 @@ lemma linindepijk (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     simp only [Fin.isValue, Matrix.cons_val_one, Matrix.head_cons] at h1
     rw [add_comm, ← add_assoc, neg_smul, one_smul, smul_neg, ← neg_smul] at heq
     specialize h1 heq ⟨1, by omega⟩
-    simp only [Fin.mk_one, Fin.isValue, Matrix.cons_val_one, Matrix.head_cons, neg_eq_zero] at h1
-    exact h1
+    simpa using h1
   obtain rfl : c = 0 := by
     simp only [zero_smul, zero_add] at heq
     rw [Algebra.smul_def, k_eq, mul_eq_mul_right_iff] at heq
@@ -816,7 +815,7 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij⟩
 
 set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1600000 in
+set_option maxHeartbeats 600000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
   have hh := RealExtension_is_RorC (Subalgebra.center ℝ A)

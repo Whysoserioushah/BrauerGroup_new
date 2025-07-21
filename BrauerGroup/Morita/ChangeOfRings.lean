@@ -5,7 +5,6 @@ Authors: Jujian Zhang
 -/
 import BrauerGroup.MoritaEquivalence
 import Mathlib.Algebra.Category.ModuleCat.Abelian
-import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.RingTheory.HopkinsLevitzki
 import Mathlib.RingTheory.Morita.Basic
 import Mathlib.RingTheory.SimpleModule.Rank

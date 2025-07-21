@@ -1,7 +1,5 @@
-import Mathlib.LinearAlgebra.FiniteDimensional
-import Mathlib.RingTheory.Finiteness.Basic
+import Mathlib.FieldTheory.IsAlgClosed.Basic
 import Mathlib.RingTheory.Flat.Basic
-import Mathlib.FieldTheory.AlgebraicClosure
 import Mathlib.RingTheory.TensorProduct.Free
 
 suppress_compilation

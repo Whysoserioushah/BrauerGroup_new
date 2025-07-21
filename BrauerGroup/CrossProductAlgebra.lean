@@ -143,6 +143,8 @@ instance : One (CrossProductAlgebra f) where
 instance : Mul (CrossProductAlgebra f) where
   mul x y := ⟨mulLinearMap f x.val y.val⟩
 
+lemma one_def : (1 : CrossProductAlgebra f) = ⟨.single 1 (f 1)⁻¹⟩ := rfl
+
 @[simp] lemma val_one : (1 : CrossProductAlgebra f).val = .single 1 (f 1)⁻¹ := rfl
 @[simp] lemma val_mul (x y : CrossProductAlgebra f) : (x * y).val = mulLinearMap f x.val y.val := rfl
 
@@ -283,10 +285,10 @@ variable (f) in
 
 @[simp]
 lemma basis_mul_basis (σ τ : Gal(K, F)) :
-    basis (f := f) σ * basis τ = (f (σ, τ)).1 • basis (σ * τ) := of_mul_of ..
+    basis (f := f) σ * basis τ = incl f (f (σ, τ)) * basis (σ * τ) := of_mul_of ..
 
 lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) * of f σ := by
-  ext; simp [map_one_snd_of_isMulTwoCocycle Fact.out, incl_apply]
+  ext : 1; simp [map_one_snd_of_isMulTwoCocycle Fact.out, incl_apply]
 
 lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f σ).val) = x := by
   ext; simp

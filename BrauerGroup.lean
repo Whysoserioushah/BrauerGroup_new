@@ -19,6 +19,7 @@ import BrauerGroup.LemmasAboutSimpleRing
 import BrauerGroup.Mathlib.Algebra.Algebra.Equiv
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
+import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Lattice
 import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
 import BrauerGroup.Mathlib.FieldTheory.Galois.Basic
 import BrauerGroup.Mathlib.GroupTheory.Congruence.Defs
@@ -27,11 +28,15 @@ import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
 import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 import BrauerGroup.Mathlib.RingTheory.Congruence.Basic
 import BrauerGroup.Mathlib.RingTheory.Congruence.Defs
+import BrauerGroup.Mathlib.RingTheory.NonUnitalSubring.Defs
+import BrauerGroup.Mathlib.RingTheory.NonUnitalSubsemiring.Basic
+import BrauerGroup.Mathlib.RingTheory.NonUnitalSubsemiring.Defs
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Basic
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Kernel
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Lattice
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Operations
 import BrauerGroup.MatrixCenterEquiv
+import BrauerGroup.MatrixEquivTensor
 import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.Morita.TensorProduct
 import BrauerGroup.MoritaEquivalence

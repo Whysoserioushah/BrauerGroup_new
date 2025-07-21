@@ -1,9 +1,11 @@
-import BrauerGroup.BrauerGroup
 import BrauerGroup.AlgClosedUnion
 import BrauerGroup.ExtendScalar
-import Mathlib.LinearAlgebra.Dimension.Constructions
-import Mathlib.LinearAlgebra.Dimension.Finrank
 import BrauerGroup.LemmasAboutSimpleRing
+import Mathlib.Algebra.BrauerGroup.Defs
+import Mathlib.Algebra.Central.Matrix
+import Mathlib.Analysis.Normed.Ring.Lemmas
+import Mathlib.LinearAlgebra.FreeModule.PID
+import Mathlib.RingTheory.SimpleRing.Matrix
 
 suppress_compilation
 
@@ -152,17 +154,19 @@ def extension_inv [FiniteDimensional k A]
 
 theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
     [hk_bar : IsAlgClosure k k_bar] [hA : FiniteDimensional k A] :
-    (Algebra.IsCentral k A ∧ IsSimpleRing A) ↔
-      (∃ (n : ℕ) (_ : NeZero n) (L : Type u) (_ : Field L) (_ : Algebra k L)
-        (_ : FiniteDimensional k L), Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L)) := by
+    Algebra.IsCentral k A ∧ IsSimpleRing A ↔
+      ∃ n ≠ 0, ∃ (L : Type u) (_ : Field L) (_ : Algebra k L)  (_ : FiniteDimensional k L),
+        Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) := by
   constructor
   · rintro ⟨_, _⟩
     haveI := hk_bar.1
     obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
     refine ⟨n, hn, ?_⟩
     use lemma_tto.ℒℒ n k k_bar A iso
-    refine ⟨_, _, inferInstance, ⟨lemma_tto.isoRestrict n k k_bar A iso⟩⟩
+    have : NeZero n := ⟨hn⟩
+    exact ⟨_, _, inferInstance, ⟨lemma_tto.isoRestrict n k k_bar A iso⟩⟩
   · rintro ⟨n, hn, L, _, _, _, ⟨iso⟩⟩
+    have : NeZero n := ⟨hn⟩
     refine (centralsimple_over_extension_iff k A L).mpr <| ⟨iso.symm.isCentral, ⟨?_⟩⟩
     rw [← TwoSidedIdeal.orderIsoOfRingEquiv iso.symm.toRingEquiv |>.isSimpleOrder_iff]
     exact IsSimpleRing.simple
@@ -244,14 +248,9 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
           Algebra.id.map_eq_id, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe,
           matrixEquivTensor_apply_symm, Matrix.map]
         ext i j
-        simp only [Matrix.of_apply]
-        if hij : i = j then
-        subst hij
-        simp only [Matrix.one_apply_eq, map_one, mul_one, Algebra.algebraMap_eq_smul_one,
-          Matrix.smul_apply, smul_eq_mul, mul_one]
-        else
-        simp only [ne_eq, hij, not_false_eq_true, Matrix.one_apply_ne, map_zero, mul_zero,
-          Algebra.algebraMap_eq_smul_one, Matrix.smul_apply, smul_eq_mul, zero_mul]
+        obtain rfl | hij := eq_or_ne i j
+        · simp [Matrix.one_apply_eq, Algebra.algebraMap_eq_smul_one, Matrix.smul_apply]
+        · simp [hij, Matrix.one_apply_ne, Algebra.algebraMap_eq_smul_one]
     }
     let e5 : n = deg k k_bar A := by
       have := deg_sq_eq_dim k k_bar A
@@ -262,3 +261,19 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
         mul_one] at e6
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
     exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' _ (finCongr e5)
+
+def extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
+    [Algebra.IsCentral k A] [FiniteDimensional k A] (L L' : Type u) [Field L] [Field L']
+    [Algebra k L] (hA : isSplit k A L) [Algebra L L'] [Algebra k L'] [IsScalarTower k L L'] :
+    isSplit k A L' := by
+  obtain ⟨n, hn, ⟨e⟩⟩ := hA
+  obtain ⟨n, e⟩ := extension_over_split k k_bar ⟨.of k A⟩ L L' ⟨n, e⟩
+  let e5 : n = deg k k_bar ⟨.of k A⟩ := by
+      have := deg_sq_eq_dim k k_bar ⟨.of k A⟩
+      rw [pow_two] at this
+      have e6 := LinearEquiv.finrank_eq e.toLinearEquiv|>.trans $
+        Module.finrank_matrix L' _ (Fin n) (Fin n)
+      simp only [Module.finrank_tensorProduct, Module.finrank_self, one_mul, Fintype.card_fin,
+        mul_one] at e6
+      exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
+  exact ⟨n, by rw[e5]; exact deg_pos k k_bar ⟨.of k A⟩, ⟨e⟩⟩

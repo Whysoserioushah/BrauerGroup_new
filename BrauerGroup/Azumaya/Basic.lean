@@ -1,8 +1,6 @@
-import BrauerGroup.Morita.ChangeOfRings
 import BrauerGroup.BrauerGroup
-import Mathlib.Algebra.Central.Matrix
 import BrauerGroup.LemmasAboutSimpleRing
-import BrauerGroup.matrixkronecker
+import BrauerGroup.Morita.ChangeOfRings
 
 universe u v
 
@@ -131,6 +129,8 @@ lemma IsMorita_iff_IsBrauer' (R : Type u) [CommRing R] (A B : Type v) [Ring A] [
     obtain ⟨m, hm, E, _, _, ⟨e'⟩⟩ := Wedderburn_Artin_algebra_version' R B
     letI e1 := MoritaEquivalence.ofAlgEquiv e
     letI e2 := MoritaEquivalence.ofAlgEquiv e'
+    have : NeZero m := ⟨hm⟩
+    have : NeZero n := ⟨hn⟩
     haveI := MoritaEquivalence.matrix' R D n |>.symm
     have ww := MoritaEquivalence.trans R e1 this |>.symm
     haveI := MoritaEquivalence.matrix' R E m |>.symm
@@ -138,7 +138,7 @@ lemma IsMorita_iff_IsBrauer' (R : Type u) [CommRing R] (A B : Type v) [Ring A] [
     haveI h := MoritaEquivalence.trans R ww hAB.cond.some
     haveI h' := MoritaEquivalence.trans R h ww'
     have := MoritaEquivalence.algEquivOfDivisionRing R D E h'
-    refine ⟨m, n, hm.1, hn.1, ⟨e.mapMatrix.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
+    refine ⟨m, n, hm, hn, ⟨e.mapMatrix.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
       Matrix.reindexAlgEquiv _ _ finProdFinEquiv |>.trans <| this.mapMatrix.trans <|
       Matrix.reindexAlgEquiv _ _ finswap|>.trans <| Matrix.reindexAlgEquiv _ _
       finProdFinEquiv.symm |>.trans <| Matrix.compAlgEquiv _ _ _ _|>.symm.trans

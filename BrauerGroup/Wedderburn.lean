@@ -315,9 +315,8 @@ noncomputable abbrev Wedderburn_Artin.aux.nxi_spec
 lemma Wedderburn_Artin.aux.n_ne_zero
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
-    NeZero <| Wedderburn_Artin.aux.n I I_nontrivial := by
-  constructor
-  by_contra hn
+    Wedderburn_Artin.aux.n I I_nontrivial ≠ 0 := by
+  rintro hn
   let n : ℕ := Wedderburn_Artin.aux.n I I_nontrivial
   let x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
   let i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
@@ -338,8 +337,7 @@ noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
     ∀ j, x I I_nontrivial j ≠ 0 ∧ i I I_nontrivial j ≠ 0 := by
   classical
   let n : ℕ := Wedderburn_Artin.aux.n I I_nontrivial
-  have n_ne : NeZero n := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
-  have n_ne' : n ≠ 0 := n_ne.1
+  have n_ne : n ≠ 0 := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
   let x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
   let i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
   have one_eq : ∑ j : Fin n, (i j) * (x j) = 1 := Wedderburn_Artin.aux.nxi_spec I I_nontrivial
@@ -365,11 +363,10 @@ noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
 lemma Wedderburn_Artin.aux.equivIdeal
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) (I_minimal : ∀ J : Ideal A, J ≠ ⊥ → ¬ J < I) :
-    ∃ (n : ℕ) (_ : NeZero n), Nonempty ((Fin n → I) ≃ₗ[A] A) := by
+    ∃ n ≠ 0, Nonempty ((Fin n → I) ≃ₗ[A] A) := by
   classical
   letI n : ℕ := Wedderburn_Artin.aux.n I I_nontrivial
-  have n_ne : NeZero n := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
-  have n_ne' : n ≠ 0 := n_ne.1
+  have n_ne : n ≠ 0 := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
   letI x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
   letI i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
   have one_eq : ∑ j : Fin n, (i j) * (x j) = 1 :=
@@ -436,8 +433,7 @@ def endPowEquivMatrix (A : Type*) [Ring A]
 
 theorem Wedderburn_Artin_ideal_version
     (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
-    ∃ (n : ℕ) (_ : NeZero n) (I : Ideal A) (_ : IsSimpleModule A I),
-    Nonempty ((Fin n → I) ≃ₗ[A] A) := by
+    ∃ n ≠ 0, ∃ (I : Ideal A) (_ : IsSimpleModule A I), Nonempty ((Fin n → I) ≃ₗ[A] A) := by
   classical
   obtain ⟨(I : Ideal A), (I_nontrivial : I ≠ ⊥), (I_minimal : ∀ J : Ideal A, J ≠ ⊥ → ¬ J < I)⟩ :=
       IsArtinian.set_has_minimal (R := A) (M := A) {I | I ≠ ⊥}
@@ -446,10 +442,9 @@ theorem Wedderburn_Artin_ideal_version
   obtain ⟨n, hn, ⟨e⟩⟩ := Wedderburn_Artin.aux.equivIdeal I I_nontrivial I_minimal
   exact ⟨n, hn, I, inferInstance, ⟨e⟩⟩
 
-theorem Wedderburn_Artin
-    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
-    ∃ (n : ℕ) (_ : NeZero n) (I : Ideal A) (_ : IsSimpleModule A I),
-    Nonempty (A ≃+* M[Fin n, (Module.End A I)ᵐᵒᵖ]) := by
+theorem Wedderburn_Artin (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
+    ∃ n ≠ 0, ∃ (I : Ideal A) (_ : IsSimpleModule A I),
+      Nonempty (A ≃+* M[Fin n, (Module.End A I)ᵐᵒᵖ]) := by
   classical
   obtain ⟨(I : Ideal A), (I_nontrivial : I ≠ ⊥), (I_minimal : ∀ J : Ideal A, J ≠ ⊥ → ¬ J < I)⟩ :=
       IsArtinian.set_has_minimal (R := A) (M := A) {I | I ≠ ⊥}
@@ -466,10 +461,8 @@ theorem Wedderburn_Artin
   refine ⟨n, hn, I, inferInstance, ⟨(equivEndMop A).trans $ endEquiv.op.trans $
     (endPowEquivMatrix A I n).op.trans $ (matrixEquivMatrixMop n (Module.End A ↥I)).symm⟩⟩
 
-theorem Wedderburn_Artin'
-    (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
-    ∃ (n : ℕ) (_ : NeZero n) (S : Type u) (_ : DivisionRing S),
-    Nonempty (A ≃+* (M[Fin n, S])) := by
+theorem Wedderburn_Artin' (A : Type u) [Ring A] [IsArtinianRing A] [simple : IsSimpleRing A] :
+    ∃ n ≠ 0, ∃ (S : Type u) (_ : DivisionRing S), Nonempty (A ≃+* (M[Fin n, S])) := by
   classical
   obtain ⟨n, hn, I, inst, e⟩ := Wedderburn_Artin A
   exact ⟨n, hn, (Module.End A I)ᵐᵒᵖ, inferInstance, e⟩
@@ -554,8 +547,8 @@ lemma algebraEndIdealMop.algebraMap_eq (I : Ideal B) :
     algebraMap K (Module.End B I)ᵐᵒᵖ = algebraMapEndIdealMop K I := rfl
 
 lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [Ring A]
-  [sim : IsSimpleRing A] [Algebra R A] [hA : IsArtinianRing A] :
-    ∃ (n : ℕ) (_ : NeZero n) (S : Type v) (_ : DivisionRing S) (_ : Algebra R S),
+    [sim : IsSimpleRing A] [Algebra R A] [hA : IsArtinianRing A] :
+    ∃ n ≠ 0, ∃ (S : Type v) (_ : DivisionRing S) (_ : Algebra R S),
     Nonempty (A ≃ₐ[R] (M[Fin n, S])) := by
   classical
   obtain ⟨n, hn, I, inst_I, ⟨e⟩⟩ := Wedderburn_Artin_ideal_version A
@@ -607,18 +600,18 @@ lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [
 set_option maxHeartbeats 800000 in
 lemma Wedderburn_Artin_algebra_version
     [sim : IsSimpleRing B] :
-    ∃ (n : ℕ) (_ : NeZero n) (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
-    Nonempty (B ≃ₐ[K] (M[Fin n, S])) := by
+    ∃ n ≠ 0, ∃ (S : Type v) (_ : DivisionRing S) (_ : Algebra K S),
+      Nonempty (B ≃ₐ[K] (M[Fin n, S])) := by
   classical
   have hB : IsArtinianRing B := .of_finite K B
   exact Wedderburn_Artin_algebra_version' K B
 
 omit [FiniteDimensional K B] in
 theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]
-    -- (hctr : Subalgebra.center K B = ⊥)
-    (n : ℕ) (S : Type*) [NeZero n] [h : DivisionRing S]
+    (n : ℕ) (S : Type*) (hn : n ≠ 0) [h : DivisionRing S]
     [Algebra K S] (Wdb: B ≃ₐ[K] M[Fin n, S]) :
     Algebra.IsCentral K S := by
+  have : NeZero n := ⟨hn⟩
   constructor
   intro x hx
   have hx' : (Matrix.diagonal fun _ ↦ x) ∈ Subalgebra.center K M[Fin n, S] :=
@@ -636,11 +629,10 @@ theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]
   exact ⟨s, show algebraMap _ _ _ = _ by
     simpa using Matrix.ext_iff.2 congr(Wdb $hs) 0 0⟩
 
-theorem is_fin_dim_of_wdb
-    (n : ℕ) (S : Type*) [NeZero n] [h : DivisionRing S]
-    [Algebra K S] (Wdb: B ≃ₐ[K] M[Fin n, S]) :
-    FiniteDimensional K S := by
+theorem is_fin_dim_of_wdb {n : ℕ} (hn : n ≠ 0) (S : Type*) [h : DivisionRing S] [Algebra K S]
+    (Wdb : B ≃ₐ[K] M[Fin n, S]) : FiniteDimensional K S := by
   classical
+  have : NeZero n := ⟨hn⟩
   have := FiniteDimensional.of_injective Wdb.symm.toLinearEquiv.toLinearMap Wdb.symm.injective
   exact Module.Finite.of_injective
       ({
@@ -656,13 +648,10 @@ lemma bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed
   ⟨(algebraMap K D).injective, IsAlgClosed.algebraMap_surjective_of_isIntegral⟩
 
 theorem simple_eq_matrix_algClosed [IsAlgClosed K] [IsSimpleRing B] :
-    ∃ (n : ℕ) (_ : NeZero n), Nonempty (B ≃ₐ[K] M[Fin n, K]) := by
+    ∃ n ≠ 0, Nonempty (B ≃ₐ[K] M[Fin n, K]) := by
   rcases Wedderburn_Artin_algebra_version K B with ⟨n, hn, S, ins1, ins2, ⟨e⟩⟩
-  have hn := hn.1
-  have := is_fin_dim_of_wdb K B n S e
-
-  exact ⟨n, ⟨hn⟩, ⟨e.trans $ AlgEquiv.mapMatrix $ AlgEquiv.symm $
-    AlgEquiv.ofBijective (Algebra.ofId _ _) $
+  have := is_fin_dim_of_wdb K B hn S e
+  exact ⟨n, hn, ⟨e.trans $ AlgEquiv.mapMatrix $ .symm $ .ofBijective (Algebra.ofId _ _) $
       bijective_algebraMap_of_finiteDimensional_divisionRing_over_algClosed _ _⟩⟩
 
 end central_simple

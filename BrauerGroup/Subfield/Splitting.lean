@@ -1,5 +1,7 @@
+import BrauerGroup.MatrixEquivTensor
 import BrauerGroup.RelativeBrauer
 import BrauerGroup.Subfield.FiniteDimensional
+import BrauerGroup.Subfield.Subfield
 
 universe u
 
@@ -278,177 +280,12 @@ end CSA
 
 section CSA2
 
-section matrix
-variable (K F : Type u) [CommSemiring K] [CommSemiring F] [Algebra F K]
-@[simps!]
-noncomputable abbrev toTensorMatrix_toFun_Flinear (A : Type u) (n : Type*) [Ring A] [Algebra F A]
-    [DecidableEq n] [Fintype n] : K ⊗[F] Matrix n n A →ₗ[F] Matrix n n (K ⊗[F] A) :=
-  TensorProduct.lift {
-    toFun := fun k ↦ {
-      toFun := fun M ↦ k • Algebra.TensorProduct.includeRight.mapMatrix M
-      map_add' := fun M1 M2 ↦ by
-        simp only; rw [map_add, smul_add]
-      map_smul' := fun a M ↦ by
-        simp only [map_smul, AlgHom.mapMatrix_apply, RingHom.id_apply]
-        exact smul_comm _ _ _ }
-    map_add' := fun k1 k2 ↦ by
-      ext : 1
-      simp only [AlgHom.mapMatrix_apply, add_smul, LinearMap.coe_mk, AddHom.coe_mk,
-        LinearMap.add_apply]
-    map_smul' := fun a k ↦ by
-      ext : 1
-      simp only [AlgHom.mapMatrix_apply, smul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
-        RingHom.id_apply, LinearMap.smul_apply] }
-
-noncomputable abbrev toTensorMatrix_toFun_Kliniear (A : Type u) (n : Type*) [Ring A] [Algebra F A]
-    [DecidableEq n] [Fintype n] : K ⊗[F] Matrix n n A →ₗ[K] Matrix n n (K ⊗[F] A) where
-  __ := toTensorMatrix_toFun_Flinear K F A n
-  map_smul' := fun k1 koxM ↦ by
-    simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
-    induction koxM using TensorProduct.induction_on with
-    | zero => simp only [smul_zero, map_zero]
-    | tmul k M =>
-      simp only [toTensorMatrix_toFun_Flinear, AlgHom.mapMatrix_apply, smul_tmul',
-      smul_eq_mul, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk]
-      rw [← smul_eq_mul, smul_assoc]
-    | add koxM1 koxM2 h1 h2 => simp only [smul_add, map_add, h1, h2]
-
-noncomputable abbrev toTensorMatrix (A : Type u) (n : Type*) [Ring A] [Algebra F A]
-    [DecidableEq n] [Fintype n] : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) where
-  __ := toTensorMatrix_toFun_Kliniear K F A n
-  map_one' := by
-    simp only [Algebra.TensorProduct.one_def, AddHom.toFun_eq_coe, lift.tmul',
-      AlgHom.mapMatrix_apply, LinearMap.coe_mk, AddHom.coe_mk, one_smul,
-      Algebra.TensorProduct.includeRight_apply, tmul_zero, Matrix.map_one]
-  map_mul' := fun koxM1 koxM2 ↦ by
-    simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom]
-    induction koxM1 using TensorProduct.induction_on with
-    | zero => simp only [zero_mul, map_zero]
-    | tmul k1 M1 =>
-      induction koxM2 using TensorProduct.induction_on with
-      | zero => simp only [mul_zero, map_zero, lift.tmul, AlgHom.mapMatrix_apply,
-        LinearMap.coe_mk,AddHom.coe_mk]
-      | tmul k2 M2 =>
-        simp only [toTensorMatrix_toFun_Flinear, Algebra.TensorProduct.tmul_mul_tmul]
-        simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk,
-          Algebra.mul_smul_comm, Algebra.smul_mul_assoc]
-        rw [_root_.map_mul, mul_comm, ← smul_eq_mul, smul_assoc]
-      | add koxM1 koxM2 h1 h2 =>
-        rw [mul_add, map_add, h1, h2, ← mul_add, ← map_add]
-    | add koxM1 koxM2 h1 h2 =>
-      rw [add_mul, map_add, h1, h2, ← add_mul, ← map_add]
-  map_zero' := by simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, map_zero]
-  commutes' := fun k ↦ by
-    simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id, RingHom.id_apply,
-      AddHom.toFun_eq_coe, lift.tmul', AlgHom.mapMatrix_apply, LinearMap.coe_mk, AddHom.coe_mk,
-      Algebra.TensorProduct.includeRight_apply, tmul_zero]
-    ext i j
-    simp only [Algebra.TensorProduct.includeRight_apply, tmul_zero, Matrix.smul_apply,
-      Matrix.map_apply, Matrix.algebraMap_matrix_apply, Algebra.TensorProduct.algebraMap_apply,
-      Algebra.id.map_eq_id, RingHom.id_apply, TensorProduct.smul_tmul']
-    simp_all only [smul_eq_mul, _root_.mul_one]
-    split_ifs with h
-    · subst h
-      simp_all only [Matrix.one_apply_eq]
-    · simp_all only [ne_eq, not_false_eq_true, Matrix.one_apply_ne, tmul_zero]
-
-noncomputable abbrev invFun_toFun (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]
-    (i : n) (j : n) : K ⊗[F] A →ₗ[F] K ⊗[F] Matrix n n A :=
-  TensorProduct.lift {
-    toFun := fun k ↦ {
-      toFun := fun a ↦ k ⊗ₜ Matrix.stdBasisMatrix i j a
-      map_add' := fun a1 a2 ↦ by simp only [← TensorProduct.tmul_add, Matrix.stdBasisMatrix_add]
-      map_smul' := fun r a ↦ by
-        simp only [RingHom.id_apply, TensorProduct.smul_tmul', TensorProduct.smul_tmul,
-          Matrix.smul_stdBasisMatrix]
-    }
-    map_add' := fun k1 k2 ↦ by
-      ext a
-      simp only [add_tmul, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
-    map_smul' := fun r k ↦ by
-      ext a
-      simp only [← smul_tmul', LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply,
-        LinearMap.smul_apply]
-  }
-
-noncomputable abbrev invFun_Klinear (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]
-    (i : n) (j : n) : K ⊗[F] A →ₗ[K] K ⊗[F] Matrix n n A where
-  __ := invFun_toFun K F A n i j
-  map_smul' := fun k koxa ↦ by
-    simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
-    induction koxa using TensorProduct.induction_on with
-    | zero => simp only [smul_zero, map_zero]
-    | tmul k a => simp only [smul_tmul', smul_eq_mul, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk]
-    | add koxa1 koxa2 h1 h2 => simp only [smul_add, map_add, h1, h2]
-
-noncomputable abbrev invFun_linearMap (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n] :
-    Matrix n n (K ⊗[F] A) →ₗ[K] K ⊗[F] Matrix n n A where
-  toFun M := ∑ p : n × n, invFun_Klinear K F A n p.1 p.2 (M p.1 p.2)
-  map_add' M1 M2 := by
-    simp only [Matrix.add_apply, LinearMap.coe_mk, LinearMap.coe_toAddHom, map_add,
-      Fintype.sum_prod_type, Finset.sum_add_distrib]
-  map_smul' k M := by
-    simp only [Matrix.smul_apply, map_smul, LinearMap.coe_mk, LinearMap.coe_toAddHom,
-      Fintype.sum_prod_type, RingHom.id_apply, Finset.smul_sum]
-
-lemma Martrix.one_eq_sum (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n] :
-    (1 : Matrix n n A) = ∑ i : n, ∑ j : n, Matrix.stdBasisMatrix i j (if i = j then 1 else 0) := by
-  rw [Matrix.matrix_eq_sum_stdBasisMatrix (m := n) (n := n) 1]
-  refine Finset.sum_congr rfl $ fun i _ => Finset.sum_congr rfl $ fun j _ => rfl
-
-lemma left_inv (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]
-    (M : K ⊗[F] Matrix n n A) : invFun_linearMap K F A n (toTensorMatrix K F A n M) = M := by
-  induction M using TensorProduct.induction_on with
-  | zero => simp only [AlgHom.coe_mk, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.coe_mk,
-      MonoidHom.coe_mk, OneHom.coe_mk, map_zero, LinearMap.coe_mk, Fintype.sum_prod_type,
-      AddHom.coe_mk, Matrix.zero_apply, Finset.sum_const_zero]
-  | tmul k M =>
-    simp only [AlgHom.coe_mk, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom,
-    RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, lift.tmul, AlgHom.mapMatrix_apply,
-    LinearMap.coe_mk, AddHom.coe_mk, map_smul, Fintype.sum_prod_type, Matrix.map_apply,
-    Algebra.TensorProduct.includeRight_apply, ← tmul_sum, smul_tmul', smul_eq_mul, _root_.mul_one]
-    nth_rw 2 [Matrix.matrix_eq_sum_stdBasisMatrix M]
-  | add koxa1 koxa2 h1 h2 =>
-    rw [map_add, map_add, h1, h2]
-
-lemma right_inv (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n]
-    (M : Matrix n n (K ⊗[F] A)) : toTensorMatrix K F A n (invFun_linearMap K F A n M) = M := by
-  simp only [LinearMap.coe_mk, LinearMap.coe_toAddHom, Fintype.sum_prod_type, AddHom.coe_mk,
-    map_sum, AlgHom.coe_mk, AddHom.toFun_eq_coe, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
-  nth_rw 2 [Matrix.matrix_eq_sum_stdBasisMatrix M]
-  refine Finset.sum_congr rfl $ fun i _ => Finset.sum_congr rfl $ fun j _ => by
-    induction M i j using TensorProduct.induction_on with
-    | zero => simp only [map_zero, Matrix.stdBasisMatrix_zero]
-    | tmul k a =>
-      simp only [lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, AlgHom.mapMatrix_apply]
-      ext i' j'
-      simp only [Matrix.stdBasisMatrix, Matrix.smul_apply, Matrix.map_apply, Matrix.of_apply,
-        Algebra.TensorProduct.includeRight_apply]
-      split_ifs with hij
-      · simp only [smul_tmul', smul_eq_mul, _root_.mul_one]
-      · simp only [tmul_zero, smul_zero]
-    | add koxa1 koxa2 h1 h2 =>
-      rw [Matrix.stdBasisMatrix_add, map_add, map_add, h1, h2]
-
-noncomputable def equivTensor' (A : Type u) (n : Type*) [Ring A] [Algebra F A] [DecidableEq n] [Fintype n] :
-    K ⊗[F] Matrix n n A ≃ Matrix n n (K ⊗[F] A) where
-  toFun := toTensorMatrix K F A n
-  invFun := invFun_linearMap K F A n
-  left_inv := left_inv K F A n
-  right_inv := right_inv K F A n
-
-noncomputable def matrixTensorEquivTensor (A : Type u) (n : Type*) [Ring A] [Algebra F A]
-    [DecidableEq n] [Fintype n] : K ⊗[F] Matrix n n A ≃ₐ[K] Matrix n n (K ⊗[F] A) :=
-  {toTensorMatrix K F A n, equivTensor' K F A n with}
-
-end matrix
-
 theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSplit F A K) :
     isSplit F B K := by
   obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hAB
-  obtain ⟨p, ⟨hp, ⟨e⟩⟩⟩ := hA
-  obtain ⟨q, ⟨hq, D, hD1, _, ⟨e'⟩⟩⟩ := Wedderburn_Artin_algebra_version K (K ⊗[F] B)
-  haveI := is_fin_dim_of_wdb K (K ⊗[F] B) q D e'
+  obtain ⟨p, hp, ⟨e⟩⟩ := hA
+  obtain ⟨q, hq, D, hD1, _, ⟨e'⟩⟩ := Wedderburn_Artin_algebra_version K (K ⊗[F] B)
+  haveI := is_fin_dim_of_wdb K (K ⊗[F] B) hq D e'
   have ee := Matrix.reindexAlgEquiv _ _ finProdFinEquiv|>.symm.trans $
     Matrix.compAlgEquiv _ _ _ _ |>.symm.trans $ e'.mapMatrix.symm.trans $
     matrixTensorEquivTensor K F B (Fin m) |>.symm.trans $
@@ -458,7 +295,7 @@ theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSp
     finProdFinEquiv
   haveI : NeZero (m * q) := ⟨by aesop⟩
   haveI : NeZero (n * p) := ⟨by aesop⟩
-  exact ⟨q, hq, ⟨e'.trans <|
+  exact ⟨q, ⟨hq⟩, ⟨e'.trans <|
     Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (m * q)) (Fin (m * q)) D) (m * q) (n * p)
       D AlgEquiv.refl K ee |>.some.mapMatrix⟩⟩
 

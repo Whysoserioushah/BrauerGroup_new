@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Algebra.Equiv
 
-notation "Gal("K ", "F")" => Gal(K, F)
+notation "Gal("K ", "F")" => K ≃ₐ[F] K
 
 namespace AlgEquiv
 variable {R A : Type*} [CommSemiring R] [Semiring A] [Algebra R A]

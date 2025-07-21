@@ -247,7 +247,7 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 --   simp only [Finset.sum_apply, Pi.smul_apply, Function.update_apply, Pi.zero_apply, smul_eq_mul,
 --     mul_ite, mul_one, mul_zero, Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte] at hf
 --   exact hf) <| fun x _ ↦ by
---   refine mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
+--   refine Submodule.mem_span_range_iff_exists_fun R|>.2 ⟨x, ?_⟩
 --   change ∑ i : Fin n, _ • Function.update _ _ _ = x
 --   ext j
 --   simp [Function.update_apply]

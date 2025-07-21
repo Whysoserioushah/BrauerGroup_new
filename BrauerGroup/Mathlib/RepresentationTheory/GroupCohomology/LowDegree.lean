@@ -3,6 +3,9 @@ import Mathlib.RepresentationTheory.GroupCohomology.LowDegree
 namespace groupCohomology
 variable {G M : Type*} [Group G] [CommGroup M] [MulDistribMulAction G M] {f g : G × G → M}
 
+-- TODO: Rename in mathlib
+alias IsMulTwoCocycle.of_mem_twoCocycles := isMulTwoCocycle_of_mem_twoCocycles
+
 lemma IsMulTwoCocycle.mul (hf : IsMulTwoCocycle f) (hg : IsMulTwoCocycle g) :
     IsMulTwoCocycle (f * g) :=
   fun a b c ↦ by simp [hf a, hg a, smul_mul', mul_mul_mul_comm]

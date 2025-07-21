@@ -1,5 +1,4 @@
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
-import Mathlib.Algebra.Algebra.Subalgebra.Basic
 
 open Function TensorProduct MulOpposite
 

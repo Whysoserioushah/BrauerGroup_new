@@ -3,12 +3,10 @@ import BrauerGroup.FieldCat
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Operations
 import Mathlib.Algebra.BrauerGroup.Defs
 import Mathlib.Algebra.Central.Matrix
-import Mathlib.Algebra.GroupWithZero.Action.Faithful
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.LinearAlgebra.FreeModule.PID
 import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
-import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
-import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.SimpleRing.Matrix
 
 suppress_compilation
 universe u v v₁ v₂ w
@@ -502,7 +500,7 @@ instance Bruaer_Group : Group (BrauerGroup (K := K)) where
 lemma Alg_closed_equiv_one [IsAlgClosed K] : ∀(A : CSA K), IsBrauerEquivalent A one_in' := by
   intro A
   obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed K A
-  exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A|>.trans iso⟩⟩
+  exact ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A|>.trans iso⟩⟩
 
 lemma Alg_closed_eq_one [IsAlgClosed K] : ∀(A : BrauerGroup (K := K)), A = 1 := by
   intro A; induction' A using Quotient.inductionOn' with A

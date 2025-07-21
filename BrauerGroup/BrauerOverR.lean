@@ -1,16 +1,8 @@
-import Mathlib.Data.ZMod.Basic
-import Mathlib.GroupTheory.QuotientGroup.Defs
 import BrauerGroup.FrobeniusTheorem
 
 suppress_compilation
 
 open Quaternion BrauerGroup TensorProduct
-
-set_option synthInstance.maxHeartbeats 40000 in
-instance : Module ℝ (Module.End ℝ ℍ[ℝ]) := inferInstance
-
-set_option synthInstance.maxHeartbeats 40000 in
-instance : Algebra ℝ (Module.End ℝ ℍ[ℝ]) := inferInstance
 
 abbrev toEnd_map_aux (q1 q2 : ℍ[ℝ]) : Module.End ℝ ℍ[ℝ] where
     toFun x := q1 * x * (star q2)
@@ -104,11 +96,11 @@ lemma BrauerOverR (A : CSA.{0, 0} ℝ) : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ 
   right
   obtain ⟨n, ⟨hn, D, _, _, ⟨e⟩⟩⟩ := Wedderburn_Artin_algebra_version.{0, 0} ℝ A
   letI := A.4
-  letI : FiniteDimensional ℝ D := is_fin_dim_of_wdb ℝ A n D e
+  letI : FiniteDimensional ℝ D := is_fin_dim_of_wdb ℝ A hn D e
   have hD := FrobeniusTheorem D
   cases' hD with hD1 hD2
   · obtain ⟨e'⟩ := hD1
-    have := is_central_of_wdb ℝ A n D e|>.center_eq_bot
+    have := is_central_of_wdb ℝ A n D hn e|>.center_eq_bot
     have e2 : Subalgebra.center ℝ D ≠ ⊥ := by
       refine ne_of_gt ?_
       letI : Algebra ℂ D := RingHom.toAlgebra' e'.symm <| fun z d ↦ by
@@ -142,9 +134,9 @@ lemma BrauerOverR (A : CSA.{0, 0} ℝ) : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ 
     tauto
   · cases' hD2 with hD2 hD3
     · have : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ :=
-        ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A|>.trans <| e.trans hD2.some.mapMatrix⟩⟩
+        ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A|>.trans <| e.trans hD2.some.mapMatrix⟩⟩
       tauto
-    · exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso A |>.trans <| e.trans hD3.some.mapMatrix⟩⟩
+    · exact ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A |>.trans <| e.trans hD3.some.mapMatrix⟩⟩
 
 open scoped Classical in
 abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where

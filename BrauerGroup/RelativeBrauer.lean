@@ -3,11 +3,9 @@ Copyright (c) 2024 Yunzhou Xie. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yunzhou Xie, Jujian Zhang
 -/
-
+import BrauerGroup.BrauerGroup
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.ZeroSevenFourE
-import Mathlib.RingTheory.MatrixAlgebra
-import BrauerGroup.Subfield.Subfield
 
 /-!
 # Relative Brauer Group
@@ -67,14 +65,14 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
         Matrix.compAlgEquiv (Fin p) (Fin p) _ K |>.trans $ Matrix.reindexAlgEquiv K _
         (finProdFinEquiv)|>.trans $ Matrix.compAlgEquiv _ _  D K|>.trans $
         Matrix.reindexAlgEquiv K _ (finProdFinEquiv)
-      have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) p D iso'
-      haveI : NeZero (p * p * n) := ⟨by simp [hn]; exact hp.1⟩
-      haveI : NeZero (p * m) := ⟨by simp [hp.1, hm]; exact hp.1⟩
+      have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) hp D iso'
+      haveI : NeZero (p * p * n) := ⟨by simp [hn]; exact hp⟩
+      haveI : NeZero (p * m) := ⟨by simp [hp, hm]; exact hp⟩
       have := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (p * p * n)) (Fin (p * p * n)) D)
         (p * p * n) (p * m) D AlgEquiv.refl K e.symm
-      exact ⟨p, hp, ⟨iso'.trans <| Wedderburn_Artin_uniqueness₀ K
+      exact ⟨p, ⟨hp⟩, ⟨iso'.trans <| Wedderburn_Artin_uniqueness₀ K
         (Matrix (Fin (p * p * n)) (Fin (p * p * n)) D)
-        (p * p * n) (p * m) D AlgEquiv.refl K e.symm |>.some.mapMatrix⟩⟩⟩
+        (p * p * n) (p * m) D .refl K e.symm |>.some.mapMatrix⟩⟩⟩
 
 lemma mem_relativeBrGroup (A : CSA F) :
     Quotient.mk'' A ∈ RelativeBrGroup K F ↔
@@ -105,18 +103,18 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
       Nonempty (B ≃ₐ[K] Matrix (Fin n) (Fin n) D) := by
   obtain ⟨n, hn, SA, _, _, ⟨isoA⟩⟩ := Wedderburn_Artin_algebra_version K A
   haveI : Algebra.IsCentral K (Matrix (Fin n) (Fin n) SA) := isoA.isCentral
-  haveI : Algebra.IsCentral K SA := is_central_of_wdb _ _ _ _ isoA
+  haveI : Algebra.IsCentral K SA := is_central_of_wdb _ _ _ _ hn isoA
   have : FiniteDimensional K (Matrix (Fin n) (Fin n) SA) :=
     Module.Finite.of_injective isoA.symm.toLinearMap isoA.symm.injective
-  have : FiniteDimensional K SA :=  is_fin_dim_of_wdb _ _ _ _ isoA
+  have : FiniteDimensional K SA := is_fin_dim_of_wdb _ _ hn _ isoA
   have eq1 : IsBrauerEquivalent ⟨.of K SA⟩ A :=
-    ⟨n, 1, hn.1, one_ne_zero, ⟨AlgEquiv.symm <| AlgEquiv.trans (dim_one_iso A) isoA⟩⟩
+    ⟨n, 1, hn, one_ne_zero, ⟨AlgEquiv.symm <| AlgEquiv.trans (dim_one_iso A) isoA⟩⟩
   obtain ⟨m, hm, SB, _, _, ⟨isoB⟩⟩ := Wedderburn_Artin_algebra_version K B
   haveI : Algebra.IsCentral K (Matrix (Fin m) (Fin m) SB) := isoB.isCentral
-  haveI : Algebra.IsCentral K SB := is_central_of_wdb _ _ _ _ isoB
+  haveI : Algebra.IsCentral K SB := is_central_of_wdb _ _ _ _ hm isoB
   have : FiniteDimensional K (Matrix (Fin m) (Fin m) SB) :=
-    Module.Finite.of_injective isoB.symm.toLinearMap isoB.symm.injective
-  have : FiniteDimensional K SB := is_fin_dim_of_wdb _ _ _ _ isoB
+    .of_injective isoB.symm.toLinearMap isoB.symm.injective
+  have : FiniteDimensional K SB := is_fin_dim_of_wdb _ _ hm _ isoB
 
   have eq2 : IsBrauerEquivalent ⟨.of K SA⟩ B := .trans eq1 h
 
@@ -125,13 +123,12 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
     LinearEquiv.finiteDimensional (matrixEquivTensor (Fin a') K B).toLinearEquiv.symm
   haveI : NeZero a' := ⟨ha'⟩
   haveI : NeZero a := ⟨ha⟩
+  have : NeZero m := ⟨hm⟩
   obtain ⟨isoAB⟩ := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin a') (Fin a') B) a (a' * m)
-    SA e.symm SB (by
-    refine AlgEquiv.trans (AlgEquiv.trans ?_ (Matrix.compAlgEquiv _ _ _ _)) <|
-      IsBrauerEquivalent.matrix_eqv' _ _ _
-    refine AlgEquiv.mapMatrix ?_
-    assumption)
-  refine ⟨SA, inferInstance, inferInstance, n, m, inferInstance, inferInstance,
-    ⟨⟨isoA⟩, ⟨isoB.trans <| AlgEquiv.mapMatrix isoAB.symm⟩⟩⟩
+    SA e.symm SB <|
+      (AlgEquiv.mapMatrix ‹_›).trans <| (Matrix.compAlgEquiv _ _ _ _).trans <|
+        IsBrauerEquivalent.matrix_eqv' _ _ _
+  exact ⟨SA, inferInstance, inferInstance, n, m, ⟨hn⟩, ⟨hm⟩, ⟨isoA⟩,
+    ⟨isoB.trans isoAB.symm.mapMatrix⟩⟩
 
 end IsBrauerEquivalent
