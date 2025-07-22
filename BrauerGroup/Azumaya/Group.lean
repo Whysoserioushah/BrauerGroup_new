@@ -71,7 +71,7 @@ lemma mop_bij (A : Azumaya R) : Function.Bijective (AlgHom.mulLeftRight R Aᵐ�
 
 abbrev Azumaya.Inv (A : Azumaya R) : Azumaya R :=
   {
-    __ := AlgebraCat.of R Aᵐᵒᵖ
+    __ := AlgCat.of R Aᵐᵒᵖ
     isAzumaya := {
       out := Module.Projective.of_equiv (opLinearEquiv R)|>.out
       eq_of_smul_eq_smul := FaithfulSMul.of_injective _

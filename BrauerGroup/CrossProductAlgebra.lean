@@ -1,6 +1,5 @@
 import BrauerGroup.Mathlib.Algebra.Algebra.Equiv
 import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
-import BrauerGroup.Mathlib.FieldTheory.Galois.Basic
 import BrauerGroup.Mathlib.LinearAlgebra.Finsupp.LinearCombination
 import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
 import BrauerGroup.Mathlib.RingTheory.Congruence.Basic
@@ -140,14 +139,14 @@ lemma mulLinearMap_single_right_apply (c : K) (σ : Gal(K, F)) (x : Gal(K, F) �
   classical simp +contextual [mulLinearMap, Finsupp.single_apply, ← eq_mul_inv_iff_mul_eq]
 
 instance : One (CrossProductAlgebra f) where
-  one := ⟨.single 1 (f 1)⁻¹⟩
+  one := ⟨.single 1 (f (1, 1))⁻¹⟩
 
 instance : Mul (CrossProductAlgebra f) where
   mul x y := ⟨mulLinearMap f x.val y.val⟩
 
-lemma one_def : (1 : CrossProductAlgebra f) = ⟨.single 1 (f 1)⁻¹⟩ := rfl
+lemma one_def : (1 : CrossProductAlgebra f) = ⟨.single 1 (f (1, 1))⁻¹⟩ := rfl
 
-@[simp] lemma val_one : (1 : CrossProductAlgebra f).val = .single 1 (f 1)⁻¹ := rfl
+@[simp] lemma val_one : (1 : CrossProductAlgebra f).val = .single 1 (f (1, 1))⁻¹ := rfl
 @[simp] lemma val_mul (x y : CrossProductAlgebra f) : (x * y).val = mulLinearMap f x.val y.val := rfl
 
 @[simp] lemma mk_mul_mk (x y : Gal(K, F) →₀ K) :
@@ -163,7 +162,7 @@ instance monoid : Monoid (CrossProductAlgebra f) where
     induction x using Finsupp.induction_linear with
     | zero => simp
     | add => simp [*]
-    | single σ a => simp [map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ a]
+    | single σ a => simp [map_one_fst_of_isMulTwoCocycle Fact.out σ, mul_right_comm _ a]
   mul_one := by
     rintro ⟨x⟩
     ext : 1
@@ -171,7 +170,7 @@ instance monoid : Monoid (CrossProductAlgebra f) where
     induction x using Finsupp.induction_linear with
     | zero => simp
     | add => simp [*]
-    | single σ a => simp [map_one_snd_of_isMulTwoCocycle Fact.out]
+    | single σ a => simp [map_one_snd_of_isMulTwoCocycle Fact.out σ]
   mul_assoc := by
     rintro ⟨x⟩ ⟨y⟩ ⟨z⟩
     ext : 1
@@ -208,9 +207,9 @@ instance algebra [CommSemiring R] [Algebra R F] [Module R K] [IsScalarTower R F 
   refine .ofModule ?_ ?_ <;> intros <;> ext <;> simp [map_smul]
 
 lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower R F K] (r : R) :
-    (algebraMap R (CrossProductAlgebra f) r).val = .single 1 (algebraMap R K r * (f 1)⁻¹) := by
+    (algebraMap R (CrossProductAlgebra f) r).val = .single 1 (algebraMap R K r * (f (1, 1))⁻¹) := by
   rw [Algebra.algebraMap_eq_smul_one]
-  simp only [val_smul, val_one, Prod.mk_one_one, Finsupp.smul_single,
+  simp only [val_smul, val_one, Finsupp.smul_single,
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
 
 omit [Fact <| IsMulTwoCocycle f] in
@@ -247,7 +246,7 @@ lemma smul_eq_incl_mul (k : K) (x : CrossProductAlgebra f) : k • x = incl f k 
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add => simp [*]
-  | single σ b => simp [incl_apply, map_one_fst_of_isMulTwoCocycle Fact.out, mul_right_comm _ _ b]
+  | single σ b => simp [incl_apply, map_one_fst_of_isMulTwoCocycle Fact.out σ, mul_right_comm _ _ b]
 
 instance [CommSemiring R] [Algebra R K] :
     IsScalarTower R (CrossProductAlgebra f) (CrossProductAlgebra f) where
@@ -258,28 +257,29 @@ variable (f) in
 @[simps]
 def of (σ : Gal(K, F)) : (CrossProductAlgebra f)ˣ where
   val.val := .single σ 1
-  inv.val := .single σ⁻¹ <| (f (σ⁻¹, σ))⁻¹ * (f 1)⁻¹
+  inv.val := .single σ⁻¹ <| (f (σ⁻¹, σ))⁻¹ * (f (1, 1))⁻¹
   val_inv := by
     ext : 1
     simp
     congr
-    convert congr((σ (f (σ⁻¹, σ)))⁻¹ * (σ (f 1))⁻¹ * (f 1)⁻¹ *
+    convert congr((σ (f (σ⁻¹, σ)))⁻¹ * (σ (f (1, 1)))⁻¹ * (f (1, 1))⁻¹ *
       $((Fact.out : IsMulTwoCocycle f) σ σ⁻¹ σ)) using 1
-    · simp [map_one_fst_of_isMulTwoCocycle Fact.out, map_one_snd_of_isMulTwoCocycle Fact.out,
+    · simp [map_one_fst_of_isMulTwoCocycle Fact.out σ, map_one_snd_of_isMulTwoCocycle Fact.out σ,
         mul_assoc]
     · calc
-            (f 1 : K)⁻¹
-        _ = σ (f 1) * (σ (f 1))⁻¹ * σ (f (σ⁻¹, σ)) * (σ (f (σ⁻¹, σ)))⁻¹ * (f 1)⁻¹ := by
+            (f (1, 1) : K)⁻¹
+        _ = σ (f (1, 1)) * (σ (f (1, 1)))⁻¹ * σ (f (σ⁻¹, σ)) * (σ (f (σ⁻¹, σ)))⁻¹ * (f (1, 1))⁻¹ := by
           simp [← map_inv₀, ← map_mul]
-        _ = (σ (f (σ⁻¹, σ)))⁻¹ * (σ (f 1))⁻¹ * (f 1)⁻¹ * (σ (f (σ⁻¹, σ)) * σ (f 1)) := by group
+        _ = (σ (f (σ⁻¹, σ)))⁻¹ * (σ (f (1, 1)))⁻¹ * (f (1, 1))⁻¹ * (σ (f (σ⁻¹, σ)) * σ (f (1, 1))) := by group
         _ = _ := by
-          simp [map_one_fst_of_isMulTwoCocycle Fact.out, map_one_snd_of_isMulTwoCocycle Fact.out]
+          simp [map_one_fst_of_isMulTwoCocycle Fact.out σ, map_one_snd_of_isMulTwoCocycle Fact.out σ,
+        ]
   inv_val := by ext : 1; simp [mul_right_comm _ (f _ : K)⁻¹]
 
 lemma basis_eq_of (σ : Gal(K, F)) : basis σ = (of f σ).val := rfl
 
 variable (f) in
-@[simp] lemma of_one : of f 1 = incl f (f 1) := by ext; simp [incl_apply]
+@[simp] lemma of_one : of f 1 = incl f (f (1, 1)) := by ext; simp [incl_apply]
 
 variable (f) in
 @[simp] lemma of_mul_of (σ τ : Gal(K, F)) : of f σ * of f τ = incl f (f (σ, τ)) * of f (σ * τ) := by
@@ -290,7 +290,7 @@ lemma basis_mul_basis (σ τ : Gal(K, F)) :
     basis (f := f) σ * basis τ = incl f (f (σ, τ)) * basis (σ * τ) := of_mul_of ..
 
 lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) * of f σ := by
-  ext : 1; simp [map_one_snd_of_isMulTwoCocycle Fact.out, incl_apply]
+  ext : 1; simp [map_one_snd_of_isMulTwoCocycle Fact.out σ, incl_apply]
 
 lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f σ).val) = x := by
   ext; simp
@@ -328,8 +328,8 @@ instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
       τ (c.val (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ) = c.val σ * f (σ, τ) := by
     simpa using key 1 σ τ
   -- By substituting `σ = 1` in the previous equality, we get `τ(c_1 f(1, 1)) = c_1 f(1, 1)`.
-  have key₁₁ (τ : Gal(K, F)) : τ (c.val 1 * f 1) = c.val 1 * f 1 := by
-    simpa [map_one_fst_of_isMulTwoCocycle Fact.out, map_one_snd_of_isMulTwoCocycle Fact.out]
+  have key₁₁ (τ : Gal(K, F)) : τ (c.val 1 * f (1, 1)) = c.val 1 * f (1, 1) := by
+    simpa [map_one_fst_of_isMulTwoCocycle Fact.out τ, map_one_snd_of_isMulTwoCocycle Fact.out τ]
       using key₁ 1 τ
   -- Since `τ` is arbitrary, this says `c_1 f(1, 1) ∈ F`.
   rw [← IsGalois.mem_bot_iff_fixed] at key₁₁

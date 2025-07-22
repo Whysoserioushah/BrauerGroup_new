@@ -53,9 +53,9 @@ open TensorProduct
 
 def invFun_toFun_bilinear (i j : n) : K →ₗ[F] A →ₗ[F] K ⊗[F] Matrix n n A where
   toFun k := {
-    toFun a := k ⊗ₜ stdBasisMatrix i j a
-    map_add' _ _ := by simp [stdBasisMatrix_add, tmul_add]
-    map_smul' _ _ := by simp [← smul_stdBasisMatrix, smul_tmul]
+    toFun a := k ⊗ₜ single i j a
+    map_add' _ _ := by simp [single_add, tmul_add]
+    map_smul' _ _ := by simp [← smul_single, smul_tmul]
   }
   map_add' _ _ := by ext; simp [add_tmul]
   map_smul' _ _ := by ext; simp [smul_tmul']
@@ -63,7 +63,7 @@ def invFun_toFun_bilinear (i j : n) : K →ₗ[F] A →ₗ[F] K ⊗[F] Matrix n 
 omit [Fintype n] in
 @[simp]
 lemma invFun_toFun_bilinear_apply (i j : n) (k : K) (a : A) :
-  invFun_toFun_bilinear K F A n i j k a = k ⊗ₜ stdBasisMatrix i j a := rfl
+  invFun_toFun_bilinear K F A n i j k a = k ⊗ₜ single i j a := rfl
 
 abbrev invFun_toFun (i j : n) : K ⊗[F] A →ₗ[F] K ⊗[F] Matrix n n A :=
   TensorProduct.lift <| invFun_toFun_bilinear K F A n i j
@@ -85,18 +85,18 @@ lemma left_inv (M : K ⊗[F] Matrix n n A) : invFun_linearMap K F A n (toTensorM
   induction M with
   | zero => simp
   | tmul k M =>
-    simp [← tmul_sum, smul_tmul', Fintype.sum_prod_type, ← matrix_eq_sum_stdBasisMatrix]
+    simp [← tmul_sum, smul_tmul', Fintype.sum_prod_type, ← matrix_eq_sum_single]
   | add koxa1 koxa2 h1 h2 => rw [map_add, map_add, h1, h2]
 
 lemma right_inv (M : Matrix n n (K ⊗[F] A)) : toTensorMatrix K F A n (invFun_linearMap K F A n M) = M := by
   simp only [LinearMap.coe_mk, LinearMap.coe_toAddHom, AddHom.coe_mk, map_sum,
     AlgHom.ofLinearMap_apply, Fintype.sum_prod_type]
-  conv_rhs => rw [matrix_eq_sum_stdBasisMatrix M]
+  conv_rhs => rw [matrix_eq_sum_single M]
   refine Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => ?_
   induction M p q with
   | zero => simp
   | tmul x y => simp [smul_tmul']
-  | add _ _ h1 h2 => simp [stdBasisMatrix_add, h1, h2, tmul_add]
+  | add _ _ h1 h2 => simp [single_add, h1, h2, tmul_add]
 
 def equivTensor' : K ⊗[F] Matrix n n A ≃ Matrix n n (K ⊗[F] A) where
   toFun := toTensorMatrix K F A n

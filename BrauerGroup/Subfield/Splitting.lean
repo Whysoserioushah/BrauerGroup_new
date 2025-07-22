@@ -104,7 +104,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       commutes' := by intros; ext; simp only [algebraMap_smul, LinearMap.coe_comp, LinearMap.coe_mk,
         AddHom.coe_mk, LinearMap.coe_single, Function.comp_apply, Pi.smul_apply,
         SubalgebraClass.coe_algebraMap, Module.algebraMap_end_apply] }, ?_⟩
-  · change Quotient.mk'' _ = Quotient.mk'' (⟨AlgebraCat.of F F⟩ : CSA F)
+  · change Quotient.mk'' _ = Quotient.mk'' (⟨AlgCat.of F F⟩ : CSA F)
     have := writeAsTensorProduct (B := emb.range)
     have iso : A ⊗[F] B ≃ₐ[F] Matrix (Fin (Module.finrank F (Fin n → K)))
       (Fin (Module.finrank F (Fin n → K))) F :=

@@ -24,6 +24,7 @@ def releaseAddHom : L ⊗[k] A →+ L ⊗[K] K ⊗[k] A :=
       repeat rw [TensorProduct.add_tmul]
   } fun r l a ↦ by simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, TensorProduct.tmul_smul]; rfl
 
+set_option maxHeartbeats 400000 in
 set_option synthInstance.maxHeartbeats 40000 in
 def release : L ⊗[k] A →ₐ[L] L ⊗[K] K ⊗[k] A where
   __ := releaseAddHom k K L A

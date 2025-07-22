@@ -188,7 +188,7 @@ open MulOpposite
 --   [isAlgebra : Algebra R carrier]
 --   isAzumaya : IsAzumaya R carrier
 
-structure Azumaya (R : Type u) [CommRing R] extends AlgebraCat R where
+structure Azumaya (R : Type u) [CommRing R] extends AlgCat R where
   isAzumaya : IsAzumaya R carrier
 
 @[coe]
@@ -255,11 +255,11 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 open Algebra.TensorProduct (assoc congr opAlgEquiv) in
 variable {R A B} in
 abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
-  (assoc R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
-  (congr .refl (assoc R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
+  (assoc R R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
+  (congr .refl (assoc R R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
   congr .refl (congr (Algebra.TensorProduct.comm R _ _) .refl) |>.trans
-  <| congr .refl (assoc R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
-  <| assoc R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
+  <| congr .refl (assoc R R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
+  <| assoc R R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
   <| Algebra.TensorProduct.congr .refl <| opAlgEquiv R R A B
 
 lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
@@ -333,7 +333,7 @@ lemma bij_mulLeftRight (A B : Azumaya.{u, v} R) :
   exact (e1 R A B).bijective.comp (e2 R A B).bijective
 
 abbrev mul (A B : Azumaya R) : Azumaya R := {
-  __ := AlgebraCat.of R (A.carrier ⊗[R] B.carrier)
+  __ := AlgCat.of R (A.carrier ⊗[R] B.carrier)
   isAzumaya := {
     out := Module.Projective.tensorProduct|>.out
     eq_of_smul_eq_smul := Azumaya.FathfulSMul.tensor|>.eq_of_smul_eq_smul
@@ -427,11 +427,11 @@ instance (M : Type v) [AddCommGroup M] [Module R M] [FaithfulSMul R M] :
     exact eq_of_smul_eq_smul h12
 
 abbrev MatrixAlg (n : ℕ) [NeZero n] : Azumaya R := {
-  __ := AlgebraCat.of R (_root_.Matrix (Fin n) (Fin n) R)
+  __ := AlgCat.of R (_root_.Matrix (Fin n) (Fin n) R)
   isAzumaya := IsAzumaya.matrix R (Fin n) }
 
 abbrev EndRn (n : ℕ) [NeZero n] : Azumaya R := {
-  __ := AlgebraCat.of R (Module.End R (Fin n → R))
+  __ := AlgCat.of R (Module.End R (Fin n → R))
   isAzumaya := IsAzumaya.ofAlgEquiv R _ _
     LinearMap.toMatrixAlgEquiv'.symm <| IsAzumaya.matrix R (Fin n)
 }
@@ -546,7 +546,7 @@ lemma bij_endM : Function.Bijective (AlgHom.mulLeftRight R (Module.End R M)) :=
   ⟨inj_endM R M, surj_endM R M⟩
 
 abbrev ofEnd [FaithfulSMul R M] : Azumaya R where
-  __ := AlgebraCat.of R (Module.End R M)
+  __ := AlgCat.of R (Module.End R M)
   isAzumaya.out := Module.Projective.ofEnd R M|>.out
   isAzumaya.bij := bij_endM R M
 

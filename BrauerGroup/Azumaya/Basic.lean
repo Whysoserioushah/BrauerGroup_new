@@ -216,29 +216,30 @@ open MulOpposite Matrix
 abbrev Mat.inv (n : ℕ) : Module.End R (Matrix (Fin n) (Fin n) R) →ₗ[R]
     Matrix (Fin n) (Fin n) R ⊗[R] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
   toFun := fun f ↦ ∑ ⟨⟨i, j⟩, k, l⟩ : (Fin n × Fin n) × Fin n × Fin n,
-    f (stdBasisMatrix j k 1) i l • (stdBasisMatrix i j 1) ⊗ₜ[R] op (stdBasisMatrix k l 1)
+    f (single j k 1) i l • (single i j 1) ⊗ₜ[R] op (single k l 1)
   map_add' := fun f1 f2 ↦ by
     simp [add_smul, Finset.sum_add_distrib]
   map_smul' := fun r f ↦ by
     simp [MulAction.mul_smul, Finset.smul_sum]
 
-lemma stdBasisMatrix.eq (n : ℕ) (i j : Fin n) : stdBasisMatrix i j (1 : R) = of (fun i' j' => if i = i' ∧ j = j' then 1 else 0) := rfl
+lemma single.eq (n : ℕ) (i j : Fin n) :
+    single i j (1 : R) = of (fun i' j' ↦ if i = i' ∧ j = j' then 1 else 0) := rfl
 
 lemma Mat.inv_toFun1' (n : ℕ) :
     (Mat.inv R n).comp (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)).toLinearMap = .id :=
   Basis.ext (Basis.tensorProduct (Matrix.stdBasis _ _ _) ((Matrix.stdBasis _ _ _).map (opLinearEquiv ..)))
   fun ⟨⟨i0, j0⟩, k0, l0⟩ ↦  by
-    simp [stdBasis_eq_stdBasisMatrix, AlgHom.mulLeftRight_apply,
-      stdBasisMatrix, ite_and, mul_apply, Fintype.sum_prod_type]
+    simp [stdBasis_eq_single, AlgHom.mulLeftRight_apply,
+      single, ite_and, mul_apply, Fintype.sum_prod_type]
 
 lemma Mat.inv_toFun2' (n : ℕ) :
     (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)).toLinearMap.comp (Mat.inv R n) = .id := by
   ext f : 1
   apply Basis.ext (Matrix.stdBasis _ _ _)
   intro ⟨i, j⟩
-  simp [AlgHom.mulLeftRight_apply, stdBasis_eq_stdBasisMatrix]
+  simp [AlgHom.mulLeftRight_apply, stdBasis_eq_single]
   ext k l
-  simp [sum_apply, mul_apply, Finset.sum_mul, Finset.mul_sum, stdBasisMatrix,
+  simp [sum_apply, mul_apply, Finset.sum_mul, Finset.mul_sum, single,
     Fintype.sum_prod_type, ite_and]
 
 lemma Mat.bij (n : ℕ) : Function.Bijective (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)) :=

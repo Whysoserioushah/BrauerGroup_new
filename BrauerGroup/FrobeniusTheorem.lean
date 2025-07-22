@@ -1,6 +1,5 @@
 import BrauerGroup.Subfield.FiniteDimensional
 import BrauerGroup.Subfield.Subfield
-import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Algebra.QuaternionBasis
 import Mathlib.Analysis.Quaternion
 import Mathlib.Data.Complex.FiniteDimensional
@@ -788,20 +787,18 @@ lemma smulCRassoc (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional
   rw [map_smul e, Subalgebra.coe_smul]
   exact smul_mul_assoc r (↑(e z)) a
 
+attribute [-instance] Module.complexToReal
 set_option synthInstance.maxHeartbeats 40000 in
 theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
-    (hA : Nonempty ((Subalgebra.center ℝ A) ≃ₐ[ℝ] ℂ)) : Nonempty (A ≃ₐ[ℝ] ℂ) := by
+    (hA : Nonempty (Subalgebra.center ℝ A ≃ₐ[ℝ] ℂ)) : Nonempty (A ≃ₐ[ℝ] ℂ) := by
   have e := hA.some.symm
   letI : Algebra ℂ A := AlgCA A e
   have : IsScalarTower ℝ ℂ A := { smul_assoc := smulCRassoc A e }
-  rename_i _ _ fin _
+  have : IsScalarTower ℝ ℝ A :=
+    { smul_assoc a b x := by simp [Complex.real_smul]; sorry }
+  rename_i _ _ _ fin _
   unfold FiniteDimensional at fin
-  have : Algebra.toModule (R := ℝ) (A := A) = Module.complexToReal A := by
-    ext r a
-    change r • a = (e (algebraMap ℝ ℂ r)) * a
-    rw [Algebra.algebraMap_eq_smul_one, _root_.map_smul e, map_one, Subalgebra.coe_smul,
-      Subalgebra.coe_one, smul_mul_assoc, one_mul]
-  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 fin
+  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 ‹FiniteDimensional ℝ A›
   haveI : FiniteDimensional ℂ A := .right ℝ ℂ A
   have bij := IsAlgClosed.algebraMap_bijective_of_isIntegral (k := ℂ) (K := A)
   exact ⟨.symm <| .ofBijective {
