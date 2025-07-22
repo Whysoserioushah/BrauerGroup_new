@@ -66,8 +66,8 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
         (finProdFinEquiv)|>.trans $ Matrix.compAlgEquiv _ _  D K|>.trans $
         Matrix.reindexAlgEquiv K _ (finProdFinEquiv)
       have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) hp D iso'
-      haveI : NeZero (p * p * n) := ⟨by simp [hn]; exact hp⟩
-      haveI : NeZero (p * m) := ⟨by simp [hp, hm]; exact hp⟩
+      haveI : NeZero (p * p * n) := ⟨by simpa [hn]⟩
+      haveI : NeZero (p * m) := ⟨by simpa [hm]⟩
       have := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (p * p * n)) (Fin (p * p * n)) D)
         (p * p * n) (p * m) D AlgEquiv.refl K e.symm
       exact ⟨p, ⟨hp⟩, ⟨iso'.trans <| Wedderburn_Artin_uniqueness₀ K

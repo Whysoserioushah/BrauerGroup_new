@@ -55,7 +55,7 @@ def invFun_toFun_bilinear (i j : n) : K →ₗ[F] A →ₗ[F] K ⊗[F] Matrix n 
   toFun k := {
     toFun a := k ⊗ₜ single i j a
     map_add' _ _ := by simp [single_add, tmul_add]
-    map_smul' _ _ := by simp [← smul_single, smul_tmul]
+    map_smul' _ _ := by simp [← smul_single]
   }
   map_add' _ _ := by ext; simp [add_tmul]
   map_smul' _ _ := by ext; simp [smul_tmul']
@@ -73,7 +73,7 @@ abbrev invFun_Klinear (i j : n) : K ⊗[F] A →ₗ[K] K ⊗[F] Matrix n n A :=
    map_smul' k tensor := by
     induction tensor with
     | zero => simp
-    | tmul k0 a => simp [smul_tmul', MulAction.mul_smul]
+    | tmul k0 a => simp [smul_tmul']
     | add _ _ h1 h2 => simp_all}
 
 abbrev invFun_linearMap : Matrix n n (K ⊗[F] A) →ₗ[K] K ⊗[F] Matrix n n A where
@@ -96,7 +96,7 @@ lemma right_inv (M : Matrix n n (K ⊗[F] A)) : toTensorMatrix K F A n (invFun_l
   induction M p q with
   | zero => simp
   | tmul x y => simp [smul_tmul']
-  | add _ _ h1 h2 => simp [single_add, h1, h2, tmul_add]
+  | add _ _ h1 h2 => simp [single_add, h1, h2]
 
 def equivTensor' : K ⊗[F] Matrix n n A ≃ Matrix n n (K ⊗[F] A) where
   toFun := toTensorMatrix K F A n

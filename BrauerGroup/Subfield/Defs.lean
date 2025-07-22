@@ -56,9 +56,7 @@ noncomputable instance carrier.instSemifield [Nontrivial A] : Semifield L.1 wher
   exists_pair_ne := ⟨⟨0, Subalgebra.zero_mem L.1⟩, ⟨1, Subalgebra.one_mem L.1⟩, by
     refine Subtype.coe_ne_coe.1 $ by simp only [ne_eq, zero_ne_one, not_false_eq_true]⟩
   mul_inv_cancel a ha := by ext; simpa [ha] using (L.3 a.2 <| mod_cast ha).choose_spec.2
-  inv_zero := by
-    simp only [ZeroMemClass.coe_eq_zero, Subsemiring.coe_carrier_toSubmonoid,
-      Subalgebra.coe_toSubsemiring, SetLike.mem_coe, ↓reduceDIte]
+  inv_zero := by simp only [↓reduceDIte]
   nnqsmul := _
 
 /-- The directed supremum of a set of subfields. -/

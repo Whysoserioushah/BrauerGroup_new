@@ -24,7 +24,7 @@ import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
 import BrauerGroup.Mathlib.GroupTheory.Congruence.Defs
 import BrauerGroup.Mathlib.LinearAlgebra.Finsupp.LinearCombination
 import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
-import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
+import BrauerGroup.Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 import BrauerGroup.Mathlib.RingTheory.Congruence.Basic
 import BrauerGroup.Mathlib.RingTheory.Congruence.Defs
 import BrauerGroup.Mathlib.RingTheory.NonUnitalSubring.Defs

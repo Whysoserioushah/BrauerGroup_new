@@ -39,7 +39,8 @@ def LeftHomologyMapData.ofModuleCat :
   commf' := ModuleCat.hom_ext <| LinearMap.ext <| fun x ↦ by
     simp
     rw [Subtype.ext_iff]
-    simp only [LinearMap.restrict_coe_apply, ShortComplex.moduleCatToCycles_apply_coe]
+    simp only [LinearMap.restrict_coe_apply, LinearMap.codRestrict_apply, LinearMap.coe_comp,
+      Function.comp_apply]
     rw [← ModuleCat.comp_apply, ← ModuleCat.comp_apply, f.4]
   commπ := ModuleCat.hom_ext <| LinearMap.ext <| fun ⟨x, hx⟩ ↦ by simp
 
@@ -55,10 +56,9 @@ def ShortComplex.IsQuasiIsoAt_iff_moduleCat: ShortComplex.QuasiIso f ↔
   congr!
   · rw [injective_iff_map_eq_zero]
     refine (Submodule.Quotient.mk_surjective _).forall.trans ?_
-    simp [Subtype.ext_iff, SetLike.le_def]
+    simp [Subtype.ext_iff]
   · refine (Submodule.Quotient.mk_surjective _).forall.trans ?_
-    simp [Function.Surjective, SetLike.le_def, Subtype.ext_iff,
-      (Submodule.Quotient.mk_surjective _).exists, Submodule.Quotient.eq]
+    simp [Subtype.ext_iff, (Submodule.Quotient.mk_surjective _).exists, Submodule.Quotient.eq]
 
   -- ShortComplex.LeftHomologyMapData.quasiIso_iff
   --   (LeftHomologyMapData.ofModuleCat R S₁ S₂ f)|>.2 <| by

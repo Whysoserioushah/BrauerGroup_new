@@ -1,4 +1,4 @@
-import Mathlib.Data.Nat.Digits
+import Mathlib.Data.Nat.Digits.Div
 
 theorem rearrange_digits_diff_divisible_by_9
     (m m' : ℕ)(h_digits_perm : (Nat.digits 10 m').Perm (Nat.digits 10 m)) :

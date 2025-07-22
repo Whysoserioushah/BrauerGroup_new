@@ -96,7 +96,7 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     cases' this with h1 h2
     · exact Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm|>.symm
     · have := Module.finrank_pos (R := K) (M := L.1)
-      simp_all only [mul_zero, lt_self_iff_false]
+      simp_all only [lt_self_iff_false]
 
 lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Algebra.IsCentral K A] [IsSimpleRing A] (L : SubField K A) :
@@ -123,7 +123,7 @@ lemma cor_two_3to1 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
   refine le_antisymm ?_ ?_
   · by_contra! hL'
     have := Subalgebra.le_centralizer_self.2 L.2
-    have Llt := lt_of_le_not_le this hL'
+    have Llt := lt_of_le_not_ge this hL'
     have exist_ele : ∃ a ∈ Subalgebra.centralizer K L.1, a ∉ L.1 :=
       Set.ssubset_iff_of_subset this|>.1 $ Set.lt_iff_ssubset.1 Llt
     obtain ⟨a, ⟨ha1, ha2⟩⟩ := exist_ele

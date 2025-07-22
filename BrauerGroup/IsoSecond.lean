@@ -1,4 +1,4 @@
-import BrauerGroup.Mathlib.RepresentationTheory.GroupCohomology.LowDegree
+import BrauerGroup.Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 import BrauerGroup.ToSecond
 
 suppress_compilation
@@ -18,19 +18,19 @@ open scoped TensorProduct
 
 -- -- def φ0 :
 --     CrossProduct (F := F) (K := K) (a := 1)
---       (ha := isMulTwoCocycle_of_mem_twoCocycles 0 <| Submodule.zero_mem _) →ₗ[K]
+--       (ha := isMulCocycle₂_of_mem_cocycles₂ 0 <| Submodule.zero_mem _) →ₗ[K]
 --     Module.End F K :=
 --   (CrossProductAlgebra.x_AsBasis (F := F) (K := K) (a := 1)
---     (ha := isMulTwoCocycle_of_mem_twoCocycles 0 <| Submodule.zero_mem _)).constr F
+--     (ha := isMulCocycle₂_of_mem_cocycles₂ 0 <| Submodule.zero_mem _)).constr F
 --     fun σ => σ.toLinearMap
 
 -- def φ1 :
---     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₗ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulCocycle₂_of_cocycles₂ 0) →ₗ[F]
 --     Module.End F K :=
 --   φ0 K F |>.restrictScalars F
 
 -- def φ2 :
---     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) →ₐ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulCocycle₂_of_cocycles₂ 0) →ₐ[F]
 --     Module.End F K :=
 --   AlgHom.ofLinearMap (φ1 K F)
 --     (by
@@ -97,18 +97,18 @@ open scoped TensorProduct
 --         rw [zero_mul])
 
 -- def φ3 :
---     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulCocycle₂_of_cocycles₂ 0) ≃ₐ[F]
 --     Module.End F K :=
 --   AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
 --     rw [CrossProductAlgebra.dim_eq_sq]
 --     rw [Module.finrank_linearMap, pow_two])
 
 -- def φ4 :
---     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulTwoCocycle_of_twoCocycles 0) ≃ₐ[F]
+--     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulCocycle₂_of_cocycles₂ 0) ≃ₐ[F]
 --     Matrix (Fin <| Module.finrank F K) (Fin <| Module.finrank F K) F :=
 --   φ3 K F |>.trans <| LinearMap.toMatrixAlgEquiv <| Module.finBasis F K
 
--- lemma map_one' : RelativeBrGroup.fromTwoCocycles (F := F) (K := K) (a := 0) = 1 := by
+-- lemma map_one' : RelativeBrGroup.fromCocycles₂ (F := F) (K := K) (a := 0) = 1 := by
 --   ext1
 --   change Quotient.mk'' _ = Quotient.mk'' _
 --   erw [Quotient.eq'']
@@ -127,7 +127,7 @@ open scoped TensorProduct
 namespace map_mul_proof
 section map_mul
 
-variable {α β : Gal(K, F) × Gal(K, F) → Kˣ} [Fact (IsMulTwoCocycle α)] [Fact (IsMulTwoCocycle β)]
+variable {α β : Gal(K, F) × Gal(K, F) → Kˣ} [Fact (IsMulCocycle₂ α)] [Fact (IsMulCocycle₂ β)]
 
 local notation "A" => CrossProductAlgebra α
 local notation "B" => CrossProductAlgebra β
@@ -534,7 +534,7 @@ instance : IsScalarTower F C (M α β) := .of_algebraMap_smul <| fun x m ↦ by
   change Submodule.Quotient.mk (_ ⊗ₜ (⟨mulLinearMap β _ _⟩ : B)) = _
   simp only [mulLinearMap_single_single, _root_.one_mul, AlgEquiv.one_apply, mul_comm k2]
   rw [← smul_eq_mul (β _).1, ← Finsupp.smul_single, ← smul_mk, Submodule.Quotient.eq]
-  simp_rw [map_one_fst_of_isMulTwoCocycle Fact.out]
+  simp_rw [map_one_fst_of_isMulCocycle₂ Fact.out]
   refine Submodule.subset_span ⟨⟨(β (1, 1)).1⁻¹, ⟨Finsupp.single σ k1⟩,
     (β (1, 1)).1 • ⟨Finsupp.single τ k2⟩⟩, ?_⟩
   simp only [smul_mk, Finsupp.smul_single, smul_eq_mul, isUnit_iff_ne_zero, ne_eq,
@@ -698,7 +698,7 @@ lemma exists_simple_module_directSum [IsGalois F K] :
     | zero => simp
     | add f g _ _ => simp_all [smul_add]
     | single σ c =>
-      simp [Algebra.algebraMap_eq_smul_one, map_one_fst_of_isMulTwoCocycle Fact.out]
+      simp [Algebra.algebraMap_eq_smul_one, map_one_fst_of_isMulCocycle₂ Fact.out]
       rw [mul_comm _ c, mul_assoc c, ← smul_mul_assoc, ← mul_assoc ((β (1, 1)).1⁻¹ * _),
         mul_assoc (β (1, 1)).1⁻¹, inv_mul_cancel₀ (by simp), _root_.mul_one]
       field_simp
@@ -1084,9 +1084,9 @@ variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K, F)]
 --     induction y using Quotient.inductionOn' with | h y =>
 --     simp only [Function.comp_apply]
 --     rcases x with ⟨x, hx'⟩
---     have hx := isMulTwoCocycle_of_twoCocycles ⟨x, hx'⟩
+--     have hx := isMulCocycle₂_of_cocycles₂ ⟨x, hx'⟩
 --     rcases y with ⟨y, hy'⟩
---     have hy := isMulTwoCocycle_of_twoCocycles ⟨y, hy'⟩
+--     have hy := isMulCocycle₂_of_cocycles₂ ⟨y, hy'⟩
 --     rw [fromSnd_wd, fromSnd_wd]
 --     erw [fromSnd_wd]
 --     apply_fun Additive.toMul
@@ -1117,15 +1117,15 @@ def isoSnd : Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) :=
     induction x using Quotient.inductionOn' with | h x =>
     induction y using Quotient.inductionOn' with | h y =>
     rcases x with ⟨x, hx'⟩
-    have hx := isMulTwoCocycle_of_mem_twoCocycles _ hx'
+    have hx := isMulCocycle₂_of_mem_cocycles₂ _ hx'
     rcases y with ⟨y, hy'⟩
-    have hy := isMulTwoCocycle_of_mem_twoCocycles _ hy'
+    have hy := isMulCocycle₂_of_mem_cocycles₂ _ hy'
     change fromSnd F K (Quotient.mk'' _) =
       fromSnd F K (Quotient.mk'' _) * fromSnd F K (Quotient.mk'' _)
     erw [fromSnd_wd, fromSnd_wd]
     erw [fromSnd_wd]
     apply_fun Additive.toMul
-    simp only [AddMemClass.mk_add_mk, twoCocycles.val_eq_coe, MulMemClass.mk_mul_mk,
+    simp only [AddMemClass.mk_add_mk, cocycles₂.val_eq_coe, MulMemClass.mk_mul_mk,
       EmbeddingLike.apply_eq_iff_eq]
     refine Subtype.ext ?_
     change _ = Quotient.mk'' _
