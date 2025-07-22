@@ -280,7 +280,7 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
         (Matrix.blockDiagonal ((fun i ↦ e fa1) + (fun i ↦ e fa2))) = _
       rw [Matrix.blockDiagonal_add, map_add]
     commutes' k := by
-      simp only [eq_mpr_eq_cast,  Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self,
+      simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self,
         RingHom.id_apply, Matrix.blockDiagonalRingHom_apply]
       rw [← mul_one k, ← smul_eq_mul k 1, ← TensorProduct.smul_tmul', map_smul]
       change Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal (k • _)) = _

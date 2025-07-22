@@ -778,10 +778,10 @@ def fromSnd :
         erw [val_smul]
         simp only [Basis.coe_ofRepr, valLinearEquiv_symm_apply, AddEquiv.toEquiv_eq_coe,
           Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm, valAddEquiv_symm_apply_val,
-          Finsupp.smul_single, smul_eq_mul, _root_.mul_one, B, basis]
+          Finsupp.smul_single, smul_eq_mul, _root_.mul_one]
         congr 1
         specialize hc 1 1
-        simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Pi.div_apply, B, basis]
+        simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Pi.div_apply]
           at hc
         field_simp [hc])
       (by
@@ -821,11 +821,11 @@ def fromSnd :
             simp only [CrossProductAlgebra.basis, Basis.coe_ofRepr, valLinearEquiv_symm_apply,
               AddEquiv.toEquiv_eq_coe, Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm,
               valAddEquiv_symm_apply_val, Finsupp.smul_single, smul_eq_mul, _root_.mul_one,
-              mulLinearMap_single_single, map_mul, B, basis]
+              mulLinearMap_single_single, map_mul]
             congr 1
             specialize hc σ τ
             simp only [AlgEquiv.smul_units_def, Pi.div_apply, Units.ext_iff, Units.val_mul,
-              Units.val_div_eq_div_val, Units.coe_map, MonoidHom.coe_coe, B, basis] at hc
+              Units.val_div_eq_div_val, Units.coe_map, MonoidHom.coe_coe] at hc
             simp only [_root_.mul_assoc]
             congr 1
             rw [mul_comm (c σ).1, _root_.mul_assoc]
@@ -956,14 +956,13 @@ lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id 
         congr]
     change φ0 ((_ : K) • _) = _
     rw [map_smul]
-    simp only [LinearEquiv.restrictScalars_apply, φ1, φ0]
+    simp only [φ0]
     erw [Basis.equiv_apply]
-    simp only [Function.comp_apply, Units.val_inv_eq_inv_val, GoodRep.conjFactorBasis,
+    simp only [Units.val_inv_eq_inv_val, GoodRep.conjFactorBasis,
       Equiv.refl_apply, coe_basisOfLinearIndependentOfCardEqFinrank,  AlgEquiv.one_apply,
       GoodRep.smul_def]
     change A.ι (A.toCocycles₂ _ (1, 1))⁻¹ * _ = 1
-    simp only [GoodRep.toCocycles₂, GoodRep.conjFactorCompCoeffAsUnit, Prod.fst_one, Prod.snd_one,
-      AlgEquiv.one_apply]
+    simp only [GoodRep.toCocycles₂, GoodRep.conjFactorCompCoeffAsUnit, AlgEquiv.one_apply]
     have := A.conjFactorCompCoeff_spec' (A.arbitraryConjFactor 1)
       (A.arbitraryConjFactor 1)
       (A.arbitraryConjFactor (1 * 1))

@@ -209,13 +209,11 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
       map_add' := by
         intros a a'
         ext
-        simp only [op_add, smul_eq_mul, add_smul, LinearMap.coe_mk, AddHom.coe_mk,
-          LinearMap.add_apply]
+        simp [add_smul]
       map_smul' := by
         intros a x
         ext r a'
-        simp only [op_smul, smul_eq_mul, smul_assoc, LinearMap.coe_mk, AddHom.coe_mk,
-          RingHom.id_apply, LinearMap.smul_apply] }
+        simp [smul_eq_mul, smul_assoc, LinearMap.smul_apply] }
 
     let μ' : K ⊗[F] B →ₗ[F] Module.End K B := TensorProduct.lift μ
     let μ'' : K ⊗[F] B →ₗ[K] Module.End K B :=

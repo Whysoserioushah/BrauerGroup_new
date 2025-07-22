@@ -919,16 +919,22 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
     rw [zero_mul, TensorProduct.tmul_zero, g.map_zero, f.map_zero, TensorProduct.tmul_zero,
       g.map_zero, f.map_zero, zero_mul]
   | add => simp only [add_mul, TensorProduct.tmul_add, g.map_add, f.map_add, *]
-  | tmul =>
+  | tmul k1 a1 =>
   induction y2 using TensorProduct.induction_on with
   | zero =>
     rw [mul_zero, TensorProduct.tmul_zero, TensorProduct.tmul_zero, g.map_zero, f.map_zero,
       mul_zero]
   | add => simp only [mul_add, TensorProduct.tmul_add, g.map_add, f.map_add, *]
-  | tmul =>
+  | tmul k2 a2 =>
   simp only [Algebra.TensorProduct.tmul_mul_tmul, *]
-  rw [mul_comm]
-  sorry
+  -- rw [mul_comm]
+  simp only [TensorProduct.AlgebraTensorModule.assoc_symm_tmul,
+    TensorProduct.AlgebraTensorModule.congr_tmul, TensorProduct.AlgebraTensorModule.rid_tmul,
+    LinearEquiv.refl_apply, Algebra.TensorProduct.tmul_mul_tmul, Algebra.mul_smul_comm,
+    Algebra.smul_mul_assoc, f, g]
+  congr 1
+  rw [mul_comm k1 k2]
+  exact mul_smul k2 k1 (x1 * x2)
 
 lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
     [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] :

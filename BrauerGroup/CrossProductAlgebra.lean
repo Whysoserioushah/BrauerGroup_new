@@ -114,19 +114,23 @@ def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F]
   { toFun c := Finsupp.lsum F fun τ =>
       { toFun d := .single (σ * τ) (c * σ d * f (σ, τ))
         map_add' := by simp [mul_add, add_mul]
-        map_smul' := by simp }
+        map_smul' := by simp only [map_smul, Algebra.mul_smul_comm, Algebra.smul_mul_assoc,
+          RingHom.id_apply, Finsupp.smul_single, implies_true] }
     map_add' _ _ := by ext; simp [add_mul]
-    map_smul' _ _ := by ext; simp }
+    map_smul' _ _ := by ext; simp only [Algebra.smul_mul_assoc, Finsupp.lsum_comp_lsingle,
+      LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.coe_comp, comp_apply,
+      Finsupp.lsingle_apply, LinearMap.smul_apply, Finsupp.coe_lsum, map_zero, mul_zero, zero_mul,
+      Finsupp.single_zero, Finsupp.sum_single_index, Finsupp.smul_single] }
 
 variable (f) in
-set_option synthInstance.maxHeartbeats 60000 in
+set_option synthInstance.maxHeartbeats 80000 in
 @[simp]
 lemma mulLinearMap_single_single (c d : K) (σ τ : Gal(K, F)) :
     mulLinearMap f (.single σ c) (.single τ d) = .single (σ * τ) (c * σ d * f (σ, τ)) := by
   simp [mulLinearMap]
 
 variable (f) in
-set_option synthInstance.maxHeartbeats 60000 in
+set_option synthInstance.maxHeartbeats 80000 in
 @[simp]
 lemma mulLinearMap_single_left_apply (c : K) (σ : Gal(K, F)) (x : Gal(K, F) →₀ K) (τ : Gal(K, F)) :
     mulLinearMap f (.single σ c) x τ = c * σ (x (σ⁻¹ * τ)) * f (σ, σ⁻¹ * τ) := by
@@ -223,7 +227,8 @@ lemma basis_smul_comm (σ : Gal(K, F)) (k1 k2 : K) (x : CrossProductAlgebra f) :
   | zero => simp
   | add _ _ _ _ => simp_all[smul_add]
   | single a b =>
-    simp [← _root_.mul_assoc, mul_comm k1 (σ k2)]
+    simp only [Finsupp.smul_single, smul_eq_mul, mulLinearMap_single_single, map_mul, ← mul_assoc,
+      mul_comm k1 (σ k2)]
 
 variable (f) in
 /-- The inclusion from `K` into `CrossProductAlgebra f`.
@@ -236,7 +241,11 @@ def incl : K →ₐ[F] CrossProductAlgebra f where
   map_zero' := by ext; simp
   map_add' _ _ := by ext; simp [add_mul]
   map_one' := by ext; simp
-  map_mul' _ _ := by ext; simp [mul_assoc, mul_left_comm]
+  map_mul' _ _ := by
+    ext
+    simp only [val_smul, val_one, Finsupp.smul_single, smul_eq_mul, mul_assoc,
+      val_mul, mulLinearMap_single_single, mul_one, AlgEquiv.one_apply, mul_left_comm]
+    simp
   commutes' _ := by ext; simp [Algebra.algebraMap_eq_smul_one]
 
 lemma smul_eq_incl_mul (k : K) (x : CrossProductAlgebra f) : k • x = incl f k * x := by
@@ -246,7 +255,10 @@ lemma smul_eq_incl_mul (k : K) (x : CrossProductAlgebra f) : k • x = incl f k 
   induction x using Finsupp.induction_linear with
   | zero => simp
   | add => simp [*]
-  | single σ b => simp [incl_apply, map_one_fst_of_isMulCocycle₂ Fact.out σ, mul_right_comm _ _ b]
+  | single σ b => simp only [Finsupp.smul_single, smul_eq_mul, incl_apply, val_smul, val_one,
+    mulLinearMap_single_single, one_mul, AlgEquiv.one_apply, mul_right_comm _ _ b,
+    map_one_fst_of_isMulCocycle₂ Fact.out σ, ne_eq, Units.ne_zero, not_false_eq_true,
+    inv_mul_cancel_right₀]
 
 instance [CommSemiring R] [Algebra R K] :
     IsScalarTower R (CrossProductAlgebra f) (CrossProductAlgebra f) where
@@ -260,7 +272,8 @@ def of (σ : Gal(K, F)) : (CrossProductAlgebra f)ˣ where
   inv.val := .single σ⁻¹ <| (f (σ⁻¹, σ))⁻¹ * (f (1, 1))⁻¹
   val_inv := by
     ext : 1
-    simp
+    simp only [Units.val_inv_eq_inv_val, mk_mul_mk, mulLinearMap_single_single, mul_inv_cancel,
+      map_mul, map_inv₀, one_mul, val_one]
     congr
     convert congr((σ (f (σ⁻¹, σ)))⁻¹ * (σ (f (1, 1)))⁻¹ * (f (1, 1))⁻¹ *
       $((Fact.out : IsMulCocycle₂ f) σ σ⁻¹ σ)) using 1
@@ -273,7 +286,9 @@ def of (σ : Gal(K, F)) : (CrossProductAlgebra f)ˣ where
         _ = _ := by
           simp [map_one_snd_of_isMulCocycle₂ Fact.out σ,
         ]
-  inv_val := by ext : 1; simp [mul_right_comm _ (f _ : K)⁻¹]
+  inv_val := by ext : 1; simp only [Units.val_inv_eq_inv_val, mk_mul_mk, mulLinearMap_single_single,
+    inv_mul_cancel, map_one, mul_right_comm _ (f _ : K)⁻¹, mul_one, ne_eq, Units.ne_zero,
+    not_false_eq_true, inv_mul_cancel₀, one_mul, val_one]
 
 lemma basis_eq_of (σ : Gal(K, F)) : basis σ = (of f σ).val := rfl
 
@@ -289,7 +304,12 @@ lemma basis_mul_basis (σ τ : Gal(K, F)) :
     basis (f := f) σ * basis τ = incl f (f (σ, τ)) * basis (σ * τ) := of_mul_of ..
 
 lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) * of f σ := by
-  ext : 1; simp [map_one_snd_of_isMulCocycle₂ Fact.out σ, incl_apply]
+  ext : 1;
+  simp only [incl_apply, val_mul, val_of_val, val_smul, val_one, Finsupp.smul_single, smul_eq_mul,
+    mulLinearMap_single_single, mul_one, map_mul, map_inv₀, one_mul,
+    map_one_snd_of_isMulCocycle₂ Fact.out σ, AlgEquiv.smul_units_def, Units.coe_map,
+    MonoidHom.coe_coe, ne_eq, EmbeddingLike.map_eq_zero_iff, Units.ne_zero, not_false_eq_true,
+    inv_mul_cancel_right₀, smul_one_mul]
 
 lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f σ).val) = x := by
   ext; simp
@@ -349,6 +369,7 @@ instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
 variable {I : TwoSidedIdeal (CrossProductAlgebra f)}
 
 variable (I) in
+set_option synthInstance.maxHeartbeats 80000 in
 /-- The standard basis for `CrossProductAlgebra f` descends to a basis for any of its non-trivial
 quotients. -/
 private def quotientBasis (hI : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient := by
@@ -396,12 +417,14 @@ private def quotientBasis (hI : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotien
   exact ne_of_mem_of_not_mem hτ hσ <| by simpa [DFunLike.ext_iff, mul_comm, haτ] using (key · τ hτ)
 
 variable (I) in
+set_option synthInstance.maxHeartbeats 80000 in
 /-- `CrossProductAlgebra f` is isomorphic to any of its non-trivial quotients. -/
 private def equivQuotient (hI : I ≠ ⊤) : CrossProductAlgebra f ≃ₗ[K] I.ringCon.Quotient :=
   basis.repr ≪≫ₗ (quotientBasis I hI).repr.symm
 
 omit [Module.Finite F K] [IsGalois F K] in
 variable (I) in
+set_option synthInstance.maxHeartbeats 80000 in
 /-- `CrossProductAlgebra f` is isomorphic to any of its non-trivial quotients along the quotient
 map. -/
 private lemma coe_equivQuotient (hI) : (equivQuotient I hI).toLinearMap = I.ringCon.mkL K := by

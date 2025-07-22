@@ -398,8 +398,8 @@ lemma j_mul_j (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (x_corre_R _ _ _ hx1 hDD).choose_spec, mul_assoc, ← pow_two, ← neg_inv, neg_mul,
     inv_mul_cancel₀ (by simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, map_inv₀,
     ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff, Units.ne_zero])]
-  simp only [f_apply, Subalgebra.coe_val, Subtype.forall, neg_smul, one_smul]
-  exact le_of_lt $ r_pos _ _ _ hx1 hDD
+  simp only [neg_smul, one_smul]
+  exact le_of_lt <| r_pos _ _ _ hx1 hDD
 
 lemma jij_eq_negi (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) :
@@ -452,8 +452,8 @@ lemma k_sq_eq_negone (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
 lemma j_ne_zero (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z) (hDD : Module.finrank ℝ D = 4) :
     (algebraMap ℝ D (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹) * x.1 ≠ 0 := by
   intro h
-  simp? only [mul_eq_zero, Units.ne_zero, or_false, i_ne_zero, false_or] at h
-  simp? only [map_inv₀, inv_eq_zero, map_eq_zero] at h
+  simp only [mul_eq_zero, Units.ne_zero, or_false] at h
+  simp only [map_inv₀, inv_eq_zero, map_eq_zero] at h
   apply_fun (·)^2 at h
   rw [Pi.pow_apply, Real.sq_sqrt (le_of_lt (r_pos _ _ _ hx _)), Pi.pow_apply,
     pow_two 0, zero_mul] at h
@@ -782,9 +782,7 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
   have e := hA.some.symm
   letI : Algebra ℂ A := AlgCA A e
   have : IsScalarTower ℝ ℂ A := { smul_assoc := smulCRassoc A e }
-  have : IsScalarTower ℝ ℝ A :=
-    { smul_assoc a b x := by simp [Complex.real_smul]; sorry }
-  rename_i _ _ _ fin _
+  rename_i _ _ _ fin
   unfold FiniteDimensional at fin
   haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 ‹FiniteDimensional ℝ A›
   haveI : FiniteDimensional ℂ A := .right ℝ ℂ A
@@ -818,7 +816,7 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
       have := RealExtension_is_RorC L
       cases' this with hR hH
       · have := LinearEquiv.finrank_eq hR.some.toLinearEquiv
-        simp only [Module.finrank_self, Subalgebra.finrank_eq_one_iff] at this
+        simp only [Module.finrank_self] at this
         exact Or.inl this
       · have := LinearEquiv.finrank_eq hH.some.toLinearEquiv
         simp only [Complex.finrank_real_complex] at this
