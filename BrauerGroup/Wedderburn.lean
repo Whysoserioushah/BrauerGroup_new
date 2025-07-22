@@ -482,7 +482,6 @@ section central_simple
 
 variable (K : Type u) (B : Type v) [Field K] [Ring B] [Algebra K B] [FiniteDimensional K B]
 
--- set_option synthInstance.maxHeartbeats 40000 in
 -- lemma Matrix.mem_center_iff (R : Type*) [Ring R] (n : ℕ) (M) :
 --     M ∈ Subring.center M[Fin n, R] ↔ ∃ α : (Subring.center R), M = α • 1 := by
 --   constructor

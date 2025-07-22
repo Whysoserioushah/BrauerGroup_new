@@ -59,9 +59,10 @@ open scoped TensorProduct
 --           rw [show (⟨Pi.single y d⟩ : CrossProductAlgebra h) =
 --             d • .x_AsBasis h y by
 --             ext : 1
---             simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def, CrossProductAlgebra.mul_val,
---               CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
---               crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
+            -- simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def,
+            --   CrossProductAlgebra.mul_val, CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one,
+            --   Units.val_one, _root_.mul_one, crossProductMul_single_single, _root_.one_mul,
+            --   AlgEquiv.one_apply]]
 --           rw [show (c • CrossProductAlgebra.x_AsBasis h x) * (d • .x_AsBasis h y) =
 --             (c * x d) • .x_AsBasis h (x * y) by
 --             ext : 1
@@ -413,8 +414,8 @@ theorem C_mul_smul' (x y : C) (ab : M α β) : (x * y) • ab = x • y • ab :
           ← mul_assoc (k1 • basis σ), basis_smul_comm, ← mul_smul (σ k2), mul_comm k1,
           smul_mul_assoc (σ k2 * k1), CrossProductAlgebra.basis_mul_basis σ τ]
         simp only [incl_apply, smul_one_mul]
-        rw [← mul_smul (σ k2 * k1), mul_comm (α (_, _)).1, ← _root_.mul_assoc, mul_comm (σ k2 * k1) (β (_, _)).1,
-          _root_.mul_assoc, mul_smul, smul_mul_assoc]
+        rw [← mul_smul (σ k2 * k1), mul_comm (α (_, _)).1, ← _root_.mul_assoc,
+          mul_comm (σ k2 * k1) (β (_, _)).1, _root_.mul_assoc, mul_smul, smul_mul_assoc]
         exact Submodule.subset_span ⟨⟨(β (σ, τ)).1, (σ k2 * k1 * ↑(α (σ, τ))) • basis (σ * τ) * a,
           basis (σ * τ) * b⟩, rfl⟩
       | add x y h1 h2 =>
@@ -506,7 +507,7 @@ instance : IsScalarTower F C (M α β) := .of_algebraMap_smul <| fun x m ↦ by
   | add x y h1 h2 =>
     rw [Submodule.Quotient.mk_add, smul_add, h1, h2, smul_add]
   | tmul a b =>
-  rw [Algebra.algebraMap_eq_smul_one, one_def, ← mul_one ((α * β) 1).1⁻¹,
+  rw [Algebra.algebraMap_eq_smul_one, one_def, ← mul_one ((α * β) _).1⁻¹,
   ← smul_eq_mul _ 1, ← Finsupp.smul_single, ← smul_mk, mk_single_one, ← smul_assoc, C_smul_calc]
   simp only [Pi.mul_apply, Units.val_mul, mul_inv_rev, smul_assoc, Algebra.smul_mul_assoc]
   rw [← smul_tmul', Submodule.Quotient.mk_smul]
@@ -575,7 +576,8 @@ noncomputable def φ0 :
     induction m using TensorProduct.induction_on with
     | tmul a b =>
       erw [Aox_FB_op_tmul_smul_mk_tmul]
-      rw [_root_.mul_one, ← Algebra.commutes, ← Algebra.smul_def, ← smul_tmul', Submodule.Quotient.mk_smul]
+      rw [_root_.mul_one, ← Algebra.commutes, ← Algebra.smul_def, ← smul_tmul',
+        Submodule.Quotient.mk_smul]
     | add x y hx hy =>
       simp only at hx hy ⊢
       have := congr($hx + $hy)
@@ -825,7 +827,8 @@ def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C :=
 def C_iso_aux : Cᵐᵒᵖ ≃ₐ[F] Module.End C (Fin (Fintype.card ι) → SM) :=
   mopEquivEnd'.trans <| (isoιSMPow' α β).algConj F
 
-def C_iso_aux' : Cᵐᵒᵖ ≃ₐ[F] Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM) :=
+def C_iso_aux' :
+    Cᵐᵒᵖ ≃ₐ[F] Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM) :=
   C_iso_aux.trans <| isoDagger _
 
 lemma dim_endCSM : (finrank F K)^2 =
@@ -839,12 +842,13 @@ lemma dim_endCSM : (finrank F K)^2 =
         invFun := op
         left_inv := unop_op
         right_inv _ := rfl }, CrossProductAlgebra.dim_eq_sq] at eq1
-  rw [eq1, matrixEquivTensor (Fin (Fintype.card ι)) F (Module.End C SM)  |>.toLinearEquiv.finrank_eq,
+  rw [eq1, matrixEquivTensor (Fin (Fintype.card ι)) F (Module.End C SM) |>.toLinearEquiv.finrank_eq,
     finrank_tensorProduct, finrank_matrix]
   simp only [Fintype.card_fin, finrank_self, _root_.mul_one, pow_two]
   group
 
-def C_iso_aux'' : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM))ᵐᵒᵖ where
+def C_iso_aux'' :
+    C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM))ᵐᵒᵖ where
   toFun c := op <| C_iso_aux' (op c)
   invFun m := (C_iso_aux'.symm m.unop).unop
   left_inv c := by simp only [unop_op, AlgEquiv.symm_apply_apply]
@@ -1009,7 +1013,6 @@ lemma dim_endCM : finrank F (Module.End C (M α β)) = (finrank F K)^4 := by
     ← dim_endCSM, pow_two, pow_succ, pow_three]
   group
 
--- set_option maxHeartbeats 600000 in
 set_option maxSynthPendingDepth 3 in
 def φ1 : (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M α β) :=
   .ofBijective φ0 <| bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by

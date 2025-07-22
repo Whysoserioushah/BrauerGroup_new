@@ -14,7 +14,7 @@ section Inv
 
 open MulOpposite
 
-abbrev Endmop (A : Type*) [Ring A] [Algebra R A] : Module.End R A →ₐ[R] Module.End R (Aᵐᵒᵖ) where
+abbrev Endmop (A : Type*) [Ring A] [Algebra R A] : Module.End R A →ₐ[R] Module.End R Aᵐᵒᵖ where
   toFun f := (opLinearEquiv R).toLinearMap ∘ₗ f ∘ₗ (opLinearEquiv R).symm.toLinearMap
   map_one' := rfl
   map_mul' _ _ := rfl
@@ -22,13 +22,14 @@ abbrev Endmop (A : Type*) [Ring A] [Algebra R A] : Module.End R A →ₐ[R] Modu
   map_add' _ _ := rfl
   commutes' _ := rfl
 
-abbrev EndmopEquiv (A : Type*) [Ring A] [Algebra R A] : Module.End R A ≃ₐ[R] Module.End R (Aᵐᵒᵖ) :=
+abbrev EndmopEquiv (A : Type*) [Ring A] [Algebra R A] : Module.End R A ≃ₐ[R] Module.End R Aᵐᵒᵖ :=
   AlgEquiv.ofBijective (Endmop R A) ⟨
   fun f1 f2 h ↦ by simp at h; exact h, fun f ↦ ⟨(opLinearEquiv R).symm.toLinearMap ∘ₗ f ∘ₗ
     (opLinearEquiv R).toLinearMap, rfl⟩⟩
 
-example (A : Type*) [Ring A] [Algebra R A] :
-  (Aᵐᵒᵖ)ᵐᵒᵖ ≃ₐ[R] A := by exact (AlgEquiv.opOp R A).symm
+
+example (A : Type*) [Ring A] [Algebra R A] : Aᵐᵒᵖᵐᵒᵖ ≃ₐ[R] A := by
+  exact (AlgEquiv.opOp R A).symm
 
     --  <| (AlgHom.mulLeftRight R A).comp <|
     -- ((Algebra.TensorProduct.congr (AlgEquiv.refl (A₁ := Aᵐᵒᵖ)) (AlgEquiv.opOp R A).symm).trans
@@ -90,11 +91,9 @@ private abbrev ee : Module.End R R ≃ₐ[R] R where
   commutes' _ := by simp
 
 lemma Azumaya.inv_mul (A : Azumaya R) : IsMoritaEquivalent R (Azumaya.mul R (Azumaya.Inv R A) A) 1 := by
-
   sorry
 
 /--
-
 A-Mod ≃ B-Mod => Mod-A ≃ Mod-B?
 
 The proof of this is by:
@@ -102,31 +101,29 @@ The proof of this is by:
 (2) Let `S = End R (P)`, this makes `P` an `S`-mod
 (3) `tr(P) := ⊔ f : Module.Dual R P, imf` is equal to `R` if `P` is generator which
     induces the equation `(1 : R) = ∑ qᵢ (pⱼ)` for some `qᵢ ∈ Module.Dual R P , pⱼ ∈ P`.
-
 -/
 lemma inv_eqv (A B : Azumaya R) (e : IsMoritaEquivalent R A B) :
     IsMoritaEquivalent R (Azumaya.Inv R A) (Azumaya.Inv R B) := by
-
   sorry
 
 end Inv
 
-instance: Mul (Azumaya.BrauerGroup R) where
+instance : Mul (Azumaya.BrauerGroup R) where
   mul := Quotient.lift₂ (fun A B ↦ Quotient.mk _ (Azumaya.mul R A B))
     (fun A1 A2 B1 B2 h1 h2 ↦ by
       simp only [Quotient.eq]
       exact MoritaTensor _ _ _ _ _ h1 h2)
 
-instance: One (Azumaya.BrauerGroup R) where
+instance : One (Azumaya.BrauerGroup R) where
   one := Quotient.mk _ 1
 
-instance: Monoid (Azumaya.BrauerGroup R) where
+instance : Monoid (Azumaya.BrauerGroup R) where
   mul_assoc A B C := by
     induction' A using Quotient.inductionOn' with A
     induction' B using Quotient.inductionOn' with B
     induction' C using Quotient.inductionOn' with C
     apply Quotient.sound
-    exact .of_algEquiv R (Algebra.TensorProduct.assoc _ _ _ _)
+    exact .of_algEquiv R (Algebra.TensorProduct.assoc ..)
   one_mul A := by
     induction' A using Quotient.inductionOn' with A
     apply Quotient.sound
@@ -136,13 +133,13 @@ instance: Monoid (Azumaya.BrauerGroup R) where
     apply Quotient.sound
     exact .of_algEquiv R (Algebra.TensorProduct.rid _ _ _)
 
-instance: Inv (Azumaya.BrauerGroup R) :=
-  ⟨Quotient.lift (fun A ↦ Quotient.mk'' (Azumaya.Inv R A)) (fun A B h ↦ by
+instance : Inv (Azumaya.BrauerGroup R) where
+  inv := Quotient.lift (fun A ↦ Quotient.mk'' (Azumaya.Inv R A)) fun A B h ↦ by
     simp only [Quotient.eq]
     change IsMoritaEquivalent R A B at h
-    exact inv_eqv R _ _ h)⟩
+    exact inv_eqv R _ _ h
 
-instance: Group (Azumaya.BrauerGroup R) where
+instance : Group (Azumaya.BrauerGroup R) where
   inv_mul_cancel A := by
     induction' A using Quotient.inductionOn' with A
     apply Quotient.sound

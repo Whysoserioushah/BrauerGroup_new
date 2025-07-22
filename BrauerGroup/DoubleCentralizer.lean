@@ -45,7 +45,6 @@ lemma centralizer_inclusionLeft :
     specialize this i hi
     rw [sub_eq_zero] at this
     exact this
-
   · rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩
     induction x using TensorProduct.induction_on with
     | zero => simp

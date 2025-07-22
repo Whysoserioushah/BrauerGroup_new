@@ -16,13 +16,12 @@ variable (A B C D : Type v) [Ring A] [Ring B] [Ring C] [Ring D]
 
 variable (M : ModuleCat (A ⊗[R] C))
 
-noncomputable instance (N : ModuleCat B) : Module R N :=
-  Module.compHom _ (algebraMap R B)
+noncomputable instance (N : ModuleCat B) : Module R N := .compHom _ (algebraMap R B)
 
 instance (N : ModuleCat B) : IsScalarTower R B N :=
     .of_algebraMap_smul fun _ _ ↦ rfl
 
-abbrev aux0 (N : ModuleCat A) : Module.End A N →ₐ[R] Module.End B (e1.obj N) where
+noncomputable abbrev aux0 (N : ModuleCat A) : Module.End A N →ₐ[R] Module.End B (e1.obj N) where
   toFun f := (e1.map (ModuleCat.ofHom f)).hom
   map_one' := by ext; simp [Module.End.one_eq_id]
   map_mul' f1 f2 := by ext; simp [Module.End.mul_eq_comp]
@@ -43,7 +42,6 @@ abbrev _root_.Module.End.restrictScalars (R S M R₁: Type*) [Ring R] [Ring S] [
 
 noncomputable section
 
-set_option maxHeartbeats 400000 in
 abbrev moduleMapAux : C →ₐ[R] Module.End A ((ModuleCat.restrictScalars
     Algebra.TensorProduct.includeLeftRingHom).obj M) where
   toFun c := {
@@ -72,7 +70,7 @@ instance modulefromtensor (M : ModuleCat (A ⊗[R] C)) :
 
 -- set_option maxHeartbeats 800000 in
 -- @[simp]
--- lemma smul_tmull (b : B) (c : C) (m : e1.obj ((ModuleCat.restrictScalars
+-- lemma smul_tmul (b : B) (c : C) (m : e1.obj ((ModuleCat.restrictScalars
 --     (Algebra.TensorProduct.includeLeftRingHom)).obj M)) :
 --     (b ⊗ₜ[R] c) • m = b • (e1.map (ModuleCat.ofHom (moduleMapAux R A C _ c))).hom m := rfl
 
@@ -228,7 +226,6 @@ abbrev toModuleOverTensor: TensorModule R A C ⥤ ModuleCat (A ⊗[R] C) where
   map_id M := by ext; simp
   map_comp _ _ := by ext; simp
 
-set_option maxHeartbeats 800000 in
 abbrev fromModuleOverTensor: ModuleCat (A ⊗[R] C) ⥤ TensorModule R A C where
   obj M := {
     carrier := (ModuleCat.restrictScalars (Algebra.TensorProduct.includeLeftRingHom)).obj M
@@ -263,11 +260,10 @@ abbrev e01_naturality {X Y : TensorModule R A C} (f : X ⟶ Y) :
   simp
   rfl
 
-abbrev eModunitIso: 𝟭 (TensorModule R A C) ≅ toModuleOverTensor R A C ⋙
+abbrev eModunitIso : 𝟭 (TensorModule R A C) ≅ toModuleOverTensor R A C ⋙
     fromModuleOverTensor R A C :=
   NatIso.ofComponents (e01 R A C) <| e01_naturality R A C
 
-set_option maxHeartbeats 1600000 in
 abbrev e02 (M : ModuleCat (A ⊗[R] C)) : (fromModuleOverTensor R A C ⋙ toModuleOverTensor R A C).obj M ≅
     (𝟭 (ModuleCat (A ⊗[R] C))).obj M := LinearEquiv.toModuleIso <| by
   apply (config := {allowSynthFailures := true, newGoals := .all}) @LinearEquiv.mk

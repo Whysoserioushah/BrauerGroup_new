@@ -252,15 +252,15 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 --   ext j
 --   simp [Function.update_apply]
 
-open Algebra.TensorProduct in
+open Algebra.TensorProduct (assoc congr opAlgEquiv) in
 variable {R A B} in
 abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
-  (Algebra.TensorProduct.assoc R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
-  (congr (AlgEquiv.refl) (Algebra.TensorProduct.assoc R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
-  Algebra.TensorProduct.congr AlgEquiv.refl (congr (Algebra.TensorProduct.comm R _ _) AlgEquiv.refl) |>.trans
-  <| Algebra.TensorProduct.congr AlgEquiv.refl (Algebra.TensorProduct.assoc R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
-  <| Algebra.TensorProduct.assoc R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
-  <| congr AlgEquiv.refl <| opAlgEquiv R R A B
+  (assoc R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
+  (congr .refl (assoc R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
+  congr .refl (congr (Algebra.TensorProduct.comm R _ _) .refl) |>.trans
+  <| congr .refl (assoc R Aᵐᵒᵖ B Bᵐᵒᵖ) |>.trans
+  <| assoc R A Aᵐᵒᵖ (B ⊗[R] Bᵐᵒᵖ)|>.symm).symm.trans
+  <| Algebra.TensorProduct.congr .refl <| opAlgEquiv R R A B
 
 lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
   e ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) = (a ⊗ₜ b) ⊗ₜ op (a'.unop ⊗ₜ[R] b'.unop) := rfl
@@ -273,7 +273,6 @@ lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
 --   ext a0 b0
 --   simp [e_apply, AlgHom.mulLeftRight_apply, Module.endTensorEndAlgHom_apply]
 
--- set_option synthInstance.maxHeartbeats 100000 in
 set_option maxHeartbeats 400000 in
 open TensorProduct.AlgebraTensorModule in
 lemma top_square_comm'' (A B : Azumaya R) :
@@ -345,8 +344,7 @@ abbrev mul (A B : Azumaya R) : Azumaya R := {
 instance : Mul (Azumaya R) where
   mul A B := mul R A B
 
-lemma mul_coe (A B : Azumaya R) : (A * B) =
-    ⟨AlgebraCat.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
+lemma mul_coe (A B : Azumaya R) : (A * B) = ⟨.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
 
 instance : One (Azumaya R) where
   one := ⟨.of R R, IsAzumaya_R R⟩
@@ -358,9 +356,6 @@ instance : FaithfulSMul R Rᵐᵒᵖ where
     simp only [unop_one, smul_eq_mul, mul_one, op_inj] at hr
     exact hr
 
--- example (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (e : M ≃ₗ[R] N) :
---   Module.End R M ≃ₐ[R] Module.End R N := by exact e.algConj
-
 /--
 A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
@@ -368,7 +363,6 @@ A ⊗ Aᵐᵒᵖ  ------------> B ⊗ Bᵐᵒᵖ
   |                        |
   |                        |
 End R A   ------------> End R B
-
 -/
 lemma small_comm_square (e : A ≃ₐ[R] B) :
     (AlgHom.mulLeftRight R B).comp (Algebra.TensorProduct.congr e e.op).toAlgHom =

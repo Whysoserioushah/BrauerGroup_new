@@ -54,4 +54,3 @@ import BrauerGroup.ZeroSevenFourE
 import BrauerGroup.examples.CohomologyofCyclic
 import BrauerGroup.examples.ShortComplex.LeftHomologyMapData
 import BrauerGroup.examples.exp
-import BrauerGroup.matrixkronecker

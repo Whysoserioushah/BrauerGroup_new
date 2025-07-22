@@ -220,9 +220,9 @@ def CSA_Setoid : Setoid (CSA K) where
   r := IsBrauerEquivalent
   iseqv := IsBrauerEquivalent.Braur_is_eqv
 
-def mul (A B : CSA K) : CSA K :=
-  { __ := AlgebraCat.of K (A ⊗[K] B)
-    fin_dim := Module.Finite.tensorProduct K A B}
+def mul (A B : CSA K) : CSA K where
+  toAlgebraCat := .of K (A ⊗[K] B)
+  fin_dim := Module.Finite.tensorProduct K A B
 
 def is_fin_dim_of_mop (A : Type*) [Ring A] [Algebra K A] [FiniteDimensional K A] :
     FiniteDimensional K Aᵐᵒᵖ := by
@@ -244,11 +244,11 @@ def one_mul_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
 def mul_one_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
   ⟨.of K ((Matrix (Fin n) (Fin n) K) ⊗[K] A)⟩
 
-def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A') : CSA K := {
-  __ := AlgebraCat.of K A'
+def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A') : CSA K where
+  toAlgebraCat := .of K A'
   isCentral := AlgEquiv.isCentral e
   isSimple := ⟨TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv.symm |>.isSimpleOrder⟩
-  fin_dim := LinearEquiv.finiteDimensional e.toLinearEquiv }
+  fin_dim := LinearEquiv.finiteDimensional e.toLinearEquiv
 
 def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
   eqv_in (one_mul_in n A) (Matrix (Fin n) (Fin n) A) $
@@ -370,7 +370,7 @@ lemma mul_one (n : ℕ) [hn : NeZero n] (A : CSA K) :
 
 lemma mul_assoc (A B C : CSA K) :
     IsBrauerEquivalent (mul (mul A B) C) (mul A (mul B C)) :=
-  IsBrauerEquivalent.iso_to_eqv (K := K) _ _ $ Algebra.TensorProduct.assoc _ _ _ _
+  IsBrauerEquivalent.iso_to_eqv (K := K) _ _ $ Algebra.TensorProduct.assoc ..
 
 def huarongdao (A B C D : Type*) [Ring A] [Ring B] [Ring C] [Ring D] [Algebra K A]
     [Algebra K B] [Algebra K C] [Algebra K D] :
@@ -527,9 +527,7 @@ namespace someEquivs
 variable (A B : Type u) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
 variable (m : ℕ)
 
-def e1 :
-    Matrix (Fin m) (Fin m) (E ⊗[K] A) ≃ₐ[E]
-    (E ⊗[K] A) ⊗[E] Matrix (Fin m) (Fin m) E :=
+def e1 : Matrix (Fin m) (Fin m) (E ⊗[K] A) ≃ₐ[E] (E ⊗[K] A) ⊗[E] Matrix (Fin m) (Fin m) E :=
   matrixEquivTensor (Fin m) E (E ⊗[K] A)
 
 def e2 :
@@ -632,47 +630,45 @@ lemma e3Aux3 (hm : m = 0) : Subsingleton ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (
 
 set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 160000 in
-def e3Aux4 : (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) →ₐ[E]
-      E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K) :=
-    (Algebra.TensorProduct.lift
-        (e3Aux0 (K := K) (E := E) A m)
-        (e3Aux1 (K := K) (E := E) A m) fun x y => by
-      show _ = _
-      simp only [e3Aux0, AlgEquiv.toAlgHom_eq_coe, AlgHom.toRingHom_eq_coe,
-        AlgEquiv.toAlgHom_toRingHom, AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_coe,
-        Function.comp_apply, Algebra.TensorProduct.includeLeft_apply, e3Aux1, e3Aux10,
-        AlgEquiv.coe_trans, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom]
-      induction' x using TensorProduct.induction_on with e a e a he ha
-      · simp only [TensorProduct.zero_tmul, map_zero]; rw [zero_mul
-          (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K), mul_zero
-          (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
-      · simp only [Algebra.TensorProduct.assoc_tmul]
-        induction' y using TensorProduct.induction_on with x y x y hx hy
-        · simp only [TensorProduct.zero_tmul]
-          trans 0
-          · convert mul_zero (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K) _
-          · symm; convert zero_mul (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K) _
-        · simp only [Algebra.TensorProduct.assoc_tmul, Algebra.TensorProduct.map_tmul,
-          AlgHom.coe_id, id_eq, AlgHom.coe_coe, Algebra.TensorProduct.comm_tmul,
-          Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
-          rw [mul_comm]
-        · haveI := Distrib.leftDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
-          haveI := Distrib.rightDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
-          convert congr($hx + $hy) using 1
-          · rw [← mul_add (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
-            congr
-            rw [TensorProduct.add_tmul]
-            exact map_add _ _ _
-          · rw [← add_mul (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
-            congr
-            rw [TensorProduct.add_tmul]
-            exact map_add _ _ _
-      · haveI := Distrib.leftDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
-        haveI := Distrib.rightDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
-        simp only [TensorProduct.add_tmul, map_add,
-          add_mul (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K), he, ha,
-          mul_add (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
-      )
+def e3Aux4 :
+    (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) →ₐ[E]
+      E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K) := by
+  refine Algebra.TensorProduct.lift (e3Aux0 A m) (e3Aux1 A m) fun x y ↦ ?_
+  show _ = _
+  simp only [e3Aux0, AlgEquiv.toAlgHom_eq_coe, AlgHom.toRingHom_eq_coe,
+    AlgEquiv.toAlgHom_toRingHom, AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_coe,
+    Function.comp_apply, Algebra.TensorProduct.includeLeft_apply, e3Aux1, e3Aux10,
+    AlgEquiv.coe_trans, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom]
+  induction' x using TensorProduct.induction_on with e a e a he ha
+  · simp only [TensorProduct.zero_tmul, map_zero]; rw [zero_mul
+      (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K), mul_zero
+      (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
+  · simp only [Algebra.TensorProduct.assoc_tmul]
+    induction' y using TensorProduct.induction_on with x y x y hx hy
+    · simp only [TensorProduct.zero_tmul]
+      trans 0
+      · convert mul_zero (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K) _
+      · symm; convert zero_mul (M₀ := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K) _
+    · simp only [Algebra.TensorProduct.assoc_tmul, Algebra.TensorProduct.map_tmul,
+      AlgHom.coe_id, id_eq, AlgHom.coe_coe, Algebra.TensorProduct.comm_tmul,
+      Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
+      rw [mul_comm]
+    · haveI := Distrib.leftDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
+      haveI := Distrib.rightDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
+      convert congr($hx + $hy) using 1
+      · rw [← mul_add (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
+        congr
+        rw [TensorProduct.add_tmul]
+        exact map_add _ _ _
+      · rw [← add_mul (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
+        congr
+        rw [TensorProduct.add_tmul]
+        exact map_add _ _ _
+  · haveI := Distrib.leftDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
+    haveI := Distrib.rightDistribClass (E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
+    simp only [TensorProduct.add_tmul, map_add,
+      add_mul (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K), he, ha,
+      mul_add (R := E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)]
 
 -- instance : AddHomClass ((E ⊗[K] A) ⊗[E] E ⊗[K] Matrix (Fin m) (Fin m) K →ₐ[E]
 --     E ⊗[K] A ⊗[K] Matrix (Fin m) (Fin m) K)
@@ -885,6 +881,7 @@ instance IsAbelBrauer : CommGroup (BrauerGroup (K := K)) := {
 
 open CategoryTheory
 
+@[simps!]
 def baseChange_idem.Aux (F K E : Type u) [Field F] [Field K] [Field E]
     [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] (A : CSA F) :
     E ⊗[K] K ⊗[F] A ≃ₗ[E] (E ⊗[F] A.carrier) :=
