@@ -449,14 +449,14 @@ lemma compare_conjFactorCompCoeff
     rw [A.pushConjFactorCoeff_spec B xσ yσ, A.pushConjFactorCoeff_spec B xτ yτ,
     pushConjFactorCoeff_spec', pushConjFactorCoeff_spec',
     pushConjFactor_coe, pushConjFactor_coe]
-    simp only [_root_.mul_assoc, Units.inv_mul_cancel_left, map_mul, Units.mul_right_inj]
+    simp only [_root_.mul_assoc, Units.inv_mul_cancel_left, map_mul]
   rw [eq2] at eq1; clear eq2
   have eq2 : yστ.1.1 =
     A.isoConjCoeff B *
       (A.iso B <| A.ι (A.pushConjFactorCoeff B xστ yστ) * xστ.1) *
     (A.isoConjCoeff B)⁻¹ := by
     rw [A.pushConjFactorCoeff_spec B xστ yστ, pushConjFactorCoeff_spec']
-    simp only [_root_.mul_assoc, AlgEquiv.mul_apply, pushConjFactor_coe, mul'_coe, map_mul,
+    simp only [_root_.mul_assoc, AlgEquiv.mul_apply, pushConjFactor_coe, map_mul,
       Units.inv_mul_cancel_left]
   rw [eq2] at eq1; clear eq2
   rw [A.isoConjCoeff_spec B] at eq1
@@ -496,13 +496,13 @@ lemma compare_toCocycles₂ (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFac
     (x_ σ) (y_ σ)
     (x_ τ) (y_ τ)
     (x_ _) (y_ _)
-  simp only [← _root_.mul_assoc] at this
+  simp only at this
   ext : 1
   dsimp
   rw [this]
 
 lemma compare_toCocycles₂' (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFactor σ) :
-    groupCohomology.IsMulTwoCoboundary (B.toCocycles₂ y_ / A.toCocycles₂ x_) := by
+    IsMulCoboundary₂ (B.toCocycles₂ y_ / A.toCocycles₂ x_) := by
   fconstructor
   · refine fun σ =>
       A.pushConjFactorCoeffAsUnit B (x_ σ) (y_ σ)
@@ -522,6 +522,10 @@ lemma compare_toCocycles₂' (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFa
 end double
 
 end GoodRep
+
+@[simps!]
+def _root_.Amelia.toAdditive (M G : Type 0) [Monoid M] [CommGroup G] [MulDistribMulAction M G] :
+  Rep.ofMulDistribMulAction M G ≃+ Additive G := AddEquiv.refl _
 
 variable (F K) in
 noncomputable def galAct : Rep ℤ Gal(K, F) := .ofMulDistribMulAction Gal(K, F) Kˣ
@@ -553,8 +557,9 @@ namespace GoodRep
 
 variable {X : BrauerGroup F} (A : GoodRep K X)
 
-def toH2 (x_ : Π σ, A.conjFactor σ) : groupCohomology.H2 (galAct F K) :=
-  H2π _ <| cocycles₂OfIsMulCocycle₂ (A.isMulCocycle₂ x_)
+open groupCohomology in
+def toH2 (x_ : Π σ, A.conjFactor σ) : H2 (galAct F K) :=
+  H2π (galAct F K) <| cocyclesOfIsMulCocycle₂ (A.isMulCocycle₂ x_)
 
 end GoodRep
 
@@ -569,9 +574,9 @@ lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
   rw [← sub_eq_zero, ← map_sub]
   rw [H2π_eq_zero_iff]
   set lhs := _; change lhs ∈ _
-  have : IsMulTwoCoboundary (G := Gal(K, F)) (M := Kˣ) (lhs) := by
+  have : IsMulCoboundary₂ (G := Gal(K, F)) (M := Kˣ) (lhs) := by
     apply GoodRep.compare_toCocycles₂'
-  exact twoCoboundariesOfIsMulTwoCoboundary this |>.2
+  exact coboundariesOfIsMulCoboundary₂ this |>.2
 
 namespace GoodRep
 
@@ -611,7 +616,7 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     congr 1
     simp only [B, Basis.span_apply]
 
-  simp only [Submodule.coe_subtype, map_sum, map_smul, smul_def] at eq0
+  simp only [smul_def] at eq0
   have eq1 (c : K) := calc A.ι (σ c) * (x_ σ).1.1
       _ = (x_ σ).1.1 * A.ι c := by
         rw [(x_ σ).2 c]; simp [_root_.mul_assoc]
@@ -702,10 +707,16 @@ def fromCocycles₂ (f : cocycles₂ (galAct F K)) : RelativeBrGroup K F :=
   ⟨Quotient.mk'' (asCSA (⇑Additive.toMul ∘ f.1)), mem_relativeBrGroup_iff_nonempty_goodRep.2 <|
     ⟨⟨asCSA (Additive.toMul ∘ f), rfl, incl (Additive.toMul ∘ f), dim_eq_sq⟩⟩⟩
 
+open CategoryTheory in
 variable (F K) in
 set_option maxHeartbeats 500000 in
 set_option synthInstance.maxHeartbeats 40000 in
-def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
+def fromSnd :
+  (groupCohomology.shortComplexH2 (galAct F K)).moduleCatLeftHomologyData.H
+  -- H2 (galAct F K)
+  → RelativeBrGroup K F :=
+  -- ShortComplex.descHomology _ (groupCohomology.isoCocycles₂ (galAct F K) ≫ )--_ _ _
+  -- sorry
   Quotient.lift fromCocycles₂ <| by
     rintro ⟨(a : _ → Kˣ), ha⟩ ⟨(b : _ → Kˣ), hb⟩ (hab : Submodule.quotientRel _ _ _)
 
@@ -720,8 +731,8 @@ def fromSnd : H2 (galAct F K) → RelativeBrGroup K F :=
     rw [← map_sub, H2π_eq_zero_iff] at H'
     have ha : Fact <| IsMulCocycle₂ a := ⟨isMulCocycle₂_of_mem_cocycles₂ a ha⟩
     have hb : Fact <| IsMulCocycle₂ b := ⟨isMulCocycle₂_of_mem_cocycles₂ b hb⟩
-    have hc : IsMulTwoCoboundary (G := Gal(K, F)) (M := Kˣ) (a / b) :=
-      isMulTwoCoboundary_of_mem_twoCoboundaries _ H'
+    have hc : IsMulCoboundary₂ (G := Gal(K, F)) (M := Kˣ) (a / b) :=
+      isMulCoboundary₂_of_mem_coboundaries₂ _ H'
 
     obtain ⟨c, hc⟩ := hc
     simp only [fromCocycles₂, Subtype.mk.injEq, Quotient.eq'']
@@ -836,56 +847,76 @@ lemma fromSnd_wd (a : cocycles₂ (galAct F K)) :
       mem_relativeBrGroup_iff_nonempty_goodRep.2
         ⟨_, rfl, CrossProductAlgebra.incl _, CrossProductAlgebra.dim_eq_sq⟩⟩ := rfl
 
-open GoodRep in
-lemma toSnd_fromSnd : toSnd ∘ fromSnd F K = id := by
+def _root_.Amfix.coboundariesOfIsMulCoboundary₂ {G M : Type} [Group G] [CommGroup M] [MulDistribMulAction G M]
+  {f : G × G → M} (hf : IsMulCoboundary₂ f) : ↥(coboundaries₂ (Rep.ofMulDistribMulAction G M)) :=
+  ⟨Additive.ofMul ∘ f, hf.choose, funext fun g ↦ hf.choose_spec g.1 g.2⟩
+
+open GoodRep groupCohomology in
+set_option maxHeartbeats 1600000 in
+lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id := by
   ext a
-  induction a using Quotient.inductionOn' with | h a =>
-  rcases a with ⟨(a : _ → Kˣ), ha'⟩
-  have ha : IsMulCocycle₂ a := isMulCocycle₂_of_mem_cocycles₂ a ha'
-  haveI : Fact _ := ⟨ha⟩
-  simp only [Function.comp_apply, fromSnd_wd, id_eq]
-  let A : GoodRep K (Quotient.mk'' <| CrossProductAlgebra.asCSA a) :=
-    ⟨CrossProductAlgebra.asCSA a, rfl, CrossProductAlgebra.incl a, CrossProductAlgebra.dim_eq_sq⟩
+  induction a using H2_induction_on with | h a =>
+  -- rcases a with ⟨(a : _ → Kˣ), ha'⟩
+  let am := Additive.toMul ∘ Amelia.toAdditive _ _ ∘ a
+  have ha : IsMulCocycle₂ am :=
+    isMulCocycle₂_of_mem_cocycles₂ _ (by simpa using a.2)
+  haveI : Fact (IsMulCocycle₂ am) := ⟨ha⟩
+  simp only [Function.comp_apply, id_eq]
+
+  let A : GoodRep K (Quotient.mk'' <| CrossProductAlgebra.asCSA am) :=
+    ⟨CrossProductAlgebra.asCSA am, rfl, CrossProductAlgebra.incl am, CrossProductAlgebra.dim_eq_sq⟩
 
   let y_ σ : A.conjFactor σ :=
-    ⟨CrossProductAlgebra.of a σ, fun c ↦ by erw [CrossProductAlgebra.of_conj]; rfl⟩
-  rw [toSnd_wd (A := A) (x_ := y_)]
-  let b : Gal(K, F) × Gal(K, F) → Kˣ := A.toCocycles₂ y_
+    ⟨CrossProductAlgebra.of am σ,
+    fun c ↦ by erw [CrossProductAlgebra.of_conj]; rfl⟩
 
-  rw [show A.toH2 y_ = Quotient.mk'' ⟨b, _⟩ by rfl]
+  simp only [CategoryTheory.ShortComplex.moduleCatLeftHomologyData_H, H2π, ModuleCat.hom_comp,
+    LinearMap.coe_comp, Function.comp_apply, π_comp_H2Iso_hom_apply, Submodule.Quotient.mk,
+    CategoryTheory.Iso.inv_hom_id_apply]
+  rw [fromSnd_wd]
+  rw [toSnd_wd _ _ y_]
+  -- rw [toSnd_wd (fromSnd F K _)]
+  let b : Gal(K, F) × Gal(K, F) → Kˣ := A.toCocycles₂ y_
+  -- rw [show A.toH2 y_ = Quotient.mk'' ⟨b, _⟩ by rfl]
   -- rw [Quotient.eq'']
   -- change (twoCoboundaries (galAct F K)).quotientRel.r _ _
   change H2π _ _ = H2π _ _
   rw [← sub_eq_zero, ← map_sub, H2π_eq_zero_iff]
   -- rw [Submodule.quotientRel_def]
-  suffices H : IsMulTwoCoboundary _ from
-    (twoCoboundariesOfIsMulTwoCoboundary H).2
+  suffices H : IsMulCoboundary₂ _ from
+    (Amfix.coboundariesOfIsMulCoboundary₂ H).2
   refine ⟨fun _ => 1, ?_⟩
   intro σ τ
-  simp only [smul_one, div_self', _root_.mul_one, Pi.sub_apply]
-  change _ = (Additive.toMul b (σ, τ)) / (Additive.toMul _)
+  simp only [smul_one, div_self', _root_.mul_one, cocyclesOfIsMulCocycle₂_coe, Function.comp_apply,
+    cocycles₂.val_eq_coe]
+
+  -- change _ = (Additive.toMul _) / (am (σ, τ))
   erw [Equiv.symm_apply_apply]
-  simp only [GoodRep.toCocycles₂, GoodRep.conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
-  change _ = _ / a (σ, τ)
+  simp only [toCocycles₂, conjFactorCompCoeffAsUnit]
+  -- change _ = _ / _
   ext : 1
-  simp only [AlgEquiv.smul_units_def, div_mul_cancel, Units.coe_map, MonoidHom.coe_coe,
-    Units.val_div_eq_div_val]
+  simp only [Units.val_one, Units.val_div_eq_div_val]
   field_simp
-  simp only [AlgEquiv.mul_apply, y_]
+  change (am (σ, τ)).1 = _
+  -- simp [conjFactorCompCoeff, conjFactorTwistCoeff]
+
+  -- simp only [AlgEquiv.mul_apply, y_]
   change _ = A.conjFactorCompCoeff (y_ σ) (y_ τ) (y_ (σ * τ))
   apply_fun A.ι using RingHom.injective _
   rw [conjFactorCompCoeff_spec'', CrossProductAlgebra.of_mul_of, _root_.mul_assoc]
   field_simp; rfl
 
 set_option maxHeartbeats 500000 in
-lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
+lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id := by
   ext X
   obtain ⟨A⟩ := mem_relativeBrGroup_iff_nonempty_goodRep.1 X.2
   simp only [Function.comp_apply, id_eq, SetLike.coe_eq_coe]
   rw [toSnd_wd (A := A) (x_ := A.arbitraryConjFactor)]
   ext : 1
   conv_rhs => rw [← A.quot_eq]
-  simp only [GoodRep.toH2, fromSnd_wd]
+  simp only [CategoryTheory.ShortComplex.moduleCatLeftHomologyData_H, GoodRep.toH2]
+  simp [H2π]
+  rw [Submodule.Quotient.mk, fromSnd_wd]
   rw [Quotient.eq'']
   apply IsBrauerEquivalent.iso_to_eqv
   set lhs := _
@@ -910,9 +941,9 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
   let φ1 : lhs ≃ₗ[F] A := φ0.restrictScalars F
   refine AlgEquiv.ofLinearEquiv φ1 ?_ ?_
   · haveI : Fact (@IsMulCocycle₂ Gal(K, F) Kˣ MulOneClass.toMul Units.instCommGroupUnits
-      MulAction.toSMul (⇑Additive.toMul ∘ ⇑(cocycles₂OfIsMulCocycle₂
+      MulAction.toSMul (⇑Additive.toMul ∘ ⇑(cocyclesOfIsMulCocycle₂
       (GoodRep.isMulCocycle₂ A.arbitraryConjFactor)))) :=
-      ⟨isMulCocycle₂_of_mem_cocycles₂ _ (cocycles₂OfIsMulCocycle₂
+      ⟨isMulCocycle₂_of_mem_cocycles₂ _ (cocyclesOfIsMulCocycle₂
         (GoodRep.isMulCocycle₂ A.arbitraryConjFactor)).2⟩
     change φ0 1 = 1
     conv_lhs =>
@@ -954,7 +985,7 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
         change φ0 (_ * (_ + _)) = φ0 _ * φ0 (_ + _)
         simp_all [mul_add]
       | single τ b =>
-        set f : (Gal(K, F) × Gal(K, F)) → Kˣ := (⇑Additive.toMul ∘ ⇑(cocycles₂OfIsMulCocycle₂
+        set f : (Gal(K, F) × Gal(K, F)) → Kˣ := (⇑Additive.toMul ∘ ⇑(cocyclesOfIsMulCocycle₂
           (GoodRep.isMulCocycle₂ A.arbitraryConjFactor))) with f_eq
         change φ0 (⟨CrossProductAlgebra.mulLinearMap _ _ _⟩ : CrossProductAlgebra _) = _
         simp only [CrossProductAlgebra.mulLinearMap_single_single, *]
@@ -972,7 +1003,7 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
         simp only [Equiv.refl_apply]
         simp only [f_eq, Function.comp_apply, GoodRep.conjFactorBasis,
           coe_basisOfLinearIndependentOfCardEqFinrank, AlgEquiv.mul_apply, GoodRep.smul_def,
-          map_mul, φ0]
+          map_mul]
         change _ * _ * A.ι (A.toCocycles₂ _ (σ, τ)) * _ = _
         simp only [GoodRep.toCocycles₂, GoodRep.conjFactorCompCoeffAsUnit, _root_.mul_assoc]
         erw [A.conjFactorCompCoeff_spec'']
@@ -987,7 +1018,7 @@ lemma fromSnd_toSnd : fromSnd F K ∘ toSnd = id := by
 @[simp]
 def equivSnd : RelativeBrGroup K F ≃ H2 (galAct F K) where
   toFun := toSnd
-  invFun := fromSnd F K
+  invFun := (fromSnd F K ∘ (H2Iso (galAct F K)).hom)
   left_inv := congr_fun fromSnd_toSnd
   right_inv := congr_fun toSnd_fromSnd
 
