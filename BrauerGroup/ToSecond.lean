@@ -952,7 +952,14 @@ lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id 
         ((A.toCocycles₂ A.arbitraryConjFactor) (1, 1))⁻¹.1 • (CrossProductAlgebra.basis 1) by
         apply CrossProductAlgebra.val_injective
         rw [← smul_one_mul, ← CrossProductAlgebra.incl_apply, CrossProductAlgebra.val_mul]
-        simp [CrossProductAlgebra.basis, CrossProductAlgebra.incl_apply]
+        simp only [CrossProductAlgebra.val_one, Function.comp_apply, Units.val_inv_eq_inv_val,
+          CrossProductAlgebra.incl_apply, CrossProductAlgebra.val_smul, Finsupp.smul_single,
+          smul_eq_mul, CrossProductAlgebra.basis, Basis.coe_ofRepr,
+          CrossProductAlgebra.valLinearEquiv_symm_apply, AddEquiv.toEquiv_eq_coe,
+          Equiv.invFun_as_coe, AddEquiv.coe_toEquiv_symm,
+          CrossProductAlgebra.valAddEquiv_symm_apply_val,
+          CrossProductAlgebra.mulLinearMap_single_single, _root_.mul_one, AlgEquiv.one_apply, ne_eq,
+          Units.ne_zero, not_false_eq_true, inv_mul_cancel_right₀]
         congr]
     change φ0 ((_ : K) • _) = _
     rw [map_smul]

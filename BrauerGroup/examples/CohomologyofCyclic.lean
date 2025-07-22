@@ -47,11 +47,10 @@ def ChainComplexAbel [CommGroup G] : ChainComplex (Rep k G) ℕ where
   shape := by simp +contextual
   d_comp_d' i j k1 := by
     rintro rfl rfl
-    simp only [↓reduceIte, Nat.even_add_one, ite_not, Nat.not_odd_iff_even]
+    simp only [↓reduceIte, Nat.even_add_one, ite_not]
     split_ifs
     · ext : 2
-      simp only [Action.comp_hom, one_smul,
-        ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
+      simp only [Action.comp_hom, ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
       rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G)) * ∑ i : G, MonoidAlgebra.single i 1) = 0 by
         rw [this, map_zero]
@@ -61,8 +60,7 @@ def ChainComplexAbel [CommGroup G] : ChainComplex (Rep k G) ℕ where
       rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
       simp
     · ext : 2
-      simp only [Action.comp_hom, one_smul,
-        ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
+      simp only [Action.comp_hom, ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
       rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((∑ i : G, MonoidAlgebra.single i 1 ) * (MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G))) = 0 by
         rw [this, map_zero]
@@ -103,12 +101,14 @@ def CyclicCoh.π [CommGroup G] : (ChainComplexAbel G k σ) ⟶
     rintro rfl
     cases j
     pick_goal 2
-    simp
-    simp [ChainComplexAbel, ModuleCat.endRingEquiv]
+    simp only [HomologicalComplex.single_obj_d, Limits.comp_zero]
+    simp only [ChainComplexAbel, Nat.reduceAdd, ChainComplex.single₀_obj_zero, Nat.rec_one,
+      HomologicalComplex.single_obj_d, Limits.comp_zero, zero_add, ↓reduceIte, Nat.not_even_one,
+      Nat.rec_zero]
     ext g
     simp only [Action.zero_hom, ModuleCat.hom_zero, LinearMap.zero_comp, LinearMap.zero_apply,
       Action.comp_hom, map_sub, Representation.asAlgebraHom_single, one_smul, map_one,
-      ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp, Pi.one_apply,
+      ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp,
       Function.comp_apply, Finsupp.lsingle_apply, LinearMap.sub_apply,
       Representation.ofMulAction_single, smul_eq_mul, Module.End.one_apply]
     erw [Finsupp.lsum_single, Finsupp.lsum_single]
@@ -312,7 +312,7 @@ def ProjectResolCyclic [CommGroup G] (hσ : Submonoid.powers σ = ⊤) :
               ext
               simp
               rw [MonoidAlgebra.single_mul_single]
-              simp [MonoidAlgebra.single_apply, eq_inv_mul_iff_mul_eq]
+              simp [MonoidAlgebra.single_apply]
             | hadd f g _ _ => simp_all [add_mul]
             | hsmul r f _ => simp_all
           | hadd f g _ _ => simp_all [mul_add]
@@ -357,12 +357,11 @@ def Acomplex [CommGroup G] (A : Rep k G) : CochainComplex (Rep k G) ℕ where
   shape := by simp +contextual
   d_comp_d' i j k1 := by
     rintro rfl rfl
-    simp only [↓reduceIte, Nat.even_add_one, ite_not, Nat.not_odd_iff_even]
+    simp only [↓reduceIte, Nat.even_add_one, ite_not]
     split_ifs
     swap
     · ext : 2
-      simp only [Action.comp_hom, one_smul,
-        ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
+      simp only [Action.comp_hom, ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
       rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G)) * ∑ i : G, MonoidAlgebra.single i 1) = 0 by
         rw [this, map_zero]
@@ -372,8 +371,7 @@ def Acomplex [CommGroup G] (A : Rep k G) : CochainComplex (Rep k G) ℕ where
       -- rw [Finsupp.finset_sum_apply, Finsupp.finset_sum_apply]
       -- simp
     · ext : 2
-      simp only [Action.comp_hom, one_smul,
-        ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
+      simp only [Action.comp_hom, ModuleCat.hom_comp, ModuleCat.hom_ofHom, Action.zero_hom, ModuleCat.hom_zero]
       rw [← Module.End.mul_eq_comp, ← map_mul]
       suffices ((∑ i : G, MonoidAlgebra.single i 1 ) * (MonoidAlgebra.single σ 1 - (1 : MonoidAlgebra k G))) = 0 by
         rw [this, map_zero]
@@ -408,14 +406,14 @@ abbrev equiv_Acomplex [CommGroup G] (A : Rep k G) : (ChainComplexAbel G k σ).li
     rw [← Rep.hom_comm_apply]
     simp [Representation.ofMulAction_single]
 
-def CyclicCoh.groupCoh [CommGroup G] (A : Rep k G) (hσ : Submonoid.powers σ = ⊤) : groupCohomology A n ≅
+def CyclicCoh.groupCoh [CommGroup G] [DecidableEq G] (A : Rep k G) (hσ : Submonoid.powers σ = ⊤) : groupCohomology A n ≅
     (((forget₂ (Rep k G) (ModuleCat k)).mapHomologicalComplex _|>.obj
     (Acomplex G k σ A))).homology n :=
   groupCohomologyIsoExt A n ≪≫ (ProjectResolCyclic G k σ hσ).isoExt n A ≪≫
   (HomologicalComplex.homologyFunctor _ _ n).mapIso (equiv_Acomplex G k σ A)
 
 abbrev CyclicCoh.groupCoh0 [CommGroup G] (A : Rep k G) : groupCohomology A 0 ≅
-  ModuleCat.of k A.ρ.invariants := groupCohomology.isoH0 A
+  ModuleCat.of k A.ρ.invariants := groupCohomology.H0Iso A
 
 set_option maxHeartbeats 1200000 in
 set_option synthInstance.maxHeartbeats 120000 in
@@ -439,7 +437,7 @@ def moduleCatLeftHomologyData (S : ShortComplex (ModuleCat k)) (P : Submodule k 
         Subtype.val_injective
       rw [hQ, ← LinearMap.range_comp]
       rfl
-    simp_all only [Fork.ofι_pt, ModuleCat.hom_comp, ModuleCat.hom_ofHom, ModuleCat.hom_zero]
+    simp_all only [Fork.ofι_pt]
     ext x
     simp_all only [ModuleCat.hom_comp, ModuleCat.hom_ofHom, LinearMap.coe_comp, Function.comp_apply,
       Submodule.mkQ_apply, ModuleCat.hom_zero, LinearMap.zero_apply, Submodule.Quotient.mk_eq_zero, LinearMap.mem_range]
@@ -456,8 +454,8 @@ def moduleCatLeftHomologyData (S : ShortComplex (ModuleCat k)) (P : Submodule k 
 -- abbrev ShortComplex.moduleCatHomology_eq
 -- fun x ↦ N G k ≫ x
 -- example [CommGroup G] (A : Rep k G) : (LinearMap.range (N' G k A).1.hom).comap A.ρ.invariants.subtype := sorry
-abbrev CyclicCoh.groupCohEven (hn : Even n) [h : NeZero n] [CommGroup G] (A : Rep k G)
-    (hσ : Submonoid.powers σ = ⊤) :
+abbrev CyclicCoh.groupCohEven (hn : Even n) [h : NeZero n] [CommGroup G] [DecidableEq G]
+    (A : Rep k G) (hσ : Submonoid.powers σ = ⊤) :
     groupCohomology A n ≅ .of k (A.ρ.invariants ⧸ (LinearMap.range (N' G k A).1.hom).comap
     A.ρ.invariants.subtype) :=
   (CyclicCoh.groupCoh n G k σ A hσ) ≪≫ (moduleCatLeftHomologyData k _ _
@@ -477,7 +475,13 @@ abbrev CyclicCoh.groupCohEven (hn : Even n) [h : NeZero n] [CommGroup G] (A : Re
     (by
       cases n
       · aesop
-      · simp [Acomplex, Nat.even_add_one, hn]
+      · simp only [Acomplex, HomologicalComplex.shortComplexFunctor_obj_X₂,
+        Functor.mapHomologicalComplex_obj_X, forget₂_obj_coe, map_sum,
+        Representation.asAlgebraHom_single, one_smul, ModuleCat.hom_ofHom,
+        Submodule.map_comap_subtype, HomologicalComplex.shortComplexFunctor_obj_X₁,
+        HomologicalComplex.shortComplexFunctor_obj_f, Functor.mapHomologicalComplex_obj_d,
+        CochainComplex.prev_nat_succ, ↓reduceIte, hn, forget₂_map_hom,
+        inf_eq_right]
         rintro x ⟨y, rfl⟩
         simp
         intro g
@@ -485,17 +489,22 @@ abbrev CyclicCoh.groupCohEven (hn : Even n) [h : NeZero n] [CommGroup G] (A : Re
         conv_rhs => rw [← Equiv.sum_comp (Equiv.mulLeft g) _]
         rfl)).homologyIso
 
-abbrev CyclicCoh.groupCohOdd (hn : Odd n) [h : NeZero n] [CommGroup G] (A : Rep k G)
-  (hσ : Submonoid.powers σ = ⊤) :
+abbrev CyclicCoh.groupCohOdd (hn : Odd n) [h : NeZero n] [CommGroup G] [DecidableEq G]
+    (A : Rep k G) (hσ : Submonoid.powers σ = ⊤) :
     groupCohomology A n ≅ .of k (LinearMap.ker (N' G k A).1.hom ⧸
       (LinearMap.range (sigmaminus1' G k σ A).1.hom).comap
       (LinearMap.ker (N' G k A).1.hom).subtype) :=
   (CyclicCoh.groupCoh n G k σ A hσ) ≪≫ (moduleCatLeftHomologyData k _ _
-  (by simp [Acomplex, Nat.even_add_one, hn]) _ (by
+  (by simp [Acomplex, hn]) _ (by
     cases n with
     | zero => aesop
     | succ m =>
-      simp [Acomplex, ← Nat.even_add_one, ← Nat.not_odd_iff_even, hn]
+      simp only [Acomplex, ← Nat.not_odd_iff_even, HomologicalComplex.shortComplexFunctor_obj_X₂,
+        Functor.mapHomologicalComplex_obj_X, forget₂_obj_coe, ModuleCat.hom_ofHom, map_sub,
+        Representation.asAlgebraHom_single, one_smul, map_one, Submodule.map_comap_subtype, map_sum,
+        HomologicalComplex.shortComplexFunctor_obj_X₁, HomologicalComplex.shortComplexFunctor_obj_f,
+        Functor.mapHomologicalComplex_obj_d, CochainComplex.prev_nat_succ,
+        ↓reduceIte, hn, not_true_eq_false, forget₂_map_hom, inf_eq_right]
       rintro x ⟨y, rfl⟩
       simp [sub_eq_zero]
       simp_rw [←  Module.End.mul_apply, ← map_mul]
@@ -513,7 +522,7 @@ variable (F K : Type) [Field F] [Field K] [Algebra F K] [IsGalois F K] (τ : Gal
 
 open scoped Classical in
 set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 80000 in
 /-- For K/F a finite cyclic extension, `Br(K/F)` is isomorphic to `(ℤ[Gal(K/F)])ᴳ/N(ℤ[Gal(K/F)])` where
   `N : ℤ[Gal(K/F)] → ℤ[Gal(K/F)]` sends `a` to ∑ σⁱa, σ is the generator of `Gal(K/F)`. -/
 abbrev BrauerOverCyclic'  :
@@ -523,14 +532,15 @@ abbrev BrauerOverCyclic'  :
   letI : CommGroup Gal(K, F) := CommG Gal(K, F) τ hτ
   ({__ := RelativeBrGroup.isoSnd K F
     map_smul' z a := by simp} : _ ≃ₗ[ℤ] _ ) ≪≫ₗ
-  (Iso.toLinearEquiv (groupCohomology.isoH2 (galAct F K)).symm) ≪≫ₗ
-  (Iso.toLinearEquiv (CyclicCoh.groupCohEven 2 Gal(K, F) ℤ τ (by simp) (galAct F K) hτ))
+  -- (Iso.toLinearEquiv (groupCohomology.H2Iso (galAct F K)).symm) ≪≫ₗ
+  -- (Iso.toLinearEquiv (CyclicCoh.groupCohEven 2 Gal(K, F) ℤ τ (by simp) (galAct F K) hτ))
+  sorry
 
 abbrev invariants_eq : ((galAct F K).ρ.invariants : Submodule ℤ
   (Rep.ofMulDistribMulAction Gal(K, F) Kˣ).V) = sorry := sorry
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 80000 in
 abbrev BrauerOverCyclic : Additive (RelativeBrGroup K F) ≃+
     Additive (Fˣ⧸(Units.map (Algebra.norm (S := K) F)).range) :=
-  BrauerOverCyclic' F K τ hτ|>.toAddEquiv.trans
+  BrauerOverCyclic' F K |>.toAddEquiv.trans
   sorry
