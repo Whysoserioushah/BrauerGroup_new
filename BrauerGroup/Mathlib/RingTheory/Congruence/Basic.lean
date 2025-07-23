@@ -43,7 +43,7 @@ instance : Algebra α c.Quotient where
   algebraMap := c.mk'.comp <| algebraMap α R
   smul_def' r x := by induction x using Quotient.ind; change ⟦_⟧ = ⟦_⟧; simp [← Algebra.smul_def]
   commutes' r x := by
-    induction x using Quotient.ind; change ⟦_⟧ = ⟦_⟧; simp [Algebra.commutes, ← Algebra.smul_def]
+    induction x using Quotient.ind; change ⟦_⟧ = ⟦_⟧; simp [Algebra.commutes]
 
 lemma algebraMap_def : algebraMap α c.Quotient = c.mk'.comp (algebraMap α R) := rfl
 

@@ -38,23 +38,20 @@ instance (K A B M : Type u)
     IsScalarTower K A (module_inst K A B M f) :=
   IsScalarTower.of_algebraMap_smul fun _ ↦ congrFun rfl
 
-def smul1AddHom'  (K A B M : Type u)
+def smul1AddHom' (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] (f: B →ₐ[K] A) :
-    (module_inst K A B M f) → B →+ (Module.End A M) →+ (module_inst K A B M f) :=
-  fun m ↦ {
-    toFun := fun b ↦ {
-      toFun := fun l ↦ (f b) • (l m)
-      map_zero' := by simp only [LinearMap.zero_apply, smul_zero]
-      map_add' := fun l1 l2 ↦ by simp only [LinearMapClass.map_smul, ← smul_add]; rfl
-    }
-    map_zero' := by ext; simp
-    map_add' := fun b1 b2 ↦ by
-      ext l; simp only [map_add, AddEquiv.toAddMonoidHom_eq_coe,
-      AddMonoidHom.coe_comp, AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.coe_coe,
-      opAddEquiv_apply, Function.comp_apply, unop_op, AddMonoidHom.add_apply];
-      exact Module.add_smul (f b1) (f b2) (l m)
+    [AddCommGroup M] [Module K M] [Module A M] (f: B →ₐ[K] A) (m : module_inst K A B M f) :
+    B →+ (Module.End A M) →+ (module_inst K A B M f) where
+  toFun b := {
+    toFun l := f b • l m
+    map_zero' := by simp only [LinearMap.zero_apply, smul_zero]
+    map_add' l1 l2 := by simp only [← smul_add]; rfl
   }
+  map_zero' := by ext; simp
+  map_add' b1 b2 := by
+    ext l
+    simp only [map_add, AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.add_apply]
+    exact Module.add_smul (f b1) (f b2) (l m)
 
 def smul1AddHom (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
@@ -62,7 +59,7 @@ def smul1AddHom (K A B M : Type u)
     (module_inst K A B M f) → (B ⊗[K] (Module.End A M)) →+ (module_inst K A B M f) := fun m ↦
   TensorProduct.liftAddHom (smul1AddHom' K A B M f m) fun k b l ↦ by
     simp only [smul1AddHom', AddMonoidHom.coe_mk, ZeroHom.coe_mk, LinearMapClass.map_smul,
-      smul_assoc, unop_smul, LinearMap.smul_apply]
+      smul_assoc, LinearMap.smul_apply]
     rw [smul_comm]
 
 def smul1 (K A B M : Type u)
@@ -107,8 +104,7 @@ lemma mul_smul1 (K A B M : Type u)
       ZeroHom.coe_mk]
     · rename_i b2 l2
       simp only [Algebra.TensorProduct.tmul_mul_tmul, TensorProduct.liftAddHom_tmul,
-        AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_mul, unop_mul, Module.End.mul_apply,
-        LinearMapClass.map_smul]
+        AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_mul, Module.End.mul_apply, LinearMapClass.map_smul]
       simp only [smul_smul]
     · simp_all [mul_add]
   · simp_all [add_mul]
@@ -119,7 +115,7 @@ lemma smul1_add (K A B M : Type u)
     (f: B →ₐ[K] A) :  ∀ (r : (B ⊗[K] (Module.End A M))) (m1 m2 : module_inst K A B M f),
     smul1 K A B M f (m1 + m2) r = smul1 K A B M f m1 r + smul1 K A B M f m2 r := fun r m1 m2 ↦ by
   induction r using TensorProduct.induction_on
-  · simp only [map_zero, smul_zero, add_zero]
+  · simp only [map_zero, add_zero]
   · simp only [smul1, smul1AddHom, smul1AddHom', map_add, smul_add, ZeroHom.toFun_eq_coe,
       AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
       AddMonoidHom.coe_mk, ZeroHom.coe_mk]
@@ -151,15 +147,14 @@ instance IsMod (K A B M : Type u)
     induction a using TensorProduct.induction_on
     · simp only [map_zero]
     · rename_i b l
-      simp only [smul1AddHom, smul1AddHom', map_zero, smul_zero, ZeroHom.toFun_eq_coe,
-        AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
+      simp only [smul1AddHom, smul1AddHom', map_zero, smul_zero, TensorProduct.liftAddHom_tmul,
         AddMonoidHom.coe_mk, ZeroHom.coe_mk]
     · simp_all [map_add]
   smul_add := smul1_add K A B M f
   add_smul := add_smul1 K A B M f
   zero_smul m := by
     change smul1 K A B M f m 0 = 0
-    simp only [smul1, map_zero, smul_zero]
+    simp only [smul1, map_zero]
 
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
@@ -312,21 +307,19 @@ theorem SkolemNoether (K A B M : Type u)
   intro x
   simp only [Units.inv_mk, a, b]
   apply_fun ISO using AlgEquiv.injective _
-  simp only [end_end_iso, AlgEquiv.coe_ofBijective, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-    OneHom.coe_mk, map_mul, AlgEquiv.apply_symm_apply, ISO, Φ, Ψ]
+  simp only [end_end_iso, AlgEquiv.coe_ofBijective, map_mul, AlgEquiv.apply_symm_apply, ISO, Φ, Ψ]
   ext m
   simp only [toEndEndAlgHom, AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, AlgHom.coe_mk,
     RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, toEndEnd_apply,
-    DistribMulAction.toLinearMap_apply, Module.End.mul_apply, LinearMap.coe_mk, AddHom.coe_mk, a, b,
-    ISO, Ψ, Φ]
+    DistribMulAction.toLinearMap_apply, Module.End.mul_apply, LinearMap.coe_mk, AddHom.coe_mk]
   have := φ.map_smul (x ⊗ₜ LinearMap.id) (φ.symm m)
   change φ (smul1 K A B M _ _ (x ⊗ₜ LinearMap.id)) = _ at this
   simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
     LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
-    ZeroHom.coe_mk, LinearMap.id_coe, id_eq, LinearEquiv.apply_symm_apply, Φ, ISO, Ψ, b, a] at this
+    ZeroHom.coe_mk, LinearMap.id_coe, id_eq, LinearEquiv.apply_symm_apply] at this
   erw [this]
   change _ = smul1 K A B M _ _ (x ⊗ₜ LinearMap.id)
-  simp [smul1, smul1AddHom, smul1AddHom', toEndEndAlgHom]
+  simp [smul1, smul1AddHom, smul1AddHom']
 
 theorem SkolemNoether' (K A B : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]

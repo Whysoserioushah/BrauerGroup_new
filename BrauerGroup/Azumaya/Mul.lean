@@ -373,7 +373,7 @@ lemma small_comm_square (e : A ≃ₐ[R] B) :
   | zero => simp
   | tmul a a' =>
     ext
-    simp [AlgHom.mulLeftRight_apply, LinearEquiv.algConj, LinearEquiv.conj]
+    simp [AlgHom.mulLeftRight_apply, LinearEquiv.algConj]
   | add _ _ _ _ => simp_all [map_add]
 
 lemma _root_.IsAzumaya.ofAlgEquiv (e : A ≃ₐ[R] B) (hA : IsAzumaya R A) : IsAzumaya R B :=

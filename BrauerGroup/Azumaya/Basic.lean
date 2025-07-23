@@ -66,7 +66,7 @@ lemma IsCentral.left_of_tensor (B C : Type*)
     ⟨fun ⟨b1, hb1⟩ ⟨b2, hb2⟩ h12 ↦ by
       simp only [AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
         Subtype.mk.injEq, f] at h12
-      ext; simp only [f]
+      ext
       exact TensorProduct.flip_mk_injective _ one_ne_zero h12,
     f_surj⟩).symm
   have e2 := Subalgebra.equivOfEq _ _ eq |>.trans <| Algebra.botEquiv K _
@@ -239,8 +239,7 @@ lemma Mat.inv_toFun2' (n : ℕ) :
   intro ⟨i, j⟩
   simp [AlgHom.mulLeftRight_apply, stdBasis_eq_single]
   ext k l
-  simp [sum_apply, mul_apply, Finset.sum_mul, Finset.mul_sum, single,
-    Fintype.sum_prod_type, ite_and]
+  simp [sum_apply, single, Fintype.sum_prod_type, ite_and]
 
 lemma Mat.bij (n : ℕ) : Function.Bijective (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)) :=
   ⟨Function.HasLeftInverse.injective ⟨Mat.inv R n, DFunLike.congr_fun (Mat.inv_toFun1' R n)⟩,

@@ -108,7 +108,7 @@ set_option maxHeartbeats 400000 in
 instance (n : ℕ) [NeZero n] : Functor.Linear R (moritaEquivalentToMatrix A (Fin n)).functor where
   map_smul {M N} f r := by
     ext m
-    simp [toModuleCatOverMatrix]
+    simp
     ext i
     rw [moritaEquivalentToMatrix_functor_map_hom_apply]
     simp only [hom_smul, LinearMap.smul_apply, moritaEquivalentToMatrix,
@@ -240,11 +240,9 @@ lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
   ⟨RingHom.injective_iff_ker_eq_bot _ |>.mpr $
     SetLike.ext fun (α : Aᵐᵒᵖ) => ⟨fun (h : _ = _) => by
       rw [ModuleCat.hom_ext_iff] at h
-      simp only [mopToEnd, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, ModuleCat.hom_zero,
-        LinearMap.ext_iff, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.zero_apply, mul_eq_zero,
-        MulOpposite.unop_eq_zero_iff] at h
+      simp only [mopToEnd, hom_zero, LinearMap.ext_iff, LinearMap.zero_apply] at h
       specialize h (1 : A)
-      simp_all [one_ne_zero, false_or, Ideal.mem_bot],
+      simp_all [Ideal.mem_bot],
       by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : A)), ModuleCat.hom_ext <|
       LinearMap.ext fun r ↦ by
       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, mopToEnd_apply, MulOpposite.unop_op,
@@ -359,8 +357,8 @@ noncomputable def toRingMopEquiv : Aᵐᵒᵖ ≃ₐ[R] Bᵐᵒᵖ :=
 noncomputable def toRingEquiv : A ≃ₐ[R] B where
   toFun r := toRingMopEquiv R A B e (.op r) |>.unop
   invFun s := toRingMopEquiv R A B e |>.symm (.op s) |>.unop
-  left_inv r := by simp [MulOpposite.op_unop, RingEquiv.symm_apply_apply, MulOpposite.unop_op]
-  right_inv s := by simp [MulOpposite.op_unop, RingEquiv.apply_symm_apply, MulOpposite.unop_op]
+  left_inv r := by simp [MulOpposite.op_unop, MulOpposite.unop_op]
+  right_inv s := by simp [MulOpposite.op_unop, MulOpposite.unop_op]
   map_mul' a b := by simp only [MulOpposite.op_mul, _root_.map_mul, MulOpposite.unop_mul]
   map_add' a b := by simp only [MulOpposite.op_add, map_add, MulOpposite.unop_add]
   commutes' r := by

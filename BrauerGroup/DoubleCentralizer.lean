@@ -211,7 +211,7 @@ lemma centralizer_mulLeft_le_of_isCentralSimple :
     simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.includeLeft_apply,
       eqv]
     apply_fun eqv
-    simp only [map_mul, AlgEquiv.apply_symm_apply]
+    simp only [map_mul]
     rw [show eqv (y ⊗ₜ[F] 1) = LinearMap.mulLeft F y by
       ext x
       simp only [LinearMap.mulLeft_apply]
@@ -286,7 +286,7 @@ def centralizerMulLeftCopy :
     map_add' := a.1.map_add
     map_smul' := by
       intro c x
-      simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
+      simp only [RingHom.id_apply]
       rw [show c • x = c.1 * x by rfl]
       have eq : c.1 * a.1 x = a.1 (c.1 * x) :=
         congr($(a.2 (LinearMap.mulLeft F c.1) (by simp)) x)
@@ -335,7 +335,7 @@ def Module.End.leftMul : Subalgebra F (Module.End F B) where
     rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩
     refine ⟨x + y, ?_⟩
     ext z
-    simp [mul_add, add_mul]
+    simp [add_mul]
   zero_mem' := by
     refine ⟨0, ?_⟩
     ext z
@@ -354,7 +354,7 @@ def Module.End.rightMul : Subalgebra F (Module.End F B) where
     rintro _ _ ⟨x, rfl⟩ ⟨y, rfl⟩
     refine ⟨x + y, ?_⟩
     ext z
-    simp [mul_add, add_mul]
+    simp [mul_add]
   zero_mem' := by
     refine ⟨0, ?_⟩
     ext z
@@ -539,7 +539,7 @@ lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
           simp_rw [← hc2]; exact hc1, ?_⟩
         ext
         simp only [toConj, MulMemClass.mk_mul_mk, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-          OneHom.coe_mk, MulMemClass.coe_mul, mul_assoc]
+          OneHom.coe_mk, mul_assoc]
         rw [← mul_assoc x⁻¹.1, Units.inv_mul, one_mul])
     left_inv := by
       intro J

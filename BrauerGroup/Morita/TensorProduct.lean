@@ -55,7 +55,7 @@ abbrev moduleMapAux : C →ₐ[R] Module.End A ((ModuleCat.restrictScalars
   map_add' c1 c2 := by ext; simp [TensorProduct.tmul_add, add_smul]
   commutes' r := by
     ext (m : M);
-    simp [Algebra.algebraMap_eq_smul_one, ← TensorProduct.smul_tmul, ← Algebra.TensorProduct.one_def]
+    simp [Algebra.algebraMap_eq_smul_one, ← Algebra.TensorProduct.one_def]
 
 abbrev moduleMap : B ⊗[R] C →ₐ[R]
     Module.End R (e1.obj ((ModuleCat.restrictScalars
@@ -101,8 +101,8 @@ structure TensorModule.Hom (M N : TensorModule R A C) where
 attribute [reassoc (attr := simp)] TensorModule.Hom.commutes
 
 @[simp]
-lemma TensorModule.commutes_apply (M N : TensorModule R A C) (f : TensorModule.Hom R A C M N) (c : C) (m : M) :
-    f.hom.hom ((M.morphism c) m) = (N.morphism c) (f.hom.hom m) := by
+lemma TensorModule.commutes_apply (M N : TensorModule R A C) (f : TensorModule.Hom R A C M N)
+    (c : C) (m : M) : f.hom.hom ((M.morphism c) m) = (N.morphism c) (f.hom.hom m) := by
   have := f.commutes c
   rw [ModuleCat.hom_ext_iff, LinearMap.ext_iff] at this
   specialize this m
@@ -280,7 +280,7 @@ abbrev e02 (M : ModuleCat (A ⊗[R] C)) : (fromModuleOverTensor R A C ⋙ toModu
       rw [RingHom.id_apply, AddHom.toFun_eq_coe]
       conv_rhs => erw [AddHom.id_apply]
       rw [smul_tensormod]
-      simp [smul_smul, smul_eq_mul]
+      simp [smul_smul]
       | add x y h1 h2 =>
       rw [RingHom.id_apply, AddHom.toFun_eq_coe]
       erw [AddHom.id_apply, AddHom.id_apply]

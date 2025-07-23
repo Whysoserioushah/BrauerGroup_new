@@ -272,7 +272,7 @@ lemma Wedderburn_Artin.aux.one_eq
     obtain ⟨y, hy⟩ := Submodule.nonzero_mem_of_bot_lt (bot_lt_iff_ne_bot.mpr I_nontrivial)
     have hy' : y.1 ∈ I' := by
       change I'.ringCon y 0
-      exact .of _ _ <| by simp [y.2]
+      exact .of _ _ <| by simp
     rw [r] at hy'
     change _ = _ at hy'
     aesop)
@@ -330,8 +330,7 @@ lemma Wedderburn_Artin.aux.n_ne_zero
     _ = 0 := by simp
 
 open Wedderburn_Artin.aux in
-noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
-    {A : Type u} [Ring A] [simple : IsSimpleRing A]
+lemma Wedderburn_Artin.aux.nxi_ne_zero {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     ∀ j, x I I_nontrivial j ≠ 0 ∧ i I I_nontrivial j ≠ 0 := by
   classical
@@ -339,7 +338,7 @@ noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
   have n_ne : n ≠ 0 := Wedderburn_Artin.aux.n_ne_zero I I_nontrivial
   let x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
   let i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
-  have one_eq : ∑ j : Fin n, (i j) * (x j) = 1 := Wedderburn_Artin.aux.nxi_spec I I_nontrivial
+  have one_eq : ∑ j : Fin n, i j * x j = 1 := Wedderburn_Artin.aux.nxi_spec I I_nontrivial
 
   by_contra! H
   obtain ⟨j, (hj : x j ≠ 0 → i j = 0)⟩ := H
@@ -352,9 +351,9 @@ noncomputable abbrev Wedderburn_Artin.aux.nxi_ne_zero
     _ = _ := one_eq.symm
     _ = ∑ j : Option (Fin (n - 1)), i (e.symm j) * x (e.symm j) :=
         Fintype.sum_bijective e (Equiv.bijective _) _ _ (fun _ ↦ by simp)
-  simp only [Equiv.symm_trans_apply, OrderIso.toEquiv_symm, Fin.symm_castOrderIso,
-    RelIso.coe_fn_toEquiv, Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none,
-    Fin.cast_trans, Fin.cast_eq_self, finSuccEquiv'_symm_some, e] at one_eq
+  simp only [Equiv.symm_trans_apply, OrderIso.coe_symm_toEquiv, Fin.symm_castOrderIso,
+    Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none, Fin.cast_trans,
+    Fin.cast_eq_self, finSuccEquiv'_symm_some, e] at one_eq
   if xj_eq : x j = 0
   then rw [xj_eq, mul_zero, zero_add] at one_eq; exact ⟨_, _, one_eq.symm⟩
   else erw [hj xj_eq, Submodule.coe_zero, zero_mul, zero_add] at one_eq; exact ⟨_, _, one_eq.symm⟩
@@ -414,11 +413,9 @@ lemma Wedderburn_Artin.aux.equivIdeal
       _ = ∑ k : Option (Fin (n - 1)),
             ((i (e.symm k) - r * y (e.symm k)) * x (e.symm k)) :=
           Finset.sum_congr rfl (fun _ _ ↦ by simp only [sub_mul, mul_assoc])
-
-    simp only [Equiv.symm_trans_apply, OrderIso.toEquiv_symm, Fin.symm_castOrderIso,
-      RelIso.coe_fn_toEquiv, Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none,
-      Fin.cast_trans, Fin.cast_eq_self, hr', zero_mul, finSuccEquiv'_symm_some, zero_add,
-      e] at one_eq'
+    simp only [Equiv.symm_trans_apply, OrderIso.coe_symm_toEquiv, Fin.symm_castOrderIso,
+      Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none, Fin.cast_trans,
+      Fin.cast_eq_self, hr', zero_mul, finSuccEquiv'_symm_some, zero_add, e] at one_eq'
     set f := _
     change 1 = ∑ k : Fin (n - 1), (i ∘ f - (r • y) ∘ f) k * (x ∘ f) k at one_eq'
     exact Nat.find_min (Wedderburn_Artin.aux.one_eq I I_nontrivial) (m := n - 1)
@@ -574,22 +571,21 @@ lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [
   · subst h
     ext x : 1
     simp only [endVecAlgEquivMatrixEnd_apply_apply, LinearMap.coe_comp, LinearEquiv.coe_coe,
-      LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, unop_op, Module.algebraMap_end_apply,
-      endEquiv]
+      LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, unop_op, Module.algebraMap_end_apply]
     rw [show r • x = Function.update (0 : Fin n → I) i (r • x) i by simp]
     refine congr_fun (e.injective ?_) i
-    simp only [LinearEquiv.apply_symm_apply, endEquiv]
+    simp only [LinearEquiv.apply_symm_apply]
     rw [show Function.update (0 : Fin n → I) i (r • x) = r • Function.update (0 : Fin n → I) i x
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
     exact congr_arg e $ by ext; simp [Pi.single]
   · ext x : 1
-    simp only [LinearMap.coe_mk, AddHom.coe_mk, MulOpposite.unop_zero, LinearMap.zero_apply]
+    simp only [MulOpposite.unop_zero, LinearMap.zero_apply]
     rw [show (0 : I) = Function.update (0 : Fin n → I) i (r • x) j
       by simp [Function.update, if_neg (Ne.symm h)]]
     refine congr_fun (e.injective ?_) j
     simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, LinearMap.coe_mk, AddHom.coe_mk,
-      Function.comp_apply, LinearEquiv.apply_symm_apply]
+      Function.comp_apply]
     rw [show Function.update (0 : Fin n → I) i (r • x) = r • Function.update (0 : Fin n → I) i x
       by ext : 1; simp [Function.update]]
     rw [← Algebra.commutes, ← smul_eq_mul, ← e.map_smul]
@@ -616,10 +612,10 @@ theorem is_central_of_wdb [hctr : Algebra.IsCentral K B]
     Matrix.mem_center_iff' _ _ _ _ |>.2 $
       ⟨⟨x, hx⟩, by
         ext; simp only [diagonal, of_apply]; split_ifs
-        · simp_all only [le_bot_iff, smul_apply, one_apply_eq]
+        · simp_all only [smul_apply, one_apply_eq]
           change _ = x • (1 : S)
           simp only [smul_eq_mul, mul_one]
-        · simp_all only [le_bot_iff, smul_apply, ne_eq, not_false_eq_true, one_apply_ne, smul_zero]⟩
+        · simp_all only [smul_apply, ne_eq, not_false_eq_true, one_apply_ne, smul_zero]⟩
   have hx'' : Wdb.symm (Matrix.diagonal fun _ ↦ x) ∈ Subalgebra.center K B := by
     rw [Subalgebra.mem_center_iff] at hx' ⊢
     exact fun b ↦ Wdb.injective $ by simpa using hx' (Wdb b)

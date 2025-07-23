@@ -31,7 +31,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
   · have : Subsingleton (B ⊗[K] C) := by
       rw [← subsingleton_iff_zero_eq_one, show (0 : B ⊗[K] C) = 0 ⊗ₜ 0 by simp,
         show (1 : B ⊗[K] C) = 1 ⊗ₜ 1 by rfl, show (1 : C) = 0 from Subsingleton.elim _ _]
-      simp only [tmul_zero, zero_tmul]
+      simp only [tmul_zero]
     have : Subsingleton (TwoSidedIdeal (B ⊗[K] C)) := by
       constructor
       intro I J
@@ -59,7 +59,7 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
   rcases hF with hF|hF
   · have : Nontrivial (B' ⊗[K] C) := by
       rw [← rank_pos_iff_nontrivial (R := K), rank_tensorProduct]
-      simp only [gt_iff_lt, CanonicallyOrderedAdd.mul_pos, Cardinal.zero_lt_lift_iff]
+      simp only [CanonicallyOrderedAdd.mul_pos, Cardinal.zero_lt_lift_iff]
       rw [rank_pos_iff_nontrivial, rank_pos_iff_nontrivial]
       aesop
     have : 1 ∈ TwoSidedIdeal.ker F := by rw [hF]; trivial
