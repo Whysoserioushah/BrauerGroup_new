@@ -521,20 +521,31 @@ variable (F K : Type) [Field F] [Field K] [Algebra F K] [IsGalois F K] (τ : Gal
     (hτ : Submonoid.powers τ = ⊤) [FiniteDimensional F K]
 
 open scoped Classical in
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 80000 in
+-- set_option maxHeartbeats 800000 in
+-- set_option synthInstance.maxHeartbeats 80000 in
 /-- For K/F a finite cyclic extension, `Br(K/F)` is isomorphic to `(ℤ[Gal(K/F)])ᴳ/N(ℤ[Gal(K/F)])` where
   `N : ℤ[Gal(K/F)] → ℤ[Gal(K/F)]` sends `a` to ∑ σⁱa, σ is the generator of `Gal(K/F)`. -/
-abbrev BrauerOverCyclic'  :
-    Additive (RelativeBrGroup K F) ≃ₗ[ℤ]
-    ((galAct F K).ρ.invariants ⧸ (LinearMap.range (N' _ ℤ _).1.hom).comap
+abbrev BrauerOverCyclicAux  :
+    -- Additive (RelativeBrGroup K F)
+    H2 (galAct F K) ≅
+    ModuleCat.of ℤ ((galAct F K).ρ.invariants ⧸ (LinearMap.range (N' _ ℤ _).1.hom).comap
     (galAct F K).ρ.invariants.subtype) :=
   letI : CommGroup Gal(K, F) := CommG Gal(K, F) τ hτ
-  ({__ := RelativeBrGroup.isoSnd K F
-    map_smul' z a := by simp} : _ ≃ₗ[ℤ] _ ) ≪≫ₗ
-  -- (Iso.toLinearEquiv (groupCohomology.H2Iso (galAct F K)).symm) ≪≫ₗ
-  -- (Iso.toLinearEquiv (CyclicCoh.groupCohEven 2 Gal(K, F) ℤ τ (by simp) (galAct F K) hτ))
-  sorry
+  -- ({__ := RelativeBrGroup.isoSnd K F
+  --   map_smul' z a := by simp} : _ ≃ₗ[ℤ] _ ) ≪≫ₗ
+  -- (by unfold H2; exact LinearEquiv.refl ℤ _) ≪≫ₗ
+  (CyclicCoh.groupCohEven 2 Gal(K, F) ℤ τ (by simp) (galAct F K) hτ)
+  -- sorry
+
+set_option synthInstance.maxHeartbeats 80000 in
+abbrev BrauerOverCyclic' : Additive (RelativeBrGroup K F) ≃ₗ[ℤ] (↥(galAct F K).ρ.invariants ⧸
+      Submodule.comap (galAct F K).ρ.invariants.subtype
+        (LinearMap.range (ModuleCat.Hom.hom (N' (K ≃ₐ[F] K) ℤ (galAct F K)).hom))) :=
+  (RelativeBrGroup.isoSnd K F).toIntLinearEquiv ≪≫ₗ (by
+  convert (BrauerOverCyclicAux F K τ hτ).toLinearEquiv
+  ext z σ
+  rw [int_smul_eq_zsmul]
+  conv_rhs => erw [int_smul_eq_zsmul])
 
 abbrev invariants_eq : ((galAct F K).ρ.invariants : Submodule ℤ
   (Rep.ofMulDistribMulAction Gal(K, F) Kˣ).V) = sorry := sorry
@@ -542,5 +553,5 @@ abbrev invariants_eq : ((galAct F K).ρ.invariants : Submodule ℤ
 set_option synthInstance.maxHeartbeats 80000 in
 abbrev BrauerOverCyclic : Additive (RelativeBrGroup K F) ≃+
     Additive (Fˣ⧸(Units.map (Algebra.norm (S := K) F)).range) :=
-  BrauerOverCyclic' F K |>.toAddEquiv.trans
+  BrauerOverCyclic' F K τ hτ|>.toAddEquiv.trans
   sorry
