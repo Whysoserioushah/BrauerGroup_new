@@ -5,7 +5,7 @@ import Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 
 suppress_compilation
 
-open FiniteDimensional BrauerGroup groupCohomology
+open FiniteDimensional BrauerGroup Module groupCohomology
 
 variable {F K : Type} [Field K] [Field F] [Algebra F K]
 variable (X : BrauerGroup F)
@@ -686,7 +686,7 @@ def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis Gal(K, F) K A :=
   basisOfLinearIndependentOfCardEqFinrank
     (b := fun (i : Gal(K, F)) => (x_ i).1.1)
     (A.conjFactor_linearIndependent x_)
-    (by rw [A.dim_eq', IsGalois.card_aut_eq_finrank])
+    (by rw [A.dim_eq', Fintype.card_eq_nat_card, IsGalois.card_aut_eq_finrank])
 
 end galois
 

@@ -3,11 +3,11 @@ import BrauerGroup.ToSecond
 
 suppress_compilation
 
-universe u
-
-variable (K F : Type) [Field K] [Field F] [Algebra F K]
-
+open Module
 open scoped TensorProduct
+
+universe u
+variable (K F : Type) [Field K] [Field F] [Algebra F K]
 
 -- namespace map_one_proof
 -- section map_one
@@ -688,7 +688,8 @@ lemma M_F_dim [IsGalois F K] : finrank F (M α β) = (finrank F K)^3 := by
     show finrank F (A ⊗[K] B) = finrank F K * finrank K (A ⊗[K] B) from
       Eq.symm (finrank_mul_finrank F K (A ⊗[K] B)),
     finrank_tensorProduct, finrank_eq_card_basis CrossProductAlgebra.basis,
-    finrank_eq_card_basis CrossProductAlgebra.basis, IsGalois.card_aut_eq_finrank, pow_three]
+    finrank_eq_card_basis CrossProductAlgebra.basis, Fintype.card_eq_nat_card,
+    IsGalois.card_aut_eq_finrank, pow_three]
 
 instance [IsGalois F K] : FiniteDimensional F C :=
   .of_finrank_eq_succ (n := (finrank F K)^2 - 1) <| by

@@ -1,11 +1,9 @@
 import BrauerGroup.IsoSecond
 import BrauerGroup.examples.ShortComplex.LeftHomologyMapData
 
-universe u
-
 suppress_compilation
 
-open CategoryTheory
+open CategoryTheory Module
 
 variable (n : ℕ) (G k : Type)  (σ : G) [Fintype G] [CommRing k]
 

@@ -6,7 +6,7 @@ import Mathlib.Data.Complex.FiniteDimensional
 
 suppress_compilation
 
-open TensorProduct Classical FiniteDimensional
+open FiniteDimensional Module TensorProduct
 
 variable {D : Type} [DivisionRing D]
 

@@ -2,18 +2,17 @@ import Mathlib.RingTheory.TensorProduct.Basic
 
 suppress_compilation
 
-universe u
-
 open scoped TensorProduct
 
+universe u
 variable (k K L A : Type u) [Field k] [Field K] [Field L] [Algebra k K] [Algebra K L]
   [Algebra k L] [Ring A] [Algebra k A] [IsScalarTower k K L]
 
-def releaseAddHom : L ⊗[k] A →+ L ⊗[K] K ⊗[k] A :=
+def releaseAddHom : L ⊗[k] A →+ L ⊗[K] (K ⊗[k] A) :=
   TensorProduct.liftAddHom
   {
     toFun l := {
-      toFun a := l ⊗ₜ[K] (1 : K) ⊗ₜ[k] a
+      toFun a := l ⊗ₜ[K] (1 ⊗ₜ[k] a)
       map_zero' := by simp only [TensorProduct.tmul_zero]
       map_add' _ _ := by simp_rw [TensorProduct.tmul_add]
     }
@@ -26,7 +25,7 @@ def releaseAddHom : L ⊗[k] A →+ L ⊗[K] K ⊗[k] A :=
 
 set_option maxHeartbeats 400000 in
 set_option synthInstance.maxHeartbeats 40000 in
-def release : L ⊗[k] A →ₐ[L] L ⊗[K] K ⊗[k] A where
+def release : L ⊗[k] A →ₐ[L] L ⊗[K] (K ⊗[k] A) where
   __ := releaseAddHom k K L A
   map_one' := by simp only [releaseAddHom, Algebra.TensorProduct.one_def, ZeroHom.toFun_eq_coe,
     AddMonoidHom.toZeroHom_coe, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
@@ -40,8 +39,7 @@ def release : L ⊗[k] A →ₐ[L] L ⊗[K] K ⊗[k] A where
       | tmul l' a' =>
         simp only [Algebra.TensorProduct.tmul_mul_tmul, ZeroHom.toFun_eq_coe,
           AddMonoidHom.toZeroHom_coe]
-        change (l * l') ⊗ₜ[K] (1 : K) ⊗ₜ[k] (a * a') =
-          (l ⊗ₜ[K] (1 : K) ⊗ₜ[k] a) * (l' ⊗ₜ[K] (1 : K) ⊗ₜ[k] a')
+        change (l * l') ⊗ₜ[K] (1 ⊗ₜ[k] (a * a')) = (l ⊗ₜ[K] (1 ⊗ₜ[k] a)) * (l' ⊗ₜ[K] (1 ⊗ₜ[k] a'))
         rw [Algebra.TensorProduct.tmul_mul_tmul, Algebra.TensorProduct.tmul_mul_tmul, mul_one]
       | add x y hx hy =>
         simp only [mul_add, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add]
@@ -73,7 +71,7 @@ def absorbMap : L → K ⊗[k] A →+ L ⊗[k] A := fun l ↦
       map_add' := fun x y ↦ by simp only [map_add]
     }
 
-def absorbAddHom : L ⊗[K] K ⊗[k] A →+ L ⊗[k] A :=
+def absorbAddHom : L ⊗[K] (K ⊗[k] A) →+ L ⊗[k] A :=
   TensorProduct.liftAddHom
   {
     toFun := absorbMap k K L A
@@ -109,7 +107,7 @@ def absorbAddHom : L ⊗[K] K ⊗[k] A →+ L ⊗[k] A :=
     )
 
 set_option synthInstance.maxHeartbeats 40000 in
-def absorb : L ⊗[K] K ⊗[k] A →ₐ[L] L ⊗[k] A where
+def absorb : L ⊗[K] (K ⊗[k] A) →ₐ[L] L ⊗[k] A where
   __ := absorbAddHom k K L A
   map_one' := by
     simp only [Algebra.TensorProduct.one_def, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
@@ -149,14 +147,14 @@ def absorb : L ⊗[K] K ⊗[k] A →ₐ[L] L ⊗[k] A where
     change (1 • l) ⊗ₜ (1 : A) = l ⊗ₜ 1
     rw [one_smul]
 
-def absorb_eqv : L ⊗[k] A ≃ₐ[L] L ⊗[K] K ⊗[k] A where
+def absorb_eqv : L ⊗[k] A ≃ₐ[L] L ⊗[K] (K ⊗[k] A) where
   toFun := release k K L A
   invFun := absorb k K L A
   left_inv := fun x ↦ by
     induction x using TensorProduct.induction_on with
     | zero => simp only [map_zero]
     | tmul l a =>
-      change (absorb k K L A) (l ⊗ₜ[K] (1 : K) ⊗ₜ a) = _
+      change (absorb k K L A) (l ⊗ₜ[K] (1 ⊗ₜ a)) = _
       change (1 • l) ⊗ₜ _ = _
       rw [one_smul]
     | add x y hx hy =>
@@ -169,7 +167,7 @@ def absorb_eqv : L ⊗[k] A ≃ₐ[L] L ⊗[K] K ⊗[k] A where
       | zero => simp only [TensorProduct.tmul_zero, map_zero]
       | tmul k' a =>
         change (release k K L A) ((k' • l) ⊗ₜ a) = _
-        change (k' • l) ⊗ₜ[K] (1 : K) ⊗ₜ a = _
+        change (k' • l) ⊗ₜ[K] (1 ⊗ₜ a) = _
         rw [TensorProduct.smul_tmul, TensorProduct.smul_tmul', smul_eq_mul, mul_one]
       | add x y hx hy =>
         simp only [TensorProduct.tmul_add, map_add, hx, hy]
@@ -179,5 +177,5 @@ def absorb_eqv : L ⊗[k] A ≃ₐ[L] L ⊗[K] K ⊗[k] A where
   map_add' := map_add _
   commutes' := release k K L A|>.commutes
 
-theorem absorb_eqv_apply (l : L) (a : A) : absorb_eqv k K L A (l ⊗ₜ a) = l ⊗ₜ[K] (1 : K) ⊗ₜ a :=
+theorem absorb_eqv_apply (l : L) (a : A) : absorb_eqv k K L A (l ⊗ₜ a) = l ⊗ₜ[K] (1 ⊗ₜ a) :=
   rfl

@@ -254,7 +254,7 @@ instance FathfulSMul.tensor [Module.Projective R A] [Module.Projective R B]
 
 open Algebra.TensorProduct (assoc congr opAlgEquiv) in
 variable {R A B} in
-abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] B ⊗[R] Bᵐᵒᵖ ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
+abbrev e : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] (B ⊗[R] Bᵐᵒᵖ) ≃ₐ[R] (A ⊗[R] B) ⊗[R] (A ⊗[R] B)ᵐᵒᵖ :=
   (assoc R R A B (Aᵐᵒᵖ ⊗[R] Bᵐᵒᵖ)|>.trans <|
   (congr .refl (assoc R R B Aᵐᵒᵖ Bᵐᵒᵖ)).symm.trans <|
   congr .refl (congr (Algebra.TensorProduct.comm R _ _) .refl) |>.trans

@@ -24,7 +24,7 @@ algebras in this case according to our definition.
 
 universe u v w
 
-open Classical
+open Module
 
 -- /--
 -- For a field `K` and a `K`-algebra `D`, we say that `D` is a central algebra over `K` if the center
@@ -82,6 +82,7 @@ lemma TensorProduct.sum_tmul_basis_right_eq_zero'
     (s : Finset ιC) (b : ιC → B)
     (h : ∑ i ∈ s, b i ⊗ₜ[K] 𝒞 i = 0) :
     ∀ i ∈ s, b i = 0 := by
+  classical
   intro i
   have := TensorProduct.sum_tmul_basis_right_eq_zero (κ := ιC) 𝒞 (M := B)
     { support := s.filter fun i ↦ b i ≠ 0

@@ -14,7 +14,7 @@ variable [Field F] [Ring A] [Algebra F A]
 variable [FiniteDimensional F A] [Algebra.IsCentral F A] [IsSimpleRing A]
 variable (B : Subalgebra F A) [IsSimpleRing B]
 
-open TensorProduct
+open Module TensorProduct
 
 section lemma1
 

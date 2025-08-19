@@ -8,7 +8,7 @@ import Mathlib.LinearAlgebra.Basis.VectorSpace
 import Mathlib.RingTheory.SimpleModule.Basic
 import Mathlib.RingTheory.SimpleRing.Basic
 
-open CategoryTheory Matrix
+open CategoryTheory Matrix Module
 
 universe u u' u'' v v' v'' w
 
@@ -75,15 +75,15 @@ open fromModuleCatOverMatrix
 
 instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module M[ι, R] M] :
     Module R <| α R ι M where
-  smul a x := ⟨(single default default a : M[ι, R]) • x.1, by
+  smul a x := by
+    refine ⟨(single default default a : M[ι, R]) • x.1, ?_⟩
     obtain ⟨y, hy⟩ := x.2
-    simp only [α, AddSubgroup.mem_mk, Set.mem_range]
     refine ⟨(single default default a : M[ι, R]) • y, hy ▸ ?_⟩
     simp only
     rw [← MulAction.mul_smul, ← MulAction.mul_smul]
     congr 1
     ext i j
-    simp⟩
+    simp
   one_smul := by
     rintro ⟨_, x, rfl⟩
     ext
@@ -136,12 +136,11 @@ set_option maxHeartbeats 400000 in
 def fromModuleCatOverMatrix : ModuleCat M[ι, R] ⥤ ModuleCat R where
   obj M := .of _ $ α R ι M
   map f := ModuleCat.ofHom {
-    toFun x := ⟨f x.1, by
-      simp only [α, AddSubgroup.mem_mk, Set.mem_range]
+    toFun x := by
+      refine ⟨f x.1, ?_⟩
       obtain ⟨y, hy⟩ := x.2
       refine ⟨f y, ?_⟩
-      simp only at hy
-      rw [← hy, f.hom.map_smul]⟩
+      rw [← hy, f.hom.map_smul]
     map_add' := by
       rintro ⟨_, x, rfl⟩ ⟨_, ⟨y, rfl⟩⟩
       refine Subtype.ext ?_
@@ -204,10 +203,10 @@ def matrix.unitIsoInv :
     𝟭 (ModuleCat R) ⟶
     toModuleCatOverMatrix R ι ⋙ fromModuleCatOverMatrix R ι  where
   app X := ModuleCat.ofHom
-    { toFun x := (⟨Function.update (0 : ι → X) default x, by
-        simp only [α, AddSubgroup.mem_mk, Set.mem_range]
-        refine ⟨fun _ => x, ?_⟩
-        refine funext fun i ↦ ?_
+    { toFun x := by
+        refine ⟨Function.update (0 : ι → X) default x, fun _ => x, ?_⟩
+        dsimp
+        ext i
         change ∑ _, _ = _
         simp only [single, of_apply, ite_smul, one_smul, zero_smul, Function.update,
           eq_rec_constant, Pi.zero_apply, dite_eq_ite]
@@ -217,7 +216,7 @@ def matrix.unitIsoInv :
         · apply Finset.sum_eq_zero
           intro j _
           rw [if_neg]
-          tauto ⟩ : α R ι (ι → X))
+          tauto
       map_add' := by
         rintro (x : X) (y : X)
         simp only [toModuleCatOverMatrix_obj_carrier]
@@ -305,10 +304,9 @@ def matrix.unitIso :
 noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
     M ≅ (fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι).obj M :=
   LinearEquiv.toModuleIso $ LinearEquiv.ofBijective
-    ({toFun := fun m i => ⟨(single default i 1 : M[ι, R]) • m, by
-        simp only [α, AddSubgroup.mem_mk, Set.mem_range]
-        refine ⟨(single default i 1 : M[ι, R]) • m, ?_⟩
-        simp only [← MulAction.mul_smul, single_mul_single_same, mul_one]⟩
+    ({toFun m i := by
+        refine ⟨(single default i 1 : M[ι, R]) • m, (single default i 1 : M[ι, R]) • m, ?_⟩
+        simp only [← MulAction.mul_smul, single_mul_single_same, mul_one]
       map_add' := fun x y => funext fun i ↦ Subtype.ext $
         show (single default i 1 : M[ι, R]) • (x + y) =
           (single default i 1 : M[ι, R]) • x +
@@ -530,16 +528,17 @@ lemma isSimpleModule_iff_injective_or_eq_zero
   constructor
   · intros inst1
     constructor
-    · have := inst1.1
+    · have := inst1.1.1
       rwa [Submodule.nontrivial_iff] at this
     · intro N f
-      refine inst1.2 (LinearMap.ker f.hom) |>.elim
+      refine inst1.1.2 (LinearMap.ker f.hom) |>.elim
         (fun h => Or.inr <| by rwa [LinearMap.ker_eq_bot] at h) <|
         fun h ↦ Or.inl <| by
           simp only [LinearMap.ker_eq_top] at h
           ext : 1
           rw [h]; simp
   · rintro ⟨inst1, h⟩
+    rw [isSimpleModule_iff]
     refine ⟨fun p => ?_⟩
     refine h (.of R (M ⧸ p)) (ModuleCat.ofHom (Submodule.mkQ p)) |>.elim (fun h => Or.inr ?_) <|
       fun h ↦ Or.inl $ eq_bot_iff.2 fun x hx => h ?_

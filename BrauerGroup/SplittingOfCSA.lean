@@ -226,7 +226,7 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
   n := deg k k_bar A
   iso := by
     obtain ⟨n, iso⟩ := hA
-    let e1 : L' ⊗[k] A ≃ₐ[L] L' ⊗[L] L ⊗[k] A := {
+    let e1 : L' ⊗[k] A ≃ₐ[L] L' ⊗[L] (L ⊗[k] A) := {
       __ := absorb_eqv k L L' A
       commutes' _ := rfl
     }

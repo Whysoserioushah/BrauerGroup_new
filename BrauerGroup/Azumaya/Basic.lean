@@ -4,10 +4,9 @@ import BrauerGroup.Morita.ChangeOfRings
 
 universe u v
 
+open Module TensorProduct
+
 section Field
-
-open TensorProduct
-
 variable (K : Type u) [Field K]
 
 lemma TensorProduct.flip_mk_injective {R M N : Type*} [CommRing R] [AddCommGroup M] [AddCommGroup N]

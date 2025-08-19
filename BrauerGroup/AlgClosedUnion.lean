@@ -4,7 +4,7 @@ import Mathlib.RingTheory.TensorProduct.Free
 
 suppress_compilation
 
-open TensorProduct
+open Module TensorProduct
 
 universe u
 

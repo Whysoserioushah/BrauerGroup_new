@@ -18,7 +18,7 @@ This file constructs the cross product algebra associated to a 2-cocycle of a fi
 * [*Advanced Algebra*]
 -/
 
-open groupCohomology Function
+open groupCohomology Function Module
 
 suppress_compilation
 
@@ -323,7 +323,7 @@ variable [Module.Finite F K] [IsGalois F K]
 
 @[simp] lemma dim_eq_sq : Module.finrank F (CrossProductAlgebra f) = Module.finrank F K ^ 2 := by
   rw [← Module.finrank_mul_finrank _ K, Module.finrank_eq_card_basis basis,
-    IsGalois.card_aut_eq_finrank, sq]
+    Fintype.card_eq_nat_card, IsGalois.card_aut_eq_finrank, sq]
 
 instance : Module.Finite F (CrossProductAlgebra f) :=
   Module.finite_of_finrank_pos <| by simp [pow_pos_iff two_ne_zero, Module.finrank_pos]

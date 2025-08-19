@@ -225,10 +225,10 @@ def matrixEquivMatrixMop (n : ℕ) (D : Type*) [Ring D] :
 universe u
 
 lemma Ideal.eq_of_le_of_isSimpleModule {A : Type u} [Ring A]
-    (I : Ideal A) [simple : IsSimpleModule A I]
+    (I : Ideal A) [IsSimpleModule A I]
     (J : Ideal A) (ineq : J ≤ I) (a : A) (ne_zero : a ≠ 0) (mem : a ∈ J) : J = I := by
   obtain eq | eq : Submodule.comap I.subtype J = ⊥ ∨ Submodule.comap I.subtype J = ⊤ :=
-    simple.2 _
+    eq_bot_or_eq_top _
   · rw [Submodule.eq_bot_iff] at eq
     specialize eq ⟨a, ineq mem⟩ (by simpa [Subtype.ext_iff])
     rw [Subtype.ext_iff] at eq
@@ -243,6 +243,7 @@ lemma minimal_ideal_isSimpleModule {A : Type u} [Ring A]
   letI ins1 : Nontrivial I := by
     obtain ⟨y, hy⟩ := Submodule.nonzero_mem_of_bot_lt (bot_lt_iff_ne_bot.mpr I_nontrivial)
     exact ⟨0, y, hy.symm⟩
+  rw [isSimpleModule_iff]
   refine ⟨fun J ↦ ?_⟩
   rw [or_iff_not_imp_left]
   intro hJ
