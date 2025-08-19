@@ -1,4 +1,6 @@
-import Mathlib
+import Mathlib.Algebra.BigOperators.GroupWithZero.Action
+import Mathlib.Algebra.Module.Submodule.Basic
+import Mathlib.LinearAlgebra.Span.Defs
 
 variable {α R M : Type*} [Semiring R] [AddCommMonoid M] [Module R M] {v : α → M} {x : M}
 
@@ -18,4 +20,4 @@ lemma Submodule.mem_span_image_finset_iff_exists_fun {s : Finset α} :
       exact ⟨c1 + c2, by simp_all [add_smul, Finset.sum_add_distrib]⟩
     · exact fun r x hx ⟨c, hc⟩ ↦ ⟨r • c, by simp_all [mul_smul, ← Finset.smul_sum]⟩
   · rintro ⟨c, rfl⟩
-    refine Submodule.sum_mem _ <| fun i hi ↦ Submodule.smul_mem _ _ <| Submodule.subset_span ⟨i, hi, by simp⟩
+    exact Submodule.sum_mem _ <| fun i hi ↦ Submodule.smul_mem _ _ <| Submodule.subset_span ⟨i, hi, by simp⟩

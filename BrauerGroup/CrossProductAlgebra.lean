@@ -1,7 +1,7 @@
 import BrauerGroup.Mathlib.Algebra.Algebra.Equiv
 import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
-import BrauerGroup.Mathlib.LinearAlgebra.Finsupp.LinearCombination
 import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
+import BrauerGroup.Mathlib.LinearAlgebra.Span.Basic
 import BrauerGroup.Mathlib.RingTheory.Congruence.Basic
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Lattice
 import BrauerGroup.Subfield.Splitting
