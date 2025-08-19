@@ -1,4 +1,5 @@
 name = "BrauerGroup"
+keywords = ["math", "algebra", "ring-theory", "algebraic-number-theory"]
 defaultTargets = ["BrauerGroup"]
 
 [leanOptions]
