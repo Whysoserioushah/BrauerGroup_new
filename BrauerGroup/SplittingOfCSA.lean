@@ -61,7 +61,7 @@ theorem centralSimple_over_extension_iff_nontrivial
   mpr := fun ⟨hAt, _⟩ ↦ ⟨by
     constructor
     by_contra h
-    simp only [le_bot_iff, ne_eq] at h
+    simp only [le_bot_iff] at h
     have : 1 < Module.finrank k (Subalgebra.center k A) := by
       have eq1 := Subalgebra.finrank_bot (F := k) (E := A)
       have ineq1 := Submodule.finrank_lt_finrank_of_lt
@@ -235,7 +235,7 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       __ := e2
       commutes' := fun l' => by
         simp only [AlgEquiv.toEquiv_eq_coe, Algebra.TensorProduct.algebraMap_apply,
-          Algebra.id.map_eq_id, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe]
+          Algebra.algebraMap_self, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe]
         simp only [AlgEquiv.toEquiv_eq_coe, AlgEquiv.trans_apply, Algebra.TensorProduct.congr_apply,
           AlgEquiv.refl_toAlgHom, e2, e1]
         erw [absorb_eqv_apply, Algebra.TensorProduct.map_tmul]
@@ -245,7 +245,7 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       __ := matrixEquivTensor _ _ _|>.symm
       commutes' := fun l' ↦ by
         simp only [AlgEquiv.toEquiv_eq_coe, Algebra.TensorProduct.algebraMap_apply,
-          Algebra.id.map_eq_id, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe,
+          Algebra.algebraMap_self, RingHom.id_apply, Equiv.toFun_as_coe, EquivLike.coe_coe,
           matrixEquivTensor_apply_symm, Matrix.map]
         ext i j
         obtain rfl | hij := eq_or_ne i j

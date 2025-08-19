@@ -151,11 +151,11 @@ lemma mat_over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A) :
     φ.mapMatrix (e (1 ⊗ₜ a)) := by
   use g e φ
   simp only [AlgEquiv.trans_apply, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom,
-    Algebra.TensorProduct.map_tmul, AlgHom.coe_coe, Algebra.TensorProduct.rid_symm_apply,
-    AlgHom.coe_id, id_eq, Algebra.TensorProduct.assoc'_apply, AlgEquiv.coe_mk,
-    AlgEquiv.toEquiv_eq_coe, EquivLike.coe_coe, AlgEquiv.symm_mk, map_one, AlgEquiv.coe_ofBijective,
-    Equiv.coe_fn_mk, AlgHom.coe_codRestrict, φ_m_apply, matrixEquivTensor'_symm_apply, one_smul,
-    AlgHom.mapMatrix_apply, Algebra.TensorProduct.one_def]
+    Algebra.TensorProduct.map_tmul, AlgHom.coe_coe, AlgHom.coe_id, id_eq,
+    Algebra.TensorProduct.assoc'_apply, AlgEquiv.coe_mk, AlgEquiv.toEquiv_eq_coe, EquivLike.coe_coe,
+    AlgEquiv.symm_mk, map_one, AlgEquiv.coe_ofBijective, Equiv.coe_fn_mk, AlgHom.coe_codRestrict,
+    φ_m_apply, matrixEquivTensor'_symm_apply, one_smul, AlgHom.mapMatrix_apply,
+    Algebra.TensorProduct.one_def]
   ext i j
   simp [Matrix.map_apply]
   rfl
@@ -266,7 +266,7 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
       Matrix.reindexAlgEquiv F _ (finProdFinEquiv.trans ((finCongr (by rw [mul_comm, eq]))))
       (Matrix.blockDiagonalRingHom (Fin n) (Fin r) _ (fun i ↦ e ta))
     map_one' := by
-      simp only [eq_mpr_eq_cast, cast_cast, map_one, Matrix.blockDiagonalRingHom_apply]
+      simp only [map_one, Matrix.blockDiagonalRingHom_apply]
       erw [Matrix.blockDiagonal_one (m := Fin n) (o := Fin _) (α := F)]
       exact map_one _
     map_mul' := by simp
@@ -280,8 +280,8 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
         (Matrix.blockDiagonal ((fun i ↦ e fa1) + (fun i ↦ e fa2))) = _
       rw [Matrix.blockDiagonal_add, map_add]
     commutes' k := by
-      simp only [eq_mpr_eq_cast, cast_cast, Algebra.TensorProduct.algebraMap_apply,
-        Algebra.id.map_eq_id, RingHom.id_apply, Matrix.blockDiagonalRingHom_apply]
+      simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self,
+        RingHom.id_apply, Matrix.blockDiagonalRingHom_apply]
       rw [← mul_one k, ← smul_eq_mul k 1, ← TensorProduct.smul_tmul', map_smul]
       change Matrix.reindexAlgEquiv _ _ _ (Matrix.blockDiagonal (k • _)) = _
       rw [Matrix.blockDiagonal_smul, map_smul, ← Algebra.TensorProduct.one_def, map_one]
@@ -324,7 +324,7 @@ lemma mem_Kx (a : A) : ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.
   have fixed : ∀ φ : F ≃ₐ[K] F, (e (1 ⊗ₜ[K] a)).charpoly = map φ (e (1 ⊗ₜ[K] a)).charpoly := fun φ ↦ by
     obtain ⟨g, hg⟩ := mat_over_extension (E := F) A n e φ a
     obtain ⟨r, _, hr1, hr⟩ := eq_pow_reducedCharpoly K F F_bar A n n e g a
-    replace hr1 := Nat.mul_left_eq_self_iff (Nat.pos_of_neZero n)|>.1 hr1.symm
+    rw [eq_comm, Nat.mul_eq_right (NeZero.ne n)] at hr1
     subst hr1
     simp only [AlgHom.coe_coe, pow_one] at hr
     rw [ReducedCharPoly] at *

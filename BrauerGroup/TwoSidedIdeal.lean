@@ -60,7 +60,7 @@ lemma mem_span_iff_exists_fin (s : Set R) (x : R) :
     x = ∑ i : ι, xL i * (y i : R) * xR i := by
   suffices eq1 : span s = span' s by
     rw [eq1]
-    simp only [span', Set.mem_setOf_eq]
+    simp only [span']
     generalize_proofs h1 h2 h3 h4 h5
     simp_all only [mem_mk', Set.mem_setOf_eq]
 

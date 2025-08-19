@@ -53,8 +53,8 @@ def release : L ⊗[k] A →ₐ[L] L ⊗[K] K ⊗[k] A where
       simp only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe] at hw hz ⊢
       rw [hz, hw]
   commutes' := fun l ↦ by
-    simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id, RingHom.id_apply,
-      ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, Algebra.TensorProduct.one_def]; rfl
+    simp only [Algebra.TensorProduct.algebraMap_apply, ZeroHom.toFun_eq_coe,
+      AddMonoidHom.toZeroHom_coe, Algebra.TensorProduct.one_def]; rfl
 
 def absorbMap : L → K ⊗[k] A →+ L ⊗[k] A := fun l ↦
     {
@@ -80,7 +80,7 @@ def absorbAddHom : L ⊗[K] K ⊗[k] A →+ L ⊗[k] A :=
     map_zero' := by
       ext x
       induction x using TensorProduct.induction_on with
-      | zero => simp only [map_zero, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
+      | zero => simp only [map_zero]
       | tmul x a =>
         change (x • 0) ⊗ₜ a = 0
         simp only [smul_zero, TensorProduct.zero_tmul]
@@ -145,9 +145,7 @@ def absorb : L ⊗[K] K ⊗[k] A →ₐ[L] L ⊗[k] A where
     | add x' y' hx hy =>
       simp only [add_mul, map_add, hx, hy]
   commutes' := fun l ↦ by
-    simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
-    RingHom.id_apply, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
-    Algebra.TensorProduct.one_def]
+    simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.TensorProduct.one_def]
     change (1 • l) ⊗ₜ (1 : A) = l ⊗ₜ 1
     rw [one_smul]
 

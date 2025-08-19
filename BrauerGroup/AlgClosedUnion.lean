@@ -109,8 +109,7 @@ lemma intermediateTensor_mono {L1 L2 : IntermediateField K K_bar} (h : L1 ≤ L2
   delta intermediateTensor
   rw [e1, LinearMap.range_comp, Submodule.map_le_iff_le_comap]
   rintro _ ⟨x, rfl⟩
-  simp only [AlgHom.toNonUnitalAlgHom_eq_coe, NonUnitalAlgHom.toDistribMulActionHom_eq_coe,
-    Submodule.mem_comap, LinearMap.mem_range, exists_apply_eq_apply]
+  simp only [Submodule.mem_comap, LinearMap.mem_range, exists_apply_eq_apply]
 
 abbrev SetOfFinite : Set (IntermediateField K K_bar) :=
   {M | FiniteDimensional K M}
@@ -129,7 +128,7 @@ omit [IsAlgClosure K K_bar] in
 lemma SetOfFinite_nonempty : (Set.range fun (L : SetOfFinite K K_bar) ↦
     intermediateTensor K K_bar A L).Nonempty := by
   refine ⟨intermediateTensor K K_bar A ⊥, ⟨⟨⊥, ?_⟩, rfl⟩⟩
-  simp only [SetOfFinite, Set.mem_setOf_eq, IntermediateField.bot_toSubalgebra]
+  simp only [SetOfFinite, Set.mem_setOf_eq]
   infer_instance
 
 /-- K_bar ⊗[K] A = union of all finite subextension of K ⊗ A -/

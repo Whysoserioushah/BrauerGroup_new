@@ -307,7 +307,7 @@ instance TensorProduct.isCentral
       Subalgebra.coe_val, ← ha, ← hb]
     rw [Algebra.ofId_apply, Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply',
       Algebra.TensorProduct.algebraMap_apply, Algebra.TensorProduct.tmul_mul_tmul]
-    simp only [LinearMap.mul_apply', one_mul, mul_one]
+    simp only [one_mul, mul_one]
     rw [← Algebra.ofId_apply, ← Algebra.ofId_apply]
   | add x y hx hy =>
     obtain ⟨kx, hx⟩ := hx
@@ -429,7 +429,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
           ← Finset.sum_disjUnion]
         pick_goal 2
         · rw [← Finset.disjoint_erase_comm]
-          simp only [Finset.erase_singleton, Finset.image_empty, Finset.disjoint_empty_left]
+          simp only [Finset.erase_singleton, Finset.disjoint_empty_left]
         refine Finset.sum_congr ?_ fun _ _ => rfl
         ext x
         simp only [Finset.disjUnion_eq_union, Finset.mem_union, Finset.mem_singleton,
@@ -562,7 +562,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
       rintro x -
       rw [SetLike.mem_coe]
       induction x using TensorProduct.induction_on with
-      | zero => simp [TwoSidedIdeal.zero_mem]
+      | zero => simp
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
         exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
@@ -603,7 +603,7 @@ instance TensorProduct.simple
       rintro x -
       rw [SetLike.mem_coe]
       induction x using TensorProduct.induction_on with
-      | zero => simp [TwoSidedIdeal.zero_mem]
+      | zero => simp
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
         exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
@@ -629,14 +629,14 @@ instance baseChange
       refine ⟨k • l, ?_⟩
       simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.map_tmul,
         Subalgebra.coe_val, ← hk]
-      simp only [Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
+      simp only [Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self,
         RingHom.id_apply]
       rw [TensorProduct.smul_tmul, Algebra.algebraMap_eq_smul_one]
     | add x y hx hy =>
       obtain ⟨kx, (hkx : kx ⊗ₜ 1 = _)⟩ := hx
       obtain ⟨ky, (hky : ky ⊗ₜ 1 = _)⟩ := hy
       exact ⟨kx + ky, by simp only [AlgHom.toRingHom_eq_coe, map_add, RingHom.coe_coe,
-        Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.id.map_eq_id,
+        Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self,
         RingHom.id_apply, hkx, hky]⟩
 
 end IsCentralSimple

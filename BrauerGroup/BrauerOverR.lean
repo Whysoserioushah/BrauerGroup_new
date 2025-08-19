@@ -152,7 +152,7 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
           by_contra!
           haveI := hAB.trans this
           tauto
-        simp [this]
+        simpa using this
   map_zero' := by
     change Quotient.lift _ _ (Quotient.mk'' (BrauerGroup.one_in')) = 0
     simp only [dite_eq_ite, Quotient.lift_mk, ite_eq_left_iff, one_ne_zero, imp_false,
