@@ -9,10 +9,7 @@ open scoped TensorProduct
 
 section polymorphic
 
-variable (K F E K_bar F_bar: Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
-  [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
-  [hF_bar : IsAlgClosure F F_bar] (A : CSA K)
-  (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
+
 
 suppress_compilation
 
@@ -70,6 +67,11 @@ def matrixEquivTensor' (n R A : Type*) [CommSemiring R] [CommSemiring A]
 @[simp] lemma matrixEquivTensor'_symm_apply (n R A : Type*) [CommSemiring R] [CommSemiring A]
     [Algebra R A] [Fintype n] [DecidableEq n] (a : A) (m : Matrix n n R) :
     (matrixEquivTensor' n R A).symm (a ⊗ₜ m) = a • (m.map (algebraMap R A)) := rfl
+
+variable (K F E K_bar F_bar: Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
+  [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
+  [hF_bar : IsAlgClosure F F_bar] (A : CSA K)
+  (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
 
 section defs
 
@@ -525,5 +527,9 @@ def reducedTraceLinearMap : A →ₗ[K] F where
   toFun := reducedTrace e
   map_add' := by simp [reducedTrace, TensorProduct.tmul_add]
   map_smul' := by simp [reducedTrace_smul]
+
+lemma reducedNorm_ne_zero_iff (a : A) : reducedNorm e a ≠ 0 ↔ IsUnit a := by
+
+  sorry
 
 end monomorphic
