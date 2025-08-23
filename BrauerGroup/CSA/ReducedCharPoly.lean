@@ -7,9 +7,11 @@ universe u v w
 
 open scoped TensorProduct
 
-variable (K F E K_bar F_bar: Type u) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
+section polymorphic
+
+variable (K F E K_bar F_bar: Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
   [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
-  [hF_bar : IsAlgClosure F F_bar] (A : CSA.{u, u} K)
+  [hF_bar : IsAlgClosure F F_bar] (A : CSA K)
   (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
 
 suppress_compilation
@@ -58,14 +60,14 @@ lemma Algebra.TensorProduct.assoc'_apply (R S R' A B C : Type*) [CommSemiring R]
 --     rw [map_smul]
 --     simp
 
-def matrixEquivTensor'.{u_1, u_2, u_3} (n : Type u_1) (R : Type u_2) (A : Type u_3) [CommSemiring R] [CommSemiring A]
+def matrixEquivTensor' (n R A : Type*) [CommSemiring R] [CommSemiring A]
     [Algebra R A] [Fintype n] [DecidableEq n] :
     Matrix n n A ≃ₐ[A] A ⊗[R] Matrix n n R :=
   (AlgEquiv.ofRingEquiv (f := (matrixEquivTensor n R A).symm) <| fun a ↦ by
     ext i j
     simp [matrixEquivTensor, Matrix.algebraMap_eq_diagonal, Matrix.diagonal_apply, Matrix.one_apply] ).symm
 
-@[simp] lemma matrixEquivTensor'_symm_apply.{u_1, u_2, u_3} (n : Type u_1) (R : Type u_2) (A : Type u_3) [CommSemiring R] [CommSemiring A]
+@[simp] lemma matrixEquivTensor'_symm_apply (n R A : Type*) [CommSemiring R] [CommSemiring A]
     [Algebra R A] [Fintype n] [DecidableEq n] (a : A) (m : Matrix n n R) :
     (matrixEquivTensor' n R A).symm (a ⊗ₜ m) = a • (m.map (algebraMap R A)) := rfl
 
@@ -73,7 +75,7 @@ section defs
 
 lemma injective_φ (φ : F →ₐ[K] E) : Function.Injective φ := RingHom.injective _
 
-variable {K F E } in
+variable {K F E} in
 @[simps]
 def φ_m (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F →ₐ[K] Matrix (Fin n) (Fin n) E where
   toFun := fun M ↦ (fun i j ↦ φ (M i j))
@@ -146,7 +148,7 @@ end defs
 
 variable {K E F} in
 omit [NeZero n] in
-lemma mat_over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A) :
+lemma mat_over_extension (φ : F →ₐ[K] E) (a : A) :
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, g (1 ⊗ₜ a) =
     φ.mapMatrix (e (1 ⊗ₜ a)) := by
   use g e φ
@@ -166,7 +168,7 @@ def ReducedCharPoly (a : A) : Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a))
 namespace ReducedCharPoly
 
 omit [NeZero n] in
-lemma over_extension [Algebra F E] (φ : F →ₐ[K] E) (a : A) :
+lemma over_extension (φ : F →ₐ[K] E) (a : A) :
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, ReducedCharPoly g a =
     Polynomial.mapAlgHom φ (ReducedCharPoly e a) := by
   obtain ⟨g, hg⟩ := mat_over_extension A n e φ a
@@ -232,7 +234,32 @@ lemma Matrix.reindex_diagonal_charpoly (r n m : ℕ) (eq : m = r * n)
 
 lemma _root_.Matrix.charpoly.similar_eq (n : ℕ) (u : (Matrix (Fin n) (Fin n) F)ˣ)
     (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹) :
-    A.charpoly = B.charpoly := sorry
+    A.charpoly = B.charpoly := by
+  conv_lhs => rw [Matrix.charpoly, Matrix.charmatrix, h]
+  have : (Matrix.scalar (Fin n)) (Polynomial.X (R := F)) = Polynomial.C.mapMatrix u.1 *
+      (Matrix.scalar (Fin n)) (Polynomial.X (R := F)) * Polynomial.C.mapMatrix u⁻¹.1 := by
+    ext1 i j
+    simp only [Matrix.scalar_apply, Matrix.diagonal_apply, RingHom.mapMatrix_apply,
+      Matrix.coe_units_inv, Matrix.mul_apply, Matrix.map_apply, mul_ite, mul_zero,
+      Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
+    split_ifs with hij
+    all_goals
+      simp_rw [mul_comm _ Polynomial.X, mul_assoc, ← Polynomial.C_mul]
+      rw [← Finset.mul_sum, ← map_sum, ← Matrix.mul_apply]
+      simp [hij]
+  rw [this, map_mul, map_mul, ← sub_mul, ← mul_sub, Matrix.det_mul, Matrix.det_mul]
+  change _ * B.charpoly * _ = _
+  rw [mul_comm, ← mul_assoc, ← Matrix.det_mul, ← map_mul]
+  simp
+
+end polymorphic
+
+section monomorphic
+
+variable (K F E K_bar F_bar: Type u) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
+  [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
+  [hF_bar : IsAlgClosure F F_bar] (A : CSA.{u, u} K)
+  (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
 
 set_option synthInstance.maxHeartbeats 80000 in
 set_option maxHeartbeats 600000 in
@@ -362,19 +389,141 @@ lemma mem_Kx (a : A) : ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.
     Finsupp.coe_mk]
   exact fixed2 k|>.choose_spec.symm
 
-end
--- abbrev galois_fixed_Kx_mem (a : A) : K[X] := (mem_Kx K F F_bar A n e a).choose
+section field_ext
 
-lemma unique_onver_split (L : Type*) [Field L] [Algebra K L] [IsGalois K L]
-    (e1 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (e2 : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E)
-    (e3 : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) (a : A) :
-    ∃ f g : K[X], ReducedCharPoly e1 a = f.mapAlgHom (Algebra.ofId K F) ∧
-    ReducedCharPoly e2 a = g.mapAlgHom (Algebra.ofId K E) ∧ f = g := by
+noncomputable def algClosure_ext (L F F_bar: Type*) [Field F] [Field L] [Field F_bar] [Algebra F L]
+    [Algebra F F_bar] [FiniteDimensional F L] [IsAlgClosure F F_bar] : Algebra L F_bar :=
+  haveI : IsAlgClosed F_bar := IsAlgClosure.isAlgClosed F
+  haveI : Algebra.IsAlgebraic F L := by exact Algebra.IsAlgebraic.of_finite F L
+  RingHom.toAlgebra <| IsAlgClosed.lift (R := F) (S := L) (M := F_bar)
+
+end field_ext
+
+
+include F_bar in
+set_option maxSynthPendingDepth 3 in
+set_option synthInstance.maxHeartbeats 80000 in
+set_option maxHeartbeats 1600000 in
+lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L] [Algebra L L_bar]
+    [FiniteDimensional K L] [IsGalois K L] [hL : IsAlgClosure L L_bar]
+    (e' : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) (a : A) :
+      ∃ f g : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.ofId K F) ∧
+      ReducedCharPoly e' a = g.mapAlgHom (Algebra.ofId K L) ∧ f = g := by
+  obtain ⟨f, hf⟩ := mem_Kx K F F_bar A n e a
+  obtain ⟨g, hg⟩ := mem_Kx K L L_bar A n e' a
+  refine ⟨f, g, hf, hg, ?_⟩
+  let E := (F ⊗[K] L) ⧸ (Ideal.exists_maximal (F ⊗[K] L)).choose
+  have : IsField E := Ideal.Quotient.maximal_ideal_iff_isField_quotient _|>.1 (Ideal.exists_maximal _).choose_spec
+  letI alg : Algebra K E := Ideal.Quotient.algebra K
+  let φ : F →ₐ[K] E := {
+    toFun m := Ideal.Quotient.mk _ (m ⊗ₜ 1)
+    map_one' := by simp [← Algebra.TensorProduct.one_def]
+    map_mul' x y := by rw [← mul_one 1, ← Algebra.TensorProduct.tmul_mul_tmul, map_mul, mul_one]
+    map_zero' := by simp
+    map_add' := by simp [TensorProduct.add_tmul]
+    commutes' := by simpa [Algebra.algebraMap_eq_smul_one, ← TensorProduct.smul_tmul', ←
+      Algebra.TensorProduct.one_def] using fun _ ↦ by rfl }
+  let ψ : L →ₐ[K] E := {
+    toFun m := Ideal.Quotient.mk _ (1 ⊗ₜ m)
+    map_one' := by simp [← Algebra.TensorProduct.one_def]
+    map_mul' x y := by rw [← mul_one 1, ← Algebra.TensorProduct.tmul_mul_tmul, map_mul, mul_one]
+    map_zero' := by simp
+    map_add' := by simp [TensorProduct.tmul_add]
+    commutes' := by simpa [Algebra.algebraMap_eq_smul_one, ← TensorProduct.smul_tmul', ←
+      Algebra.TensorProduct.one_def] using fun _ ↦ by rfl }
+  obtain ⟨g1, hg1⟩ := @ReducedCharPoly.over_extension K F E _ _ (IsField.toField this) _
+    (Ideal.Quotient.algebra K) A n e φ a
+  obtain ⟨g2, hg2⟩ := @ReducedCharPoly.over_extension K L E _ _ (IsField.toField this) _
+    (Ideal.Quotient.algebra K) A n e' ψ a
+  -- haveI alge : Algebra F E := RingHom.toAlgebra φ.toRingHom
+  -- have findim' : FiniteDimensional F E := Module.Finite.quotient F (Ideal.exists_maximal (F ⊗[K] L)).choose
+  have alg' : Algebra E F_bar := @algClosure_ext E F F_bar _ (IsField.toField this) _ (RingHom.toAlgebra φ.toRingHom) _
+    (by
+      convert Module.Finite.quotient F (Ideal.exists_maximal (F ⊗[K] L)).choose
+      ext r m
+      change φ r * m = r • m
+      simp [φ]
+      induction m using Submodule.Quotient.induction_on with
+      | H m =>
+      induction m using TensorProduct.induction_on with
+      | tmul x y =>
+        simp only [Ideal.Quotient.mk_eq_mk]
+        rw [← map_mul, Algebra.TensorProduct.tmul_mul_tmul, one_mul, ← smul_eq_mul,
+          ← TensorProduct.smul_tmul']
+        rfl
+      | add x y hx hy =>
+        change _ * Ideal.Quotient.mk _ _ = r • Ideal.Quotient.mk _ _ at hx hy
+        simp [map_add, mul_add, hx, hy]
+      | zero => simp) _
+  have algclo : IsAlgClosed F_bar := IsAlgClosure.isAlgClosed F
+  have tow : IsScalarTower F E F_bar := {
+    smul_assoc f e f0 := by
+      induction e using Submodule.Quotient.induction_on with
+      | H z =>
+      induction z using TensorProduct.induction_on with
+      | zero => simp
+      | tmul x y =>
+        -- change _ = f • (IsAlgClosed.lift (S := E) (M := F_bar) _)
+        sorry
+      | add x y _ _ => sorry
+  }
+  have hg12 := @eq_polys K E F_bar _ (IsField.toField this) _ (Ideal.Quotient.algebra K)
+    alg' (@isAlgClosure_iff E (IsField.toField this) F_bar _ alg' |>.2
+    ⟨IsAlgClosure.isAlgClosed F, @Algebra.IsAlgebraic.tower_top F E F_bar _ this.toField _ _ _ _ tow _⟩)
+    A n _ g1 g2 a
 
   sorry
 
--- lemma 4 ?????
+end
+variable {K F A n} in
+def reducedNorm (a : A) := Matrix.det (e (1 ⊗ₜ a))
+
+variable {K F A n} in
+def reducedTrace (a : A) := Matrix.trace (e (1 ⊗ₜ a))
 
 theorem equalMatrixCharpoly (M : Matrix (Fin n) (Fin n) K) :
     @ReducedCharPoly K K _ _ _ ⟨.of K (Matrix (Fin n) (Fin n) K)⟩ n
     (Algebra.TensorProduct.lid _ _) M = M.charpoly := by simp [ReducedCharPoly]
+
+open Algebra.TensorProduct in
+omit [NeZero n] in
+lemma reducedNorm_mul (a b : A) : reducedNorm e (a * b) = reducedNorm e a * reducedNorm e b :=
+  show Matrix.det _ = _ from (mul_one (M := F) 1).symm ▸ tmul_mul_tmul (R := K) (1 : F) 1 a b ▸
+    map_mul e _ _ ▸ Matrix.det_mul _ _
+
+open Algebra.TensorProduct in
+omit [NeZero n] in
+lemma reducedTrace_smul (a : A) (r : K) : reducedTrace e (r • a) = r • reducedTrace e a := by
+  simpa only [reducedTrace, ← Matrix.trace_smul, ← TensorProduct.smul_tmul,
+    ← TensorProduct.smul_tmul'] using congr_arg _ <| LinearMapClass.map_smul_of_tower e r (1 ⊗ₜ a)
+
+open Algebra.TensorProduct in
+omit [NeZero n] in
+lemma reducedTrace_mul_comm (a b : A) : reducedTrace e (a * b) = reducedTrace e (b * a) := by
+  simp only [reducedTrace]
+  rw [← mul_one 1, ← tmul_mul_tmul, map_mul, Matrix.trace_mul_comm, ← map_mul, tmul_mul_tmul]
+
+omit [NeZero n] in
+lemma reducedNorm_algebraMap (k : K) : reducedNorm e (algebraMap K A k) = (algebraMap K F k) ^ n := by
+  simp [reducedNorm, Algebra.algebraMap_eq_smul_one, LinearMapClass.map_smul_of_tower e,
+    ← Algebra.TensorProduct.one_def, smul_pow]
+
+omit [NeZero n] in
+lemma reducedTrace_algebraMap (k : K) : reducedTrace e (algebraMap K A k) = n • (algebraMap K F k) := by
+  simp [reducedTrace, Algebra.algebraMap_eq_smul_one, LinearMapClass.map_smul_of_tower e,
+    ← Algebra.TensorProduct.one_def]
+
+@[simps]
+def reducedNormHom : A →*₀ F where
+  toFun := reducedNorm e
+  map_zero' := by simp [reducedNorm]
+  map_one' := by simp [reducedNorm, ← Algebra.TensorProduct.one_def]
+  map_mul' := by simp [reducedNorm_mul]
+
+@[simps]
+def reducedTraceLinearMap : A →ₗ[K] F where
+  toFun := reducedTrace e
+  map_add' := by simp [reducedTrace, TensorProduct.tmul_add]
+  map_smul' := by simp [reducedTrace_smul]
+
+end monomorphic
