@@ -1,5 +1,7 @@
 import BrauerGroup.DoubleCentralizer
 import BrauerGroup.SplittingOfCSA
+import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
+import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 import Mathlib.Algebra.Central.TensorProduct
 import Mathlib.RingTheory.SimpleRing.Congr
 
@@ -9,8 +11,6 @@ open scoped TensorProduct
 
 section polymorphic
 
-
-
 suppress_compilation
 
 -- instance (R R' A B C : Type) [CommSemiring R]
@@ -19,23 +19,6 @@ suppress_compilation
 --     [IsScalarTower R R' A] [IsScalarTower R R' B]
 --     : NonUnitalSemiring ((A ⊗[R'] B) ⊗[R] C) := inferInstance
 
-set_option maxSynthPendingDepth 2 in
-def Algebra.TensorProduct.assoc' (R S R' A B C : Type*) [CommSemiring R] [CommSemiring S]
-    [CommSemiring R'] [Semiring A] [Semiring B] [Semiring C] [Algebra R R'] [Algebra R A]
-    [Algebra R' A] [Algebra R B] [Algebra R' B] [Algebra R C]
-    [IsScalarTower R R' A] [IsScalarTower R R' B] [Algebra S A] [Algebra R S] [Algebra R' S]
-    [IsScalarTower R' S A] [IsScalarTower R S A] :
-    (A ⊗[R'] B) ⊗[R] C ≃ₐ[S] A ⊗[R'] (B ⊗[R] C) :=
-  AlgEquiv.ofLinearEquiv (TensorProduct.AlgebraTensorModule.assoc _ _ _ _ _ _)
-    rfl (LinearMap.map_mul_iff _|>.2 <| by ext; simp)
-
-@[simp]
-lemma Algebra.TensorProduct.assoc'_apply (R S R' A B C : Type*) [CommSemiring R] [CommSemiring S]
-    [CommSemiring R'] [Semiring A] [Semiring B] [Semiring C] [Algebra R R'] [Algebra R A]
-    [Algebra R' A] [Algebra R B] [Algebra R' B] [Algebra R C]
-    [IsScalarTower R R' A] [IsScalarTower R R' B] [Algebra S A] [Algebra R S] [Algebra R' S]
-    [IsScalarTower R' S A] [IsScalarTower R S A] (a : A) (b : B) (c : C) :
-    (Algebra.TensorProduct.assoc' R S R' A B C) ((a ⊗ₜ b) ⊗ₜ c) = a ⊗ₜ (b ⊗ₜ c) := rfl
   -- [inst_3 : Algebra R A] [inst_4 : Algebra R B] [inst_5 : AddCommMonoid M] [inst_6 : Module R M] [inst_7 : Module A M]
   -- [inst_8 : Module B M] [inst_9 : IsScalarTower R A M] [inst_10 : IsScalarTower R B M] [inst_11 : SMulCommClass A B M]
   -- [inst_12 : AddCommMonoid P] [inst_13 : Module A P] [inst_14 : AddCommMonoid Q] [inst_15 : Module R Q]
@@ -56,17 +39,6 @@ lemma Algebra.TensorProduct.assoc'_apply (R S R' A B C : Type*) [CommSemiring R]
 --     change (AlgEquiv.restrictScalars K (AlgEquiv.ofInjectiveField (Algebra.ofId F E)).symm) _ * _ = _
 --     rw [map_smul]
 --     simp
-
-def matrixEquivTensor' (n R A : Type*) [CommSemiring R] [CommSemiring A]
-    [Algebra R A] [Fintype n] [DecidableEq n] :
-    Matrix n n A ≃ₐ[A] A ⊗[R] Matrix n n R :=
-  (AlgEquiv.ofRingEquiv (f := (matrixEquivTensor n R A).symm) <| fun a ↦ by
-    ext i j
-    simp [matrixEquivTensor, Matrix.algebraMap_eq_diagonal, Matrix.diagonal_apply, Matrix.one_apply] ).symm
-
-@[simp] lemma matrixEquivTensor'_symm_apply (n R A : Type*) [CommSemiring R] [CommSemiring A]
-    [Algebra R A] [Fintype n] [DecidableEq n] (a : A) (m : Matrix n n R) :
-    (matrixEquivTensor' n R A).symm (a ⊗ₜ m) = a • (m.map (algebraMap R A)) := rfl
 
 variable (K F E K_bar F_bar: Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
   [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
@@ -234,24 +206,14 @@ lemma Matrix.reindex_diagonal_charpoly (r n m : ℕ) (eq : m = r * n)
     Matrix.charpoly_reindex, blockDiagonal_charpoly]
   simp
 
+open Matrix Polynomial in
 lemma _root_.Matrix.charpoly.similar_eq (n : ℕ) (u : (Matrix (Fin n) (Fin n) F)ˣ)
     (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹) :
     A.charpoly = B.charpoly := by
-  conv_lhs => rw [Matrix.charpoly, Matrix.charmatrix, h]
-  have : (Matrix.scalar (Fin n)) (Polynomial.X (R := F)) = Polynomial.C.mapMatrix u.1 *
-      (Matrix.scalar (Fin n)) (Polynomial.X (R := F)) * Polynomial.C.mapMatrix u⁻¹.1 := by
-    ext1 i j
-    simp only [Matrix.scalar_apply, Matrix.diagonal_apply, RingHom.mapMatrix_apply,
-      Matrix.coe_units_inv, Matrix.mul_apply, Matrix.map_apply, mul_ite, mul_zero,
-      Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
-    split_ifs with hij
-    all_goals
-      simp_rw [mul_comm _ Polynomial.X, mul_assoc, ← Polynomial.C_mul]
-      rw [← Finset.mul_sum, ← map_sum, ← Matrix.mul_apply]
-      simp [hij]
-  rw [this, map_mul, map_mul, ← sub_mul, ← mul_sub, Matrix.det_mul, Matrix.det_mul]
-  change _ * B.charpoly * _ = _
-  rw [mul_comm, ← mul_assoc, ← Matrix.det_mul, ← map_mul]
+  have h2 : A.charmatrix = C.mapMatrix u.1 * B.charmatrix * C.mapMatrix u.1⁻¹:= by
+    simp only [charmatrix, h, coe_units_inv, RingHom.mapMatrix_apply, Matrix.map_mul, mul_sub, sub_mul] 
+    simp [(by aesop : u.1.map C * (diagonal fun x ↦ X) = (diagonal fun x ↦ X) * u.1.map C), mul_assoc]
+  rw [charpoly, charpoly, h2, det_mul, det_mul, mul_comm, ← mul_assoc, ← det_mul]
   simp
 
 end polymorphic
@@ -529,7 +491,7 @@ def reducedTraceLinearMap : A →ₗ[K] F where
   map_smul' := by simp [reducedTrace_smul]
 
 lemma reducedNorm_ne_zero_iff (a : A) : reducedNorm e a ≠ 0 ↔ IsUnit a := by
-
+  
   sorry
 
 end monomorphic
