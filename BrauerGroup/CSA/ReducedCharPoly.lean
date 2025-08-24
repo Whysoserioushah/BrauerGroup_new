@@ -2,6 +2,8 @@ import BrauerGroup.DoubleCentralizer
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
 import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
+import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
+import BrauerGroup.Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Basic
 import Mathlib.Algebra.Central.TensorProduct
 import Mathlib.RingTheory.SimpleRing.Congr
 
@@ -47,12 +49,10 @@ variable (K F E K_bar F_bar: Type*) [Field K] [Field F] [Field E] [Field F_bar] 
 
 section defs
 
-lemma injective_φ (φ : F →ₐ[K] E) : Function.Injective φ := RingHom.injective _
-
 variable {K F E} in
 @[simps]
 def φ_m (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F →ₐ[K] Matrix (Fin n) (Fin n) E where
-  toFun := fun M ↦ (fun i j ↦ φ (M i j))
+  toFun M := fun i j ↦ φ (M i j)
   map_one' := by ext i j; simp [Matrix.one_apply]
   map_mul' M1 M2 := by ext i j; simp [Matrix.mul_apply]
   map_zero' := by ext; simp
@@ -65,7 +65,7 @@ def φ_m (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F →ₐ[K] Matrix (Fin n
 omit [NeZero n] in
 variable {K F E} in
 lemma φ_m_inj (φ : F →ₐ[K] E) : Function.Injective (φ_m n φ) := fun M N h ↦ funext fun i ↦
-  funext fun j ↦ by simp [← Matrix.ext_iff] at h; exact (injective_φ _ _ _ φ) (h i j)
+  funext fun j ↦ by simp [← Matrix.ext_iff] at h; exact φ.injective (h i j)
 
 variable {K F E} in
 abbrev e1Aux (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) φ.range ≃ₐ[K] (φ_m n φ).range where
@@ -155,67 +155,6 @@ lemma over_extension (φ : F →ₐ[K] E) (a : A) :
 
 end ReducedCharPoly
 
-/-- A subtype of a `Prod` that depends only on the second component is equivalent to the
-first type times a corresponding subtype of the second type. -/
-@[simps]
-def Equiv.prodSubtypeSndEquivProdSubtype {α β} {p : β → Prop} :
-    {s : α × β // p s.2} ≃ α × {b // p b} where
-  toFun x := ⟨x.1.1, x.1.2, x.2⟩
-  invFun x := ⟨⟨x.1, x.2⟩, x.2.2⟩
-  left_inv _ := rfl
-  right_inv _ := rfl
-
-@[simps!]
-def thing' {α β : Type*} (b : β) : {i : α × β // i.2 = b} ≃ α :=
-  Equiv.prodSubtypeSndEquivProdSubtype.trans (Equiv.prodUnique α {i : β // i = b})
-
-open Matrix in
-theorem Matrix.blockDiagonal_toSquareBlock {r} {n : Type*} [DecidableEq n] [Fintype n]
-    (A : Fin r → Matrix n n F) {i} :
-    (blockDiagonal A).toSquareBlock Prod.snd i = (A i).reindex (thing' _).symm (thing' _).symm := by
-  aesop (add simp toSquareBlock_def)
-
-theorem Matrix.blockDiagonal_charpoly_aux {r} {n : Type*} [DecidableEq n] [Fintype n]
-    (A : Fin r → Matrix n n F) {i} :
-    ((Matrix.blockDiagonal A).toSquareBlock Prod.snd i).charpoly = (A i).charpoly := by
-  rw [blockDiagonal_toSquareBlock, Matrix.charpoly_reindex]
-
-theorem Matrix.blockDiagonal_charpoly {r} {n : Type*}  [DecidableEq n] [Fintype n]
-    (A : Fin r → Matrix n n F) :
-    (Matrix.blockDiagonal A).charpoly = ∏ i : Fin r, (A i).charpoly := by
-  have hM := Matrix.blockTriangular_blockDiagonal A
-  simp only [Matrix.charpoly, hM.charmatrix.det_fintype, ← Matrix.charmatrix_toSquareBlock]
-  -- TODO: make det_fintype for charpoly
-  -- ie BlockTriangular.charpoly for Fintype α
-  congr! with i hi
-  exact blockDiagonal_charpoly_aux _ _
-
-theorem Matrix.blockDiagonal_const_charpoly (r n : ℕ)
-    (A : Matrix (Fin n) (Fin n) F) :
-    (Matrix.blockDiagonal fun _ : Fin r => A).charpoly = A.charpoly ^ r := by
-  rw [blockDiagonal_charpoly]
-  simp
-
-lemma Matrix.reindex_diagonal_charpoly (r n m : ℕ) (eq : m = r * n)
-    (A : Matrix (Fin n) (Fin n) F) :
-    (Matrix.reindexAlgEquiv F F
-      (finProdFinEquiv.trans (finCongr (by rw [eq, mul_comm])) : Fin n × Fin r ≃ Fin m)
-    ((Matrix.blockDiagonalRingHom (Fin n) (Fin r) F) fun _ ↦ A)).charpoly =
-    A.charpoly ^ r := by
-  rw [Matrix.blockDiagonalRingHom_apply, Matrix.reindexAlgEquiv_apply,
-    Matrix.charpoly_reindex, blockDiagonal_charpoly]
-  simp
-
-open Matrix Polynomial in
-lemma _root_.Matrix.charpoly.similar_eq (n : ℕ) (u : (Matrix (Fin n) (Fin n) F)ˣ)
-    (A B : Matrix (Fin n) (Fin n) F) (h : A = u * B * u⁻¹) :
-    A.charpoly = B.charpoly := by
-  have h2 : A.charmatrix = C.mapMatrix u.1 * B.charmatrix * C.mapMatrix u.1⁻¹:= by
-    simp only [charmatrix, h, coe_units_inv, RingHom.mapMatrix_apply, Matrix.map_mul, mul_sub, sub_mul] 
-    simp [(by aesop : u.1.map C * (diagonal fun x ↦ X) = (diagonal fun x ↦ X) * u.1.map C), mul_assoc]
-  rw [charpoly, charpoly, h2, det_mul, det_mul, mul_comm, ← mul_assoc, ← det_mul]
-  simp
-
 end polymorphic
 
 section monomorphic
@@ -283,9 +222,9 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
     obtain ⟨u, hu⟩ := SkolemNoether' F _ _ h g
     specialize hu (1 ⊗ₜ a)
     delta ReducedCharPoly
-    rw [Matrix.charpoly.similar_eq _ m u _ _ hu]
+    rw [Matrix.charpoly.similar_eq m u _ _ hu]
     simp only [h, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
-    exact Matrix.reindex_diagonal_charpoly F _ _ _ eq.symm (e (1 ⊗ₜ[K] a))⟩
+    exact Matrix.reindex_diagonal_charpoly _ _ _ eq.symm (e (1 ⊗ₜ[K] a))⟩
 
 include F_bar in
 lemma eq_polys (f1 f2 : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F) (a : A) :
@@ -491,7 +430,7 @@ def reducedTraceLinearMap : A →ₗ[K] F where
   map_smul' := by simp [reducedTrace_smul]
 
 lemma reducedNorm_ne_zero_iff (a : A) : reducedNorm e a ≠ 0 ↔ IsUnit a := by
-  
+
   sorry
 
 end monomorphic
