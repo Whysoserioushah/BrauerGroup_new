@@ -1,5 +1,5 @@
-import BrauerGroup.DoubleCentralizer
 import BrauerGroup.SplittingOfCSA
+import BrauerGroup.DoubleCentralizer
 import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
 import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
@@ -11,7 +11,7 @@ universe u v w
 
 open scoped TensorProduct
 
-section polymorphic
+section poly
 
 suppress_compilation
 
@@ -42,9 +42,9 @@ suppress_compilation
 --     rw [map_smul]
 --     simp
 
-variable (K F E K_bar F_bar: Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
+variable (K F E K_bar F_bar A: Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
   [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
-  [hF_bar : IsAlgClosure F F_bar] (A : CSA K)
+  [hF_bar : IsAlgClosure F F_bar] [Ring A] [Algebra K A] [Algebra.IsCentral K A] [IsSimpleRing A]
   (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
 
 section defs
@@ -121,7 +121,7 @@ abbrev g (φ : F →ₐ[K] E) : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
 end defs
 
 variable {K E F} in
-omit [NeZero n] in
+omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma mat_over_extension (φ : F →ₐ[K] E) (a : A) :
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, g (1 ⊗ₜ a) =
     φ.mapMatrix (e (1 ⊗ₜ a)) := by
@@ -141,7 +141,7 @@ def ReducedCharPoly (a : A) : Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a))
 
 namespace ReducedCharPoly
 
-omit [NeZero n] in
+omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma over_extension (φ : F →ₐ[K] E) (a : A) :
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, ReducedCharPoly g a =
     Polynomial.mapAlgHom φ (ReducedCharPoly e a) := by
@@ -155,13 +155,13 @@ lemma over_extension (φ : F →ₐ[K] E) (a : A) :
 
 end ReducedCharPoly
 
-end polymorphic
+end poly
 
-section monomorphic
+section mono
 
-variable (K F E K_bar F_bar: Type u) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
+variable (K F E K_bar F_bar A: Type u) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
   [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
-  [hF_bar : IsAlgClosure F F_bar] (A : CSA.{u, u} K)
+  [hF_bar : IsAlgClosure F F_bar] [Ring A] [Algebra K A] [Algebra.IsCentral K A] [IsSimpleRing A]
   (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
 
 set_option synthInstance.maxHeartbeats 80000 in
@@ -334,10 +334,10 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
     map_add' := by simp [TensorProduct.tmul_add]
     commutes' := by simpa [Algebra.algebraMap_eq_smul_one, ← TensorProduct.smul_tmul', ←
       Algebra.TensorProduct.one_def] using fun _ ↦ by rfl }
-  obtain ⟨g1, hg1⟩ := @ReducedCharPoly.over_extension K F E _ _ (IsField.toField this) _
-    (Ideal.Quotient.algebra K) A n e φ a
-  obtain ⟨g2, hg2⟩ := @ReducedCharPoly.over_extension K L E _ _ (IsField.toField this) _
-    (Ideal.Quotient.algebra K) A n e' ψ a
+  obtain ⟨g1, hg1⟩ := @ReducedCharPoly.over_extension K F E A _ _ (IsField.toField this) _
+    (Ideal.Quotient.algebra K) _ _ _ e φ a
+  obtain ⟨g2, hg2⟩ := @ReducedCharPoly.over_extension K L E A _ _ (IsField.toField this) _
+    (Ideal.Quotient.algebra K) _ _ _ e' ψ a
   -- haveI alge : Algebra F E := RingHom.toAlgebra φ.toRingHom
   -- have findim' : FiniteDimensional F E := Module.Finite.quotient F (Ideal.exists_maximal (F ⊗[K] L)).choose
   have alg' : Algebra E F_bar := @algClosure_ext E F F_bar _ (IsField.toField this) _ (RingHom.toAlgebra φ.toRingHom) _
@@ -370,12 +370,34 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
         sorry
       | add x y _ _ => sorry
   }
-  have hg12 := @eq_polys K E F_bar _ (IsField.toField this) _ (Ideal.Quotient.algebra K)
-    alg' (@isAlgClosure_iff E (IsField.toField this) F_bar _ alg' |>.2
-    ⟨IsAlgClosure.isAlgClosed F, @Algebra.IsAlgebraic.tower_top F E F_bar _ this.toField _ _ _ _ tow _⟩)
-    A n _ g1 g2 a
+  -- have hg12 := @eq_polys K E F_bar _ (IsField.toField this) _ (Ideal.Quotient.algebra K)
+  --   alg' (@isAlgClosure_iff E (IsField.toField this) F_bar _ alg' |>.2
+  --   ⟨IsAlgClosure.isAlgClosed F, @Algebra.IsAlgebraic.tower_top F E F_bar _ this.toField _ _ _ _ tow _⟩)
+  --   A n _ g1 g2 a
 
   sorry
+
+set_option maxSynthPendingDepth 3 in
+omit [IsGalois K F] [FiniteDimensional K F] in
+theorem invariant_extend_scalars (L L_bar : Type u) [Field L] [Field L_bar] [Algebra F L] [Algebra K L]
+    [Algebra L L_bar] [IsAlgClosure L L_bar] (e0 : L ⊗[F] (F ⊗[K] A) ≃ₐ[L] Matrix (Fin n) (Fin n) L) [IsScalarTower K F L] (a : A) :
+    (ReducedCharPoly e a).mapAlgHom (Algebra.ofId F L) = ReducedCharPoly e0 (1 ⊗ₜ a) := by
+  let e0' : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L := Algebra.TensorProduct.congr
+    (Algebra.TensorProduct.rid F L L).symm AlgEquiv.refl|>.trans <|
+    Algebra.TensorProduct.assoc' _ _ _ _ _ _ |>.trans e0
+  obtain ⟨g, hg⟩ := ReducedCharPoly.over_extension K F L A n e ((Algebra.ofId F L).restrictScalars K) a
+  have : ReducedCharPoly e0' a = ReducedCharPoly e0 (1 ⊗ₜ a) := by simp [ReducedCharPoly, e0']
+  rw [← this, eq_polys K L L_bar A n e0' g a, hg]
+  simp
+
+omit [NeZero n] [IsGalois K F] [FiniteDimensional K F] in
+theorem invariant_algEquiv (A1 A2 L : Type u) [Field L] [Algebra K L] [Ring A1] [Ring A2]
+    [Algebra K A1] [Algebra K A2] [Algebra.IsCentral K A1] [Algebra.IsCentral K A2]
+    [IsSimpleRing A1] [IsSimpleRing A2] (e1 : F ⊗[K] A1 ≃ₐ[F] Matrix (Fin n) (Fin n) F)
+    (f : A1 ≃ₐ[K] A2) (a : A1) :
+    ReducedCharPoly e1 a = ReducedCharPoly (Algebra.TensorProduct.congr
+      AlgEquiv.refl f.symm|>.trans e1) (f a) := by
+  simp [ReducedCharPoly]
 
 end
 variable {K F A n} in
@@ -384,34 +406,35 @@ def reducedNorm (a : A) := Matrix.det (e (1 ⊗ₜ a))
 variable {K F A n} in
 def reducedTrace (a : A) := Matrix.trace (e (1 ⊗ₜ a))
 
+omit [NeZero n] in
 theorem equalMatrixCharpoly (M : Matrix (Fin n) (Fin n) K) :
-    @ReducedCharPoly K K _ _ _ ⟨.of K (Matrix (Fin n) (Fin n) K)⟩ n
+    @ReducedCharPoly K K (Matrix (Fin n) (Fin n) K) _ _ _ _ _ n
     (Algebra.TensorProduct.lid _ _) M = M.charpoly := by simp [ReducedCharPoly]
 
 open Algebra.TensorProduct in
-omit [NeZero n] in
+omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma reducedNorm_mul (a b : A) : reducedNorm e (a * b) = reducedNorm e a * reducedNorm e b :=
   show Matrix.det _ = _ from (mul_one (M := F) 1).symm ▸ tmul_mul_tmul (R := K) (1 : F) 1 a b ▸
     map_mul e _ _ ▸ Matrix.det_mul _ _
 
 open Algebra.TensorProduct in
-omit [NeZero n] in
+omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma reducedTrace_smul (a : A) (r : K) : reducedTrace e (r • a) = r • reducedTrace e a := by
   simpa only [reducedTrace, ← Matrix.trace_smul, ← TensorProduct.smul_tmul,
     ← TensorProduct.smul_tmul'] using congr_arg _ <| LinearMapClass.map_smul_of_tower e r (1 ⊗ₜ a)
 
 open Algebra.TensorProduct in
-omit [NeZero n] in
+omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma reducedTrace_mul_comm (a b : A) : reducedTrace e (a * b) = reducedTrace e (b * a) := by
   simp only [reducedTrace]
   rw [← mul_one 1, ← tmul_mul_tmul, map_mul, Matrix.trace_mul_comm, ← map_mul, tmul_mul_tmul]
 
-omit [NeZero n] in
+omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma reducedNorm_algebraMap (k : K) : reducedNorm e (algebraMap K A k) = (algebraMap K F k) ^ n := by
   simp [reducedNorm, Algebra.algebraMap_eq_smul_one, LinearMapClass.map_smul_of_tower e,
-    ← Algebra.TensorProduct.one_def, smul_pow]
+    ← Algebra.TensorProduct.one_def, _root_.smul_pow]
 
-omit [NeZero n] in
+omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma reducedTrace_algebraMap (k : K) : reducedTrace e (algebraMap K A k) = n • (algebraMap K F k) := by
   simp [reducedTrace, Algebra.algebraMap_eq_smul_one, LinearMapClass.map_smul_of_tower e,
     ← Algebra.TensorProduct.one_def]
@@ -429,8 +452,7 @@ def reducedTraceLinearMap : A →ₗ[K] F where
   map_add' := by simp [reducedTrace, TensorProduct.tmul_add]
   map_smul' := by simp [reducedTrace_smul]
 
-lemma reducedNorm_ne_zero_iff (a : A) : reducedNorm e a ≠ 0 ↔ IsUnit a := by
+-- lemma reducedNorm_ne_zero_iff (a : A) : reducedNorm e a ≠ 0 ↔ IsUnit a :=
+--   ⟨_, fun ha1 ha2 ↦ _⟩
 
-  sorry
-
-end monomorphic
+end mono
