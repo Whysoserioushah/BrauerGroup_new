@@ -90,8 +90,8 @@ abbrev e1' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[K] Matrix (Fin n) (Fi
   <| e1 _ _ _ _ φ|>.trans (e1Aux n φ).symm
 
 variable {K F E} in
-abbrev e1'' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[φ.range] Matrix (Fin n) (Fin n) φ.range := {
-  e1' K F E A n e φ with
+abbrev e1'' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[φ.range] Matrix (Fin n) (Fin n) φ.range where
+  __ := e1' K F E A n e φ
   commutes' := fun ⟨x, ⟨y, eq⟩⟩ ↦ Matrix.ext_iff.1 <| fun i j ↦ by
     simp [AlgEquiv.ofInjectiveField]
     rw [← mul_one ((AlgEquiv.ofInjective φ _).symm ⟨x, _⟩), ← smul_eq_mul, ← TensorProduct.smul_tmul',
@@ -108,7 +108,6 @@ abbrev e1'' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[φ.range] Matrix (Fi
       rfl
     · simp [h]
       exact Subtype.ext rfl
-  }
 
 set_option maxSynthPendingDepth 2 in
 variable {K F E A n} in
@@ -137,7 +136,7 @@ lemma mat_over_extension (φ : F →ₐ[K] E) (a : A) :
   rfl
 
 variable {K F n A} in
-def ReducedCharPoly (a : A) : Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a))
+def ReducedCharPoly (a : A) : Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a)) -- elements in F[X]
 
 namespace ReducedCharPoly
 
@@ -303,6 +302,9 @@ noncomputable def algClosure_ext (L F F_bar: Type*) [Field F] [Field L] [Field F
 end field_ext
 
 
+-- `A` is a central simple algebra over `K`, `F/K` is splitting field with iso `e : F ⊗[K] A ≃ₐ[F] Mₙ(F)`,
+-- `L/K` is another splitting field with iso `e' : L ⊗[K] A ≃ₐ[L] Mₙ(L)`.
+-- ∀ a : A, reduced charpoly of `a` using `e` is the same as using `e'`.
 include F_bar in
 set_option maxSynthPendingDepth 3 in
 set_option synthInstance.maxHeartbeats 80000 in
@@ -400,6 +402,7 @@ theorem invariant_algEquiv (A1 A2 L : Type u) [Field L] [Algebra K L] [Ring A1] 
   simp [ReducedCharPoly]
 
 end
+
 variable {K F A n} in
 def reducedNorm (a : A) := Matrix.det (e (1 ⊗ₜ a))
 
@@ -452,7 +455,25 @@ def reducedTraceLinearMap : A →ₗ[K] F where
   map_add' := by simp [reducedTrace, TensorProduct.tmul_add]
   map_smul' := by simp [reducedTrace_smul]
 
--- lemma reducedNorm_ne_zero_iff (a : A) : reducedNorm e a ≠ 0 ↔ IsUnit a :=
---   ⟨_, fun ha1 ha2 ↦ _⟩
+lemma reducedNorm_ne_zero_iff (a : A) : reducedNorm e a ≠ 0 ↔ IsUnit a :=
+  ⟨sorry, fun ha1 ha2 ↦ sorry⟩
+
+theorem inv_under_extend (L L_bar : Type u) [Field L] [Field L_bar] [Algebra F L] [Algebra K L]
+    [Algebra L L_bar] [IsAlgClosure L L_bar] (e0 : L ⊗[F] (F ⊗[K] A) ≃ₐ[L] Matrix (Fin n) (Fin n) L)
+    [IsScalarTower K F L] (a : A) : reducedNorm e0 (1 ⊗ₜ a) = algebraMap F L (reducedNorm e a) := by
+  -- use det is coeffiecient of charpoly
+  sorry
+
+-- mimic what I did above, write a verision for reduced trace
+
+theorem inv_under_algEquiv (A1 A2 L : Type u) [Field L] [Algebra K L] [Ring A1] [Ring A2]
+    [Algebra K A1] [Algebra K A2] [Algebra.IsCentral K A1] [Algebra.IsCentral K A2]
+    [IsSimpleRing A1] [IsSimpleRing A2] (e1 : F ⊗[K] A1 ≃ₐ[F] Matrix (Fin n) (Fin n) F)
+    (f : A1 ≃ₐ[K] A2) (a : A1) :
+    reducedNorm e1 a = reducedNorm
+    (Algebra.TensorProduct.congr AlgEquiv.refl f.symm|>.trans e1) (f a) := by
+  sorry
+
+-- mimic what I did above, write a verision for reduced trace
 
 end mono
