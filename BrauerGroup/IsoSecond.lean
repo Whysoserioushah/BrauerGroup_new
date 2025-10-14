@@ -556,8 +556,7 @@ instance : IsScalarTower F C (M α β) := .of_algebraMap_smul <| fun x m ↦ by
   simp only [smul_mk, Finsupp.smul_single, smul_eq_mul, isUnit_iff_ne_zero, ne_eq,
     Units.ne_zero, not_false_eq_true, IsUnit.inv_mul_cancel_left, sub_left_inj]
   congr 3
-  field_simp [_root_.mul_assoc]
-  simp [mul_comm]
+  field_simp
 
 open CrossProductAlgebra TensorProduct in
 set_option maxSynthPendingDepth 3 in

@@ -133,7 +133,6 @@ lemma mat_over_extension (φ : F →ₐ[K] E) (a : A) :
     Algebra.TensorProduct.one_def]
   ext i j
   simp [Matrix.map_apply]
-  rfl
 
 variable {K F n A} in
 def ReducedCharPoly (a : A) : Polynomial F := Matrix.charpoly (e (1 ⊗ₜ a)) -- elements in F[X]

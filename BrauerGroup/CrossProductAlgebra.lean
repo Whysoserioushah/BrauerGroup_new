@@ -315,7 +315,7 @@ lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f �
   ext; simp
 
 lemma of_conj (σ : Gal(K, F)) (k : K) : of f σ * incl f k * (of f σ)⁻¹ = incl f (σ k) := by
-  rw [of_mul_incl]; field_simp
+  simp [of_mul_incl]
 
 variable [Module.Finite F K] [IsGalois F K]
 

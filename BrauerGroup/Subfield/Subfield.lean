@@ -88,12 +88,15 @@ lemma cor_two_1to2 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
       Module.finrank K A = Module.finrank K L * Module.finrank K L where
   mp h := by
     letI : Field L.1 := inferInstanceAs <| Field L
-    have := dim_centralizer K (A := A) L.1; rw [h] at this; exact this.symm
+    have := dim_centralizer K (A := A) L.1
+    rw [h] at this
+    exact this.symm
   mpr h := by
     letI : Field L.1 := inferInstanceAs <| Field L
-    have := dim_centralizer K (A := A) L.1; rw [h] at this
+    have := dim_centralizer K (A := A) L.1
+    rw [h] at this
     erw [mul_eq_mul_right_iff] at this
-    cases' this with h1 h2
+    obtain h1 | h2 := this
     · exact Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm|>.symm
     · have := Module.finrank_pos (R := K) (M := L.1)
       simp_all only [lt_self_iff_false]
@@ -107,11 +110,10 @@ lemma cor_two_2to3 (A : Type u) [Ring A] [Algebra K A] [FiniteDimensional K A]
   have := dim_centralizer K (A := A) L.1 |>.symm
   simp only [this, SubField.coe_toSubalgebra] at hrank
   erw [mul_eq_mul_right_iff] at hrank
-  cases' hrank with h1 h2
+  obtain h1 | h2 := hrank
   · have := Subalgebra.eq_of_le_of_finrank_eq (Subalgebra.le_centralizer_self.2 L.2) h1.symm
     exact le_antisymm hLL fun x hx => this.symm ▸ Subalgebra.mem_centralizer_iff _ |>.2
       fun y hy => hL' _ hx _ (hLL hy) |>.symm
-
   · have := Module.finrank_pos (R := K) (M := L.1)
     simp_all only [mul_zero, lt_self_iff_false]
 

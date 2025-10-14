@@ -400,9 +400,9 @@ instance Mul: Mul $ BrauerGroup (K := K) :=
 instance One: One (BrauerGroup (K := K)) := ⟨Quotient.mk (CSA_Setoid) one_in'⟩
 
 theorem mul_assoc' (A B C : BrauerGroup (K := K)) : A * B * C = A * (B * C) := by
-  induction' A using Quotient.inductionOn' with A
-  induction' B using Quotient.inductionOn' with B
-  induction' C using Quotient.inductionOn' with C
+  induction A using Quotient.inductionOn' with | h A
+  induction B using Quotient.inductionOn' with | h B
+  induction C using Quotient.inductionOn' with | h C
   apply Quotient.sound; exact mul_assoc _ _ _
 
 lemma mul_inv (A : CSA.{u, u} K) : IsBrauerEquivalent (mul A (inv (K := K) A)) one_in' := by
@@ -462,18 +462,18 @@ instance Inv: Inv (BrauerGroup (K := K)) := ⟨Quotient.lift (fun A ↦ Quotient
   exact inv_eqv (K := K) A B hAB)⟩
 
 theorem mul_left_inv' (A : BrauerGroup (K := K)) : A⁻¹ * A = 1 := by
-  induction' A using Quotient.inductionOn' with A
+  induction A using Quotient.inductionOn' with | h A
   change _ = Quotient.mk'' one_in'
   apply Quotient.sound; exact inv_mul A
 
 theorem one_mul' (A : BrauerGroup (K := K)) : 1 * A = A := by
-  induction' A using Quotient.inductionOn' with A
+  induction A using Quotient.inductionOn' with | h A
   change Quotient.mk'' one_in' * _ = _; apply Quotient.sound
   exact (mul_one 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     (dim_one_iso _) AlgEquiv.refl))|>.symm
 
 theorem mul_one' (A : BrauerGroup (K := K)) : A * 1 = A := by
-  induction' A using Quotient.inductionOn' with A
+  induction A using Quotient.inductionOn' with | h A
   change _ * Quotient.mk'' one_in' = _; apply Quotient.sound
   exact (one_mul 1 A).trans (iso_to_eqv _ _ (Algebra.TensorProduct.congr
     AlgEquiv.refl (dim_one_iso _)))|>.symm
@@ -490,7 +490,7 @@ lemma Alg_closed_equiv_one [IsAlgClosed K] : ∀(A : CSA K), IsBrauerEquivalent 
   exact ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A|>.trans iso⟩⟩
 
 lemma Alg_closed_eq_one [IsAlgClosed K] : ∀(A : BrauerGroup (K := K)), A = 1 := by
-  intro A; induction' A using Quotient.inductionOn' with A
+  intro A; induction A using Quotient.inductionOn' with | h A
   change _ = Quotient.mk'' one_in'; apply Quotient.sound
   change IsBrauerEquivalent _ _; exact Alg_closed_equiv_one A
 
@@ -606,14 +606,16 @@ lemma e3Aux3 (hm : m = 0) : Subsingleton ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (
     rw [this a, this b]
   subst hm
   intro x
-  induction' x using TensorProduct.induction_on with e a e a he ha
-  · rfl
-  · induction' a using TensorProduct.induction_on with e' mat _ _ hx hy
-    · simp
-    · rw [show mat = 0 from Subsingleton.elim _ _]
-      simp
-    · rw [TensorProduct.tmul_add, hx, hy, add_zero]
-  · rw [he, ha, zero_add]
+  induction x using TensorProduct.induction_on with
+  | zero => rfl
+  | add e a he ha => rw [he, ha, zero_add]
+  | tmul e a =>
+  induction a using TensorProduct.induction_on with
+  | zero => simp
+  | add _ _ hx hy => rw [TensorProduct.tmul_add, hx, hy, add_zero]
+  | tmul e' mat =>
+  rw [show mat = 0 from Subsingleton.elim _ _]
+  simp
 
 set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 160000 in
@@ -626,36 +628,42 @@ def e3Aux4 :
     AlgEquiv.toAlgHom_toRingHom, AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_coe,
     Function.comp_apply, Algebra.TensorProduct.includeLeft_apply, e3Aux1, e3Aux10,
     AlgEquiv.coe_trans, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom]
-  induction' x using TensorProduct.induction_on with e a e a he ha
-  · simp only [TensorProduct.zero_tmul, map_zero]; rw [zero_mul
+  induction x using TensorProduct.induction_on with
+  | zero =>
+    simp only [TensorProduct.zero_tmul, map_zero]; rw [zero_mul
       (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)), mul_zero
       (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
-  · simp only [Algebra.TensorProduct.assoc_tmul]
-    induction' y using TensorProduct.induction_on with x y x y hx hy
-    · simp only [TensorProduct.zero_tmul]
-      trans 0
-      · convert mul_zero (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) _
-      · symm; convert zero_mul (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) _
-    · simp only [Algebra.TensorProduct.assoc_tmul, Algebra.TensorProduct.map_tmul,
-      AlgHom.coe_id, id_eq, AlgHom.coe_coe, Algebra.TensorProduct.comm_tmul,
-      Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
-      rw [mul_comm]
-    · haveI := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
-      haveI := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
-      convert congr($hx + $hy) using 1
-      · rw [← mul_add (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
-        congr
-        rw [TensorProduct.add_tmul]
-        exact map_add _ _ _
-      · rw [← add_mul (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
-        congr
-        rw [TensorProduct.add_tmul]
-        exact map_add _ _ _
-  · haveI := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
+  | add e a he ha =>
+    haveI := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
     haveI := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
     simp only [TensorProduct.add_tmul, map_add,
       add_mul (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)), he, ha,
       mul_add (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
+  | tmul e a =>
+  simp only [Algebra.TensorProduct.assoc_tmul]
+  induction y using TensorProduct.induction_on with
+  | zero =>
+    simp only [TensorProduct.zero_tmul]
+    trans 0
+    · convert mul_zero (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) _
+    · symm; convert zero_mul (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) _
+  | add x y hx hy =>
+    haveI := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
+    haveI := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
+    convert congr($hx + $hy) using 1
+    · rw [← mul_add (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
+      congr
+      rw [TensorProduct.add_tmul]
+      exact map_add _ _ _
+    · rw [← add_mul (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
+      congr
+      rw [TensorProduct.add_tmul]
+      exact map_add _ _ _
+  | tmul x y =>
+    simp only [Algebra.TensorProduct.assoc_tmul, Algebra.TensorProduct.map_tmul,
+    AlgHom.coe_id, id_eq, AlgHom.coe_coe, Algebra.TensorProduct.comm_tmul,
+    Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
+    rw [mul_comm]
 
 -- instance : AddHomClass ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) →ₐ[E]
 --     E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
@@ -669,32 +677,36 @@ set_option maxHeartbeats 800000 in
 set_option synthInstance.maxHeartbeats 100000 in
 lemma e3Aux5 : Function.Surjective (e3Aux4 (K := K) (E := E) A m) := by
   intro x
-  induction' x using TensorProduct.induction_on with e a e a he ha
-  · refine ⟨0, ?_⟩
-    rfl
-  · induction' a using TensorProduct.induction_on with a m a m h₁ h₂
-    · refine ⟨0, ?_⟩
-      simp only [TensorProduct.tmul_zero]; rfl
-    · refine ⟨(e ⊗ₜ[K] a) ⊗ₜ[E] ((1 : E) ⊗ₜ[K] m), ?_⟩
-      delta e3Aux4
-      rw [Algebra.TensorProduct.lift_tmul]
-      simp only [e3Aux0, AlgEquiv.toAlgHom_eq_coe, AlgHom.toRingHom_eq_coe,
-        AlgEquiv.toAlgHom_toRingHom, AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_coe,
-        Function.comp_apply, Algebra.TensorProduct.includeLeft_apply,
-        Algebra.TensorProduct.assoc_tmul, e3Aux1, e3Aux10, AlgEquiv.coe_trans,
-        Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom, Algebra.TensorProduct.map_tmul,
-        map_one, AlgHom.coe_coe, Algebra.TensorProduct.comm_tmul,
-        Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
-    · rcases h₂ with ⟨m, h₂⟩
-      rcases h₁ with ⟨a, h₁⟩
-      refine ⟨a + m, ?_⟩
-      convert congr($h₁+ $h₂) using 1
-      · exact map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
-      · rw [TensorProduct.tmul_add]
-  · rcases he with ⟨e, rfl⟩
+  induction x using TensorProduct.induction_on with
+  | zero => exact ⟨0, rfl⟩
+  | add e a he ha =>
+    rcases he with ⟨e, rfl⟩
     rcases ha with ⟨a, rfl⟩
     refine ⟨e + a, ?_⟩
     exact map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
+  | tmul e a =>
+  induction a using TensorProduct.induction_on with
+  | zero =>
+    refine ⟨0, ?_⟩
+    simp only [TensorProduct.tmul_zero]; rfl
+  | add a m h₁ h₂ =>
+    rcases h₂ with ⟨m, h₂⟩
+    rcases h₁ with ⟨a, h₁⟩
+    refine ⟨a + m, ?_⟩
+    convert congr($h₁+ $h₂) using 1
+    · exact map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
+    · rw [TensorProduct.tmul_add]
+  | tmul a m =>
+    refine ⟨(e ⊗ₜ[K] a) ⊗ₜ[E] ((1 : E) ⊗ₜ[K] m), ?_⟩
+    delta e3Aux4
+    rw [Algebra.TensorProduct.lift_tmul]
+    simp only [e3Aux0, AlgEquiv.toAlgHom_eq_coe, AlgHom.toRingHom_eq_coe,
+      AlgEquiv.toAlgHom_toRingHom, AlgHom.coe_comp, AlgHom.coe_mk, RingHom.coe_coe,
+      Function.comp_apply, Algebra.TensorProduct.includeLeft_apply,
+      Algebra.TensorProduct.assoc_tmul, e3Aux1, e3Aux10, AlgEquiv.coe_trans,
+      Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom, Algebra.TensorProduct.map_tmul,
+      map_one, AlgHom.coe_coe, Algebra.TensorProduct.comm_tmul,
+      Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
 
 def e3 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A] :
     (E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K) ≃ₐ[E]
@@ -769,18 +781,20 @@ def e6Aux0 :
           rw [Algebra.smul_def (A := E ⊗[K] (A ⊗[K] B))]
           convert _root_.mul_one _ } fun e b => show (_ ⊗ₜ _) * (_ ⊗ₜ _) = (_ ⊗ₜ _) * (_ ⊗ₜ _) by simp)
             fun x y => show _ = _ by
-            induction' x using TensorProduct.induction_on with e a x x' hx hx'
-            · simp only [map_zero, zero_mul, mul_zero]
-            · simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
-              induction' y using TensorProduct.induction_on with e' b y y' hy hy'
-              · simp only [map_zero, mul_zero, zero_mul]
-              · simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
-                change (_ ⊗ₜ _) * (_ ⊗ₜ _) * ((_ ⊗ₜ _) * (_ ⊗ₜ _))
-                  = (_ ⊗ₜ _) * (_ ⊗ₜ _) * ((_ ⊗ₜ _) * (_ ⊗ₜ _))
-                simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
-                rw [mul_comm]
-              · simp only [map_add, mul_add, hy, hy', add_mul]
-            · simp only [map_add, mul_add, hx, hx', add_mul]
+            induction x using TensorProduct.induction_on with
+            | zero => simp only [map_zero, zero_mul, mul_zero]
+            | add x x' hx hx' => simp only [map_add, mul_add, hx, hx', add_mul]
+            | tmul e a =>
+            simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
+            induction y using TensorProduct.induction_on with
+            | zero => simp only [map_zero, mul_zero, zero_mul]
+            | add y y' hy hy' => simp only [map_add, mul_add, hy, hy', add_mul]
+            | tmul e' b =>
+            simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
+            change (_ ⊗ₜ _) * (_ ⊗ₜ _) * ((_ ⊗ₜ _) * (_ ⊗ₜ _))
+              = (_ ⊗ₜ _) * (_ ⊗ₜ _) * ((_ ⊗ₜ _) * (_ ⊗ₜ _))
+            simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
+            rw [mul_comm]
 
 set_option synthInstance.maxHeartbeats 40000 in
 def e6 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A]
@@ -789,26 +803,30 @@ def e6 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A]
   AlgEquiv.ofBijective (e6Aux0 (K := K) (E := E) A B) $ by
     apply bijective_of_surj_of_isCentralSimple E _ _ _
     intro x
-    induction' x using TensorProduct.induction_on with e a x y hx hy
-    · refine ⟨0, ?_⟩
-      rfl
-    · induction' a using TensorProduct.induction_on with a b a a' ha ha'
-      · refine ⟨0, ?_⟩
-        rw [TensorProduct.tmul_zero]
-        rfl
-      · refine ⟨(e ⊗ₜ a) ⊗ₜ[E] (1 ⊗ₜ b), ?_⟩
-        simp only [e6Aux0, Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk,
-          _root_.one_mul, map_one];
-        change e ⊗ₜ[K] (1 ⊗ₜ[K] 1) * 1 ⊗ₜ[K] (a ⊗ₜ[K] 1) * 1 ⊗ₜ[K] (1 ⊗ₜ[K] b) = _
-        simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
-      · rcases ha with ⟨aa, haa⟩
-        rcases ha' with ⟨aa', haa'⟩
-        refine ⟨aa + aa', ?_⟩
-        rw [_root_.map_add (f := (e6Aux0 (K := K) (E := E) A B)), haa, haa', TensorProduct.tmul_add]
-    · rcases hx with ⟨x, rfl⟩
+    induction x using TensorProduct.induction_on with
+    | zero => exact ⟨0, rfl⟩
+    | add x y hx hy =>
+      rcases hx with ⟨x, rfl⟩
       rcases hy with ⟨y, rfl⟩
       refine ⟨x + y, ?_⟩
       exact map_add (f := (e6Aux0 (K := K) (E := E) A B)) _ _
+    | tmul e a =>
+    induction a using TensorProduct.induction_on with
+    | zero =>
+      refine ⟨0, ?_⟩
+      rw [TensorProduct.tmul_zero]
+      rfl
+    | add a a' ha ha' =>
+      rcases ha with ⟨aa, haa⟩
+      rcases ha' with ⟨aa', haa'⟩
+      refine ⟨aa + aa', ?_⟩
+      rw [_root_.map_add (f := (e6Aux0 (K := K) (E := E) A B)), haa, haa', TensorProduct.tmul_add]
+    | tmul a b =>
+    refine ⟨(e ⊗ₜ a) ⊗ₜ[E] (1 ⊗ₜ b), ?_⟩
+    simp only [e6Aux0, Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk,
+      _root_.one_mul, map_one];
+    change e ⊗ₜ[K] (1 ⊗ₜ[K] 1) * 1 ⊗ₜ[K] (a ⊗ₜ[K] 1) * 1 ⊗ₜ[K] (1 ⊗ₜ[K] b) = _
+    simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
 
 def e7 : E ≃ₐ[E] (E ⊗[K] K) := AlgEquiv.symm $ Algebra.TensorProduct.rid _ _ _
 
@@ -833,8 +851,8 @@ abbrev BaseChange : BrauerGroup (K := K) →* BrauerGroup (K := E) where
     exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨(dim_one_iso _).trans $ AlgEquiv.symm $ (dim_one_iso _).trans <| someEquivs.e7⟩⟩
   map_mul' := by
     intro x y
-    induction' x using Quotient.inductionOn' with A
-    induction' y using Quotient.inductionOn' with B
+    induction x using Quotient.inductionOn' with | h A
+    induction y using Quotient.inductionOn' with | h B
     simp only [Quotient.map'_mk'']
     erw [Quotient.map'_mk'']
     erw [Quotient.eq'']
@@ -847,7 +865,7 @@ abbrev BaseChange_Q_to_C := BaseChange (K := ℚ) (E := ℂ)
 lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
   haveI : IsAlgClosed ℂ := Complex.isAlgClosed
   ext A; simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.one_apply]
-  induction' A using Quotient.inductionOn' with A;
+  induction A using Quotient.inductionOn' with | h A;
   simp only [Quotient.map'_mk'']; apply Quotient.sound
   exact BrauerGroup.Alg_closed_equiv_one _
 
@@ -856,8 +874,8 @@ end Q_to_C
 instance IsAbelBrauer : CommGroup (BrauerGroup (K := K)) := {
   __ := BrauerGroup.Bruaer_Group
   mul_comm := fun A B ↦ by
-    induction' A using Quotient.inductionOn' with A
-    induction' B using Quotient.inductionOn' with B
+    induction A using Quotient.inductionOn' with | h A
+    induction B using Quotient.inductionOn' with | h B
     apply Quotient.sound'
     change IsBrauerEquivalent _ _
     unfold mul
@@ -931,7 +949,7 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
     BrauerGroupHom.BaseChange := by
   ext A
   simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.coe_comp, Function.comp_apply]
-  induction' A using Quotient.inductionOn' with A
+  induction A using Quotient.inductionOn' with | h A
   simp only [Quotient.map'_mk'', Quotient.eq'']
   exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix <| AlgEquiv.symm <| baseChange_idem.Aux' ..⟩⟩
 
@@ -941,7 +959,7 @@ def Br : FieldCat ⥤ CommGrp where
   map_id F := by
     ext A
     simp only [CommGrp.coe_of]
-    induction' A using Quotient.inductionOn' with A
+    induction A using Quotient.inductionOn' with | h A
     simp only [FieldCat.hom_id, CommGrp.hom_ofHom, MonoidHom.coe_mk, OneHom.coe_mk,
       Quotient.map'_mk'', CommGrp.hom_id, MonoidHom.id_apply, Quotient.eq]
     change IsBrauerEquivalent _ _

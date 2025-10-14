@@ -90,7 +90,8 @@ private abbrev ee : Module.End R R ≃ₐ[R] R where
   map_add' _ _ := rfl
   commutes' _ := by simp
 
-lemma Azumaya.inv_mul (A : Azumaya R) : IsMoritaEquivalent R (Azumaya.mul R (Azumaya.Inv R A) A) 1 := by
+lemma Azumaya.inv_mul (A : Azumaya R) :
+    IsMoritaEquivalent R (Azumaya.mul R (Azumaya.Inv R A) A) 1 := by
   sorry
 
 /--
@@ -119,17 +120,17 @@ instance : One (Azumaya.BrauerGroup R) where
 
 instance : Monoid (Azumaya.BrauerGroup R) where
   mul_assoc A B C := by
-    induction' A using Quotient.inductionOn' with A
-    induction' B using Quotient.inductionOn' with B
-    induction' C using Quotient.inductionOn' with C
+    induction A using Quotient.inductionOn' with | h A
+    induction B using Quotient.inductionOn' with | h B
+    induction C using Quotient.inductionOn' with | h C
     apply Quotient.sound
     exact .of_algEquiv R (Algebra.TensorProduct.assoc ..)
   one_mul A := by
-    induction' A using Quotient.inductionOn' with A
+    induction A using Quotient.inductionOn' with | h A
     apply Quotient.sound
     exact .of_algEquiv R (Algebra.TensorProduct.lid _ _)
   mul_one A := by
-    induction' A using Quotient.inductionOn' with A
+    induction A using Quotient.inductionOn' with | h A
     apply Quotient.sound
     exact .of_algEquiv R (Algebra.TensorProduct.rid _ _ _)
 
@@ -141,7 +142,7 @@ instance : Inv (Azumaya.BrauerGroup R) where
 
 instance : Group (Azumaya.BrauerGroup R) where
   inv_mul_cancel A := by
-    induction' A using Quotient.inductionOn' with A
+    induction A using Quotient.inductionOn' with | h A
     apply Quotient.sound
     exact Azumaya.inv_mul R A
 

@@ -2,7 +2,7 @@ import BrauerGroup.Subfield.FiniteDimensional
 import BrauerGroup.Subfield.Subfield
 import Mathlib.Algebra.QuaternionBasis
 import Mathlib.Analysis.Quaternion
-import Mathlib.Data.Complex.FiniteDimensional
+import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 suppress_compilation
 
@@ -348,7 +348,7 @@ lemma x_is_in_V (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x.1 = k.val z)
     symm at hx3
     simp only [f_apply, AlgEquiv.apply_symm_apply, Complex.conj_I, map_neg, NegMemClass.coe_neg,
       mul_neg, neg_mul, Subalgebra.coe_val, eq_neg_iff_add_eq_zero, ← two_mul, mul_eq_zero] at hx3
-    cases' hx3 with hx31 hx32
+    obtain hx31 | hx32 := hx3
     · rw [show (2 : D) = (1 : D) + (1 : D) by norm_num, ← two_smul ℝ,
         smul_eq_zero] at hx31; aesop
     · simp only [inv_eq_zero, Units.ne_zero, ZeroMemClass.coe_eq_zero,
@@ -454,19 +454,14 @@ lemma j_ne_zero (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z) (hDD : 
   intro h
   simp only [mul_eq_zero, Units.ne_zero, or_false] at h
   simp only [map_inv₀, inv_eq_zero, map_eq_zero] at h
-  apply_fun (·)^2 at h
-  rw [Pi.pow_apply, Real.sq_sqrt (le_of_lt (r_pos _ _ _ hx _)), Pi.pow_apply,
-    pow_two 0, zero_mul] at h
+  apply_fun (· ^ 2) at h
+  rw [Real.sq_sqrt (r_pos _ _ _ hx _).le, pow_two 0, zero_mul] at h
   · exact (r_pos _ _ _ hx hDD).ne' h
   · exact hDD
 
 lemma k_ne_zero (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z) (hDD : Module.finrank ℝ D = 4) :
-    e.symm ⟨0, 1⟩ * (algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx hDD).choose)⁻¹ * x.1) ≠ 0 := by
-  intro h
-  rw [mul_eq_zero] at h
-  cases' h with h1 h2
-  · exact i_ne_zero k e h1
-  · exact j_ne_zero _ _ _ hx hDD h2
+    e.symm ⟨0, 1⟩ * (algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx hDD).choose)⁻¹ * x.1) ≠ 0 :=
+  mul_ne_zero (i_ne_zero k e) (j_ne_zero _ _ _ hx hDD)
 
 lemma j_mul_i_eq_neg_i_mul_j (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) :
@@ -556,21 +551,7 @@ lemma linindep1ij (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     change ∀(z : k), _ = (z : D) at hx
     simp_rw [Subtype.coe_inj, mul_comm, ← mul_assoc,
       mul_inv_cancel₀ (Subtype.coe_ne_coe.1 hyy), one_mul] at hx
-    specialize hx $ e.symm Complex.I
-    simp only [f_apply, AlgEquiv.apply_symm_apply, Complex.conj_I, map_neg] at hx
-    symm at hx
-    rw [eq_neg_iff_add_eq_zero] at hx
-    ring_nf at hx
-    simp only [mul_eq_zero] at hx
-    cases' hx with hx1 hx2
-    · apply_fun e at hx1
-      simp only [map_zero, e.apply_symm_apply] at hx1
-      rw [Complex.ext_iff] at hx1
-      obtain ⟨hx11, hx12⟩ := hx1
-      simp only [Complex.I_im, Complex.zero_im, one_ne_zero] at hx12
-    · rw [show (2 : k) = (1 : k) + (1 : k) by norm_num, ← two_smul ℝ,
-        smul_eq_zero] at hx2
-      simp_all only [OfNat.ofNat_ne_zero, one_ne_zero, or_self]
+    simpa [Complex.ext_iff, neg_one_eq_one_iff] using congr(e $(hx <| e.symm Complex.I))
 
 set_option synthInstance.maxHeartbeats 40000 in
 -- set_option maxHeartbeats 600000 in
@@ -802,10 +783,8 @@ set_option synthInstance.maxHeartbeats 80000 in
 set_option maxHeartbeats 600000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
-  have hh := RealExtension_is_RorC (Subalgebra.center ℝ A)
-  cases' hh with hR hC
+  obtain ⟨⟨hR⟩⟩ | hC := RealExtension_is_RorC (Subalgebra.center ℝ A)
   · right
-    obtain hR := hR.some
     have : Subalgebra.center ℝ A = ⊥ := by
       have := LinearEquiv.finrank_eq hR.toLinearEquiv
       simp only [Module.finrank_self, Subalgebra.finrank_eq_one_iff] at this
@@ -813,8 +792,7 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
     have hAA : Algebra.IsCentral ℝ A := ⟨le_of_eq this⟩
     have hhA' (L : SubField ℝ A) (hL : IsMax L) :
       Module.finrank ℝ L = 1 ∨ Module.finrank ℝ L = 2 := by
-      have := RealExtension_is_RorC L
-      cases' this with hR hH
+      obtain hR | hH := RealExtension_is_RorC L
       · have := LinearEquiv.finrank_eq hR.some.toLinearEquiv
         simp only [Module.finrank_self] at this
         exact Or.inl this
@@ -823,16 +801,14 @@ theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDime
         exact Or.inr this
     specialize hhA'
     obtain ⟨L, hL⟩ := SubField.exists_isMax ℝ A
-    specialize hhA' L hL
     have dimeq := dim_max_subfield ℝ A L hL
-    cases' hhA' with h1 h2
+    obtain h1 | h2 := hhA' L hL
     · left
       simp only [h1, mul_one] at dimeq
       exact rank_1_D_iso_R dimeq
     · right
       simp only [h2, Nat.reduceMul] at dimeq
-      have e := RealExtension_is_RorC L
-      cases' e with e1 e2
+      obtain ⟨e1⟩ | e2 := RealExtension_is_RorC L
       · exfalso
         have := LinearEquiv.finrank_eq e1.some.toLinearEquiv
         rw [Module.finrank_self] at this

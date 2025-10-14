@@ -17,7 +17,7 @@ lemma BrauerTrivial (A : CSA K) : ∃ n ≠ 0, Nonempty (A ≃ₐ[K] Matrix (Fin
   exact ⟨n, hn, ⟨iso.trans e.mapMatrix⟩⟩
 
 theorem trivialBrauer : ∀(a : BrauerGroup K), a = 1 := fun a ↦ by
-  induction' a using Quotient.inductionOn with A
+  induction a using Quotient.inductionOn with | h A
   change _ = Quotient.mk (Brauer.CSA_Setoid K) _
   simp only [Quotient.eq]
   change IsBrauerEquivalent _ ⟨.of K K⟩

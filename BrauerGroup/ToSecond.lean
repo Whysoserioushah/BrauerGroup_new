@@ -226,7 +226,7 @@ lemma conjFactorCompCoeff_spec' (x : A.conjFactor σ) (y : A.conjFactor τ) (z :
 
 lemma conjFactorCompCoeff_spec'' (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
     A.ι (conjFactorCompCoeff x y z) = x.1 * y.1 * z.1⁻¹ := by
-  field_simp
+  suffices A.ι (conjFactorCompCoeff x y z) * z.val.val = x.val.val * y.val.val by simp [← this]
   rw [← A.conjFactorCompCoeff_spec' x y z]
   simp only [conjFactorCompCoeff, ← _root_.mul_assoc, ← map_mul, conjFactorTwistCoeff_swap, map_one,
     _root_.one_mul]
@@ -242,13 +242,9 @@ lemma conjFactorCompCoeff_inv (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A
     symm
     apply eq_inv_of_mul_eq_one_left
     simp only [conjFactorCompCoeff, ← map_mul, conjFactorTwistCoeff_swap, map_one]
-  rw [map_inv]
-  rw [inv_eq_iff_mul_eq_one]
+  rw [map_inv, inv_eq_iff_mul_eq_one]
   ext
-  simp only [conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply, Units.val_mul, Units.coe_map,
-    MonoidHom.coe_coe, Units.val_one]
-  rw [conjFactorCompCoeff_spec'']
-  field_simp
+  simp [conjFactorCompCoeffAsUnit, conjFactorCompCoeff_spec'', _root_.mul_assoc]
 
 lemma conjFactorCompCoeff_comp_comp₁
     (xρ : A.conjFactor ρ) (xσ : A.conjFactor σ) (xτ : A.conjFactor τ)
@@ -781,9 +777,9 @@ def fromSnd :
           Finsupp.smul_single, smul_eq_mul, _root_.mul_one]
         congr 1
         specialize hc 1 1
-        simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Pi.div_apply]
-          at hc
-        field_simp [hc])
+        simp only [one_smul, _root_.mul_one, div_self', _root_.one_mul, Pi.div_apply,
+          div_eq_mul_inv] at hc
+        simp [hc])
       (by
         intro α β
         change φ0 ((⟨α.val⟩ : CrossProductAlgebra a) * (⟨β.val⟩ : CrossProductAlgebra a)) =
@@ -904,7 +900,8 @@ lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id :=
   change _ = A.conjFactorCompCoeff (y_ σ) (y_ τ) (y_ (σ * τ))
   apply_fun A.ι using RingHom.injective _
   rw [conjFactorCompCoeff_spec'', CrossProductAlgebra.of_mul_of, _root_.mul_assoc]
-  field_simp; rfl
+  simp [A, y_]
+  rfl
 
 set_option maxHeartbeats 500000 in
 lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id := by
@@ -1019,7 +1016,7 @@ lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id 
         simp only [_root_.mul_assoc]
         congr 1
         rw [(A.arbitraryConjFactor _).2 b]
-        field_simp
+        simp [-GoodRep.conjFactor_prop]
 
 @[simp]
 def equivSnd : RelativeBrGroup K F ≃ H2 (galAct F K) where

@@ -506,7 +506,8 @@ lemma division_ring_exists_unique_isSimpleModule
         mul_one] at hr'
       by_contra rid
       have hr' := congr($hr' ⟨i, hi⟩)
-      rw [Finsupp.single_eq_same, Finsupp.single_eq_of_ne (h := by simpa)] at hr'
+      rw [Finsupp.single_eq_same, Finsupp.single_eq_of_ne (h := by simpa [eq_comm] using rid)]
+        at hr'
       subst hr'
       simp only [zero_smul] at hr
       exact b.ne_zero _ hr.symm |>.elim

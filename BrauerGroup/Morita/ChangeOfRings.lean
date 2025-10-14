@@ -242,7 +242,7 @@ lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
       rw [ModuleCat.hom_ext_iff] at h
       simp only [mopToEnd, hom_zero, LinearMap.ext_iff, LinearMap.zero_apply] at h
       specialize h (1 : A)
-      simp_all [Ideal.mem_bot],
+      simp_all,
       by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : A)), ModuleCat.hom_ext <|
       LinearMap.ext fun r ↦ by
       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, mopToEnd_apply, MulOpposite.unop_op,

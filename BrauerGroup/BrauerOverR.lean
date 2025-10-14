@@ -55,8 +55,8 @@ instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
   obtain ⟨_, _, eq13, eq14⟩ := eq1
   obtain ⟨_, eq22, _, eq24⟩ := eq2
   obtain ⟨_, eq32, eq33, _⟩ := eq3
-  simp only [mul_re, zero_mul, _root_.one_mul, zero_sub, sub_zero, mul_zero, _root_.mul_one,
-    mul_imI, zero_add, add_zero, mul_imJ, sub_self, mul_imK, AlgHom.toRingHom_eq_coe,
+  simp only [re_mul, zero_mul, _root_.one_mul, zero_sub, sub_zero, mul_zero, _root_.mul_one,
+    imI_mul, zero_add, add_zero, imJ_mul, sub_self, imK_mul, AlgHom.toRingHom_eq_coe,
     RingHom.coe_coe] at *
   simp [self_eq_neg ℝ ℝ, neg_eq_self ℝ ℝ] at *
   change (⟨q.1, 0, 0, 0⟩ : ℍ[ℝ]) = ⟨q.1, q.2,q.3,q.4⟩
@@ -94,13 +94,11 @@ lemma BrauerOverR (A : CSA.{0, 0} ℝ) : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ 
   if h : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ then left; assumption
   else
   right
-  obtain ⟨n, ⟨hn, D, _, _, ⟨e⟩⟩⟩ := Wedderburn_Artin_algebra_version.{0, 0} ℝ A
+  obtain ⟨n, hn, D, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version.{0, 0} ℝ A
   letI := A.4
   letI : FiniteDimensional ℝ D := is_fin_dim_of_wdb ℝ A hn D e
-  have hD := FrobeniusTheorem D
-  cases' hD with hD1 hD2
-  · obtain ⟨e'⟩ := hD1
-    have := is_central_of_wdb ℝ A n D hn e|>.center_eq_bot
+  obtain ⟨⟨e'⟩⟩ | hD2 | hD3 := FrobeniusTheorem D
+  · have := is_central_of_wdb ℝ A n D hn e|>.center_eq_bot
     have e2 : Subalgebra.center ℝ D ≠ ⊥ := by
       refine ne_of_gt ?_
       letI : Algebra ℂ D := RingHom.toAlgebra' e'.symm <| fun z d ↦ by
@@ -132,11 +130,10 @@ lemma BrauerOverR (A : CSA.{0, 0} ℝ) : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ 
         obtain ⟨_, fal⟩ := eq
         simp only [Complex.ofReal_im, Complex.I_im, zero_ne_one] at fal⟩⟩⟩
     tauto
-  · cases' hD2 with hD2 hD3
-    · have : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ :=
-        ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A|>.trans <| e.trans hD2.some.mapMatrix⟩⟩
-      tauto
-    · exact ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A |>.trans <| e.trans hD3.some.mapMatrix⟩⟩
+  · have : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ :=
+      ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A|>.trans <| e.trans hD2.some.mapMatrix⟩⟩
+    tauto
+  · exact ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A |>.trans <| e.trans hD3.some.mapMatrix⟩⟩
 
 open scoped Classical in
 abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
@@ -159,8 +156,8 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
       Decidable.not_not]
     exact IsBrauerEquivalent.refl _
   map_add' A B := by
-    induction' A using Quotient.inductionOn' with A
-    induction' B using Quotient.inductionOn' with B
+    induction A using Quotient.inductionOn' with | h A
+    induction B using Quotient.inductionOn' with | h B
     have hab' : @HAdd.hAdd (Additive (BrauerGroup ℝ)) _
       _ instHAdd (Quotient.mk'' A) (Quotient.mk'' B)=
       (Quotient.mk'' (mul A B) : Additive _) := rfl
@@ -237,8 +234,8 @@ abbrev C2toBrauerOverR : ZMod 2 →+ Additive (BrauerGroup ℝ) where
     exact QuaternionTensorEquivOne.symm
 
 lemma toC2.left_inv : Function.LeftInverse C2toBrauerOverR toC2 := fun A ↦ by
-  induction' A using Quotient.inductionOn' with A
-  cases' (BrauerOverR A) with h1 h2
+  induction A using Quotient.inductionOn' with | h A
+  obtain h1 | h2 := BrauerOverR A
   · change IsBrauerEquivalent A one_in' at h1
     simp only [AddMonoidHom.coe_mk, dite_eq_ite, ZeroHom.coe_mk, Quotient.lift_mk, h1, ↓reduceIte]
     rw [Quotient.sound']; exact h1.symm
