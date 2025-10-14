@@ -121,8 +121,7 @@ lemma is_direct : DirectedOn (fun x x_1 ↦ x ≤ x_1)
   refine ⟨intermediateTensor K K_bar A (L1 ⊔ L2), ⟨⟨L1 ⊔ L2, show FiniteDimensional _ _ from
     ?_⟩, rfl⟩, ⟨intermediateTensor_mono K K_bar A le_sup_left,
       intermediateTensor_mono K K_bar A le_sup_right⟩⟩
-  · apply (config := { allowSynthFailures := true }) IntermediateField.finiteDimensional_sup <;>
-    assumption
+  · apply (config := { allowSynthFailures := true }) IntermediateField.finiteDimensional_sup
 
 omit [IsAlgClosure K K_bar] in
 lemma SetOfFinite_nonempty : (Set.range fun (L : SetOfFinite K K_bar) ↦

@@ -54,22 +54,20 @@ def release : L ⊗[k] A →ₐ[L] L ⊗[K] (K ⊗[k] A) where
     simp only [Algebra.TensorProduct.algebraMap_apply, ZeroHom.toFun_eq_coe,
       AddMonoidHom.toZeroHom_coe, Algebra.TensorProduct.one_def]; rfl
 
-def absorbMap : L → K ⊗[k] A →+ L ⊗[k] A := fun l ↦
-    {
-      toFun := TensorProduct.lift {
-        toFun := fun m ↦ {
-          toFun := fun a ↦ (m • l) ⊗ₜ[k] a
-          map_add' := fun _ _ ↦ by simp only [TensorProduct.tmul_add]
-          map_smul' := fun _ _ ↦ by simp only [TensorProduct.tmul_smul, RingHom.id_apply]
-        }
-        map_add' := fun _ _ ↦ by ext; simp only [add_smul, TensorProduct.add_tmul,
-          LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
-        map_smul' := fun _ _ ↦ by ext; simp only [smul_assoc, ← TensorProduct.smul_tmul',
-          LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
-      }
-      map_zero' := by simp only [map_zero]
-      map_add' := fun x y ↦ by simp only [map_add]
+def absorbMap (l : L) : K ⊗[k] A →[k] L ⊗[k] A where
+  toFun := TensorProduct.lift {
+    toFun := fun m ↦ {
+      toFun := fun a ↦ (m • l) ⊗ₜ[k] a
+      map_add' := fun _ _ ↦ by simp only [TensorProduct.tmul_add]
+      map_smul' := fun _ _ ↦ by simp [TensorProduct.tmul_smul, RingHom.id_apply]
     }
+    map_add' := fun _ _ ↦ by ext; simp only [add_smul, TensorProduct.add_tmul,
+      LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+    map_smul' := fun _ _ ↦ by ext; simp only [smul_assoc, ← TensorProduct.smul_tmul',
+      LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
+  }
+  map_zero' := by simp only [map_zero]
+  map_add' x y := by simp only [map_add]
 
 def absorbAddHom : L ⊗[K] (K ⊗[k] A) →+ L ⊗[k] A :=
   TensorProduct.liftAddHom

@@ -48,7 +48,6 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
   obtain ⟨B', _, _, f, h1, h2⟩ := h
   have : Nontrivial B' := by
     contrapose! h1
-    rw [← not_subsingleton_iff_nontrivial, not_not] at h1
     refine SetLike.ext ?_
     intro b
     simp only [TwoSidedIdeal.mem_ker]
