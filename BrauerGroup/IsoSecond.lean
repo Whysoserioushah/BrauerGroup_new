@@ -783,14 +783,7 @@ instance : Fintype ι := exists_simple_module_directSum α β
 def isoιSM : C ≃ₗ[C] ι →₀ SM := exists_simple_module_directSum α β
   |>.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.choose_spec.some
 
-instance : Nonempty ι := by
-  by_contra!
-  simp only [not_nonempty_iff] at this
-  haveI : Subsingleton (ι →₀ SM) := inferInstance
-  haveI : Subsingleton C := isoιSM.toEquiv.subsingleton
-  haveI : Nontrivial C := inferInstance
-  rw [← not_subsingleton_iff_nontrivial] at this
-  contradiction
+instance : Nonempty ι := by by_contra!; exact not_subsingleton C isoιSM.toEquiv.subsingleton
 
 instance : NeZero (Fintype.card ι) := by
   constructor

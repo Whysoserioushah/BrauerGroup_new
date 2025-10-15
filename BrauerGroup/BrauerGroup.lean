@@ -953,19 +953,19 @@ lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
   simp only [Quotient.map'_mk'', Quotient.eq'']
   exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix <| AlgEquiv.symm <| baseChange_idem.Aux' ..⟩⟩
 
-def Br : FieldCat ⥤ CommGrp where
+def Br : FieldCat ⥤ CommGrpCat where
   obj F := .of $ BrauerGroup F
-  map {F K} f := CommGrp.ofHom <| @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f.hom)
+  map {F K} f := CommGrpCat.ofHom <| @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f.hom)
   map_id F := by
     ext A
-    simp only [CommGrp.coe_of]
+    simp only [CommGrpCat.coe_of]
     induction A using Quotient.inductionOn' with | h A
-    simp only [FieldCat.hom_id, CommGrp.hom_ofHom, MonoidHom.coe_mk, OneHom.coe_mk,
-      Quotient.map'_mk'', CommGrp.hom_id, MonoidHom.id_apply, Quotient.eq]
+    simp only [FieldCat.hom_id, CommGrpCat.hom_ofHom, MonoidHom.coe_mk, OneHom.coe_mk,
+      Quotient.map'_mk'', CommGrpCat.hom_id, MonoidHom.id_apply, Quotient.eq]
     change IsBrauerEquivalent _ _
     exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix $ Algebra.TensorProduct.lid _ _⟩⟩
   map_comp {F K E} f g := by
-    simp only [FieldCat.hom_comp, ← CommGrp.ofHom_comp]
+    simp only [FieldCat.hom_comp, ← CommGrpCat.ofHom_comp]
     congr 1
     apply (config := { allowSynthFailures := true }) baseChange_idem
     letI : Algebra F E := RingHom.toAlgebra (f ≫ g).hom

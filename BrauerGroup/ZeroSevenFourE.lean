@@ -115,43 +115,36 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     obtain ⟨S, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring k A M
     obtain ⟨ι', ⟨iso'⟩⟩ := directSum_simple_module_over_simple_ring' k A N S
     have HS : Nontrivial S := IsSimpleModule.nontrivial A S
-    by_cases Hιι' : IsEmpty ι ∨ IsEmpty ι'
-    · rcases Hιι' with (Hι|Hι')
-      · letI : Unique (ι →₀ S) := inferInstance
-        letI : Unique M := ⟨⟨0⟩, by
-          intros a
-          apply_fun iso using LinearEquiv.injective _
-          apply Subsingleton.elim⟩
-        have eq : Module.finrank k M = 0 := by
-          rw [Module.finrank_eq_zero_iff]
-          exact fun m ↦ ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
-        have eq' : Module.finrank k N = 0 := by
-          rw [← h, eq]
-        haveI : Unique N := ⟨⟨0⟩, by
-          rw [Module.finrank_zero_iff] at eq'
-          intro n
-          exact Subsingleton.elim _ _⟩
-        refine ⟨⟨0, 0, fun x ↦ Subsingleton.elim _ _, fun x ↦ Subsingleton.elim _ _⟩⟩
-      · letI : Unique (ι' →₀ S) := inferInstance
-        letI : Unique N := ⟨⟨0⟩, by
-          intros a
-          apply_fun iso' using LinearEquiv.injective _
-          apply Subsingleton.elim⟩
-        have eq : Module.finrank k N = 0 := by
-          rw [Module.finrank_eq_zero_iff]
-          exact fun m ↦ ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
-        have eq' : Module.finrank k M = 0 := by
-          rw [h, eq]
-        haveI : Unique M := ⟨⟨0⟩, by
-          rw [Module.finrank_zero_iff] at eq'
-          intro n
-          exact Subsingleton.elim _ _⟩
-        refine ⟨⟨0, 0, fun x ↦ Subsingleton.elim _ _, fun x ↦ Subsingleton.elim _ _⟩⟩
-
-    push_neg at Hιι'
-    rw [not_isEmpty_iff, not_isEmpty_iff] at Hιι'
-    obtain ⟨Hι, -⟩ := Hιι'
-
+    cases isEmpty_or_nonempty ι
+    · letI : Unique M := ⟨⟨0⟩, by
+        intros a
+        apply_fun iso using LinearEquiv.injective _
+        apply Subsingleton.elim⟩
+      have eq : Module.finrank k M = 0 := by
+        rw [Module.finrank_eq_zero_iff]
+        exact fun m ↦ ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
+      have eq' : Module.finrank k N = 0 := by
+        rw [← h, eq]
+      haveI : Unique N := ⟨⟨0⟩, by
+        rw [Module.finrank_zero_iff] at eq'
+        intro n
+        exact Subsingleton.elim _ _⟩
+      refine ⟨⟨0, 0, fun x ↦ Subsingleton.elim _ _, fun x ↦ Subsingleton.elim _ _⟩⟩
+    cases isEmpty_or_nonempty ι'
+    · letI : Unique N := ⟨⟨0⟩, by
+        intros a
+        apply_fun iso' using LinearEquiv.injective _
+        apply Subsingleton.elim⟩
+      have eq : Module.finrank k N = 0 := by
+        rw [Module.finrank_eq_zero_iff]
+        exact fun m ↦ ⟨1, one_ne_zero, Subsingleton.elim _ _⟩
+      have eq' : Module.finrank k M = 0 := by
+        rw [h, eq]
+      haveI : Unique M := ⟨⟨0⟩, by
+        rw [Module.finrank_zero_iff] at eq'
+        intro n
+        exact Subsingleton.elim _ _⟩
+      exact ⟨⟨0, 0, fun x ↦ Subsingleton.elim _ _, fun x ↦ Subsingleton.elim _ _⟩⟩
     letI := Module.compHom S (Algebra.ofId k A).toRingHom
     let ISO : M ≃ₗ[k] ι →₀ S :=
     { iso with

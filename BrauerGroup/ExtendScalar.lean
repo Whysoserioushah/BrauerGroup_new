@@ -54,27 +54,23 @@ def release : L ⊗[k] A →ₐ[L] L ⊗[K] (K ⊗[k] A) where
     simp only [Algebra.TensorProduct.algebraMap_apply, ZeroHom.toFun_eq_coe,
       AddMonoidHom.toZeroHom_coe, Algebra.TensorProduct.one_def]; rfl
 
-def absorbMap : L → K ⊗[k] A →+ L ⊗[k] A := fun l ↦
-    {
-      toFun := TensorProduct.lift {
-        toFun := fun m ↦ {
-          toFun := fun a ↦ (m • l) ⊗ₜ[k] a
-          map_add' := fun _ _ ↦ by simp only [TensorProduct.tmul_add]
-          map_smul' := fun _ _ ↦ by simp only [TensorProduct.tmul_smul, RingHom.id_apply]
-        }
-        map_add' := fun _ _ ↦ by ext; simp only [add_smul, TensorProduct.add_tmul,
-          LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
-        map_smul' := fun _ _ ↦ by ext; simp only [smul_assoc, ← TensorProduct.smul_tmul',
-          LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
-      }
-      map_zero' := by simp only [map_zero]
-      map_add' := fun x y ↦ by simp only [map_add]
+def absorbMap (l : L) : K ⊗[k] A →ₗ[k] L ⊗[k] A :=
+  TensorProduct.lift {
+    toFun := fun m ↦ {
+      toFun := fun a ↦ (m • l) ⊗ₜ[k] a
+      map_add' := fun _ _ ↦ by simp only [TensorProduct.tmul_add]
+      map_smul' := fun _ _ ↦ by simp [TensorProduct.tmul_smul, RingHom.id_apply]
     }
+    map_add' := fun _ _ ↦ by ext; simp only [add_smul, TensorProduct.add_tmul,
+      LinearMap.coe_mk, AddHom.coe_mk, LinearMap.add_apply]
+    map_smul' := fun _ _ ↦ by ext; simp only [smul_assoc, ← TensorProduct.smul_tmul',
+      LinearMap.coe_mk, AddHom.coe_mk, RingHom.id_apply, LinearMap.smul_apply]
+  }
 
 def absorbAddHom : L ⊗[K] (K ⊗[k] A) →+ L ⊗[k] A :=
   TensorProduct.liftAddHom
   {
-    toFun := absorbMap k K L A
+    toFun l := absorbMap k K L A l
     map_zero' := by
       ext x
       induction x using TensorProduct.induction_on with
@@ -117,31 +113,26 @@ def absorb : L ⊗[K] (K ⊗[k] A) →ₐ[L] L ⊗[k] A where
     simp only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe]
     induction x using TensorProduct.induction_on with
     | zero => simp only [zero_mul, map_zero]
+    | add x' y' hx hy => simp only [add_mul, map_add, hx, hy]
     | tmul l ka =>
-      induction y using TensorProduct.induction_on with
-      | zero => simp only [mul_zero, map_zero]
-      | tmul l' ka' =>
-        simp only [Algebra.TensorProduct.tmul_mul_tmul]
-        induction ka' using TensorProduct.induction_on with
-        | zero => simp only [mul_zero, TensorProduct.tmul_zero, map_zero]
-        | tmul k' a =>
-          induction ka using TensorProduct.induction_on with
-          | zero => simp only [zero_mul, TensorProduct.tmul_zero, map_zero]
-          | tmul k1 a1 =>
-            simp only [Algebra.TensorProduct.tmul_mul_tmul]
-            change ((k1 * k') • (l * l')) ⊗ₜ (a1 * a) =
-              (k1 • l) ⊗ₜ a1 * (k' • l') ⊗ₜ a
-            simp only [Algebra.TensorProduct.tmul_mul_tmul, Algebra.mul_smul_comm,
-              Algebra.smul_mul_assoc]
-            rw [← smul_assoc, smul_eq_mul, mul_comm]
-          | add x y hx hy =>
-            simp only [add_mul, TensorProduct.tmul_add, map_add, hx, hy]
-        | add x y hx hy =>
-          simp only [mul_add, TensorProduct.tmul_add, map_add, hx, hy]
-      | add x y hx hy =>
-        simp only [mul_add, map_add, hx, hy]
-    | add x' y' hx hy =>
-      simp only [add_mul, map_add, hx, hy]
+    induction y using TensorProduct.induction_on with
+    | zero => simp only [mul_zero, map_zero]
+    | add x y hx hy => simp only [mul_add, map_add, hx, hy]
+    | tmul l' ka' =>
+    simp only [Algebra.TensorProduct.tmul_mul_tmul]
+    induction ka' using TensorProduct.induction_on with
+    | zero => simp only [mul_zero, TensorProduct.tmul_zero, map_zero]
+    | add x y hx hy => simp only [mul_add, TensorProduct.tmul_add, map_add, hx, hy]
+    | tmul k' a =>
+    induction ka using TensorProduct.induction_on with
+    | zero => simp only [zero_mul, TensorProduct.tmul_zero, map_zero]
+    | add x y hx hy => simp only [add_mul, TensorProduct.tmul_add, map_add, hx, hy]
+    | tmul k1 a1 =>
+    simp only [Algebra.TensorProduct.tmul_mul_tmul]
+    change ((k1 * k') • (l * l')) ⊗ₜ (a1 * a) = (k1 • l) ⊗ₜ a1 * (k' • l') ⊗ₜ a
+    simp only [Algebra.TensorProduct.tmul_mul_tmul, Algebra.mul_smul_comm,
+      Algebra.smul_mul_assoc]
+    rw [← smul_assoc, smul_eq_mul, mul_comm]
   commutes' := fun l ↦ by
     simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.TensorProduct.one_def]
     change (1 • l) ⊗ₜ (1 : A) = l ⊗ₜ 1

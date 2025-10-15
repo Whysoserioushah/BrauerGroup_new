@@ -353,7 +353,7 @@ lemma Wedderburn_Artin.aux.nxi_ne_zero {A : Type u} [Ring A] [simple : IsSimpleR
     _ = ∑ j : Option (Fin (n - 1)), i (e.symm j) * x (e.symm j) :=
         Fintype.sum_bijective e (Equiv.bijective _) _ _ (fun _ ↦ by simp)
   simp only [Equiv.symm_trans_apply, OrderIso.coe_symm_toEquiv, Fin.symm_castOrderIso,
-    Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none, Fin.cast_trans,
+    Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none, Fin.cast_cast,
     Fin.cast_eq_self, finSuccEquiv'_symm_some, e] at one_eq
   if xj_eq : x j = 0
   then rw [xj_eq, mul_zero, zero_add] at one_eq; exact ⟨_, _, one_eq.symm⟩
@@ -415,7 +415,7 @@ lemma Wedderburn_Artin.aux.equivIdeal
             ((i (e.symm k) - r * y (e.symm k)) * x (e.symm k)) :=
           Finset.sum_congr rfl (fun _ _ ↦ by simp only [sub_mul, mul_assoc])
     simp only [Equiv.symm_trans_apply, OrderIso.coe_symm_toEquiv, Fin.symm_castOrderIso,
-      Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none, Fin.cast_trans,
+      Fin.castOrderIso_apply, Fintype.sum_option, finSuccEquiv'_symm_none, Fin.cast_cast,
       Fin.cast_eq_self, hr', zero_mul, finSuccEquiv'_symm_some, zero_add, e] at one_eq'
     set f := _
     change 1 = ∑ k : Fin (n - 1), (i ∘ f - (r • y) ∘ f) k * (x ∘ f) k at one_eq'

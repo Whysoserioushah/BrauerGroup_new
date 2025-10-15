@@ -81,7 +81,7 @@ lemma Algebra.IsCentral_ofAlgEquiv (A B : Type*) [Ring A] [Ring B] [Algebra K A]
     obtain ⟨k, hk⟩ := hA.1 (show e.symm x ∈ _ by
       simp only [Subalgebra.mem_center_iff] at hx ⊢
       exact fun x ↦ by simpa using congr(e.symm $(hx (e x))))
-    exact ⟨k, by apply_fun e.symm; rw [← hk]; simp [ofId_apply]⟩
+    exact ⟨k, by apply_fun e.symm; rw [← hk]; simp⟩
 
 lemma IsSimpleRing.ofAlgEquiv (A B : Type*) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
     (e : A ≃ₐ[K] B) (hA : IsSimpleRing A) : IsSimpleRing B :=

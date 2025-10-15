@@ -1,5 +1,6 @@
 import BrauerGroup.Azumaya.Basic
 import Mathlib.Algebra.Azumaya.Matrix
+import Mathlib.Algebra.Module.CharacterModule
 import Mathlib.LinearAlgebra.Contraction
 import Mathlib.LinearAlgebra.TensorProduct.Opposite
 

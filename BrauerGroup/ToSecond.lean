@@ -698,8 +698,7 @@ variable [IsGalois F K] [DecidableEq Gal(K, F)]
 
 def fromCocycles₂ (f : cocycles₂ (galAct F K)) : RelativeBrGroup K F :=
   haveI := groupCohomology.isMulCocycle₂_of_mem_cocycles₂ _ f.2
-  haveI : Fact (@IsMulCocycle₂ Gal(K, F) Kˣ MulOneClass.toMul
-    Units.instCommGroupUnits MulAction.toSMul (⇑Additive.toMul ∘ ↑f)) := ⟨this⟩
+  haveI : Fact (IsMulCocycle₂ (M := Kˣ) (Additive.toMul ∘ f)) := ⟨this⟩
   ⟨Quotient.mk'' (asCSA (⇑Additive.toMul ∘ f.1)), mem_relativeBrGroup_iff_nonempty_goodRep.2 <|
     ⟨⟨asCSA (Additive.toMul ∘ f), rfl, incl (Additive.toMul ∘ f), dim_eq_sq⟩⟩⟩
 
@@ -836,8 +835,8 @@ end from_two
 
 variable [IsGalois F K]
 lemma fromSnd_wd (a : cocycles₂ (galAct F K)) :
-    haveI : Fact (@IsMulCocycle₂ Gal(K, F) Kˣ MulOneClass.toMul Units.instCommGroupUnits
-      MulAction.toSMul (⇑Additive.toMul ∘ ↑a)) := ⟨isMulCocycle₂_of_mem_cocycles₂ _ a.2⟩
+    haveI : Fact (IsMulCocycle₂ (M := Kˣ) (Additive.toMul ∘ a)) :=
+      ⟨isMulCocycle₂_of_mem_cocycles₂ _ a.2⟩
     (fromSnd F K <| Quotient.mk'' a) =
     ⟨Quotient.mk'' (CrossProductAlgebra.asCSA (Additive.toMul ∘ a)),
       mem_relativeBrGroup_iff_nonempty_goodRep.2
@@ -937,9 +936,8 @@ lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id 
     rw [eq, eq', map_smul]
   let φ1 : lhs ≃ₗ[F] A := φ0.restrictScalars F
   refine AlgEquiv.ofLinearEquiv φ1 ?_ ?_
-  · haveI : Fact (@IsMulCocycle₂ Gal(K, F) Kˣ MulOneClass.toMul Units.instCommGroupUnits
-      MulAction.toSMul (⇑Additive.toMul ∘ ⇑(cocyclesOfIsMulCocycle₂
-      (GoodRep.isMulCocycle₂ A.arbitraryConjFactor)))) :=
+  · haveI : Fact (IsMulCocycle₂ (M := Kˣ)
+      (Additive.toMul ∘ cocyclesOfIsMulCocycle₂ (GoodRep.isMulCocycle₂ A.arbitraryConjFactor))) :=
       ⟨isMulCocycle₂_of_mem_cocycles₂ _ (cocyclesOfIsMulCocycle₂
         (GoodRep.isMulCocycle₂ A.arbitraryConjFactor)).2⟩
     change φ0 1 = 1
