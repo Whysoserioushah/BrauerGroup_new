@@ -1,3 +1,4 @@
+import Mathlib.Algebra.Algebra.Subalgebra.Basic
 import Mathlib.LinearAlgebra.Matrix.IsDiag
 
 local notation "M[" ι "," R "]" => Matrix ι ι R

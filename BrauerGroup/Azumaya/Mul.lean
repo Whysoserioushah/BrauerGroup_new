@@ -6,11 +6,12 @@ import Mathlib.LinearAlgebra.TensorProduct.Opposite
 
 suppress_compilation
 
+open Function
+open scoped TensorProduct
+
 universe u v
 
 variable (R : Type u) [CommRing R]
-
-open scoped TensorProduct
 
 section formathlib
 
@@ -116,9 +117,9 @@ Hom(M, P) ⊗ Hom(N, Q) ---------------> Hom(M ⊗ N, P ⊗ Q)
     |       |                             |      |
 Hom(Rⁿ, P) ⊗ Hom(Rᵐ, Q) -------------> Hom(Rⁿ ⊗ Rᵐ, P ⊗ Q)
 -/
-lemma comm_square2: (homTensorHomEquiv R (Fin (nn R M) → R) (Fin (nn R N) → R) P Q).toLinearMap ∘ₗ
+lemma comm_square2 : (homTensorHomEquiv R (Fin (nn R M) → R) (Fin (nn R N) → R) P Q).toLinearMap ∘ₗ
     tensor_inclusion1 R M N P Q =
-    tensor_inclusion2 R P Q ∘ₗ TensorProduct.homTensorHomMap R M N P Q := by
+      tensor_inclusion2 R P Q ∘ₗ TensorProduct.homTensorHomMap _ M N P Q := by
   ext f g : 4
   apply LinearMap.ext
   intro v
@@ -128,10 +129,10 @@ lemma comm_square2: (homTensorHomEquiv R (Fin (nn R M) → R) (Fin (nn R N) → 
 
 lemma comm_square2_apply (f : (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)) :
   (homTensorHomEquiv R (Fin (nn R M) → R) (Fin (nn R N) → R) P Q).toLinearMap
-    (tensor_inclusion1 R M N P Q f) = tensor_inclusion2 R P Q (TensorProduct.homTensorHomMap R M N P Q f) :=
+    (tensor_inclusion1 R M N P Q f) = tensor_inclusion2 R P Q (TensorProduct.homTensorHomMap _ M N P Q f) :=
   DFunLike.congr_fun (comm_square2 R M N P Q) f
 
-lemma homTensorHomMap_inj : Function.Injective (TensorProduct.homTensorHomMap R M N P Q) := by
+lemma homTensorHomMap_inj : Function.Injective (TensorProduct.homTensorHomMap (.id R) M N P Q) := by
   apply Function.Injective.of_comp (f := tensor_inclusion2 R P Q)
   rw [← LinearMap.coe_comp, ← comm_square2]
   exact Function.Injective.comp (f := tensor_inclusion1 R M N P Q)
@@ -154,13 +155,13 @@ lemma comm_square3_apply (f : ((Fin (nn R M) → R) →ₗ[R] P) ⊗[R] ((Fin (n
   DFunLike.congr_fun (comm_sqaure3 R M N P Q) f
 
 lemma comm_square1: tensor_projection1 R M N P Q ∘ₗ (homTensorHomEquiv R _ _ P Q).symm.toLinearMap ∘ₗ
-    tensor_inclusion2 R P Q ∘ₗ TensorProduct.homTensorHomMap R M N P Q =
+    tensor_inclusion2 R P Q ∘ₗ TensorProduct.homTensorHomMap _ M N P Q =
     LinearMap.id (R := R) (M := (M →ₗ[R] P) ⊗[R] (N →ₗ[R] Q)) := by
   rw [← comm_square2]
   apply LinearMap.ext
   simp [-homTensorHomEquiv_toLinearMap, -homTensorHomEquiv_apply, tensor_inclusion1_projection1_apply]
 
-lemma comm_square4: TensorProduct.homTensorHomMap R M N P Q ∘ₗ tensor_projection1 R M N P Q ∘ₗ
+lemma comm_square4: TensorProduct.homTensorHomMap _ M N P Q ∘ₗ tensor_projection1 R M N P Q ∘ₗ
     (homTensorHomEquiv R _ _ _ _).symm.toLinearMap ∘ₗ tensor_inclusion2 R P Q =
     LinearMap.id (R := R) (M := (M ⊗[R] N) →ₗ[R] P ⊗[R] Q) := by
   apply LinearMap.ext
@@ -172,7 +173,7 @@ lemma comm_square4: TensorProduct.homTensorHomMap R M N P Q ∘ₗ tensor_projec
   apply LinearMap.ext
   simp [projection2_inclusion2_apply]
 
-lemma homTensorHomMap_surj: Function.Surjective (TensorProduct.homTensorHomMap R M N P Q) := by
+lemma homTensorHomMap_surj : Surjective (TensorProduct.homTensorHomMap (.id R) M N P Q) := by
   apply Function.Surjective.of_comp (g := (tensor_projection1 R M N P Q ∘ₗ
     (homTensorHomEquiv R _ _ _ _).symm.toLinearMap ∘ₗ tensor_inclusion2 R P Q))
   rw [← LinearMap.coe_comp, comm_square4]
@@ -267,7 +268,7 @@ lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
   e ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) = (a ⊗ₜ b) ⊗ₜ op (a'.unop ⊗ₜ[R] b'.unop) := rfl
 
 -- lemma top_square_comm' (A B : Azumaya R) (a : A) (a' : Aᵐᵒᵖ) (b : B) (b' : Bᵐᵒᵖ) :
---     ((TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
+--     ((TensorProduct.homTensorHomMap _ A B A B) ∘ (Algebra.TensorProduct.congr
 --     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
 --     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) =
 --     ((AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e) ((a ⊗ₜ a') ⊗ₜ (b ⊗ₜ b')) := by
@@ -277,7 +278,7 @@ lemma e_apply (a : A) (b : B) (a' : Aᵐᵒᵖ) (b' : Bᵐᵒᵖ) :
 set_option maxHeartbeats 400000 in
 open TensorProduct.AlgebraTensorModule in
 lemma top_square_comm'' (A B : Azumaya R) :
-    (TensorProduct.homTensorHomMap R A B A B) ∘ₗ (Algebra.TensorProduct.congr
+    (TensorProduct.homTensorHomMap _ A B A B) ∘ₗ (Algebra.TensorProduct.congr
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij)).toLinearMap
     = (AlgHom.mulLeftRight R (A ⊗[R] B)).toLinearMap ∘ₗ
@@ -287,7 +288,7 @@ lemma top_square_comm'' (A B : Azumaya R) :
   simp only [AlgHom.mulLeftRight_apply, Algebra.TensorProduct.tmul_mul_tmul, unop_op]
 
 lemma top_square_comm (A B : Azumaya R) :
-    (TensorProduct.homTensorHomMap R A B A B) ∘ (Algebra.TensorProduct.congr
+    (TensorProduct.homTensorHomMap _ A B A B) ∘ (Algebra.TensorProduct.congr
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R B) B.isAzumaya.bij))
     = (AlgHom.mulLeftRight R (A ⊗[R] B)) ∘ e :=
@@ -308,13 +309,12 @@ End R A ⊗ End R B ---------------> End R (A ⊗ B)
 End R Rⁿ ⊗ End R Rᵐ -------------> End R (Rⁿ ⊗ Rᵐ)
 -/
 lemma bij_homtensorhom (A B : Azumaya.{u, v} R) :
-    Function.Bijective (TensorProduct.homTensorHomMap R A B A B) :=
+    Function.Bijective (TensorProduct.homTensorHomMap (.id R) A B A B) :=
   ⟨homTensorHomMap_inj R A B A B, homTensorHomMap_surj R A B A B⟩
 
-abbrev e1 (A B : Azumaya.{u, v} R) : (Module.End R A ⊗[R] Module.End R B) ≃ₗ[R]
-    (Module.End R (A ⊗[R] B)) :=
-  LinearEquiv.ofBijective (TensorProduct.homTensorHomMap R A B A B) <|
-    bij_homtensorhom R A B
+abbrev e1 (A B : Azumaya.{u, v} R) :
+    (Module.End R A ⊗[R] Module.End R B) ≃ₗ[R] Module.End R (A ⊗[R] B) :=
+  .ofBijective (TensorProduct.homTensorHomMap _ A B A B) <| bij_homtensorhom R A B
 
 abbrev e2 (A B : Azumaya R) := (Algebra.TensorProduct.congr
     (AlgEquiv.ofBijective (AlgHom.mulLeftRight R A) A.isAzumaya.bij)
@@ -333,14 +333,12 @@ lemma bij_mulLeftRight (A B : Azumaya.{u, v} R) :
   change Function.Bijective (e1 R A B ∘ e2 R A B)
   exact (e1 R A B).bijective.comp (e2 R A B).bijective
 
-abbrev mul (A B : Azumaya R) : Azumaya R := {
+abbrev mul (A B : Azumaya R) : Azumaya R where
   __ := AlgCat.of R (A.carrier ⊗[R] B.carrier)
-  isAzumaya := {
-    out := Module.Projective.tensorProduct|>.out
-    eq_of_smul_eq_smul := Azumaya.FathfulSMul.tensor|>.eq_of_smul_eq_smul
-    fg_top := Module.Finite.tensorProduct R A B|>.fg_top
-    bij := bij_mulLeftRight R A B
-  }}
+  isAzumaya.out := Module.Projective.tensorProduct|>.out
+  isAzumaya.eq_of_smul_eq_smul := Azumaya.FathfulSMul.tensor|>.eq_of_smul_eq_smul
+  isAzumaya.fg_top := Module.Finite.tensorProduct R A B|>.fg_top
+  isAzumaya.bij := bij_mulLeftRight R A B
 
 instance : Mul (Azumaya R) where
   mul A B := mul R A B

@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jujian Zhang
 -/
 import Mathlib.Algebra.Algebra.Subalgebra.Basic
-import Mathlib.RingTheory.TensorProduct.Basic
 import Mathlib.RingTheory.Adjoin.Basic
+import Mathlib.RingTheory.TensorProduct.Maps
 import Mathlib.LinearAlgebra.TensorProduct.Basis
 import Mathlib.LinearAlgebra.FreeModule.Basic
 

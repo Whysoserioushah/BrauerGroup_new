@@ -58,7 +58,7 @@ instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
   simp only [re_mul, zero_mul, _root_.one_mul, zero_sub, sub_zero, mul_zero, _root_.mul_one,
     imI_mul, zero_add, add_zero, imJ_mul, sub_self, imK_mul, AlgHom.toRingHom_eq_coe,
     RingHom.coe_coe] at *
-  simp [self_eq_neg ℝ ℝ, neg_eq_self ℝ ℝ] at *
+  simp [self_eq_neg, neg_eq_self] at *
   change (⟨q.1, 0, 0, 0⟩ : ℍ[ℝ]) = ⟨q.1, q.2,q.3,q.4⟩
   ext <;> simp_all⟩
 
