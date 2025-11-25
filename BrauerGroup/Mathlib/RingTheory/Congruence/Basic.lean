@@ -1,6 +1,4 @@
-import BrauerGroup.Mathlib.GroupTheory.Congruence.Defs
 import Mathlib.Algebra.Algebra.Hom
-import Mathlib.Algebra.Module.LinearMap.Defs
 import Mathlib.RingTheory.Congruence.Basic
 
 open Function
@@ -20,19 +18,6 @@ variable (α) in
 def mkL (c : RingCon R) : R →ₗ[α] c.Quotient where
   __ := c.mk'
   map_smul' _ _ := rfl
-
-lemma toCon_injective : Injective fun c : RingCon R ↦ c.toCon := fun c d ↦ by cases c; congr!
-
-@[simp] lemma toCon_inj : c.toCon = d.toCon ↔ c = d := toCon_injective.eq_iff
-
-@[simp] lemma toCon_top : (⊤ : RingCon R).toCon = ⊤ := rfl
-
-@[simp] lemma toCon_eq_top : c.toCon = ⊤ ↔ c = ⊤ := by rw [← toCon_top, toCon_inj]
-
-@[simp] lemma subsingleton_quotient : Subsingleton c.Quotient ↔ c = ⊤ := by simp [RingCon.Quotient]
-
-@[simp] lemma nontrivial_quotient : Nontrivial c.Quotient ↔ c ≠ ⊤ := by
-  simp [← not_subsingleton_iff_nontrivial]
 
 end Semiring
 
