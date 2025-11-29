@@ -1,0 +1,67 @@
+name: Build Lean project
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  style_lint:
+    name: Lint style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Don't 'import Mathlib', use precise imports
+        if: always()
+        run: |
+          ! (find BrauerGroup -name "*.lean" -type f -print0 | xargs -0 grep -E -n '^import Mathlib$')
+
+      - name: Files in BrauerGroup.Mathlib can't import BrauerGroup files outside BrauerGroup.Mathlib
+        run: |
+          ! (find BrauerGroup/Mathlib -name "*.lean" -type f -print0 | xargs -0 grep -E -n '^import BrauerGroup.(?!Mathlib)')
+
+  build:
+    name: Build project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Build and lint the project
+        id: build-lean
+        uses: leanprover/lean-action@434f25c2f80ded67bba02502ad3a86f25db50709 # v1.3.0
+
+      - name: Upstreaming dashboard
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p website/_includes
+          python3 scripts/upstreaming_dashboard.py
+
+      - name: File dependencies
+        if: github.ref == 'refs/heads/main'
+        run: |
+          sudo apt-get update
+          sudo apt install graphviz -y
+          ~/.elan/bin/lake exe graph website/file_deps.pdf
+
+      - name: Build project documentation
+        if: github.ref == 'refs/heads/main'
+        id: build-docgen
+        uses: leanprover-community/docgen-action@main
+        with:
+          blueprint: true
+          homepage: "website"
