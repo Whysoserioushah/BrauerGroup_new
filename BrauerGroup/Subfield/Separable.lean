@@ -98,7 +98,7 @@ def SubField.adjoin (L : SubField K D) (a : D) (ha : a ∈ Subalgebra.centralize
 
 noncomputable local instance IsLAlg (L : SubField K D) (a : D) (ha : a ∈ Subalgebra.centralizer K L) :
   Algebra L (SubField.adjoin K D L a ha) := RingHom.toAlgebra' (Subalgebra.inclusion <|
-    Set.subset_union_left |>.trans Algebra.subset_adjoin).toRingHom <| fun ⟨x, hx⟩ ⟨y, hy⟩ ↦
+    Set.subset_union_left |>.trans Algebra.subset_adjoin).toRingHom fun ⟨x, hx⟩ ⟨y, hy⟩ ↦
     Subtype.ext_iff|>.2 <| SubField.adjoin_centralizer_mul_comm K D L a ha _ y
       (Subalgebra.inclusion _ (⟨x, hx⟩ : L)).2 hy
 
@@ -184,7 +184,7 @@ noncomputable abbrev iSup_chain_sepsubfield (c : Set (AllSepSubfield K D)) [None
 
 omit [Algebra.IsCentral K D] [FiniteDimensional K D] in
 lemma exists_max_sepSub : ∃ L : AllSepSubfield K D, IsMax L :=
-  zorn_le_nonempty (α := AllSepSubfield K D) <| fun c hc1 hc2 ↦ by
+  zorn_le_nonempty (α := AllSepSubfield K D) fun c hc1 hc2 ↦ by
     haveI : Nonempty c := Set.Nonempty.to_subtype hc2
     use iSup_chain_sepsubfield K D c hc1
     change _ ∈ {L | _}
@@ -230,7 +230,7 @@ instance centralizerSubfieldDiv (L : SubField K D) :
   mul_inv_cancel a ha := by ext; simp; rw [mul_inv_cancel₀ (by aesop)]
   inv_zero := by ext; simp
   ratCast_def q := by ext; simp [Rat.cast_def]
-  nnratCast q := ⟨q, Subalgebra.mem_centralizer_iff _|>.2 <| fun x _ ↦ NNRat.cast_commute _ _|>.symm⟩
+  nnratCast q := ⟨q, Subalgebra.mem_centralizer_iff _|>.2 fun x _ ↦ NNRat.cast_commute _ _|>.symm⟩
   nnratCast_def q := by ext; simp only [NNRat.cast_def]; rfl
   qsmul q a := ⟨q • a.1, Set.centralizer.qsmul_mem K D (L.1.1) q a.1 a.2⟩
   qsmul_def q x := by ext; simp [Rat.smul_def q x.1]
@@ -239,9 +239,9 @@ instance centralizerSubfieldDiv (L : SubField K D) :
 
 noncomputable instance (L : SubField K D) : Algebra L (Subalgebra.centralizer K (A := D) L) where
   smul l1 x := ⟨l1 * x, Set.mul_mem_centralizer
-    (Subalgebra.mem_centralizer_iff K|>.2 <| fun _ hy ↦ L.2 l1.2 hy |>.symm) x.2⟩
+    (Subalgebra.mem_centralizer_iff K|>.2 fun _ hy ↦ L.2 l1.2 hy |>.symm) x.2⟩
   algebraMap := Subalgebra.inclusion (fun _ hx ↦ Subalgebra.mem_centralizer_iff K|>.2
-    <| fun _ hy ↦ L.2 hx hy|>.symm : L.1 ≤ Subalgebra.centralizer K (A := D) L)
+    fun _ hy ↦ L.2 hx hy|>.symm : L.1 ≤ Subalgebra.centralizer K (A := D) L)
   commutes' l x := Subtype.ext_iff.2 <| Subalgebra.mem_centralizer_iff K|>.1 x.2 l.1 l.2
   smul_def' _ _ := rfl
 

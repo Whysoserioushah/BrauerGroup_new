@@ -12,7 +12,7 @@ open FiniteDimensional MulOpposite BrauerGroup TensorProduct
 section CSA
 
 set_option maxHeartbeats 1200000 in
-set_option synthInstance.maxHeartbeats 120000 in
+-- FIXME: Get rid of the raised heartbeats
 set_option maxSynthPendingDepth 2 in
 lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : isSplit F A K) :
     ∃ (B : CSA F), (Quotient.mk'' A : BrauerGroup F) * (Quotient.mk'' B) = 1 ∧
@@ -113,8 +113,8 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
         (writeAsTensorProduct (B := emb.range) |>.trans <|
           Algebra.TensorProduct.congr e.symm AlgEquiv.refl)
     apply Quotient.sound'
-    exact ⟨1, (Module.finrank F (Fin n → K)), one_ne_zero, by aesop, ⟨AlgEquiv.trans (dim_one_iso _) iso⟩⟩
-  · show Module.finrank F K ^ 2 = Module.finrank F B
+    exact ⟨1, Module.finrank F (Fin n → K), one_ne_zero, by aesop, ⟨(dim_one_iso _).trans iso⟩⟩
+  · change Module.finrank F K ^ 2 = Module.finrank F B
     have dim_eq1 : Module.finrank F B * _ = _ := dim_centralizer F emb.range
     rw [Module.finrank_linearMap, show Module.finrank F (Fin n → K) =
       Module.finrank F K * Module.finrank K (Fin n → K) from
@@ -123,8 +123,8 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       show Module.finrank F K * n * (Module.finrank F K * n) = (Module.finrank F K)^2 * n ^ 2 by
         simp only [pow_two]; group] at dim_eq1
     have dim_eq2 := iso.toLinearEquiv.finrank_eq
-    simp only [Module.finrank_tensorProduct, Module.finrank_self, _root_.one_mul, Module.finrank_matrix,
-      Fintype.card_fin] at dim_eq2
+    simp only [Module.finrank_tensorProduct, Module.finrank_self, _root_.one_mul,
+      Module.finrank_matrix, Fintype.card_fin] at dim_eq2
     rw [dim_eq2, ← pow_two] at dim_eq1
     let m := Module.finrank F B
     let M := Module.finrank F K
@@ -169,13 +169,14 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
     have n_pos : 0 < n := Module.finrank_pos
     replace dim_eq : Module.finrank F B = n^2 := dim_eq.symm
     letI : Module K B :=
-    { smul := fun c a => a * ι c
-      one_smul := by intros; show _ * _ = _; simp
-      mul_smul := by intros; show _ * _ = (_ * _) * _; simp [_root_.mul_assoc, ← map_mul, mul_comm]
-      smul_zero := by intros; show _ * _ = _; simp
-      smul_add := by intros; show _ * _ = _ * _ + _ * _; simp [add_mul]
-      add_smul := by intros; show _ * _ = _ * _ + _ * _; simp [mul_add]
-      zero_smul := by intros; show _ * _ = _; simp }
+    { smul c a := a * ι c
+      one_smul := by intros; change _ * _ = _; simp
+      mul_smul := by
+        intros; change _ * _ = (_ * _) * _; simp [_root_.mul_assoc, ← map_mul, mul_comm]
+      smul_zero := by intros; change _ * _ = _; simp
+      smul_add := by intros; change _ * _ = _ * _ + _ * _; simp [add_mul]
+      add_smul := by intros; change _ * _ = _ * _ + _ * _; simp [mul_add]
+      zero_smul := by intros; change _ * _ = _; simp }
     have smul_def (r : K) (a : B) : r • a = a * (ι r) := rfl
     haveI : SMulCommClass K F B :=
     { smul_comm := by
@@ -284,13 +285,12 @@ theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSp
   obtain ⟨p, hp, ⟨e⟩⟩ := hA
   obtain ⟨q, hq, D, hD1, _, ⟨e'⟩⟩ := Wedderburn_Artin_algebra_version K (K ⊗[F] B)
   haveI := is_fin_dim_of_wdb K (K ⊗[F] B) hq D e'
-  have ee := Matrix.reindexAlgEquiv _ _ finProdFinEquiv|>.symm.trans $
-    Matrix.compAlgEquiv _ _ _ _ |>.symm.trans $ e'.mapMatrix.symm.trans $
-    matrixTensorEquivTensor K F B (Fin m) |>.symm.trans $
-    Algebra.TensorProduct.congr (A := K) (S := K) AlgEquiv.refl iso|>.symm.trans $
-    matrixTensorEquivTensor K F A (Fin n)|>.trans $ e.mapMatrix (m := (Fin n))|>.trans
-    $ Matrix.compAlgEquiv (Fin n) (Fin p) K K |>.trans $ Matrix.reindexAlgEquiv K K
-    finProdFinEquiv
+  have ee := Matrix.reindexAlgEquiv _ _ finProdFinEquiv|>.symm.trans <|
+    Matrix.compAlgEquiv _ _ _ _ |>.symm.trans <| e'.mapMatrix.symm.trans <|
+    matrixTensorEquivTensor K F B (Fin m) |>.symm.trans <|
+    Algebra.TensorProduct.congr (A := K) (S := K) .refl iso|>.symm.trans <|
+    matrixTensorEquivTensor K F A (Fin n)|>.trans <| e.mapMatrix (m := (Fin n))|>.trans <|
+      Matrix.compAlgEquiv (Fin n) (Fin p) K K |>.trans <| Matrix.reindexAlgEquiv K K finProdFinEquiv
   haveI : NeZero (m * q) := ⟨by aesop⟩
   haveI : NeZero (n * p) := ⟨by aesop⟩
   exact ⟨q, ⟨hq⟩, ⟨e'.trans <|

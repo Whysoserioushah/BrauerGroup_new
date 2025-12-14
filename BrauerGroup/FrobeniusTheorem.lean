@@ -13,13 +13,14 @@ variable {D : Type} [DivisionRing D]
 section prerequisites
 
 set_option synthInstance.maxHeartbeats 80000 in
+-- FIXME: Get rid of the raised heartbeats
 theorem rank_1_D_iso_R [Algebra ℝ D] : Module.finrank ℝ D = 1 →
     Nonempty (D ≃ₐ[ℝ] ℝ) := fun h ↦ by
   have h' := Subalgebra.finrank_eq_one_iff (F := ℝ) (S := (⊤ : Subalgebra ℝ D))
   have : Module.finrank ℝ (⊤ : Subalgebra ℝ D) = 1 := by
     simp_all only [Subalgebra.finrank_eq_one_iff, Subalgebra.bot_eq_top_of_finrank_eq_one]
-  exact ⟨Subalgebra.topEquiv.symm.trans $ Subalgebra.equivOfEq _ _
-    (h'.1 this)|>.trans $ Algebra.botEquiv ℝ D⟩
+  exact ⟨Subalgebra.topEquiv.symm.trans <| Subalgebra.equivOfEq _ _
+    (h'.1 this)|>.trans <| Algebra.botEquiv ℝ D⟩
 
 lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K] :
     Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
@@ -59,9 +60,8 @@ variable [hD' : IsSimpleRing D] [Algebra ℝ D] (k : SubField ℝ D) (hk : IsMax
 
 open ComplexConjugate
 
-set_option synthInstance.maxHeartbeats 50000 in
 abbrev f : k →ₐ[ℝ] k where
-  toFun := fun kk ↦ e.symm $ conj (e kk)
+  toFun kk := e.symm <| conj (e kk)
   map_one' := by simp only [map_one]
   map_mul' := by simp only [map_mul, implies_true]
   map_zero' := by simp only [map_zero]
@@ -83,7 +83,7 @@ lemma f_injective : Function.Injective (f k e) := by
   intro x y h
   simp only [AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
     EmbeddingLike.apply_eq_iff_eq] at h
-  have : Function.Injective $ starRingEnd ℂ := by exact RingHom.injective (starRingEnd ℂ)
+  have : Function.Injective <| starRingEnd ℂ := by exact RingHom.injective (starRingEnd ℂ)
   apply this at h
   apply e.injective
   exact h
@@ -157,7 +157,6 @@ lemma i_ne_zero : (e.symm ⟨0, 1⟩ : D) ≠ 0 := by
   obtain ⟨_, h⟩ := h
   simp only [Complex.zero_im, one_ne_zero] at h
 
-set_option synthInstance.maxHeartbeats 60000 in
 lemma linindep1i :
     LinearIndependent ℝ ![(1 : D), ↑(e.symm { re := 0, im := 1 })] := by
   rw [LinearIndependent.pair_iff']
@@ -177,7 +176,6 @@ lemma linindep1i :
 
 variable [Algebra.IsCentral ℝ D] [FiniteDimensional ℝ D]
 
-set_option maxHeartbeats 500000 in
 lemma f_is_conjugation : ∃ (x : Dˣ), ∀ z, x.1⁻¹ * f k e z * x = k.val z := by
   obtain ⟨x, hx⟩ := SkolemNoether' ℝ D k k.val (k.val.comp (f k e))
   use x
@@ -201,7 +199,6 @@ lemma xsq_ink (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
   simp only [Subalgebra.coe_val] at this
   exact this
 
-set_option synthInstance.maxHeartbeats 40000 in
 lemma indep' (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) (hxx : ¬x.1 ^ 2 ∈ Subalgebra.center ℝ D) :
     LinearIndependent ℝ (M := k) ![1, ⟨x.1^2, (xsq_ink _ _ _ hx hDD)⟩] := by
@@ -217,7 +214,7 @@ lemma indep' (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
 abbrev IsBasis (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) (hxx : ¬x.1 ^ 2 ∈ Subalgebra.center ℝ D) :
     Basis (Fin (Nat.succ 0).succ) ℝ k :=
-  .mk (M := k) (v := ![1, ⟨x.1^2, xsq_ink _ _ _ hx hDD⟩]) (indep' _ _ _ hx hDD hxx) $ by
+  .mk (M := k) (v := ![1, ⟨x.1^2, xsq_ink _ _ _ hx hDD⟩]) (indep' _ _ _ hx hDD hxx) <| by
   simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Matrix.range_cons,
     Matrix.range_empty, Set.union_empty, Set.union_singleton, top_le_iff]
   have : Module.finrank ℝ (Submodule.span ℝ {⟨x.1^2, xsq_ink _ _ _ hx hDD⟩, (1 : k)}) = 2 := by
@@ -234,9 +231,9 @@ abbrev IsBasis (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     change Module.finrank ℝ k = 2
     rw [LinearEquiv.finrank_eq e.toLinearEquiv]
     exact Complex.finrank_real_complex
-  have eq := Submodule.topEquiv.finrank_eq.trans $
+  have eq := Submodule.topEquiv.finrank_eq.trans <|
     e.toLinearEquiv.finrank_eq.trans Complex.finrank_real_complex
-  exact Submodule.eq_of_le_of_finrank_eq le_top $ this.trans eq.symm
+  exact Submodule.eq_of_le_of_finrank_eq le_top <| this.trans eq.symm
 
 @[simp]
 lemma IsBasis0 (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
@@ -248,7 +245,6 @@ lemma IsBasis1 (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) (hxx : ¬x.1 ^ 2 ∈ Subalgebra.center ℝ D) :
     IsBasis _ _ _ hx hDD hxx 1 = ⟨x.1^2, xsq_ink _ _ _ hx hDD⟩ := by simp [IsBasis]
 
-set_option synthInstance.maxHeartbeats 40000 in
 lemma x2_is_real (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) : x.1^2 ∈ (algebraMap ℝ D).range := by
   let hx2 := hx
@@ -262,16 +258,15 @@ lemma x2_is_real (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
         intro y
         have := Basis.linearCombination_repr IsBasis y|>.symm
         rw [this, Finsupp.linearCombination_apply, Finsupp.sum_fintype]
-        simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.sum_univ_two, Fin.isValue]
-        rw [IsBasis0, IsBasis1]
-        · erw [mul_add, add_mul]
+        · simp only [Nat.succ_eq_add_one, Nat.reduceAdd, Fin.sum_univ_two, Fin.isValue]
+          rw [IsBasis0, IsBasis1]
+          erw [mul_add, add_mul]
           rw [Subalgebra.coe_smul, mul_smul_comm, smul_mul_assoc, Subalgebra.coe_one,
             one_mul, mul_one, add_right_inj, Subalgebra.coe_smul, mul_smul_comm,
             show ((⟨x.1^2, xink⟩ : k) : D) = x.1^2 by rfl, pow_two, ← mul_assoc, smul_mul_assoc]
         · exact fun _ ↦ Subtype.ext_iff.2 <| zero_smul _ _
-
-      specialize x_commutes_k $ e.symm ⟨0,1⟩
-      specialize hx $ e.symm ⟨0,1⟩
+      specialize x_commutes_k <| e.symm ⟨0,1⟩
+      specialize hx <| e.symm ⟨0,1⟩
       simp only [Subalgebra.coe_val] at hx
       simp only [Subalgebra.coe_val] at x_commutes_k
       apply_fun (· * x.1⁻¹) at x_commutes_k
@@ -283,10 +278,11 @@ lemma x2_is_real (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
       simp only [this, mul_assoc, isUnit_iff_ne_zero, ne_eq, Units.ne_zero, not_false_eq_true,
         IsUnit.mul_inv_cancel, mul_one, IsUnit.mul_inv_cancel_left] at x_commutes_k
       unfold f at hx2
-      specialize hx2 $ e.symm ⟨0,1⟩
+      specialize hx2 <| e.symm ⟨0,1⟩
       simp only [this, f_apply, AlgEquiv.apply_symm_apply, Subalgebra.coe_val] at hx2
       erw [← mul_assoc, hx2] at x_commutes_k
-      simp only [SetLike.coe_eq_coe, EmbeddingLike.apply_eq_iff_eq, Complex.mk.injEq, true_and] at x_commutes_k
+      simp only [SetLike.coe_eq_coe, EmbeddingLike.apply_eq_iff_eq, Complex.mk.injEq, true_and]
+        at x_commutes_k
       norm_num at x_commutes_k
 
   change _ ∈ (⊥ : Subalgebra ℝ D)
@@ -314,7 +310,8 @@ lemma real_sq_in_R_or_V (x : D) :
       exact h'' this (id (Eq.symm hr))
     have eq1 : (x - algebraMap ℝ D (Real.sqrt r)) * ( x + algebraMap ℝ D (Real.sqrt r)) = 0 := by
       simp only [mul_add, sub_mul]
-      rw [← pow_two, ← hr, ← map_mul, show algebraMap ℝ D √r * x = x * algebraMap ℝ D √r from Algebra.commutes' _ _]
+      rw [← pow_two, ← hr, ← map_mul,
+        show algebraMap ℝ D √r * x = x * algebraMap ℝ D √r from Algebra.commutes' _ _]
       simp only [sub_add_sub_cancel, ← map_sub, map_eq_zero]
       rw [sub_eq_zero, ← pow_two]
       symm
@@ -388,7 +385,7 @@ lemma j_mul_j (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹ * ↑x) = (-1 : ℝ) • 1 := by
   rw [← mul_assoc, show algebraMap ℝ D _ = (algebraMap ℝ k _ : D) from rfl]
   have hx1 := hx
-  specialize hx $ (algebraMap ℝ k (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹)
+  specialize hx <| (algebraMap ℝ k (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹)
   simp only [AlgHom.commutes, Subalgebra.coe_val] at hx
   apply_fun (x.1 * · ) at hx
   rw [← mul_assoc, ← mul_assoc, mul_inv_cancel₀ (Units.ne_zero x), one_mul] at hx
@@ -398,8 +395,8 @@ lemma j_mul_j (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (x_corre_R _ _ _ hx1 hDD).choose_spec, mul_assoc, ← pow_two, ← neg_inv, neg_mul,
     inv_mul_cancel₀ (by simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, map_inv₀,
     ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff, Units.ne_zero])]
-  simp only [neg_smul, one_smul]
-  exact le_of_lt <| r_pos _ _ _ hx1 hDD
+  · simp only [neg_smul, one_smul]
+  · exact (r_pos _ _ _ hx1 hDD).le
 
 lemma jij_eq_negi (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) :
@@ -407,22 +404,21 @@ lemma jij_eq_negi (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹ * x.1)⁻¹ = - e.symm ⟨0, 1⟩ := by
   rw [show algebraMap ℝ D _ = (algebraMap ℝ k _ : D) from rfl, mul_inv_rev, ← mul_assoc]
   have hx1 := hx
-  specialize hx $ e.symm ⟨0, 1⟩
+  specialize hx <| e.symm ⟨0, 1⟩
   apply_fun (x.1 * · * x.1⁻¹) at hx
   rw [← mul_assoc, ← mul_assoc, mul_inv_cancel₀ (Units.ne_zero x), one_mul, mul_assoc,
     mul_inv_cancel₀ (Units.ne_zero x), mul_one] at hx
   simp only [f_apply, AlgEquiv.apply_symm_apply, Subalgebra.coe_val] at hx
   rw [mul_assoc, mul_assoc, mul_assoc]; nth_rw 2 [← mul_assoc, ← mul_assoc]
   rw [← hx, ← Complex.I, Complex.conj_I, ← mul_assoc, ← Subalgebra.coe_mul, mul_comm,
-    Subalgebra.coe_mul, mul_assoc, mul_inv_cancel₀ (by
-      simp only [map_inv₀, ne_eq, ZeroMemClass.coe_eq_zero, inv_eq_zero, map_eq_zero]
-      by_contra! zero
-      apply_fun (·)^2 at zero
-      rw [Pi.pow_apply, Real.sq_sqrt (le_of_lt (r_pos _ _ _ hx1 hDD)), Pi.pow_apply,
-        pow_two 0, zero_mul] at zero
-      haveI := r_pos _ _ _ hx1
-      simp_all only [f_apply, Subalgebra.coe_val, Subtype.forall, lt_self_iff_false]), mul_one, map_neg,
-    Subalgebra.coe_neg]
+    Subalgebra.coe_mul, mul_assoc, mul_inv_cancel₀, mul_one, map_neg, Subalgebra.coe_neg]
+  simp only [map_inv₀, ne_eq, ZeroMemClass.coe_eq_zero, inv_eq_zero, map_eq_zero]
+  by_contra! zero
+  apply_fun (·)^2 at zero
+  rw [Pi.pow_apply, Real.sq_sqrt (le_of_lt (r_pos _ _ _ hx1 hDD)), Pi.pow_apply,
+    pow_two 0, zero_mul] at zero
+  haveI := r_pos _ _ _ hx1
+  simp_all
 
 lemma k_sq_eq_negone (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) :
@@ -445,7 +441,7 @@ lemma k_sq_eq_negone (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
   rw [jij_eq_negi _ _ _ hx, ← Subalgebra.coe_neg, ← map_neg e.symm, ← mul_assoc,
     ← mul_assoc, ← mul_assoc, ← Subalgebra.coe_mul, ← map_mul e.symm, ← Complex.I, mul_neg,
     Complex.I_mul_I, neg_neg, map_one, Subalgebra.coe_one, one_mul, mul_assoc, j_mul_j _ _ _ hx]
-  simp only [neg_smul, one_smul]
+  · simp
   · exact hDD
   · exact hDD
 
@@ -474,9 +470,9 @@ lemma j_mul_i_eq_neg_i_mul_j (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.v
   apply_fun (· * ((↑(e.symm { re := 0, im := 1 }) * j)⁻¹)) at this
   rw [mul_assoc, mul_inv_cancel₀ (k_ne_zero _ _ _ hx hDD), mul_one, mul_inv_rev] at this
   have jinv : j⁻¹ = -j := by
-    rw [← mul_eq_one_iff_inv_eq₀ (j_ne_zero _ _ _ hx _), mul_neg, j_mul_j _ _ _ hx]
-    simp only [neg_smul, one_smul, neg_neg]
-    exact hDD; exact hDD
+    rw [← mul_eq_one_iff_inv_eq₀ (j_ne_zero _ _ _ hx hDD) , mul_neg, j_mul_j _ _ _ hx]
+    · simp
+    · exact hDD
   have iinv : ((e.symm { re := 0, im := 1 })).1⁻¹ = - (e.symm { re := 0, im := 1 }).1 := by
     rw [← mul_eq_one_iff_inv_eq₀ (i_ne_zero _ _), mul_neg, ← Subalgebra.coe_mul,
       ← map_mul e.symm, ← Complex.I, Complex.I_mul_I, map_neg, map_one, Subalgebra.coe_neg,
@@ -489,7 +485,6 @@ lemma j_mul_i_eq_neg_i_mul_j (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.v
 
 open Quaternion
 
-set_option synthInstance.maxHeartbeats 40000 in
 abbrev toFun (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) :
     ℍ[ℝ] →ₐ[ℝ] D := QuaternionAlgebra.lift (R := ℝ) (A := D) {
@@ -509,12 +504,11 @@ abbrev basisijk (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z) (hDD : 
   (Fin.cons ((algebraMap ℝ D (Real.sqrt (x_corre_R k e x hx hDD).choose)⁻¹) * x.1)
     ![(1 : D), e.symm ⟨0, 1⟩])
 
-set_option synthInstance.maxHeartbeats 60000 in
-set_option maxHeartbeats 400000 in
 lemma linindep1ij (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) :
-    LinearIndependent ℝ (Fin.cons ((algebraMap ℝ D) (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹ * ↑x)
-      ![1, ↑(e.symm { re := 0, im := 1 })]) := by
+    LinearIndependent ℝ
+      (Fin.cons (algebraMap ℝ D (Real.sqrt (x_corre_R _ _ _ hx hDD).choose)⁻¹ * ↑x)
+        ![1, ↑(e.symm { re := 0, im := 1 })]) := by
   rw [linearIndependent_fin_cons]
   constructor
   · exact linindep1i _ _
@@ -663,13 +657,12 @@ abbrev isBasisijk (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
 
 abbrev linEquivH (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (h : Module.finrank ℝ D = 4) : ℍ[ℝ] ≃ₗ[ℝ] D :=
-  Basis.equiv (QuaternionAlgebra.basisOneIJK (-1 : ℝ) 0 (-1 : ℝ)) (isBasisijk _ _ _ hx h)
-    $ {
-      toFun := ![2, 3, 1, 0]
-      invFun := ![3, 2, 0, 1]
-      left_inv := fun i ↦ by fin_cases i <;> simp
-      right_inv := fun i ↦ by fin_cases i <;> simp
-    }
+  Basis.equiv (QuaternionAlgebra.basisOneIJK (-1 : ℝ) 0 (-1 : ℝ)) (isBasisijk _ _ _ hx h) {
+    toFun := ![2, 3, 1, 0]
+    invFun := ![3, 2, 0, 1]
+    left_inv i := by fin_cases i <;> simp
+    right_inv i := by fin_cases i <;> simp
+  }
 
 lemma toFun_i_eq (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (h : Module.finrank ℝ D = 4) :
@@ -731,7 +724,6 @@ theorem rank4_iso_H (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (h : Module.finrank ℝ D = 4) : Nonempty (ℍ[ℝ] ≃ₐ[ℝ] D) :=
   ⟨AlgEquiv.ofBijective (toFun _ _ _ hx h) (bij_tofun _ _ _ hx h)⟩
 
-set_option synthInstance.maxHeartbeats 40000 in
 abbrev SmulCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)) : ℂ →+* A where
   toFun z := e z
@@ -749,7 +741,6 @@ instance AlgCA (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional �
     simp [Subalgebra.mem_center_iff.1 (e z).2]
   smul_def' _ _ := rfl
 
-set_option synthInstance.maxHeartbeats 40000 in
 lemma smulCRassoc (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (e : ℂ ≃ₐ[ℝ] (Subalgebra.center ℝ A)) (r : ℝ) (z : ℂ) (a : A) : e (r • z) * a =
     r • (e z * a) := by
@@ -757,7 +748,7 @@ lemma smulCRassoc (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional
   exact smul_mul_assoc r (↑(e z)) a
 
 attribute [-instance] Module.complexToReal
-set_option synthInstance.maxHeartbeats 40000 in
+
 theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (hA : Nonempty (Subalgebra.center ℝ A ≃ₐ[ℝ] ℂ)) : Nonempty (A ≃ₐ[ℝ] ℂ) := by
   have e := hA.some.symm
@@ -780,6 +771,7 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij⟩
 
 set_option synthInstance.maxHeartbeats 80000 in
+-- FIXME: Get rid of the raised heartbeats
 set_option maxHeartbeats 600000 in
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by

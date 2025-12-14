@@ -20,7 +20,7 @@ variable (I : TwoSidedIdeal R)
 variable {R' : Type*} [Ring R']
 
 -- def span (s : Set R) : TwoSidedIdeal R :=
--- .mk $ ringConGen (fun a b ↦ a - b ∈ s)
+-- .mk <| ringConGen (fun a b ↦ a - b ∈ s)
 
 
 -- lemma subset_span (s : Set R) : s ⊆ span s := by

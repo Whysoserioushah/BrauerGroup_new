@@ -31,7 +31,7 @@ variable (K F : Type u) [Field K] [Field F] [Algebra F K] -- [FiniteDimensional 
 /--
 The relative Brauer group `Br(K/F)` is the kernel of the map `Br F -> Br K`
 -/
-abbrev RelativeBrGroup := MonoidHom.ker $ BrauerGroupHom.BaseChange (K := F) (E := K)
+abbrev RelativeBrGroup := (BrauerGroupHom.BaseChange (K := F) (E := K)).ker
 
 lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
     BrauerGroupHom.BaseChange (K := F) (Quotient.mk'' A) = (1 : BrauerGroup K) :=
@@ -56,14 +56,14 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
       let iso' := Wedderburn_Artin_algebra_version K (K ⊗[F] A)|>.choose_spec
         |>.2.choose_spec.choose_spec.choose_spec.some
       change K ⊗[F] A ≃ₐ[K] Matrix (Fin p) (Fin p) D at iso'
-      have e := Matrix.reindexAlgEquiv K _ (finProdFinEquiv.symm) |>.trans $
-        Matrix.compAlgEquiv _ _ _ _|>.symm.trans $
-        iso.mapMatrix (m := (Fin p))|>.symm.trans $
-        (Matrix.compAlgEquiv (Fin p) (Fin n) D K |>.trans $ Matrix.reindexAlgEquiv K D
-        (Equiv.prodComm (Fin p) (Fin n))|>.trans $ Matrix.compAlgEquiv (Fin n) (Fin p) D K
-        |>.symm.trans $ iso'.mapMatrix.symm).symm.mapMatrix |>.trans $
-        Matrix.compAlgEquiv (Fin p) (Fin p) _ K |>.trans $ Matrix.reindexAlgEquiv K _
-        (finProdFinEquiv)|>.trans $ Matrix.compAlgEquiv _ _  D K|>.trans $
+      have e := Matrix.reindexAlgEquiv K _ (finProdFinEquiv.symm) |>.trans <|
+        Matrix.compAlgEquiv _ _ _ _|>.symm.trans <|
+        iso.mapMatrix (m := (Fin p))|>.symm.trans <|
+        (Matrix.compAlgEquiv (Fin p) (Fin n) D K |>.trans <| Matrix.reindexAlgEquiv K D
+        (Equiv.prodComm (Fin p) (Fin n))|>.trans <| Matrix.compAlgEquiv (Fin n) (Fin p) D K
+        |>.symm.trans <| iso'.mapMatrix.symm).symm.mapMatrix |>.trans <|
+        Matrix.compAlgEquiv (Fin p) (Fin p) _ K |>.trans <| Matrix.reindexAlgEquiv K _
+        (finProdFinEquiv)|>.trans <| Matrix.compAlgEquiv _ _  D K|>.trans <|
         Matrix.reindexAlgEquiv K _ (finProdFinEquiv)
       have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) hp D iso'
       haveI : NeZero (p * p * n) := ⟨by simpa [hn]⟩

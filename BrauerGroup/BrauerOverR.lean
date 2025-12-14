@@ -20,7 +20,6 @@ abbrev toEnd_map : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] →ₗ[ℝ] Module.End ℝ (ℍ[�
   map_smul' := fun r x ↦ by ext : 2; simp
 }
 
-set_option synthInstance.maxHeartbeats 40000 in
 lemma toEnd_map.map_mul (x1 x2 : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) : toEnd_map (x1 * x2) =
     toEnd_map x1 * toEnd_map x2 := by
   induction x1 using TensorProduct.induction_on with
@@ -33,7 +32,6 @@ lemma toEnd_map.map_mul (x1 x2 : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) : toEnd_map (x1 * x
       rw [mul_add, map_add, map_add, mul_add, h1, h2]
   | add x y h1 h2 => rw [add_mul, map_add, map_add, add_mul, h1, h2]
 
-set_option synthInstance.maxHeartbeats 40000 in
 abbrev toEnd : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] →ₐ[ℝ] Module.End ℝ (ℍ[ℝ]) where
   toFun := toEnd_map
   map_one' := by ext : 1; simp [Algebra.TensorProduct.one_def]
@@ -67,8 +65,8 @@ instance : IsSimpleRing (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) := IsCentralSimple.TensorPr
 lemma toEnd_bij : Function.Bijective toEnd :=
   bijective_of_dim_eq_of_isCentralSimple ℝ (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) (Module.End ℝ ℍ[ℝ]) toEnd <| by
     rw [show Module.finrank ℝ (Module.End ℝ _) =
-      Module.finrank ℝ (Matrix (Fin $ Module.finrank ℝ ℍ[ℝ]) (Fin $ Module.finrank ℝ ℍ[ℝ]) ℝ) from
-      (algEquivMatrix $ Module.finBasis _ _).toLinearEquiv.finrank_eq]
+      Module.finrank ℝ (Matrix (Fin <| Module.finrank ℝ ℍ[ℝ]) (Fin <| Module.finrank ℝ ℍ[ℝ]) ℝ)
+      from (algEquivMatrix <| Module.finBasis _ _).toLinearEquiv.finrank_eq]
     simp [Quaternion.finrank_eq_four, Fintype.card_fin, Module.finrank_matrix]
 
 def QuaternionTensorEquivMatrix : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] ≃ₐ[ℝ] Matrix (Fin 4) (Fin 4) ℝ :=
@@ -90,7 +88,8 @@ lemma QuaternionNotEquivR : ¬ IsBrauerEquivalent (K := ℝ) ⟨.of ℝ ℍ[ℝ]
   haveI := eq2.symm.trans <| Quaternion.finrank_eq_four (R := ℝ)
   norm_num at this
 
-lemma BrauerOverR (A : CSA.{0, 0} ℝ) : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ ∨ IsBrauerEquivalent A ⟨.of ℝ ℍ[ℝ]⟩ := by
+lemma BrauerOverR (A : CSA.{0, 0} ℝ) :
+    IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ ∨ IsBrauerEquivalent A ⟨.of ℝ ℍ[ℝ]⟩ := by
   if h : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ then left; assumption
   else
   right
@@ -101,7 +100,7 @@ lemma BrauerOverR (A : CSA.{0, 0} ℝ) : IsBrauerEquivalent A ⟨.of ℝ ℝ⟩ 
   · have := is_central_of_wdb ℝ A n D hn e|>.center_eq_bot
     have e2 : Subalgebra.center ℝ D ≠ ⊥ := by
       refine ne_of_gt ?_
-      letI : Algebra ℂ D := RingHom.toAlgebra' e'.symm <| fun z d ↦ by
+      letI : Algebra ℂ D := RingHom.toAlgebra' e'.symm fun z d ↦ by
         simp only [RingHom.coe_coe]
         rw [← e'.symm_apply_apply d, ← map_mul, mul_comm, map_mul]
       letI : IsScalarTower ℝ ℂ D := {
@@ -211,15 +210,6 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
       QuaternionTensorEquivMatrix.mapMatrix.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
       IsBrauerEquivalent.matrix_eqv' _ _ _ ⟩⟩
     simp [this]
-
--- lemma toC2_surjective : Function.Surjective toC2 := fun x ↦ by
---     fin_cases x
---     · use Quotient.mk'' one_in'
---       simp [IsBrauerEquivalent.refl]
---     · use Quotient.mk'' ⟨ℍ[ℝ]⟩
---       simp only [AddMonoidHom.coe_mk, dite_eq_ite, ZeroHom.coe_mk, Quotient.lift_mk, Nat.reduceAdd,
---         Fin.mk_one, Fin.isValue, ite_eq_right_iff, zero_ne_one, imp_false]
---       exact QuaternionNotEquivR
 
 abbrev C2toBrauerOverR : ZMod 2 →+ Additive (BrauerGroup ℝ) where
   toFun x := if hx : x = 0 then Quotient.mk'' one_in' else Quotient.mk'' ⟨.of ℝ ℍ[ℝ]⟩

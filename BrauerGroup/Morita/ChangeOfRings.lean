@@ -31,11 +31,6 @@ variable (R : Type u₀) [CommRing R]
 --     (h : IsMoritaEquivalent R A B) : IsMoritaEquivalent R B A where
 --   cond := h.cond.map <| .symm R
 
--- lemma trans {A B C : Type u₁} [Ring A] [Ring B] [Ring C] [Algebra R A] [Algebra R B] [Algebra R C]
---     (h : IsMoritaEquivalent R A B) (h' : IsMoritaEquivalent R B C) :
---     IsMoritaEquivalent R A C where
---   cond := Nonempty.map2 (.trans R) h.cond h'.cond
-
 -- lemma of_algEquiv {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
 --     (f : A ≃ₐ[R] B) : IsMoritaEquivalent R A B where
 --   cond := ⟨.ofAlgEquiv f⟩
@@ -43,7 +38,7 @@ variable (R : Type u₀) [CommRing R]
 -- end IsMoritaEquivalent
 -- class IsMoritaEquivalent
 --   (R : Type u) (S : Type u') [Ring R] [Ring S] : Prop where
--- out : Nonempty $ ModuleCat.{v} R ≌ ModuleCat.{v'} S
+-- out : Nonempty <| ModuleCat.{v} R ≌ ModuleCat.{v'} S
 
 -- namespace IsMoritaEquivalent
 
@@ -70,7 +65,7 @@ variable (R : Type u₀) [CommRing R]
 -- @[trans]
 -- lemma trans [IsMoritaEquivalent.{u, u', v, v'} R S] [IsMoritaEquivalent.{u', u'', v', v''} S T] :
 --     IsMoritaEquivalent.{u, u'', v, v''} R T where
---   out := ⟨(equiv R S).trans $ equiv S T⟩
+--   out := ⟨(equiv R S).trans <| equiv S T⟩
 
 suppress_compilation
 
@@ -94,17 +89,6 @@ instance (n : ℕ) [NeZero n] : Functor.Additive (moritaEquivalentToMatrix A (Fi
 
 -- instance (N : ModuleCat A) : SMulCommClass A R N := sorry
 
--- instance (n : ℕ) [NeZero n] (N : ModuleCat A) : SMulCommClass (Matrix (Fin n) (Fin n) A) R (Fin n → N) where
---   smul_comm M r v := by
---     ext i
---     simp only [Pi.smul_apply]
---     change ∑ _, _ = r • (∑ _, _)
---     simp
---     rw [Finset.smul_sum]
---     refine Finset.sum_congr rfl fun j _ ↦ by
---       exact smul_comm _ _ _
-
-set_option maxHeartbeats 400000 in
 instance (n : ℕ) [NeZero n] : Functor.Linear R (moritaEquivalentToMatrix A (Fin n)).functor where
   map_smul {M N} f r := by
     ext m
@@ -114,14 +98,8 @@ instance (n : ℕ) [NeZero n] : Functor.Linear R (moritaEquivalentToMatrix A (Fi
     simp only [hom_smul, LinearMap.smul_apply, moritaEquivalentToMatrix,
       toModuleCatOverMatrix_obj_isAddCommGroup, toModuleCatOverMatrix_obj_isModule,
       toModuleCatOverMatrix_map, hom_ofHom, LinearMap.coe_mk, AddHom.coe_mk]
-    -- simp? [moritaEquivalentToMatrix, toModuleCatOverMatrix]
-
-    -- rw [LinearMap.smul_apply]
-    -- simp only [moritaEquivalentToMatrix] at m
-    -- erw [toModuleCatOverMatrix_obj_carrier] at m
-    -- change (algebraMap R A r) • (f.hom _) = ((algebraMap R (Matrix (Fin (n)) (Fin (n)) A) r) • (fun i ↦  _)) i
-    -- erw [Matrix.matrix_smul_vec_apply]
-    change (algebraMap R A r) • (f.hom _) = ∑ j : Fin n, (algebraMap R (Matrix (Fin n) (Fin n) A) r) _ _ • _
+    change (algebraMap R A r) • (f.hom _) =
+      ∑ j : Fin n, (algebraMap R (Matrix (Fin n) (Fin n) A) r) _ _ • _
     simp [Matrix.algebraMap_matrix_apply]
 
 -- attribute [-instance] Linear.preadditiveIntLinear Linear.preadditiveNatLinear in
@@ -237,7 +215,7 @@ def mopToEnd : Aᵐᵒᵖ →ₐ[R] End (ModuleCat.of A A) where
 --     simp [Module.algebraMap_end_apply, Algebra.algebraMap_eq_smul_one]
 
 lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
-  ⟨RingHom.injective_iff_ker_eq_bot _ |>.mpr $
+  ⟨RingHom.injective_iff_ker_eq_bot _ |>.mpr <|
     SetLike.ext fun (α : Aᵐᵒᵖ) => ⟨fun (h : _ = _) => by
       rw [ModuleCat.hom_ext_iff] at h
       simp only [mopToEnd, hom_zero, LinearMap.ext_iff, LinearMap.zero_apply] at h
@@ -268,12 +246,13 @@ noncomputable def mopAlgEquivEnd : Aᵐᵒᵖ ≃ₐ[R] End (ModuleCat.of A A) :
   AlgEquiv.ofBijective (mopToEnd R A) <| moptoend_bij R A
 
 example : End (ModuleCat.of A A) ≃ₐ[R] Module.End A A :=
-  mopAlgEquivEnd R A|>.symm.trans <| {__ := RingEquiv.moduleEndSelf A, commutes' r := by ext; simp [Algebra.smul_def]}
+  mopAlgEquivEnd R A|>.symm.trans <|
+    {__ := RingEquiv.moduleEndSelf A, commutes' r := by ext; simp [Algebra.smul_def]}
 
 variable (e : MoritaEquivalence R A B)
 
 variable {R S} in
-def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.of A A) where
+def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj <| .of A A) where
   toFun (f : _ ⟶ _) := e.eqv.functor.map f
   invFun g := e.eqv.unit.app _ ≫ e.eqv.inverse.map g ≫ e.eqv.unitInv.app _
   left_inv := by
@@ -318,17 +297,16 @@ def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj $ ModuleCat.o
 -- --     }
 
 -- -- variable {R S} in
--- def aux1' : End (ModuleCat.of A A) ≃ₐ[R] End (e.functor.obj $ ModuleCat.of A A) := sorry
+-- def aux1' : End (ModuleCat.of A A) ≃ₐ[R] End (e.functor.obj <| ModuleCat.of A A) := sorry
 
 noncomputable def aux20 : (e.eqv.functor.obj (ModuleCat.of A A)) ≅ ModuleCat.of B B := by
   haveI : IsSimpleModule A A := by
     rw [@isSimpleModule_iff_finrank_eq_one, Module.finrank_self]
-  have :  IsSimpleModule A (ModuleCat.of A A) := inferInstanceAs $ IsSimpleModule A A
+  have :  IsSimpleModule A (ModuleCat.of A A) := inferInstanceAs <| IsSimpleModule A A
   have : IsSimpleModule B (e.eqv.functor.obj (ModuleCat.of A A)) :=
     IsMoritaEquivalent.division_ring.IsSimpleModule.functor A B e.eqv (ModuleCat.of A A)
-  -- haveI : Module B (e.eqv.functor.obj (ModuleCat.of A A)) := e.eqv.functor.obj (ModuleCat.of A A) |>.isModule
   have := IsMoritaEquivalent.division_ring.division_ring_exists_unique_isSimpleModule B
-    (e.eqv.functor.obj $ ModuleCat.of A A)
+    (e.eqv.functor.obj <| .of A A)
   exact this.some.toModuleIso
 
 def aux2 (M N : ModuleCat B) (f : M ≅ N) : End M ≃ₐ[R] End N where
@@ -349,9 +327,9 @@ def aux2 (M N : ModuleCat B) (f : M ≅ N) : End M ≃ₐ[R] End N where
     rfl
 
 noncomputable def toRingMopEquiv : Aᵐᵒᵖ ≃ₐ[R] Bᵐᵒᵖ :=
-  mopAlgEquivEnd R A |>.trans $
-    aux1 A B e |>.trans $
-    aux2 _ _ _ _ (aux20 R A B e ) |>.trans $
+  mopAlgEquivEnd R A |>.trans <|
+    aux1 A B e |>.trans <|
+    aux2 _ _ _ _ (aux20 R A B e ) |>.trans <|
     mopAlgEquivEnd R B |>.symm
 
 noncomputable def toRingEquiv : A ≃ₐ[R] B where
@@ -373,8 +351,9 @@ noncomputable def toRingEquiv : A ≃ₐ[R] B where
 --     R ≃+* S := division_ring.toRingEquiv R S (equiv R S)
 
 noncomputable def algEquivOfDivisionRing (R : Type u) [CommRing R]
-    (D₁ D₂: Type v) [DivisionRing D₁] [DivisionRing D₂] [Algebra R D₁] [Algebra R D₂]
+    (D₁ D₂ : Type v) [DivisionRing D₁] [DivisionRing D₂] [Algebra R D₁] [Algebra R D₂]
     (e : MoritaEquivalence R D₁ D₂) : D₁ ≃ₐ[R] D₂ :=
     ModuleCat.MoritaEquivalence.toRingEquiv R D₁ D₂ e
 
 end MoritaEquivalence
+end ModuleCat

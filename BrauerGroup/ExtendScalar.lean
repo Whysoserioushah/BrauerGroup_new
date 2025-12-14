@@ -23,8 +23,8 @@ def releaseAddHom : L ⊗[k] A →+ L ⊗[K] (K ⊗[k] A) :=
       repeat rw [TensorProduct.add_tmul]
   } fun r l a ↦ by simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, TensorProduct.tmul_smul]; rfl
 
-set_option maxHeartbeats 400000 in
 set_option synthInstance.maxHeartbeats 40000 in
+-- FIXME: Get rid of the raised heartbeats
 def release : L ⊗[k] A →ₐ[L] L ⊗[K] (K ⊗[k] A) where
   __ := releaseAddHom k K L A
   map_one' := by simp only [releaseAddHom, Algebra.TensorProduct.one_def, ZeroHom.toFun_eq_coe,
@@ -102,7 +102,6 @@ def absorbAddHom : L ⊗[K] (K ⊗[k] A) →+ L ⊗[k] A :=
       simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_add, hx, hy, smul_add]
     )
 
-set_option synthInstance.maxHeartbeats 40000 in
 def absorb : L ⊗[K] (K ⊗[k] A) →ₐ[L] L ⊗[k] A where
   __ := absorbAddHom k K L A
   map_one' := by

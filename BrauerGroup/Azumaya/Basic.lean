@@ -111,7 +111,7 @@ theorem IsAzumaya_iff_CentralSimple [Nontrivial A] : IsAzumaya K A ↔ FiniteDim
         (AlgHom.mulLeftRight K A) <| tensor_self_op.dim_eq _ _
     }⟩
 
-def finswap {n m : ℕ}: Fin (n * m) ≃ Fin (m * n) where
+def finswap {n m : ℕ} : Fin (n * m) ≃ Fin (m * n) where
   toFun i := ⟨i.1, by rw [mul_comm m n]; exact i.2⟩
   invFun i := ⟨i.1, by rw [mul_comm n m]; exact i.2⟩
   left_inv _ := rfl
@@ -183,19 +183,18 @@ abbrev matrixAlgEquivMatrixMop (n : ℕ) :
     simp [Matrix.algebraMap_matrix_apply]
     split_ifs with h1 h2 h3 <;> tauto
 
-noncomputable abbrev mopAlgEquivEnd: Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
-  AlgEquiv.ofRingEquiv (f := mopEquivEnd R) <| fun r ↦ by
+noncomputable abbrev mopAlgEquivEnd : Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
+  AlgEquiv.ofRingEquiv (f := mopEquivEnd R) fun r ↦ by
     ext; simp [mopEquivEnd]
 
 noncomputable abbrev tensorEquivEnd : R ⊗[R] Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
   Algebra.TensorProduct.lid R Rᵐᵒᵖ|>.trans <| mopAlgEquivEnd R
 
-set_option synthInstance.maxHeartbeats 40000 in
-lemma equal_mulLeftRight: tensorEquivEnd R = AlgHom.mulLeftRight R R := by
+lemma equal_mulLeftRight : tensorEquivEnd R = AlgHom.mulLeftRight R R := by
   ext r
   simp [mopEquivEnd, AlgHom.mulLeftRight_apply]
 
-lemma bij_Rtensor: Function.Bijective (AlgHom.mulLeftRight R R) := by
+lemma bij_Rtensor : Function.Bijective (AlgHom.mulLeftRight R R) := by
   rw [← equal_mulLeftRight]
   exact (tensorEquivEnd R).bijective
 
@@ -205,7 +204,7 @@ instance : FaithfulSMul R R where
     simp only [smul_eq_mul, mul_one] at hr
     exact hr
 
-theorem IsAzumaya_R: IsAzumaya R R where
+theorem IsAzumaya_R : IsAzumaya R R where
   bij := bij_Rtensor R
 
 noncomputable section
@@ -226,7 +225,7 @@ lemma single.eq (n : ℕ) (i j : Fin n) :
 
 lemma Mat.inv_toFun1' (n : ℕ) :
     (Mat.inv R n).comp (AlgHom.mulLeftRight R (Matrix (Fin n) (Fin n) R)).toLinearMap = .id :=
-  Basis.ext (Basis.tensorProduct (Matrix.stdBasis _ _ _) ((Matrix.stdBasis _ _ _).map (opLinearEquiv ..)))
+  Basis.ext ((Matrix.stdBasis _ _ _).tensorProduct ((Matrix.stdBasis _ _ _).map (opLinearEquiv ..)))
   fun ⟨⟨i0, j0⟩, k0, l0⟩ ↦  by
     simp [stdBasis_eq_single, AlgHom.mulLeftRight_apply,
       single, ite_and, mul_apply, Fintype.sum_prod_type]

@@ -23,7 +23,6 @@ variable [Field F] [Ring A] [Algebra F A] [Ring A'] [Algebra F A']
 variable (B : Subalgebra F A) (B' : Subalgebra F A')
 variable {ι ι' : Type*} (𝒜 : Basis ι F A) (𝒜' : Basis ι' F A')
 
-set_option synthInstance.maxHeartbeats 40000 in
 include 𝒜' in
 lemma centralizer_inclusionLeft :
     Subalgebra.centralizer F (A := A ⊗[F] A')
@@ -61,7 +60,6 @@ lemma centralizer_inclusionLeft :
         Function.comp_apply, Algebra.TensorProduct.includeLeft_apply, map_add] at hx hy ⊢
       simp [mul_add, hx, hy, add_mul]
 
-set_option synthInstance.maxHeartbeats 40000 in
 include 𝒜 in
 lemma centralizer_inclusionRight :
     Subalgebra.centralizer F (A := A ⊗[F] A')
@@ -118,6 +116,7 @@ lemma centralizer_tensor_le_inf_centralizer :
   exact hy
 
 set_option synthInstance.maxHeartbeats 40000 in
+-- FIXME: Get rid of the raised heartbeats
 include 𝒜 𝒜' in
 lemma centralizer_tensor_centralizer :
     Subalgebra.centralizer F (A := A ⊗[F] A')
@@ -126,8 +125,7 @@ lemma centralizer_tensor_centralizer :
     (Algebra.TensorProduct.map (Subalgebra.centralizer F B).val
       (Subalgebra.centralizer F B').val).range := by
   refine le_antisymm ?_ ?_
-  ·
-    have := Algebra.TensorProduct.includeLeft (R := F) (S := F) (A := A) (B := B') |>.comp B.val
+  · have := Algebra.TensorProduct.includeLeft (R := F) (S := F) (A := A) (B := B') |>.comp B.val
     have ineq1 :
         Subalgebra.centralizer F (A := A ⊗[F] A')
           ((Algebra.TensorProduct.map B.val B'.val).range :
@@ -196,8 +194,8 @@ section lemma2
 
 section central_simple_case
 
-variable (F B : Type u)
-variable [Field F] [Ring B] [Algebra F B] [Algebra.IsCentral F B] [IsSimpleRing B] [FiniteDimensional F B]
+variable (F B : Type u) [Field F] [Ring B] [Algebra F B] [Algebra.IsCentral F B] [IsSimpleRing B]
+  [FiniteDimensional F B]
 
 lemma centralizer_mulLeft_le_of_isCentralSimple :
     (Subalgebra.centralizer F (Set.range <| LinearMap.mulLeft F : Set  <| Module.End F B) : Set _) ≤
@@ -277,7 +275,6 @@ variable {F B : Type u}
 variable [Field F] [Ring B] [Algebra F B] [IsSimpleRing B] [FiniteDimensional F B]
 
 variable (F B) in
-set_option synthInstance.maxHeartbeats 40000 in
 def centralizerMulLeftCopy :
     (Subalgebra.centralizer F (Set.range (LinearMap.mulLeft F) : Set <| Module.End F B)) →ₗ[F]
     (B →ₗ[Subalgebra.center F B] B) where
@@ -672,7 +669,7 @@ noncomputable def auxRight (B : Subalgebra F A) (C : Type u) [Ring C] [Algebra F
       rfl)
 
 set_option synthInstance.maxHeartbeats 120000 in
-set_option maxHeartbeats 400000 in
+-- FIXME: Get rid of the raised heartbeats
 instance : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
   constructor
   let eqv : (A ⊗[F] Module.End.rightMul F B) ≃ₐ[F] (Bᵐᵒᵖ  ⊗[F] A) :=
@@ -686,8 +683,6 @@ instance : IsSimpleRing (A ⊗[F] Module.End.rightMul F B) := by
     exact IsSimpleRing.simple
   apply (IsCentralSimple.TensorProduct.simple F _ _).simple
 
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 200000 in
 lemma step1 {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
     ∃ (x : (A ⊗[F] Module.End F B)ˣ),
     Nonempty <|
@@ -793,8 +788,6 @@ lemma finrank_mop (B : Type*) [Ring B] [Algebra F B] : Module.finrank F Bᵐᵒ�
 end centralizer_isSimple.aux
 
 open centralizer_isSimple.aux in
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 200000 in
 lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
     IsSimpleRing (Subalgebra.centralizer F (B : Set A)) := by
   letI (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
@@ -816,11 +809,9 @@ lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
     (B := Subalgebra.centralizer F (B : Set A))
     (C := Module.End F B)
 
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 200000 in
 open centralizer_isSimple.aux in
 variable (F) in
-lemma dim_centralizer  :
+lemma dim_centralizer :
     Module.finrank F (Subalgebra.centralizer F (B : Set A)) *
     Module.finrank F B = Module.finrank F A := by
 
@@ -838,7 +829,8 @@ lemma dim_centralizer  :
   rw [Module.finrank_linearMap, Subalgebra.finrank_conj] at this
   have eq' := auxRight (Module.End.rightMul F B) A |>.toLinearEquiv.finrank_eq
   rw [← eq'] at this
-  have eq' := Module.finrank_tensorProduct (R := F) (S := F) (M := A) (M' := Module.End.rightMul F B)
+  have eq' :=
+    Module.finrank_tensorProduct (R := F) (S := F) (M := A) (M' := Module.End.rightMul F B)
   rw [eq'] at this
   have eq' : Module.finrank F (Module.End.rightMul F B) = Module.finrank F Bᵐᵒᵖ :=
     Module.End.rightMulEquiv (F := F) (B := B) |>.toLinearEquiv.finrank_eq
@@ -870,7 +862,6 @@ lemma double_centralizer :
 /-
 074U
 -/
-set_option maxHeartbeats 400000 in
 noncomputable def writeAsTensorProduct
     [Algebra.IsCentral F B] [IsSimpleRing B] :
     A ≃ₐ[F] B ⊗[F] Subalgebra.centralizer F (B : Set A) :=

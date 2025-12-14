@@ -2,8 +2,6 @@ import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
 
 open Function TensorProduct MulOpposite
 
-section def_and_lemmas
-
 structure SubField (K A : Type*) [CommSemiring K] [Semiring A] [Algebra K A]
     extends Subalgebra K A where
   protected mul_comm ⦃x : A⦄ (hx : x ∈ carrier) ⦃y : A⦄ (hy : y ∈ carrier) : x * y = y * x
@@ -50,11 +48,10 @@ instance (priority := low) algebra' {K' : Type*} [CommSemiring K'] [SMul K' R] [
 open scoped Classical in
 noncomputable instance carrier.instSemifield [Nontrivial A] : Semifield L.1 where
   __ := L
-  mul_comm := fun ⟨a, ha⟩ ⟨b, hb⟩ ↦ Subtype.ext_iff.2 $ L.2 ha hb
+  mul_comm := fun ⟨a, ha⟩ ⟨b, hb⟩ ↦ Subtype.ext_iff.2 <| L.2 ha hb
   inv := fun ⟨x, hx⟩ ↦ if h0 : x = 0 then 0 else ⟨L.3 hx h0|>.choose,
     L.3 hx h0|>.choose_spec.1⟩
-  exists_pair_ne := ⟨⟨0, Subalgebra.zero_mem L.1⟩, ⟨1, Subalgebra.one_mem L.1⟩, by
-    refine Subtype.coe_ne_coe.1 $ by simp only [ne_eq, zero_ne_one, not_false_eq_true]⟩
+  exists_pair_ne := ⟨⟨0, Subalgebra.zero_mem L.1⟩, ⟨1, Subalgebra.one_mem L.1⟩, by simp⟩
   mul_inv_cancel a ha := by ext; simpa [ha] using (L.3 a.2 <| mod_cast ha).choose_spec.2
   inv_zero := by simp only [↓reduceDIte]
   nnqsmul := _

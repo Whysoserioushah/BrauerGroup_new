@@ -33,7 +33,7 @@ def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R] :
     Subring.center (M[Fin n, R]) ≃+* (Subring.center R) where
   toFun A := ⟨(A.1 ⟨0, by omega⟩ ⟨0, by omega⟩), by
     obtain ⟨a, ha⟩ := (Matrix.mem_center_iff R n A.1).1 A.2
-    simpa only [ha, smul_apply, one_apply_eq] using Subring.mul_mem _ a.2 $ Subring.one_mem _⟩
+    simpa only [ha, smul_apply, one_apply_eq] using Subring.mul_mem _ a.2 <| Subring.one_mem _⟩
   invFun a := ⟨a • 1, Subring.mem_center_iff.2 fun A ↦ Matrix.ext <| by simp⟩
   left_inv := by
     if hn : n = 0
@@ -65,7 +65,7 @@ end RingEquiv
 
 section AlgEquiv
 
-variable (R A: Type u) [CommSemiring R] [Ring A] [Algebra R A]
+variable (R A : Type u) [CommSemiring R] [Ring A] [Algebra R A]
 
 def Matrix.centerAlgEquiv (n : ℕ) (hn : 0 < n) :
     Subalgebra.center R M[Fin n, A] ≃ₐ[R] Subalgebra.center R A := {

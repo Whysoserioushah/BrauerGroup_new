@@ -18,8 +18,7 @@ variable (M : ModuleCat (A ⊗[R] C))
 
 noncomputable instance (N : ModuleCat B) : Module R N := .compHom _ (algebraMap R B)
 
-instance (N : ModuleCat B) : IsScalarTower R B N :=
-    .of_algebraMap_smul fun _ _ ↦ rfl
+instance (N : ModuleCat B) : IsScalarTower R B N := .of_algebraMap_smul fun _ _ ↦ rfl
 
 noncomputable abbrev aux0 (N : ModuleCat A) : Module.End A N →ₐ[R] Module.End B (e1.obj N) where
   toFun f := (e1.map (ModuleCat.ofHom f)).hom
@@ -34,7 +33,7 @@ noncomputable abbrev aux0 (N : ModuleCat A) : Module.End A N →ₐ[R] Module.En
       e1.map_smul, Module.End.one_eq_id, ModuleCat.ofHom_id, e1.map_id, ModuleCat.hom_smul]
     rfl
 
-abbrev _root_.Module.End.restrictScalars (R S M R₁: Type*) [Ring R] [Ring S] [CommRing R₁]
+abbrev _root_.Module.End.restrictScalars (R S M R₁ : Type*) [Ring R] [Ring S] [CommRing R₁]
     [AddCommGroup M] [Module R M] [Module R₁ M] [Module S M] [Algebra R₁ R] [IsScalarTower R₁ R M]
     [Algebra R₁ S] [IsScalarTower R₁ S M] [LinearMap.CompatibleSMul M M R S] :
     Module.End S M →ₐ[R₁] (M →ₗ[R] M) :=
@@ -53,9 +52,7 @@ abbrev moduleMapAux : C →ₐ[R] Module.End A ((ModuleCat.restrictScalars
   map_mul' c1 c2 := by ext; simp [smul_smul]
   map_zero' := by ext; simp
   map_add' c1 c2 := by ext; simp [TensorProduct.tmul_add, add_smul]
-  commutes' r := by
-    ext (m : M);
-    simp [Algebra.algebraMap_eq_smul_one, ← Algebra.TensorProduct.one_def]
+  commutes' r := by ext m; simp [Algebra.algebraMap_eq_smul_one, ← Algebra.TensorProduct.one_def]
 
 abbrev moduleMap : B ⊗[R] C →ₐ[R]
     Module.End R (e1.obj ((ModuleCat.restrictScalars
@@ -90,7 +87,7 @@ structure TensorModule where
   carrier : ModuleCat A
   morphism : C →ₐ[R] Module.End A carrier
 
-instance: CoeSort (TensorModule R A C) (Type v) where
+instance : CoeSort (TensorModule R A C) (Type v) where
   coe M := M.carrier
 
 @[ext]
@@ -181,7 +178,7 @@ instance (M N : TensorModule R A C) : AddCommGroup (M ⟶ N) where
   neg_add_cancel _ := by ext1; exact neg_add_cancel _
   add_comm _ _ := by ext1; exact add_comm _ _
 
-instance: Preadditive (TensorModule R A C) where
+instance : Preadditive (TensorModule R A C) where
   add_comp _ _ _ _ _ _ := by ext1; exact Preadditive.add_comp _ _ _ _ _ _
   comp_add _ _ _ _ _ _ := by ext1; exact Preadditive.comp_add _ _ _ _ _ _
 
@@ -194,13 +191,13 @@ instance (M N : TensorModule R A C) : Module R (M ⟶ N) where
   zero_smul _ := by ext1; exact zero_smul _ _
   smul_zero _ := by ext1; exact smul_zero _
 
-instance: Linear R (TensorModule R A C) where
+instance : Linear R (TensorModule R A C) where
   smul_comp _ _ _ _ _ _ := by ext1; exact Linear.smul_comp _ _ _ _ _ _
   comp_smul _ _ _ _ _ _ := by ext1; exact Linear.comp_smul _ _ _ _ _ _
 
 abbrev moduleAux (M : TensorModule R A C) : A ⊗[R] C →ₐ[R] Module.End R M :=
-  Algebra.TensorProduct.lift (Algebra.lsmul _ _ _) ((Module.End.restrictScalars R A M R).comp M.morphism)
-  <| fun a c ↦ by ext; simp
+  Algebra.TensorProduct.lift (Algebra.lsmul _ _ _)
+    ((Module.End.restrictScalars R A M R).comp M.morphism) fun a c ↦ by ext; simp
 
 lemma moduleAux_apply (M : TensorModule R A C) (a : A) (c : C) (m : M) :
     moduleAux R A C M (a ⊗ₜ[R] c) m = a • (M.morphism c) m := by
@@ -213,7 +210,7 @@ instance moduletotensor (M : TensorModule R A C) : Module (A ⊗[R] C) M :=
 lemma smul_tensormod (x : A ⊗[R] C) (M : TensorModule R A C) (m : M) :
     x • m = moduleAux R A C M x m := rfl
 
-abbrev toModuleOverTensor: TensorModule R A C ⥤ ModuleCat (A ⊗[R] C) where
+abbrev toModuleOverTensor : TensorModule R A C ⥤ ModuleCat (A ⊗[R] C) where
   obj M := ModuleCat.of _ M
   map {M N} f := ModuleCat.ofHom {
     __ := f.hom.hom
@@ -226,7 +223,7 @@ abbrev toModuleOverTensor: TensorModule R A C ⥤ ModuleCat (A ⊗[R] C) where
   map_id M := by ext; simp
   map_comp _ _ := by ext; simp
 
-abbrev fromModuleOverTensor: ModuleCat (A ⊗[R] C) ⥤ TensorModule R A C where
+abbrev fromModuleOverTensor : ModuleCat (A ⊗[R] C) ⥤ TensorModule R A C where
   obj M := {
     carrier := (ModuleCat.restrictScalars (Algebra.TensorProduct.includeLeftRingHom)).obj M
     morphism := by exact Morita.moduleMapAux R A C M
@@ -264,8 +261,9 @@ abbrev eModunitIso : 𝟭 (TensorModule R A C) ≅ toModuleOverTensor R A C ⋙
     fromModuleOverTensor R A C :=
   NatIso.ofComponents (e01 R A C) <| e01_naturality R A C
 
-abbrev e02 (M : ModuleCat (A ⊗[R] C)) : (fromModuleOverTensor R A C ⋙ toModuleOverTensor R A C).obj M ≅
-    (𝟭 (ModuleCat (A ⊗[R] C))).obj M := LinearEquiv.toModuleIso <| by
+abbrev e02 (M : ModuleCat (A ⊗[R] C)) :
+    (fromModuleOverTensor R A C ⋙ toModuleOverTensor R A C).obj M ≅
+      (𝟭 (ModuleCat (A ⊗[R] C))).obj M := LinearEquiv.toModuleIso <| by
   apply (config := {allowSynthFailures := true, newGoals := .all}) @LinearEquiv.mk
   · apply (config := {allowSynthFailures := true, newGoals := .all}) @LinearMap.mk
     · exact AddHom.id _
@@ -295,10 +293,11 @@ abbrev e02 (M : ModuleCat (A ⊗[R] C)) : (fromModuleOverTensor R A C ⋙ toModu
   · exact congrFun rfl
   · exact congrFun rfl
 
-abbrev eModcounitIso: fromModuleOverTensor R A C ⋙ toModuleOverTensor R A C ≅ 𝟭 (ModuleCat (A ⊗[R] C)) :=
-  NatIso.ofComponents (e02 R A C) <| fun {X Y} f ↦ by ext (x : X); simp; rfl
+abbrev eModcounitIso :
+    fromModuleOverTensor R A C ⋙ toModuleOverTensor R A C ≅ 𝟭 (ModuleCat (A ⊗[R] C)) :=
+  NatIso.ofComponents (e02 R A C) fun {X Y} f ↦ by ext (x : X); simp; rfl
 
-abbrev equivModuleOverTensor: TensorModule R A C ≌ ModuleCat (A ⊗[R] C) where
+abbrev equivModuleOverTensor : TensorModule R A C ≌ ModuleCat (A ⊗[R] C) where
   functor := toModuleOverTensor R A C
   inverse := fromModuleOverTensor R A C
   unitIso := eModunitIso R A C
@@ -308,10 +307,10 @@ abbrev equivModuleOverTensor: TensorModule R A C ≌ ModuleCat (A ⊗[R] C) wher
     simp
     rfl
 
-instance: (equivModuleOverTensor R A C).functor.Additive where
+instance : (equivModuleOverTensor R A C).functor.Additive where
   map_add := by intros; ext; rfl
 
-instance: (equivModuleOverTensor R A C).functor.Linear R where
+instance : (equivModuleOverTensor R A C).functor.Linear R where
   map_smul {M N} f r := by
     ext m; simp
     change (r • f.hom).hom m = _
@@ -350,7 +349,7 @@ abbrev MoritaTensorAux0 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [
     (e.counitIso.app M.1) fun c ↦ by ext; simp) fun {M N} f ↦ by ext; simp
   functor_unitIso_comp M := by ext; simp
 
-instance(e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
+instance (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     (MoritaTensorAux0 R A B C e).functor.Additive where
   map_add := by intros; ext1; exact e.functor.map_add
 
@@ -365,21 +364,17 @@ abbrev MoritaTensorAux1 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [
   (equivModuleOverTensor R A C).symm.trans ((MoritaTensorAux0 R A B C e).trans
       (equivModuleOverTensor R B C))
 
--- instance MoritaTensorAux1_additive (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
---     (MoritaTensorAux1 R A B C e).functor.Additive := by
---   exact Functor.additive_of_preserves_binary_products _
-
--- instance: Functor.Additive (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
+-- instance : Functor.Additive (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
 --     Algebra.TensorProduct.includeLeftRingHom) where
 --   map_add := rfl
 
-instance: Functor.Linear R (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
+instance : Functor.Linear R (@ModuleCat.restrictScalars A (A ⊗[R] C) _ _
     Algebra.TensorProduct.includeLeftRingHom) where
   map_smul {X Y} f r := by
     ext1; rfl
 
-instance MoritaTensorAux1_linear (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
-    (MoritaTensorAux1 R A B C e).functor.Linear R where
+instance MoritaTensorAux1_linear (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive]
+    [e.functor.Linear R] : (MoritaTensorAux1 R A B C e).functor.Linear R where
   map_smul {M N} f r := by
     ext m
     simp

@@ -134,8 +134,8 @@ lemma conjFactor_rel (x y : A.conjFactor σ) :
 
 def conjFactorTwistCoeff (x y : A.conjFactor σ) : K := conjFactor_rel x y |>.choose
 
-lemma conjFactorTwistCoeff_spec (x y : A.conjFactor σ) : x.1 = y.1 * A.ι (conjFactorTwistCoeff x y) :=
-  conjFactor_rel x y |>.choose_spec.1
+lemma conjFactorTwistCoeff_spec (x y : A.conjFactor σ) :
+    x.1 = y.1 * A.ι (conjFactorTwistCoeff x y) := conjFactor_rel x y |>.choose_spec.1
 
 lemma conjFactorTwistCoeff_unique (x y : A.conjFactor σ) (c : K) (h : x.1 = y.1 * A.ι c) :
     c = conjFactorTwistCoeff x y :=
@@ -186,7 +186,7 @@ lemma conjFactorTwistCoeff_swap''' (x y : A.conjFactor σ) :
 lemma conjFactorTwistCoeff_spec' (x y : A.conjFactor σ) :
     x.1 = A.ι (σ <| conjFactorTwistCoeff x y) * y.1 := by
   calc x.1.1
-    _ = (x.1 * A.ι (conjFactorTwistCoeff x y) * x.1⁻¹) * (x.1 * A.ι (conjFactorTwistCoeff y x)) := by
+    _ = x.1 * A.ι (conjFactorTwistCoeff x y) * x.1⁻¹ * (x.1 * A.ι (conjFactorTwistCoeff y x)) := by
         simp only [_root_.mul_assoc, Units.inv_mul_cancel_left, conjFactorTwistCoeff_swap'',
           _root_.mul_one]
     _ = A.ι (σ <| conjFactorTwistCoeff x y) * (x.1 * A.ι (conjFactorTwistCoeff y x)) := by
@@ -212,19 +212,22 @@ lemma conjFactorCompCoeff_spec
     (x.1 * y.1 : A) = A.ι (conjFactorCompCoeff x y z) * z.1 :=
   conjFactorTwistCoeff_spec' (mul' x y) z
 
-lemma conjFactorCompCoeff_spec'_ (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+lemma conjFactorCompCoeff_spec'_ (x : A.conjFactor σ) (y : A.conjFactor τ)
+    (z : A.conjFactor (σ * τ)) :
     A.ι (conjFactorCompCoeffAsUnit x y z)⁻¹ * (x.1 * y.1 : A) = z.1 := by
   rw [conjFactorCompCoeff_spec (z := z), ← _root_.mul_assoc, ← map_mul]
   simp only [conjFactorCompCoeffAsUnit, AlgEquiv.mul_apply]
   rw [inv_mul_cancel₀, map_one, _root_.one_mul]
   exact Units.ne_zero (conjFactorCompCoeffAsUnit x y z)
 
-lemma conjFactorCompCoeff_spec' (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+lemma conjFactorCompCoeff_spec' (x : A.conjFactor σ) (y : A.conjFactor τ)
+    (z : A.conjFactor (σ * τ)) :
     A.ι (σ <| τ <| conjFactorTwistCoeff z (mul' x y)) * (x.1 * y.1 : A) = z.1 := by
   convert conjFactorCompCoeff_spec'_ x y z using 3
   norm_cast
 
-lemma conjFactorCompCoeff_spec'' (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.conjFactor (σ * τ)) :
+lemma conjFactorCompCoeff_spec'' (x : A.conjFactor σ) (y : A.conjFactor τ)
+    (z : A.conjFactor (σ * τ)) :
     A.ι (conjFactorCompCoeff x y z) = x.1 * y.1 * z.1⁻¹ := by
   suffices A.ι (conjFactorCompCoeff x y z) * z.val.val = x.val.val * y.val.val by simp [← this]
   rw [← A.conjFactorCompCoeff_spec' x y z]
@@ -352,7 +355,7 @@ lemma exists_iso :
   have eq3 := eq1.symm.trans eq2
   haveI : FiniteDimensional F D := is_fin_dim_of_wdb _ _ (NeZero.ne _) _ isoB
   have : 0 < Module.finrank F D := Module.finrank_pos
-  rw [Nat.mul_right_inj, ← pow_two, ← pow_two] at eq3; swap; omega
+  rw [Nat.mul_right_inj (by cutsat), ← pow_two, ← pow_two] at eq3
   simp only [zero_le, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj₀] at eq3
   subst eq3
   exact ⟨isoA.trans isoB.symm⟩
@@ -407,7 +410,7 @@ def pushConjFactor (x : A.conjFactor σ) : B.conjFactor σ where
 def pushConjFactorCoeff (x : A.conjFactor σ) (y : B.conjFactor σ) : K :=
 σ (conjFactorTwistCoeff y (A.pushConjFactor B x))
 
-lemma pushConjFactorCoeff_spec (x : A.conjFactor σ) (y : B.conjFactor σ)  :
+lemma pushConjFactorCoeff_spec (x : A.conjFactor σ) (y : B.conjFactor σ) :
     y.1 = B.ι (A.pushConjFactorCoeff B x y) * (A.pushConjFactor B x).1 :=
   conjFactorTwistCoeff_spec' y (A.pushConjFactor B x)
 
@@ -704,12 +707,10 @@ def fromCocycles₂ (f : cocycles₂ (galAct F K)) : RelativeBrGroup K F :=
 
 open CategoryTheory in
 variable (F K) in
-set_option maxHeartbeats 500000 in
-set_option synthInstance.maxHeartbeats 40000 in
 def fromSnd :
-  (groupCohomology.shortComplexH2 (galAct F K)).moduleCatLeftHomologyData.H
-  -- H2 (galAct F K)
-  → RelativeBrGroup K F :=
+    (groupCohomology.shortComplexH2 (galAct F K)).moduleCatLeftHomologyData.H
+    -- H2 (galAct F K)
+    → RelativeBrGroup K F :=
   -- ShortComplex.descHomology _ (groupCohomology.isoCocycles₂ (galAct F K) ≫ )--_ _ _
   -- sorry
   Quotient.lift fromCocycles₂ <| by
@@ -767,7 +768,8 @@ def fromSnd :
           simp [CrossProductAlgebra.basis], map_smul]
         erw [Basis.equiv_apply]
         apply val_injective
-        simp only [Units.val_inv_eq_inv_val, CrossProductAlgebra.basis, Equiv.refl_apply, val_one, basis]
+        simp only [Units.val_inv_eq_inv_val, CrossProductAlgebra.basis, Equiv.refl_apply, val_one,
+          basis]
         rw [val_smul]
         conv_lhs => enter [2, 1]; erw [Basis.unitsSMul_apply]
         erw [val_smul]
@@ -842,12 +844,12 @@ lemma fromSnd_wd (a : cocycles₂ (galAct F K)) :
       mem_relativeBrGroup_iff_nonempty_goodRep.2
         ⟨_, rfl, CrossProductAlgebra.incl _, CrossProductAlgebra.dim_eq_sq⟩⟩ := rfl
 
-def _root_.Amfix.coboundariesOfIsMulCoboundary₂ {G M : Type} [Group G] [CommGroup M] [MulDistribMulAction G M]
-  {f : G × G → M} (hf : IsMulCoboundary₂ f) : ↥(coboundaries₂ (Rep.ofMulDistribMulAction G M)) :=
+def _root_.Amfix.coboundariesOfIsMulCoboundary₂ {G M : Type} [Group G] [CommGroup M]
+    [MulDistribMulAction G M] {f : G × G → M} (hf : IsMulCoboundary₂ f) :
+    coboundaries₂ (Rep.ofMulDistribMulAction G M) :=
   ⟨Additive.ofMul ∘ f, hf.choose, funext fun g ↦ hf.choose_spec g.1 g.2⟩
 
 open GoodRep groupCohomology in
-set_option maxHeartbeats 1600000 in
 lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id := by
   ext a
   induction a using H2_induction_on with | h a =>
@@ -902,7 +904,6 @@ lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id :=
   simp [A, y_]
   rfl
 
-set_option maxHeartbeats 500000 in
 lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id := by
   ext X
   obtain ⟨A⟩ := mem_relativeBrGroup_iff_nonempty_goodRep.1 X.2

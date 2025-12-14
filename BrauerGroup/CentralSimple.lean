@@ -26,10 +26,6 @@ universe u v w
 
 open Module
 
--- /--
--- For a field `K` and a `K`-algebra `D`, we say that `D` is a central algebra over `K` if the center
--- of `D` is exactly `K` and that `D` is a simple ring.
--- -/
 -- class IsCentralSimple
 --     (K : Type u) [Field K] (D : Type v) [Ring D] [Algebra K D] : Prop where
 --   is_central : Subalgebra.center K D ≤ ⊥
@@ -38,7 +34,7 @@ open Module
 -- lemma IsCentralSimple.center_eq
 --     (K D : Type*) [Field K] [Ring D] [Algebra K D] [IsCentralSimple K D] :
 --     Subalgebra.center K D = ⊥ :=
---   le_antisymm IsCentralSimple.is_central $ by
+--   le_antisymm IsCentralSimple.is_central <| by
 --     rintro _ ⟨x, rfl⟩
 --     rw [Subalgebra.mem_center_iff]
 --     exact (Algebra.commutes' x · |>.symm)
@@ -71,7 +67,7 @@ open scoped TensorProduct
 section should_be_elsewhere
 
 instance (B : Type*) [Ring B] [Algebra K B] : Algebra K (Subring.center B) :=
-  RingHom.toAlgebra <| (algebraMap K B).codRestrict _ <| fun x ↦ by
+  RingHom.toAlgebra <| (algebraMap K B).codRestrict _ fun x ↦ by
     rw [Subring.mem_center_iff]
     exact fun y ↦ Algebra.commutes x y |>.symm
 
@@ -135,19 +131,15 @@ lemma TensorProduct.submodule_tensor_inf_tensor_submodule
     let v : B ⊗[K] c →ₗ[K] (B ⧸ b) ⊗[K] c :=
       TensorProduct.map (Submodule.mkQ _) LinearMap.id
     have exactuv : Function.Exact u v := by
-      apply rTensor_exact
+      apply rTensor_exact _ _ (Submodule.mkQ_surjective _)
       rw [LinearMap.exact_iff]
       simp only [Submodule.ker_mkQ, Submodule.range_subtype]
-      exact Submodule.mkQ_surjective _
-
     let u' : b ⊗[K] C →ₗ[K] B ⊗[K] C := TensorProduct.map b.subtype LinearMap.id
     let v' : B ⊗[K] C →ₗ[K] (B ⧸ b) ⊗[K] C := TensorProduct.map (Submodule.mkQ _) LinearMap.id
     have exactu'v' : Function.Exact u' v' := by
-      apply rTensor_exact
+      apply rTensor_exact _ _ (Submodule.mkQ_surjective _)
       rw [LinearMap.exact_iff]
       simp only [Submodule.ker_mkQ, Submodule.range_subtype]
-      exact Submodule.mkQ_surjective _
-
     let α : b ⊗[K] c →ₗ[K] b ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
     let β : B ⊗[K] c →ₗ[K] B ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
     let γ : (B ⧸ b) ⊗[K] c →ₗ[K] (B ⧸ b) ⊗[K] C := TensorProduct.map LinearMap.id c.subtype
@@ -212,29 +204,29 @@ lemma center_tensorProduct
     Subalgebra.centralizer_sup, Subalgebra.centralizer_tensorProduct_eq_center_tensorProduct_left,
     Subalgebra.centralizer_tensorProduct_eq_center_tensorProduct_right]
   suffices eq :
-    Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val (AlgHom.id K C)).range ⊓
-    Subalgebra.toSubmodule (Algebra.TensorProduct.map (AlgHom.id K B) (Subalgebra.center K C).val).range =
-    Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val (Subalgebra.center K C).val).range by
+    Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val (.id K C)).range ⊓
+    Subalgebra.toSubmodule (Algebra.TensorProduct.map (.id K B) (Subalgebra.center K C).val).range =
+    Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val
+      (Subalgebra.center K C).val).range by
     apply_fun Subalgebra.toSubmodule using Subalgebra.toSubmodule_injective
     rw [← eq]
     ext x
     simp only [Algebra.inf_toSubmodule, Submodule.mem_inf, Subalgebra.mem_toSubmodule,
       AlgHom.mem_range]
 
-  have eq1:
-      Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val (AlgHom.id K C)).range =
-      LinearMap.range (TensorProduct.map (Subalgebra.center K B).val.toLinearMap (LinearMap.id)) := by
-    rfl
+  have eq1 :
+      Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val (.id K C)).range
+        = LinearMap.range (TensorProduct.map (Subalgebra.center K B).val.toLinearMap .id) := rfl
   rw [eq1]
 
   have eq2 :
-      Subalgebra.toSubmodule (Algebra.TensorProduct.map (AlgHom.id K B) (Subalgebra.center K C).val).range =
-      LinearMap.range (TensorProduct.map (LinearMap.id) (Subalgebra.center K C).val.toLinearMap) := by
-    rfl
+      Subalgebra.toSubmodule (Algebra.TensorProduct.map (.id K B) (Subalgebra.center K C).val).range
+        = LinearMap.range (TensorProduct.map .id (Subalgebra.center K C).val.toLinearMap) := rfl
   rw [eq2]
 
   have eq3 :
-      Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val (Subalgebra.center K C).val).range =
+      Subalgebra.toSubmodule (Algebra.TensorProduct.map (Subalgebra.center K B).val
+        (Subalgebra.center K C).val).range =
       LinearMap.range (TensorProduct.map (Subalgebra.center K B).val.toLinearMap
         (Subalgebra.center K C).val.toLinearMap) := by
     rfl
@@ -290,7 +282,6 @@ noncomputable def centerTensor
         obtain ⟨y, rfl⟩ := hx
         refine ⟨y, rfl⟩)) rfl rfl)
 
-set_option synthInstance.maxHeartbeats 40000 in
 instance TensorProduct.isCentral
     (A B : Type u) [Ring A] [Algebra K A] [Ring B] [Algebra K B]
     [isCentral_A : Algebra.IsCentral K A] [isCentral_B : Algebra.IsCentral K B] :
@@ -337,7 +328,7 @@ a non-zero element in an ideal that can be represented as a sum of tensor produc
 -/
 structure is_obtainable_by_sum_tmul
     {ιA A B : Type*} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : TwoSidedIdeal $ A ⊗[K] B) (n : ℕ) : Prop where
+    (x : A ⊗[K] B) (𝒜 : Basis ιA K A) (I : TwoSidedIdeal <| A ⊗[K] B) (n : ℕ) : Prop where
   mem : x ∈ I
   ne_zero : x ≠ 0
   rep : ∃ (s : Finset ιA) (_ : s.card = n) (f : ιA → B),
@@ -375,12 +366,12 @@ lemma is_obtainable_by_sum_tmul.exists_minimal_element
 
 lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
     {A B : Type v} [Ring A] [Algebra K A] [Ring B] [Algebra K B]
-    [isSimple_A : IsSimpleOrder $ TwoSidedIdeal A]
+    [isSimple_A : IsSimpleOrder <| TwoSidedIdeal A]
     [isCentral_B : Algebra.IsCentral K B]
     [isSimple_B : IsSimpleRing B]
     (I : TwoSidedIdeal (A ⊗[K] B)) :
     I = TwoSidedIdeal.span
-      (Set.image (Algebra.TensorProduct.includeLeft : A →ₐ[K] A ⊗[K] B) $
+      (Set.image (Algebra.TensorProduct.includeLeft : A →ₐ[K] A ⊗[K] B) <|
         I.comap (Algebra.TensorProduct.includeLeft : A →ₐ[K] A ⊗[K] B)) := by
   classical
   refine le_antisymm ?_ ?_
@@ -389,7 +380,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
     else
 
     let f : A →ₐ[K] A ⊗[K] B := Algebra.TensorProduct.includeLeft
-    change I ≤ TwoSidedIdeal.span (Set.image f $ I.comap f)
+    change I ≤ TwoSidedIdeal.span (Set.image f <| I.comap f)
     let 𝒜 := Basis.ofVectorSpace K A
     obtain ⟨n, x, ⟨x_mem, x_ne_zero, ⟨s, card_s, b, rfl⟩⟩, H⟩ :=
       is_obtainable_by_sum_tmul.exists_minimal_element _ 𝒜 I I_ne_bot
@@ -566,7 +557,7 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
       | zero => simp
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
-        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
+        exact TwoSidedIdeal.mul_mem_right _ _ _ <| TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
       | add x y hx hy => exact TwoSidedIdeal.add_mem _ hx hy
 
   · rw [TwoSidedIdeal.span_le]
@@ -582,7 +573,7 @@ instance TensorProduct.simple
     IsSimpleRing (A ⊗[K] B) := by
   let f : A →ₐ[K] A ⊗[K] B := Algebra.TensorProduct.includeLeft
   suffices eq1 : ∀ (I : TwoSidedIdeal (A ⊗[K] B)),
-      I = TwoSidedIdeal.span (Set.image f $ I.comap f) by
+      I = TwoSidedIdeal.span (Set.image f <| I.comap f) by
     refine ⟨⟨fun I => ?_⟩⟩
     specialize eq1 I
     rcases isSimple_A.1.2 (I.comap f) with h|h
@@ -607,7 +598,7 @@ instance TensorProduct.simple
       | zero => simp
       | tmul a b =>
         rw [show a ⊗ₜ[K] b = (a ⊗ₜ 1) * (1 ⊗ₜ b) by simp]
-        exact TwoSidedIdeal.mul_mem_right _ _ _ $ TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
+        exact TwoSidedIdeal.mul_mem_right _ _ _ <| TwoSidedIdeal.subset_span ⟨a, ⟨⟩, rfl⟩
       | add x y hx hy => exact TwoSidedIdeal.add_mem _ hx hy
 
   apply TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
@@ -615,10 +606,11 @@ instance TensorProduct.simple
 -- We can't have `L` to have different universe level of `D` in this proof, again due that we used
 -- `flatness`
 set_option synthInstance.maxHeartbeats 40000 in
+-- FIXME: Get rid of the raised heartbeats
 instance baseChange
     (D L : Type u) [Ring D] [Algebra K D]
     [Field L] [Algebra K L]
-    [h : Algebra.IsCentral K D] [IsSimpleRing D]  :
+    [h : Algebra.IsCentral K D] [IsSimpleRing D] :
     Algebra.IsCentral L (L ⊗[K] D) where
   out:= by
     intro _ H
@@ -630,8 +622,8 @@ instance baseChange
       refine ⟨k • l, ?_⟩
       simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.map_tmul,
         Subalgebra.coe_val, ← hk]
-      simp only [Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self,
-        RingHom.id_apply]
+      simp only [Algebra.ofId_apply, Algebra.TensorProduct.algebraMap_apply,
+        Algebra.algebraMap_self, RingHom.id_apply]
       rw [TensorProduct.smul_tmul, Algebra.algebraMap_eq_smul_one]
     | add x y hx hy =>
       obtain ⟨kx, (hkx : kx ⊗ₜ 1 = _)⟩ := hx
@@ -646,7 +638,7 @@ section CSA_implies_CSA
 variable (K : Type u) [Field K]
 variable (B : Type*) [Ring B]
 
-lemma top_eq_ring (R :Type*)[Ring R] : (⊤ : TwoSidedIdeal R) = (⊤ : Set R) := by
+lemma top_eq_ring (R : Type*) [Ring R] : (⊤ : TwoSidedIdeal R) = (⊤ : Set R) := by
   aesop
 
 lemma _root_.AlgEquiv.isCentral {K B C : Type*}
@@ -662,7 +654,7 @@ lemma _root_.AlgEquiv.isCentral {K B C : Type*}
 
 theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
     (n : ℕ) (D : Type*) [NeZero n] (h : DivisionRing D) [Algebra K D]
-    (Wdb: B ≃ₐ[K] (Matrix (Fin n) (Fin n) D)) [Algebra.IsCentral K B] [IsSimpleRing B] :
+    (Wdb : B ≃ₐ[K] (Matrix (Fin n) (Fin n) D)) [Algebra.IsCentral K B] [IsSimpleRing B] :
     Algebra.IsCentral K D := by
   refine ⟨fun d hd => ?_⟩
   obtain ⟨k, hk⟩ := Wdb.isCentral.1
@@ -678,3 +670,5 @@ theorem CSA_implies_CSA (K : Type*) (B : Type*) [Field K] [Ring B] [Algebra K B]
   refine ⟨k, ?_⟩
   apply_fun (· 0 0) at hk
   simpa using hk
+
+end CSA_implies_CSA

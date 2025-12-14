@@ -21,9 +21,7 @@ open RingCon
 instance module_over_over (A : CSA k) (I : TwoSidedIdeal A) :
     Module k I := Module.compHom I (algebraMap k A)
 
-set_option synthInstance.maxHeartbeats 50000 in
-theorem is_simple_A [IsSimpleRing (K ⊗[k] A)] :
-    IsSimpleRing A := IsSimpleRing.right_of_tensor k K A
+theorem is_simple_A [IsSimpleRing (K ⊗[k] A)] : IsSimpleRing A := IsSimpleRing.right_of_tensor k K A
 
 theorem central_over_extension_iff_subsingleton
     [Subsingleton A] [FiniteDimensional k A] [FiniteDimensional k K] :
@@ -51,8 +49,6 @@ theorem isSimple_over_extension_iff_subsingleton
     rw [← not_subsingleton_iff_nontrivial] at this
     contradiction
 
-set_option synthInstance.maxHeartbeats 60000 in
-set_option maxHeartbeats 400000 in
 theorem centralSimple_over_extension_iff_nontrivial
     [Nontrivial A] [FiniteDimensional k A] [FiniteDimensional k K] :
     (Algebra.IsCentral k A ∧ IsSimpleRing A) ↔
@@ -179,7 +175,7 @@ lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlg
   refine ⟨n, ?_⟩
   have := Module.finrank_matrix k_bar k_bar (Fin n) (Fin n)
   simp only [Fintype.card_fin, Module.finrank_self, mul_one] at this
-  exact dim_eq k k_bar A|>.trans $ LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
+  exact dim_eq k k_bar A|>.trans <| LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
 def deg (A : CSA k) : ℕ := dim_is_sq k A k_bar |>.choose
 
@@ -189,7 +185,7 @@ lemma deg_sq_eq_dim (A : CSA k) : (deg k k_bar A) ^ 2 = Module.finrank k A :=
 instance deg_pos (A : CSA k) : NeZero (deg k k_bar A) := by
   constructor
   by_contra! h
-  apply_fun (λ x => x^2) at h
+  apply_fun (·^2) at h
   rw [deg_sq_eq_dim k k_bar A, pow_two, mul_zero] at h
   have := Module.finrank_pos_iff (R := k) (M := A)|>.2 inferInstance
   linarith
@@ -213,7 +209,7 @@ def split_by_alg_closure (A : CSA k) : split k A k_bar where
       suffices n = deg k k_bar A from Matrix.reindexAlgEquiv k_bar _ (finCongr this)
       have := deg_sq_eq_dim k k_bar A
       rw [pow_two] at this
-      have e1 := LinearEquiv.finrank_eq iso'.toLinearEquiv|>.trans $
+      have e1 := LinearEquiv.finrank_eq iso'.toLinearEquiv|>.trans <|
         Module.finrank_matrix k_bar _ (Fin n) (Fin n)
       simp only [Module.finrank_tensorProduct, Module.finrank_self, one_mul, Fintype.card_fin,
         mul_one] at e1
@@ -221,7 +217,7 @@ def split_by_alg_closure (A : CSA k) : split k A k_bar where
       exact Nat.mul_self_inj.mp (id this.symm)
     exact iso'.trans e
 
-def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebra k L]
+def extension_over_split (A : CSA k) (L L' : Type u) [Field L] [Field L'] [Algebra k L]
     (hA : split k A L) [Algebra L L'] [Algebra k L'] [IsScalarTower k L L'] : split k A L' where
   n := deg k k_bar A
   iso := by
@@ -230,7 +226,7 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
       __ := absorb_eqv k L L' A
       commutes' _ := rfl
     }
-    let e2 := e1.trans $ Algebra.TensorProduct.congr (AlgEquiv.refl) iso
+    let e2 := e1.trans <| Algebra.TensorProduct.congr .refl iso
     let e3 : L' ⊗[k] A ≃ₐ[L'] L' ⊗[L] Matrix (Fin n) (Fin n) L := {
       __ := e2
       commutes' := fun l' => by
@@ -255,12 +251,12 @@ def extension_over_split (A : CSA k) (L L': Type u) [Field L] [Field L'] [Algebr
     let e5 : n = deg k k_bar A := by
       have := deg_sq_eq_dim k k_bar A
       rw [pow_two] at this
-      have e6 := LinearEquiv.finrank_eq (e3.trans e4).toLinearEquiv|>.trans $
+      have e6 := LinearEquiv.finrank_eq (e3.trans e4).toLinearEquiv|>.trans <|
         Module.finrank_matrix L' _ (Fin n) (Fin n)
       simp only [Module.finrank_tensorProduct, Module.finrank_self, one_mul, Fintype.card_fin,
         mul_one] at e6
       exact Nat.mul_self_inj.mp (id (this.trans e6).symm)
-    exact (e3.trans e4).trans $ Matrix.reindexAlgEquiv L' _ (finCongr e5)
+    exact (e3.trans e4).trans <| Matrix.reindexAlgEquiv L' _ (finCongr e5)
 
 def extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
     [Algebra.IsCentral k A] [FiniteDimensional k A] (L L' : Type u) [Field L] [Field L']
@@ -271,7 +267,7 @@ def extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
   let e5 : n = deg k k_bar ⟨.of k A⟩ := by
       have := deg_sq_eq_dim k k_bar ⟨.of k A⟩
       rw [pow_two] at this
-      have e6 := LinearEquiv.finrank_eq e.toLinearEquiv|>.trans $
+      have e6 := LinearEquiv.finrank_eq e.toLinearEquiv|>.trans <|
         Module.finrank_matrix L' _ (Fin n) (Fin n)
       simp only [Module.finrank_tensorProduct, Module.finrank_self, one_mul, Fintype.card_fin,
         mul_one] at e6

@@ -5,7 +5,7 @@ suppress_compilation
 
 universe u v w
 
-open Classical MulOpposite
+open MulOpposite
 open scoped TensorProduct
 
 variable (K : Type u) [Field K]
@@ -16,31 +16,31 @@ def module_inst (K A B M : Type u)
     [Ring B] [Algebra K B] (f : B →ₐ[K] A) := M
 
 instance (K A B M : Type u) [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
-    [Ring B] [Algebra K B] (f: B →ₐ[K] A) [AddCommGroup M] :
+    [Ring B] [Algebra K B] (f : B →ₐ[K] A) [AddCommGroup M] :
     AddCommGroup (module_inst K A B M f) :=
-  inferInstanceAs $ AddCommGroup M
+  inferInstanceAs <| AddCommGroup M
 
 instance inst_K_mod (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module A M] (f: B →ₐ[K] A) :
+    [AddCommGroup M] [Module A M] (f : B →ₐ[K] A) :
     Module K (module_inst K A B M f) :=
   Module.compHom M (algebraMap K A)
 
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module A M] (f: B →ₐ[K] A) :
+    [AddCommGroup M] [Module A M] (f : B →ₐ[K] A) :
     Module A (module_inst K A B M f) :=
   inferInstanceAs (Module A M)
 
 instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module A M] (f: B →ₐ[K] A) :
+    [AddCommGroup M] [Module A M] (f : B →ₐ[K] A) :
     IsScalarTower K A (module_inst K A B M f) :=
   IsScalarTower.of_algebraMap_smul fun _ ↦ congrFun rfl
 
 def smul1AddHom' (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] (f: B →ₐ[K] A) (m : module_inst K A B M f) :
+    [AddCommGroup M] [Module K M] [Module A M] (f : B →ₐ[K] A) (m : module_inst K A B M f) :
     B →+ (Module.End A M) →+ (module_inst K A B M f) where
   toFun b := {
     toFun l := f b • l m
@@ -55,7 +55,7 @@ def smul1AddHom' (K A B M : Type u)
 
 def smul1AddHom (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A) :
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
     (module_inst K A B M f) → (B ⊗[K] (Module.End A M)) →+ (module_inst K A B M f) := fun m ↦
   TensorProduct.liftAddHom (smul1AddHom' K A B M f m) fun k b l ↦ by
     simp only [smul1AddHom', AddMonoidHom.coe_mk, ZeroHom.coe_mk, LinearMapClass.map_smul,
@@ -64,7 +64,7 @@ def smul1AddHom (K A B M : Type u)
 
 def smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A) :
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
     (module_inst K A B M f) → (B ⊗[K] (Module.End A M)) →ₗ[K] (module_inst K A B M f) :=
   fun m ↦ {
     __ := smul1AddHom K A B M f m
@@ -86,13 +86,13 @@ def smul1 (K A B M : Type u)
 
 lemma one_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B] [AddCommGroup M]
-    [Module K M] [Module A M] [IsScalarTower K A M](f: B →ₐ[K] A) :
-    ∀(m : module_inst K A B M f), smul1 K A B M f m 1 = m := fun m ↦ by
+    [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
+    ∀ (m : module_inst K A B M f), smul1 K A B M f m 1 = m := fun m ↦ by
   simp [smul1, smul1AddHom, smul1AddHom', Algebra.TensorProduct.one_def]
 
 lemma mul_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B] [AddCommGroup M]
-    [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A) :
+    [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
     ∀ (x y : (B ⊗[K] (Module.End A M))) (m : module_inst K A B M f),
     smul1 K A B M f m (x * y) = smul1 K A B M f (smul1 K A B M f m y) x := fun x y m ↦ by
   dsimp [smul1, smul1AddHom, smul1AddHom']
@@ -112,7 +112,7 @@ lemma mul_smul1 (K A B M : Type u)
 lemma smul1_add (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    (f: B →ₐ[K] A) :  ∀ (r : (B ⊗[K] (Module.End A M))) (m1 m2 : module_inst K A B M f),
+    (f : B →ₐ[K] A) :  ∀ (r : (B ⊗[K] (Module.End A M))) (m1 m2 : module_inst K A B M f),
     smul1 K A B M f (m1 + m2) r = smul1 K A B M f m1 r + smul1 K A B M f m2 r := fun r m1 m2 ↦ by
   induction r using TensorProduct.induction_on
   · simp only [map_zero, add_zero]
@@ -128,14 +128,14 @@ lemma smul1_add (K A B M : Type u)
 lemma add_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    (f: B →ₐ[K] A) : ∀ (r s : B ⊗[K] Module.End A M) (x : module_inst K A B M f), smul1 K A B M f x (r + s) =
-    smul1 K A B M f x r + smul1 K A B M f x s := fun r s x ↦ by
+    (f : B →ₐ[K] A) (r s : B ⊗[K] Module.End A M) (x : module_inst K A B M f) :
+    smul1 K A B M f x (r + s) = smul1 K A B M f x r + smul1 K A B M f x s := by
   simp only [smul1, ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, map_add, LinearMap.coe_mk,
     AddHom.coe_mk]
 
 instance IsMod (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
-    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f: B →ₐ[K] A) :
+    [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
     Module (B ⊗[K] (Module.End A M)) (module_inst K A B M f) where
   smul := fun r m => smul1 K A B M f m r
   one_smul := one_smul1 K A B M f
@@ -160,7 +160,7 @@ instance (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    [IsSimpleModule A M] (f: B →ₐ[K] A) :
+    [IsSimpleModule A M] (f : B →ₐ[K] A) :
     IsScalarTower K (B ⊗[K] Module.End A M) (module_inst K A B M f) where
   smul_assoc a x y := by
     induction x with
@@ -178,7 +178,7 @@ instance module_inst_findim (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
-    [IsSimpleModule A M] (f: B →ₐ[K] A) :
+    [IsSimpleModule A M] (f : B →ₐ[K] A) :
     Module.Finite (B ⊗[K] Module.End A M) (module_inst K A B M f) := by
   have : Module.Finite A M := ⟨⟨{gen A M}, eq_top_iff.2 fun x _ => by
     obtain ⟨a, rfl⟩ := gen_spec A M x
@@ -215,7 +215,7 @@ instance tensor_is_simple (K A B M : Type u)
   obtain ⟨e1⟩ := end_simple_mod_of_wedderburn' K A n hn D iso M
   haveI := CSA_implies_CSA K A n D _ iso
   haveI : Algebra.IsCentral K (Module.End A M) := e1.symm.isCentral
-
+  classical
   exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M) _ _ _ _ _ this _
 
 variable (K A B M : Type u)
@@ -240,7 +240,7 @@ lemma findimB (K A B M : Type u)
 
 omit hB in
 lemma iso_fg [hB1 : IsSimpleRing B] :
-  Nonempty $ module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
+    Nonempty <| module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
   haveI := findimB K A B M f
   rw [linearEquiv_iff_finrank_eq_over_simple_ring K]
   rfl

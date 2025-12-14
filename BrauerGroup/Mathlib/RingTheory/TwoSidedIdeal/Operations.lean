@@ -23,8 +23,7 @@ def orderIsoOfRingEquiv {F : Type*} [EquivLike F R S] [RingEquivClass F R S] (f 
       (RingEquivClass.toRingEquiv f).symm.toRingHom]
     simp only [RingEquiv.toRingHom_eq_coe, RingEquiv.symm_comp]
     rfl
-  right_inv I := SetLike.ext $ fun x ↦ by
-    simp only [mem_comap, RingEquiv.apply_symm_apply]
+  right_inv I := SetLike.ext fun x ↦ by simp only [mem_comap, RingEquiv.apply_symm_apply]
   map_rel_iff' := by
     intro I J
     rw [le_iff, le_iff]

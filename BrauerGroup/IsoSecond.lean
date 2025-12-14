@@ -27,73 +27,6 @@ variable (K F : Type) [Field K] [Field F] [Algebra F K]
 --     Module.End F K :=
 --   φ0 K F |>.restrictScalars F
 
--- def φ2 :
---     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulCocycle₂_of_cocycles₂ 0) →ₐ[F]
---     Module.End F K :=
---   AlgHom.ofLinearMap (φ1 K F)
---     (by
---       generalize_proofs h
---       rw [show (1 : CrossProductAlgebra h) = .x_AsBasis h 1 by
---         ext1
---         simp]
---       delta φ1 φ0
---       rw [LinearMap.restrictScalars_apply, Basis.constr_basis]
---       rfl)
---     (by
---       rintro x y
---       change φ0 K F _ = φ0 K F _ * φ0 K F _
---       generalize_proofs h
---       induction x using CrossProductAlgebra.single_induction h with
---       | single x c =>
---         rw [show (⟨Pi.single x c⟩ : CrossProductAlgebra h) =
---           c • .x_AsBasis h x by
---           ext : 1
---           simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def, CrossProductAlgebra.mul_val,
---             CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
---             crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply]]
---         rw [map_smul]
---         induction y using CrossProductAlgebra.single_induction h with
---         | single y d =>
---           rw [show (⟨Pi.single y d⟩ : CrossProductAlgebra h) =
---             d • .x_AsBasis h y by
---             ext : 1
-            -- simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def,
-            --   CrossProductAlgebra.mul_val, CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one,
-            --   Units.val_one, _root_.mul_one, crossProductMul_single_single, _root_.one_mul,
-            --   AlgEquiv.one_apply]]
---           rw [show (c • CrossProductAlgebra.x_AsBasis h x) * (d • .x_AsBasis h y) =
---             (c * x d) • .x_AsBasis h (x * y) by
---             ext : 1
---             simp only [CrossProductAlgebra.x_AsBasis_apply, CrossProductAlgebra.smul_def, CrossProductAlgebra.mul_val,
---               CrossProductAlgebra.ι_apply_val, Pi.one_apply, inv_one, Units.val_one, _root_.mul_one,
---               crossProductMul_single_single, _root_.one_mul, AlgEquiv.one_apply, map_mul]]
---           rw [map_smul, map_smul]
---           delta φ0
---           rw [Basis.constr_basis, Basis.constr_basis, Basis.constr_basis]
---           ext α
---           simp only [LinearMap.smul_apply, AlgEquiv.toLinearMap_apply, AlgEquiv.mul_apply,
---             smul_eq_mul, _root_.mul_assoc, Module.End.mul_apply, map_mul]
---         | add y y' hy hy' =>
---           erw [mul_add]
---           rw [map_add, hy, hy']
---           erw [map_add]
---           rw [mul_add]
---         | zero =>
---           erw [mul_zero]
---           rw [map_zero]
---           erw [map_zero]
---           rw [mul_zero]
---       | add x x' hx hx' =>
---         erw [add_mul]
---         rw [map_add, hx, hx']
---         erw [map_add]
---         rw [add_mul]
---       | zero =>
---         erw [zero_mul]
---         rw [map_zero]
---         erw [map_zero]
---         rw [zero_mul])
-
 -- def φ3 :
 --     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulCocycle₂_of_cocycles₂ 0) ≃ₐ[F]
 --     Module.End F K :=
@@ -219,8 +152,6 @@ lemma Aox_FB_op_tmul_smul_mk_tmul (a' a : A) (b' b : B) :
 
 open MulOpposite in
 set_option maxSynthPendingDepth 3 in
-set_option maxHeartbeats 800000 in
-set_option synthInstance.maxHeartbeats 80000 in
 instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (M α β) where
   one_smul := by
     intro x
@@ -249,14 +180,11 @@ instance : MulAction (A ⊗[F] B)ᵐᵒᵖ (M α β) where
     | add x x' hx hx' => simp_all [mul_add]
     | zero => simp
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 instance : DistribMulAction (A ⊗[F] B)ᵐᵒᵖ (M α β) where
   smul_zero x := show Aox_FB_smul_M _ _ = _ by simp
   smul_add x a b := show Aox_FB_smul_M _ _ =
     Aox_FB_smul_M _ _ + Aox_FB_smul_M _ _ by simp
 
-set_option synthInstance.maxHeartbeats 80000 in
 instance : Module (A ⊗[F] B)ᵐᵒᵖ (M α β) where
   add_smul x y a := show Aox_FB_smul_M _ _ =
     Aox_FB_smul_M _ _ + Aox_FB_smul_M _ _ by simp
@@ -337,8 +265,6 @@ lemma C_smul_aux_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
   congr 2
   simp [CrossProductAlgebra.basis]
 
-set_option maxHeartbeats 1200000 in
-set_option synthInstance.maxHeartbeats 80000 in
 def C_smul : C →ₗ[F] M α β →ₗ[F] M α β where
   toFun := C_smul_aux
   map_add' c c' := by
@@ -381,7 +307,7 @@ lemma C_smul_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
   C_smul_aux_calc k σ a b
 
 set_option maxHeartbeats 1200000 in
-set_option synthInstance.maxHeartbeats 80000 in
+-- FIXME: Get rid of the raised heartbeats
 theorem C_mul_smul' (x y : C) (ab : M α β) : (x * y) • ab = x • y • ab := by
   change ((⟨x.val⟩ : C) * ⟨y.val⟩) • ab = (⟨x.val⟩ : C) • (⟨y.val⟩ : C) • ab
   induction x.val using Finsupp.induction_linear with
@@ -429,7 +355,6 @@ theorem C_mul_smul' (x y : C) (ab : M α β) : (x * y) • ab = x • y • ab :
         simp only [C_smul_def, Submodule.Quotient.mk_add, map_add] at h1 h2 ⊢
         rw [h1, h2]
 
-set_option synthInstance.maxHeartbeats 80000 in
 instance : MulAction C (M α β) where
   one_smul x := by
     induction x using Quotient.inductionOn' with | h x =>
@@ -441,7 +366,8 @@ instance : MulAction C (M α β) where
         show basis 1 = (⟨.single 1 1⟩ : CrossProductAlgebra α) from rfl,
         show ((α (1, 1)).1)⁻¹ • (⟨.single 1 1⟩ : A) = ⟨(↑(α (1, 1)))⁻¹ • .single 1 1⟩ by
           apply val_injective; simp; congr; change _ = (α (1, 1))⁻¹.1 * 1; simp,
-        Finsupp.smul_single, show (α (1, 1))⁻¹ • 1 = (α (1, 1)).1⁻¹ by change (α (1, 1))⁻¹.1 * 1 = _; simp,
+        Finsupp.smul_single, show (α (1, 1))⁻¹ • 1 = (α (1, 1)).1⁻¹ by
+          change (α (1, 1))⁻¹.1 * 1 = _; simp,
         show (⟨.single 1 (α (1, 1)).1⁻¹⟩ : A) = 1 by rfl,
         smul_mul_assoc, _root_.one_mul, Submodule.Quotient.eq]
       refine Submodule.subset_span ⟨⟨(β (1, 1)).1⁻¹, a, basis 1 * b⟩, ?_⟩
@@ -455,19 +381,16 @@ instance : MulAction C (M α β) where
       simp [Submodule.Quotient.mk_zero, C_smul_def, map_zero]
   mul_smul := C_mul_smul'
 
-set_option synthInstance.maxHeartbeats 80000 in
 instance : DistribMulAction C (M α β) where
   smul_zero c := show C_smul _ _ = 0 by simp
   smul_add c x y := show C_smul _ _ = C_smul _ _ + C_smul _ _ by simp
 
-set_option synthInstance.maxHeartbeats 80000 in
 instance : Module C (M α β) where
   add_smul c c' x :=
     show C_smul _ _ = C_smul _ _ + C_smul _ _ by
       simp only [map_add, LinearMap.add_apply]
   zero_smul x := show C_smul _ _ = _ by simp
 
-set_option synthInstance.maxHeartbeats 80000 in
 instance : SMulWithZero (A ⊗[F] B)ᵐᵒᵖ (M α β) where
   zero_smul ab := show Aox_FB_smul_M 0 _ = 0 by simp
 
@@ -480,8 +403,6 @@ open CrossProductAlgebra TensorProduct
 
 open MulOpposite
 
-set_option maxHeartbeats 1200000 in
-set_option synthInstance.maxHeartbeats 80000 in
 instance : SMulCommClass (A ⊗[F] B)ᵐᵒᵖ C (M α β) where
   smul_comm := by
     rintro ⟨x⟩ c m
@@ -515,8 +436,7 @@ section iso
 variable [FiniteDimensional F K]
 
 open CrossProductAlgebra TensorProduct in
-set_option synthInstance.maxHeartbeats 80000 in
-instance : IsScalarTower F C (M α β) := .of_algebraMap_smul <| fun x m ↦ by
+instance : IsScalarTower F C (M α β) := .of_algebraMap_smul fun x m ↦ by
   induction m using Submodule.Quotient.induction_on with | H m =>
   induction m using TensorProduct.induction_on with
   | zero => simp
@@ -560,8 +480,6 @@ instance : IsScalarTower F C (M α β) := .of_algebraMap_smul <| fun x m ↦ by
 
 open CrossProductAlgebra TensorProduct in
 set_option maxSynthPendingDepth 3 in
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 noncomputable def φ0 :
     (A ⊗[F] B)ᵐᵒᵖ →ₐ[F] Module.End C (M α β) where
   toFun x := {
@@ -621,8 +539,6 @@ def MtoAox_KB : M α β →ₗ[F] A ⊗[K] B :=
       simp only [SetLike.mem_coe, LinearMap.mem_ker, map_sub, lift.tmul, LinearMap.coe_mk,
         AddHom.coe_mk, tmul_smul, smul_tmul', sub_self])
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 def Aox_KBToM_aux : A ⊗[K] B →+ M α β :=
 TensorProduct.liftAddHom
   { toFun a :=
@@ -630,13 +546,13 @@ TensorProduct.liftAddHom
       map_zero' := by simp
       map_add' := by simp [tmul_add] }
     map_zero' := by ext; simp
-    map_add' := by intros; ext; simp [add_tmul] } <| fun k a b => by
+    map_add' := by intros; ext; simp [add_tmul] } fun k a b => by
   simp only [AddMonoidHom.coe_mk, ZeroHom.coe_mk]
   rw [Submodule.Quotient.eq]
   exact Submodule.subset_span <| ⟨⟨k, a, b⟩, rfl⟩
 
 set_option synthInstance.maxHeartbeats 160000 in
-set_option maxHeartbeats 1200000 in
+-- FIXME: Get rid of the raised heartbeats
 set_option maxSynthPendingDepth 3 in
 def Aox_KBToM : A ⊗[K] B →ₗ[F] M α β where
   __ := Aox_KBToM_aux
@@ -655,8 +571,6 @@ def Aox_KBToM : A ⊗[K] B →ₗ[F] M α β where
       simp only [smul_zero, ZeroHom.toFun_eq_coe, map_zero,
         RingHom.id_apply]
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 def Aox_KBEquivM : M α β ≃ₗ[F] A ⊗[K] B := .ofLinear MtoAox_KB Aox_KBToM
   (by
     ext x
@@ -680,8 +594,6 @@ def Aox_KBEquivM : M α β ≃ₗ[F] A ⊗[K] B := .ofLinear MtoAox_KB Aox_KBToM
 
 open Module
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 lemma M_F_dim [IsGalois F K] : finrank F (M α β) = (finrank F K)^3 := by
   rw [LinearEquiv.finrank_eq Aox_KBEquivM,
     show finrank F (A ⊗[K] B) = finrank F K * finrank K (A ⊗[K] B) from
@@ -772,7 +684,7 @@ instance : IsSimpleModule C SM := exists_simple_module_directSum _ _
   |>.choose_spec.choose_spec.choose_spec.choose
 
 variable (α β) in
-def IndexingSet  : Type := exists_simple_module_directSum α β
+def IndexingSet : Type := exists_simple_module_directSum α β
   |>.choose_spec.choose_spec.choose_spec.choose_spec.choose
 
 local notation "ι" => IndexingSet α β
@@ -821,7 +733,7 @@ instance : Module.Finite F (ι →₀ SM) := .trans C (ι →₀ SM)
 
 instance : SMulCommClass C F SM where
   smul_comm c f a := by
-    show c • algebraMap F C f • a = algebraMap F C f • _
+    change c • algebraMap F C f • a = algebraMap F C f • _
     rw [← mul_smul, ← Algebra.commutes, mul_smul]
 
 section C_iso
@@ -840,8 +752,6 @@ def isoDagger (m : ℕ) [NeZero m] :
     · simp only [algebraMap_end_apply, Pi.smul_apply, Pi.single_eq_of_ne h, smul_zero,
       LinearMap.zero_apply]
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C :=
   .ofRingEquiv (f := mopEquivEnd C) fun f ↦ by
   ext x
@@ -888,8 +798,6 @@ def C_iso : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) 
 end C_iso
 
 variable (α β) in
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M α β ≃ₗ[C] ιM →₀ SM) := by
   obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (M α β) SM
   refine ⟨ιM, ?_, ⟨iso⟩⟩
@@ -984,8 +892,6 @@ def M_iso_pow' : M α β ≃ₗ[F] Fin (finrank F K * Fintype.card ι) → SM :=
   (M_iso_pow α β).restrictScalars F
 
 variable (α β) in
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 def endCMIso :
     Module.End C (M α β) ≃ₐ[F] Module.End C (Fin (finrank F K * Fintype.card ι) → SM) where
   toFun x := (M_iso_pow α β) ∘ₗ x ∘ₗ (M_iso_pow α β).symm
@@ -1022,8 +928,6 @@ instance : NeZero (finrank F K * Fintype.card ι) := by
   have : 0 < finrank F K := finrank_pos
   omega
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 variable (α β) in
 def endCMIso' :
     Module.End C (M α β) ≃ₐ[F]
@@ -1031,8 +935,6 @@ def endCMIso' :
       (Fin (finrank F K * Fintype.card ι)) (Module.End C SM) :=
   endCMIso _ _ |>.trans <| isoDagger _
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 lemma dim_endCM : finrank F (Module.End C (M α β)) = (finrank F K)^4 := by
   have := (endCMIso' α β).toLinearEquiv.finrank_eq
   rw [this]
@@ -1047,8 +949,6 @@ lemma dim_endCM : finrank F (Module.End C (M α β)) = (finrank F K)^4 := by
   group
 
 set_option maxSynthPendingDepth 3 in
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 open MulOpposite in
 def φ1 : (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M α β) :=
   .ofBijective φ0 <| bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
@@ -1063,11 +963,8 @@ def φ1 : (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M α β) :=
       CrossProductAlgebra.dim_eq_sq, pow_two, pow_succ]
     group
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 open MulOpposite in
-def φ2 :
-    (A ⊗[F] B) ≃ₐ[F] (Module.End C (M α β))ᵐᵒᵖ where
+def φ2 : (A ⊗[F] B) ≃ₐ[F] (Module.End C (M α β))ᵐᵒᵖ where
   toFun a := op <| φ1 (op a)
   invFun g := (φ1.symm g.unop).unop
   left_inv x := by simp
@@ -1080,8 +977,6 @@ def φ2 :
       Algebra.algebraMap_eq_smul_one]
     rfl
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 1200000 in
 def φ3 :
     (A ⊗[F] B) ≃ₐ[F]
     (Matrix (Fin (finrank F K * Fintype.card ι)) (Fin (finrank F K * Fintype.card ι))
@@ -1154,9 +1049,8 @@ variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K, F)]
 --       ofMul_toMul]
 
 open groupCohomology in
-set_option synthInstance.maxHeartbeats 120000 in
 def isoSnd : Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) :=
-  .symm <| .mk' (Additive.ofMul.symm.trans <| equivSnd (F := F) (K := K)).symm <| fun x y ↦ by
+  .symm <| .mk' (Additive.ofMul.symm.trans <| equivSnd (F := F) (K := K)).symm fun x y ↦ by
     induction x using H2_induction_on with | h x =>
     induction y using H2_induction_on with | h y =>
     rcases x with ⟨x, hx'⟩

@@ -21,7 +21,7 @@ lemma dim_eq : Module.finrank K V = Module.finrank L (L ⊗[K] V) := by
 end
 
 section
-variable (K K_bar: Type u) [Field K] [Field K_bar] [Algebra K K_bar] [IsAlgClosure K K_bar]
+variable (K K_bar : Type u) [Field K] [Field K_bar] [Algebra K K_bar] [IsAlgClosure K K_bar]
 
 variable (A : Type u) [AddCommGroup A] [Module K A]
 
@@ -30,8 +30,6 @@ open scoped IntermediateField
 def intermediateTensor (L : IntermediateField K K_bar) : Submodule K (K_bar ⊗[K] A) :=
   LinearMap.range (LinearMap.rTensor _ (L.val.toLinearMap) : L ⊗[K] A →ₗ[K] K_bar ⊗[K] A)
 
-set_option synthInstance.maxHeartbeats 100000 in
-set_option maxHeartbeats 400000 in
 def intermediateTensor' (L : IntermediateField K K_bar) : Submodule L (K_bar ⊗[K] A) :=
   LinearMap.range ({LinearMap.rTensor _ (L.val.toLinearMap) with
     map_smul' l x := by
@@ -45,13 +43,11 @@ def intermediateTensor' (L : IntermediateField K K_bar) : Submodule L (K_bar ⊗
 
 def intermediateTensorEquiv (L : IntermediateField K K_bar) :
     intermediateTensor K K_bar A L ≃ₗ[K] L ⊗[K] A :=
-  LinearEquiv.symm $ LinearEquiv.ofBijective
-    (LinearMap.rangeRestrict _)
-    ⟨by
-      intro x y hxy
-      simp only [LinearMap.rangeRestrict, Subtype.ext_iff, LinearMap.codRestrict_apply] at hxy
-      refine Module.Flat.rTensor_preserves_injective_linearMap _
-        (fun x y h => by simpa using h) hxy, LinearMap.surjective_rangeRestrict _⟩
+  .symm <| .ofBijective (LinearMap.rangeRestrict _) ⟨by
+    intro x y hxy
+    simp only [LinearMap.rangeRestrict, Subtype.ext_iff, LinearMap.codRestrict_apply] at hxy
+    exact Module.Flat.rTensor_preserves_injective_linearMap _ (fun x y h => by simpa using h) hxy,
+      LinearMap.surjective_rangeRestrict _⟩
 
 omit [IsAlgClosure K K_bar] in
 @[simp]
@@ -63,8 +59,6 @@ lemma intermediateTensorEquiv_apply_tmul (L : IntermediateField K K_bar)
   convert LinearEquiv.ofBijective_symm_apply_apply _ _
   rfl
 
-set_option synthInstance.maxHeartbeats 100000 in
-set_option maxHeartbeats 800000 in
 def intermediateTensorEquiv' (L : IntermediateField K K_bar) :
     intermediateTensor' K K_bar A L ≃ₗ[L] L ⊗[K] A where
   toFun := intermediateTensorEquiv K K_bar A L
@@ -142,7 +136,7 @@ theorem inter_tensor_union :
     have fin0: FiniteDimensional K K⟮x⟯ := IntermediateField.adjoin.finiteDimensional (by
       observe : IsAlgebraic K x
       exact Algebra.IsIntegral.isIntegral x)
-    refine Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A) (is_direct K K_bar A) |>.2
+    exact Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A) (is_direct K K_bar A) |>.2
       ⟨intermediateTensor K K_bar A K⟮x⟯, ⟨⟨⟨K⟮x⟯, fin0⟩, rfl⟩,
         ⟨(⟨x, IntermediateField.mem_adjoin_simple_self K x⟩ ⊗ₜ a), by simp⟩⟩⟩
   |add x y hx hy =>
@@ -152,7 +146,7 @@ theorem algclosure_element_in (x : K_bar ⊗[K] A) : ∃(F : IntermediateField K
     FiniteDimensional K F ∧ x ∈ intermediateTensor K K_bar A F := by
   have mem : x ∈ (⊤ : Submodule K _) := ⟨⟩
   rw [← inter_tensor_union K K_bar A] at mem
-  obtain ⟨_, ⟨⟨⟨L, hL1⟩, rfl⟩, hL⟩⟩ := Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A)
+  obtain ⟨_, ⟨⟨L, hL1⟩, rfl⟩, hL⟩ := Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A)
     (is_direct K K_bar A)|>.1 mem
   refine ⟨L, ⟨hL1, hL⟩⟩
 
@@ -205,8 +199,7 @@ def f (i : Fin n × Fin n) : subfieldOf k k_bar A (e i) →ₐ[k] ℒ :=
 def e_hat' (i : Fin n × Fin n) : intermediateTensor' k k_bar A ℒ :=
   ⟨e i, by
     rw [← mem_intermediateTensor_iff_mem_intermediateTensor']
-    exact intermediateTensor_mono k k_bar A
-      (le_sSup (by simp)) $ mem_subfieldOf k k_bar A (e i)⟩
+    exact intermediateTensor_mono k k_bar A (le_sSup (by simp)) <| mem_subfieldOf k k_bar A (e i)⟩
 
 local notation "e^'" => e_hat' n k k_bar A iso
 local notation "k⁻" => k_bar
@@ -220,12 +213,11 @@ theorem e_hat_linear_independent : LinearIndependent ℒ e^' := by
     simpa only [IntermediateField.algebraMap_apply, map_sum, map_smul, Submodule.coe_subtype,
       map_zero] using h
 
-  have H := (linearIndependent_iff'.1 $ e |>.linearIndependent) s (algebraMap ℒ k⁻ ∘ g) h'
+  have H := (linearIndependent_iff'.1 <| e |>.linearIndependent) s (algebraMap ℒ k⁻ ∘ g) h'
   intro i hi
   simpa using H i hi
 
 -- shortcut instance search
-set_option synthInstance.maxHeartbeats 60000 in
 instance : Module ℒ (ℒ ⊗[k] A) := TensorProduct.leftModule
 
 instance : FiniteDimensional ℒ (intermediateTensor' k k⁻ A ℒ) :=
@@ -239,17 +231,15 @@ theorem dim_ℒ_eq : Module.finrank ℒ (intermediateTensor' k k⁻ A ℒ) = n^2
     exact LinearEquiv.finrank_eq (intermediateTensorEquiv' k k_bar A ℒ)
 
 def e_hat : Basis (Fin n × Fin n) ℒ (intermediateTensor' k k_bar A ℒ) :=
-  basisOfLinearIndependentOfCardEqFinrank (e_hat_linear_independent n k k_bar A iso) $ by
+  basisOfLinearIndependentOfCardEqFinrank (e_hat_linear_independent n k k_bar A iso) <| by
     simp only [Fintype.card_prod, Fintype.card_fin, dim_ℒ_eq, pow_two]
 
 local notation "e^" => e_hat n k k_bar A iso
 
-set_option synthInstance.maxHeartbeats 60000 in
 def isoRestrict' : ℒ ⊗[k] A ≃ₗ[ℒ] Matrix (Fin n) (Fin n) ℒ :=
   (intermediateTensorEquiv' k k_bar A ℒ).symm ≪≫ₗ
   Basis.equiv (e^) (Matrix.stdBasis ℒ (Fin n) (Fin n)) (Equiv.refl _)
 
-set_option synthInstance.maxHeartbeats 50000 in
 instance : SMulCommClass k ℒ ℒ := inferInstance
 -- instance : Algebra ℒ (ℒ ⊗[k] A) := Algebra.TensorProduct.leftAlgebra
 
@@ -289,7 +279,6 @@ lemma comm_triangle :
     LinearEquiv.coe_symm_mk]
   rfl
 
-set_option synthInstance.maxHeartbeats 40000 in
 /--
 intermidateTensor ----> M_n(ℒ)
   | val                 | inclusion'
@@ -318,8 +307,7 @@ lemma comm_square' :
   simp only [Matrix.single]
   aesop
 
-set_option synthInstance.maxHeartbeats 60000 in
-/--
+/-- This shows the following diagram commutes:
      isoRestrict
   ℒ ⊗_k A -----> M_n(ℒ)
     | inclusion    | inclusion'
@@ -339,7 +327,6 @@ lemma comm_square :
 -- lemma map_one'' : (inclusion n k k_bar A iso) 1 = 1 := by
 --     erw [_root_.map_one (f := inclusion n k k_bar A iso)]
 
-set_option synthInstance.maxHeartbeats 120000 in
 lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   /-
         isoRestrict
@@ -359,13 +346,12 @@ lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   --   erw [_root_.map_one (f := inclusion n k k_bar A iso)]
   conv_rhs at eq =>
     rw [LinearMap.comp_apply]
-    change ((LinearMap.restrictScalars (@Subtype k_bar fun x ↦ x ∈ ℒ)) iso.toLinearEquiv.toLinearMap)
-      ((inclusion n k k_bar A iso) 1)
+    change (LinearMap.restrictScalars (@Subtype k_bar fun x ↦ x ∈ ℒ)) iso.toLinearEquiv.toLinearMap
+      (inclusion n k k_bar A iso 1)
     erw [show (inclusion n k k_bar A iso 1) = 1 from rfl, map_one iso]
   refine inclusion'_injective n k k_bar A iso (eq.trans ?_)
   rw [_root_.map_one]
 
-set_option synthInstance.maxHeartbeats 40000 in
 lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
     isoRestrict' n k k⁻ A iso (x * y) =
     isoRestrict' n k k⁻ A iso x * isoRestrict' n k k⁻ A iso y := by

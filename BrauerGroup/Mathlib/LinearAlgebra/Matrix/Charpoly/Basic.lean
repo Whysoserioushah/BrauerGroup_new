@@ -27,7 +27,7 @@ theorem Matrix.blockDiagonal_charpoly_aux {r} {n : Type*} [DecidableEq n] [Finty
     ((Matrix.blockDiagonal A).toSquareBlock Prod.snd i).charpoly = (A i).charpoly := by
   rw [blockDiagonal_toSquareBlock, Matrix.charpoly_reindex]
 
-theorem Matrix.blockDiagonal_charpoly {r} {n : Type*}  [DecidableEq n] [Fintype n]
+theorem Matrix.blockDiagonal_charpoly {r} {n : Type*} [DecidableEq n] [Fintype n]
     (A : Fin r → Matrix n n F) :
     (Matrix.blockDiagonal A).charpoly = ∏ i : Fin r, (A i).charpoly := by
   have hM := Matrix.blockTriangular_blockDiagonal A

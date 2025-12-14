@@ -194,8 +194,6 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
 
 -- lemma coe_comp {X Y Z : FieldCat} {f : X ⟶ Y} {g : Y ⟶ Z} : (f ≫ g : X → Z) = g ∘ f := rfl
 
--- @[simp] lemma forget_map {X Y : FieldCat} (f : X ⟶ Y) : (forget FieldCat).map f = (f : X → Y) := rfl
-
 -- lemma ext {X Y : FieldCat} {f g : X ⟶ Y} (w : ∀ x : X, f x = g x) : f = g :=
 --   RingHom.ext w
 
@@ -206,11 +204,6 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
 -- /-- Typecheck a `RingHom` as a morphism in `FieldCat`. -/
 -- def ofHom {R S : Type u} [Field R] [Field S] (f : R →+* S) : of R ⟶ of S :=
 --   f
-
--- -- Porting note: I think this is now redundant.
--- -- @[simp]
--- -- theorem ofHom_apply {R S : Type u} [Field R] [Field S] (f : R →+* S) (x : R) : ofHom f x = f x :=
--- --   rfl
 
 -- instance : Inhabited FieldCat :=
 --   ⟨of ℚ⟩
@@ -316,3 +309,5 @@ instance forgetReflectIsos : (forget FieldCat).ReflectsIsomorphisms where
 -- attribute [local instance] reflectsIsomorphisms_forget₂
 
 -- example : (forget₂ FieldCat AddCommGrp).ReflectsIsomorphisms := by infer_instance
+
+end FieldCat

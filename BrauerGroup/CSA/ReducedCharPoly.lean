@@ -21,12 +21,6 @@ suppress_compilation
 --     [IsScalarTower R R' A] [IsScalarTower R R' B]
 --     : NonUnitalSemiring ((A ⊗[R'] B) ⊗[R] C) := inferInstance
 
-  -- [inst_3 : Algebra R A] [inst_4 : Algebra R B] [inst_5 : AddCommMonoid M] [inst_6 : Module R M] [inst_7 : Module A M]
-  -- [inst_8 : Module B M] [inst_9 : IsScalarTower R A M] [inst_10 : IsScalarTower R B M] [inst_11 : SMulCommClass A B M]
-  -- [inst_12 : AddCommMonoid P] [inst_13 : Module A P] [inst_14 : AddCommMonoid Q] [inst_15 : Module R Q]
-  -- [inst_16 : Module R P] [inst_17 : IsScalarTower R A P] [inst_18 : Algebra A B] [inst_19 : IsScalarTower A B M] :
-  -- (M ⊗[A] P) ⊗[R] Q ≃ₗ[B] M ⊗[A] P ⊗[R] Q := sorry
-
 -- instance [Algebra F E] [IsScalarTower K F E] : IsScalarTower K (Algebra.ofId F E).range E where
 --   smul_assoc k := fun ⟨f, hf⟩ x ↦ by
 --     change (k • f) • _ = k • f • x
@@ -35,14 +29,7 @@ suppress_compilation
 -- instance [Algebra F E] : Algebra (Algebra.ofId F E).range F :=
 --   RingHom.toAlgebra (AlgEquiv.ofInjectiveField (Algebra.ofId F E)).symm
 
--- instance [Algebra F E] [IsScalarTower K F E] : IsScalarTower K (Algebra.ofId F E).range F where
---   smul_assoc k := fun ⟨e, he⟩ x ↦ by
---     simp only [RingHom.smul_toAlgebra, RingHom.coe_coe]
---     change (AlgEquiv.restrictScalars K (AlgEquiv.ofInjectiveField (Algebra.ofId F E)).symm) _ * _ = _
---     rw [map_smul]
---     simp
-
-variable (K F E K_bar F_bar A: Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
+variable (K F E K_bar F_bar A : Type*) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
   [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
   [hF_bar : IsAlgClosure F F_bar] [Ring A] [Algebra K A] [Algebra.IsCentral K A] [IsSimpleRing A]
   (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
@@ -69,8 +56,8 @@ lemma φ_m_inj (φ : F →ₐ[K] E) : Function.Injective (φ_m n φ) := fun M N 
 
 variable {K F E} in
 abbrev e1Aux (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) φ.range ≃ₐ[K] (φ_m n φ).range where
-  toFun M := ⟨fun i j ↦ M i j|>.1, ⟨fun i j ↦ M i j|>.2.choose, funext fun i ↦ funext fun j ↦ M i j|>.2.choose_spec⟩⟩
-  invFun := fun ⟨M, (h : ∃ _, _ = _)⟩ ↦ fun i j ↦ ⟨M i j, ⟨h.choose i j, Matrix.ext_iff.2 h.choose_spec i j ⟩⟩
+  toFun M := ⟨(M · · |>.1), fun i j ↦ M i j |>.2.choose, by ext i j; exact M i j|>.2.choose_spec⟩
+  invFun := fun ⟨M, h⟩ i j ↦ ⟨M i j, h.choose i j, Matrix.ext_iff.2 h.choose_spec i j⟩
   left_inv _ := by simp
   right_inv _ := by simp
   map_mul' _ _ := by ext; simp [Matrix.mul_apply]
@@ -85,17 +72,18 @@ abbrev e1 (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F ≃ₐ[K] φ_m n φ|>.
     (φ_m n φ).mem_range_self|>.2 <| φ_m_inj n φ, AlgHom.rangeRestrict_surjective _⟩
 
 abbrev e1' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[K] Matrix (Fin n) (Fin n) φ.range :=
-  Algebra.TensorProduct.congr (AlgEquiv.ofInjectiveField φ).symm AlgEquiv.refl|>.trans <|
-  ({__ := e, commutes' r := by simpa using (e.commutes (algebraMap K F r))} : _ ≃ₐ[K] Matrix (Fin n) (Fin n) F).trans
-  <| e1 _ _ _ _ φ|>.trans (e1Aux n φ).symm
+  Algebra.TensorProduct.congr (AlgEquiv.ofInjectiveField φ).symm AlgEquiv.refl|>.trans <| ({
+    __ := e
+    commutes' r := by simpa using (e.commutes (algebraMap K F r))}
+    : _ ≃ₐ[K] Matrix (Fin n) (Fin n) F).trans <| e1 _ _ _ _ φ|>.trans (e1Aux n φ).symm
 
 variable {K F E} in
 abbrev e1'' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[φ.range] Matrix (Fin n) (Fin n) φ.range where
   __ := e1' K F E A n e φ
-  commutes' := fun ⟨x, ⟨y, eq⟩⟩ ↦ Matrix.ext_iff.1 <| fun i j ↦ by
+  commutes' := fun ⟨x, ⟨y, eq⟩⟩ ↦ Matrix.ext_iff.1 fun i j ↦ by
     simp [AlgEquiv.ofInjectiveField]
-    rw [← mul_one ((AlgEquiv.ofInjective φ _).symm ⟨x, _⟩), ← smul_eq_mul, ← TensorProduct.smul_tmul',
-      map_smul, ← Algebra.TensorProduct.one_def, map_one]
+    rw [← mul_one ((AlgEquiv.ofInjective φ _).symm ⟨x, _⟩), ← smul_eq_mul,
+      ← TensorProduct.smul_tmul', map_smul, ← Algebra.TensorProduct.one_def, map_one]
     simp [Matrix.algebraMap_matrix_apply]
     split_ifs with h
     · subst h
@@ -157,17 +145,15 @@ end poly
 
 section mono
 
-variable (K F E K_bar F_bar A: Type u) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
+variable (K F E K_bar F_bar A : Type u) [Field K] [Field F] [Field E] [Field F_bar] [Algebra K F]
   [Algebra K E] [Field K_bar] [Algebra K K_bar] [Algebra F F_bar] [hK_bar : IsAlgClosure K K_bar]
   [hF_bar : IsAlgClosure F F_bar] [Ring A] [Algebra K A] [Algebra.IsCentral K A] [IsSimpleRing A]
   (n m : ℕ) [NeZero n] (e : F ⊗[K] A ≃ₐ[F] Matrix (Fin n) (Fin n) F)
 
-set_option synthInstance.maxHeartbeats 80000 in
-set_option maxHeartbeats 600000 in
 include F_bar in
 omit [NeZero n] in
 lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F) [NeZero m] (a : A) :
-    ∃(r : ℕ), NeZero r ∧ m = r * n ∧ Matrix.charpoly (g (1 ⊗ₜ a)) = (ReducedCharPoly e a)^r :=
+    ∃ r, NeZero r ∧ m = r * n ∧ Matrix.charpoly (g (1 ⊗ₜ a)) = ReducedCharPoly e a ^ r :=
   have iso: F ⊗[K] A ≃ₐ[F] g.range := AlgEquiv.ofInjective _ <| RingHom.injective _
   haveI : Algebra.IsCentral F g.range := .of_algEquiv F _ _ iso
   haveI : IsSimpleRing g.range := .of_ringEquiv iso.toRingEquiv inferInstance
@@ -179,7 +165,8 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
     .of_algEquiv F _ (g.range ⊗[F] (Subalgebra.centralizer F (SetLike.coe g.range))) ee
   haveI : Algebra.IsCentral F (Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range) :=
     .right_of_tensor_of_field F g.range _
-  let r : ℕ := deg F F_bar ⟨.of F (Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range)⟩
+  let r : ℕ :=
+    deg F F_bar ⟨.of F <| Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range⟩
   have eq : r * n = m := by
     apply_fun fun x ↦ x^2 using (Nat.pow_left_injective (by omega))
     have eq1 : Module.finrank F g.range = n^2 := by
@@ -249,7 +236,7 @@ lemma fixedpoints (x : F) : (∀ φ : F ≃ₐ[K] F, φ x = x) → x ∈ (Algebr
 -- lemma 3
 include F_bar in
 lemma mem_Kx (a : A) : ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.ofId K F) := by
-  have fixed : ∀ φ : F ≃ₐ[K] F, (e (1 ⊗ₜ[K] a)).charpoly = map φ (e (1 ⊗ₜ[K] a)).charpoly := fun φ ↦ by
+  have fixed (φ : F ≃ₐ[K] F) : (e (1 ⊗ₜ[K] a)).charpoly = map φ (e (1 ⊗ₜ[K] a)).charpoly := by
     obtain ⟨g, hg⟩ := mat_over_extension (E := F) A n e φ a
     obtain ⟨r, _, hr1, hr⟩ := eq_pow_reducedCharpoly K F F_bar A n n e g a
     rw [eq_comm, Nat.mul_eq_right (NeZero.ne n)] at hr1
@@ -264,7 +251,7 @@ lemma mem_Kx (a : A) : ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.
     exact hr.symm.trans hg
   simp only [ext_iff, coeff_map, RingHom.coe_coe] at fixed
   have fixed2 : ∀ m : ℕ, (e (1 ⊗ₜ a)).charpoly.coeff m ∈ (Algebra.ofId K F).range := fun m ↦
-    fixedpoints K F _ <| fun φ ↦ fixed φ m |>.symm
+    fixedpoints K F _ fun φ ↦ fixed φ m |>.symm
   rw [ReducedCharPoly]
   use ⟨(⟨(e (1 ⊗ₜ[K] a)).charpoly.support, fun m ↦ fixed2 m|>.choose, ?_⟩ : ℕ →₀ K)⟩
   pick_goal 2
@@ -292,7 +279,7 @@ lemma mem_Kx (a : A) : ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.
 
 section field_ext
 
-noncomputable def algClosure_ext (L F F_bar: Type*) [Field F] [Field L] [Field F_bar] [Algebra F L]
+noncomputable def algClosure_ext (L F F_bar : Type*) [Field F] [Field L] [Field F_bar] [Algebra F L]
     [Algebra F F_bar] [FiniteDimensional F L] [IsAlgClosure F F_bar] : Algebra L F_bar :=
   haveI : IsAlgClosed F_bar := IsAlgClosure.isAlgClosed F
   haveI : Algebra.IsAlgebraic F L := by exact Algebra.IsAlgebraic.of_finite F L
@@ -300,13 +287,14 @@ noncomputable def algClosure_ext (L F F_bar: Type*) [Field F] [Field L] [Field F
 
 end field_ext
 
-
--- `A` is a central simple algebra over `K`, `F/K` is splitting field with iso `e : F ⊗[K] A ≃ₐ[F] Mₙ(F)`,
+-- `A` is a central simple algebra over `K`, `F/K` is splitting field with iso
+-- `e : F ⊗[K] A ≃ₐ[F] Mₙ(F)`,
 -- `L/K` is another splitting field with iso `e' : L ⊗[K] A ≃ₐ[L] Mₙ(L)`.
 -- ∀ a : A, reduced charpoly of `a` using `e` is the same as using `e'`.
 include F_bar in
 set_option maxSynthPendingDepth 3 in
 set_option synthInstance.maxHeartbeats 80000 in
+-- FIXME: Get rid of the raised heartbeats
 set_option maxHeartbeats 1600000 in
 lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L] [Algebra L L_bar]
     [FiniteDimensional K L] [IsGalois K L] [hL : IsAlgClosure L L_bar]
@@ -317,7 +305,8 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
   obtain ⟨g, hg⟩ := mem_Kx K L L_bar A n e' a
   refine ⟨f, g, hf, hg, ?_⟩
   let E := (F ⊗[K] L) ⧸ (Ideal.exists_maximal (F ⊗[K] L)).choose
-  have : IsField E := Ideal.Quotient.maximal_ideal_iff_isField_quotient _|>.1 (Ideal.exists_maximal _).choose_spec
+  have : IsField E :=
+    Ideal.Quotient.maximal_ideal_iff_isField_quotient _|>.1 (Ideal.exists_maximal _).choose_spec
   letI alg : Algebra K E := Ideal.Quotient.algebra K
   let φ : F →ₐ[K] E := {
     toFun m := Ideal.Quotient.mk _ (m ⊗ₜ 1)
@@ -339,10 +328,8 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
     (Ideal.Quotient.algebra K) _ _ _ e φ a
   obtain ⟨g2, hg2⟩ := @ReducedCharPoly.over_extension K L E A _ _ (IsField.toField this) _
     (Ideal.Quotient.algebra K) _ _ _ e' ψ a
-  -- haveI alge : Algebra F E := RingHom.toAlgebra φ.toRingHom
-  -- have findim' : FiniteDimensional F E := Module.Finite.quotient F (Ideal.exists_maximal (F ⊗[K] L)).choose
-  have alg' : Algebra E F_bar := @algClosure_ext E F F_bar _ (IsField.toField this) _ (RingHom.toAlgebra φ.toRingHom) _
-    (by
+  have alg' : Algebra E F_bar :=
+    @algClosure_ext E F F_bar _ (IsField.toField this) _ (RingHom.toAlgebra φ.toRingHom) _ (by
       convert Module.Finite.quotient F (Ideal.exists_maximal (F ⊗[K] L)).choose
       ext r m
       change φ r * m = r • m
@@ -371,22 +358,19 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
         sorry
       | add x y _ _ => sorry
   }
-  -- have hg12 := @eq_polys K E F_bar _ (IsField.toField this) _ (Ideal.Quotient.algebra K)
-  --   alg' (@isAlgClosure_iff E (IsField.toField this) F_bar _ alg' |>.2
-  --   ⟨IsAlgClosure.isAlgClosed F, @Algebra.IsAlgebraic.tower_top F E F_bar _ this.toField _ _ _ _ tow _⟩)
-  --   A n _ g1 g2 a
-
   sorry
 
 set_option maxSynthPendingDepth 3 in
 omit [IsGalois K F] [FiniteDimensional K F] in
-theorem invariant_extend_scalars (L L_bar : Type u) [Field L] [Field L_bar] [Algebra F L] [Algebra K L]
-    [Algebra L L_bar] [IsAlgClosure L L_bar] (e0 : L ⊗[F] (F ⊗[K] A) ≃ₐ[L] Matrix (Fin n) (Fin n) L) [IsScalarTower K F L] (a : A) :
+theorem invariant_extend_scalars (L L_bar : Type u) [Field L] [Field L_bar] [Algebra F L]
+    [Algebra K L] [Algebra L L_bar] [IsAlgClosure L L_bar]
+    (e0 : L ⊗[F] (F ⊗[K] A) ≃ₐ[L] Matrix (Fin n) (Fin n) L) [IsScalarTower K F L] (a : A) :
     (ReducedCharPoly e a).mapAlgHom (Algebra.ofId F L) = ReducedCharPoly e0 (1 ⊗ₜ a) := by
   let e0' : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L := Algebra.TensorProduct.congr
     (Algebra.TensorProduct.rid F L L).symm AlgEquiv.refl|>.trans <|
     Algebra.TensorProduct.assoc' _ _ _ _ _ _ |>.trans e0
-  obtain ⟨g, hg⟩ := ReducedCharPoly.over_extension K F L A n e ((Algebra.ofId F L).restrictScalars K) a
+  obtain ⟨g, hg⟩ :=
+    ReducedCharPoly.over_extension K F L A n e ((Algebra.ofId F L).restrictScalars K) a
   have : ReducedCharPoly e0' a = ReducedCharPoly e0 (1 ⊗ₜ a) := by simp [ReducedCharPoly, e0']
   rw [← this, eq_polys K L L_bar A n e0' g a, hg]
   simp
@@ -432,12 +416,13 @@ lemma reducedTrace_mul_comm (a b : A) : reducedTrace e (a * b) = reducedTrace e 
   rw [← mul_one 1, ← tmul_mul_tmul, map_mul, Matrix.trace_mul_comm, ← map_mul, tmul_mul_tmul]
 
 omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
-lemma reducedNorm_algebraMap (k : K) : reducedNorm e (algebraMap K A k) = (algebraMap K F k) ^ n := by
+lemma reducedNorm_algebraMap (k : K) : reducedNorm e (algebraMap K A k) = algebraMap K F k ^ n := by
   simp [reducedNorm, Algebra.algebraMap_eq_smul_one, LinearMapClass.map_smul_of_tower e,
     ← Algebra.TensorProduct.one_def, _root_.smul_pow]
 
 omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
-lemma reducedTrace_algebraMap (k : K) : reducedTrace e (algebraMap K A k) = n • (algebraMap K F k) := by
+lemma reducedTrace_algebraMap (k : K) :
+    reducedTrace e (algebraMap K A k) = n • algebraMap K F k := by
   simp [reducedTrace, Algebra.algebraMap_eq_smul_one, LinearMapClass.map_smul_of_tower e,
     ← Algebra.TensorProduct.one_def]
 

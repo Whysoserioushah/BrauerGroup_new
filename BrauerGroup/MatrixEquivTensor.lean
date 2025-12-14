@@ -24,10 +24,10 @@ lemma toTensorMartrix_toFun_bilinear_apply (k : K) (M : Matrix n n A) :
   toTensorMartrix_toFun_bilinear K F A n k M =
   k • Algebra.TensorProduct.includeRight.mapMatrix M := rfl
 
-abbrev toTensorMatrix_toFun_Flinear: K ⊗[F] Matrix n n A →ₗ[F] Matrix n n (K ⊗[F] A) :=
+abbrev toTensorMatrix_toFun_Flinear : K ⊗[F] Matrix n n A →ₗ[F] Matrix n n (K ⊗[F] A) :=
   TensorProduct.lift <| toTensorMartrix_toFun_bilinear K F A n
 
-abbrev toTensorMatrix_toFun_Klinear: K ⊗[F] Matrix n n A →ₗ[K] Matrix n n (K ⊗[F] A) :=
+abbrev toTensorMatrix_toFun_Klinear : K ⊗[F] Matrix n n A →ₗ[K] Matrix n n (K ⊗[F] A) :=
   {__ := toTensorMatrix_toFun_Flinear K F A n,
    map_smul' k tensor := by
     induction tensor with
@@ -35,9 +35,9 @@ abbrev toTensorMatrix_toFun_Klinear: K ⊗[F] Matrix n n A →ₗ[K] Matrix n n 
     | tmul k0 M => simp [TensorProduct.smul_tmul', MulAction.mul_smul]
     | add _ _ h1 h2 => simp_all}
 
-abbrev toTensorMatrix: K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) :=
-  AlgHom.ofLinearMap (toTensorMatrix_toFun_Klinear K F A n)
-  (by simp [Algebra.TensorProduct.one_def]) <| fun t1 t2 ↦ by
+abbrev toTensorMatrix : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) :=
+  .ofLinearMap (toTensorMatrix_toFun_Klinear K F A n) (by simp [Algebra.TensorProduct.one_def])
+    fun t1 t2 ↦ by
   induction t1 with
   | zero => simp
   | tmul x y =>
@@ -81,14 +81,16 @@ abbrev invFun_linearMap : Matrix n n (K ⊗[F] A) →ₗ[K] K ⊗[F] Matrix n n 
   map_add' _ _ := by simp [Finset.sum_add_distrib]
   map_smul' _ _ := by simp [Finset.smul_sum]
 
-lemma left_inv (M : K ⊗[F] Matrix n n A) : invFun_linearMap K F A n (toTensorMatrix K F A n M) = M := by
+lemma left_inv (M : K ⊗[F] Matrix n n A) :
+    invFun_linearMap K F A n (toTensorMatrix K F A n M) = M := by
   induction M with
   | zero => simp
   | tmul k M =>
     simp [← tmul_sum, smul_tmul', Fintype.sum_prod_type, ← matrix_eq_sum_single]
   | add koxa1 koxa2 h1 h2 => rw [map_add, map_add, h1, h2]
 
-lemma right_inv (M : Matrix n n (K ⊗[F] A)) : toTensorMatrix K F A n (invFun_linearMap K F A n M) = M := by
+lemma right_inv (M : Matrix n n (K ⊗[F] A)) :
+    toTensorMatrix K F A n (invFun_linearMap K F A n M) = M := by
   simp only [LinearMap.coe_mk, LinearMap.coe_toAddHom, AddHom.coe_mk, map_sum,
     AlgHom.ofLinearMap_apply, Fintype.sum_prod_type]
   conv_rhs => rw [matrix_eq_sum_single M]
