@@ -26,7 +26,6 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     have H := hbc.1.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
-
   rcases hC with hC|hC
   · have : Subsingleton (B ⊗[K] C) := by
       rw [← subsingleton_iff_zero_eq_one, show (0 : B ⊗[K] C) = 0 ⊗ₜ 0 by simp,
@@ -41,7 +40,6 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     have H := hbc.1.1
     rw [← not_subsingleton_iff_nontrivial] at H
     contradiction
-
   by_contra h
   rw [IsSimpleRing.iff_eq_zero_or_injective' (k := K) (A := B)] at h
   push_neg at h
@@ -54,7 +52,6 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
     refine ⟨fun _ => trivial, fun _ ↦ Subsingleton.elim _ _⟩
   let F : B ⊗[K] C →ₐ[K] (B' ⊗[K] C) := Algebra.TensorProduct.map f (AlgHom.id _ _)
   have hF := IsSimpleRing.iff_eq_zero_or_injective' (B ⊗[K] C) K |>.1 inferInstance F
-
   rcases hF with hF|hF
   · have : Nontrivial (B' ⊗[K] C) := by
       rw [← rank_pos_iff_nontrivial (R := K), rank_tensorProduct]
@@ -71,12 +68,10 @@ lemma IsSimpleRing.left_of_tensor (B C : Type u)
       constructor
       · apply hF
       · rintro rfl; simp
-
     have : Function.Exact (0 : PUnit.{u + 1} →ₗ[K] _) f :=
       Module.FaithfullyFlat.iff_exact_iff_rTensor_exact K C|>.1 inferInstance
         (l12 := (0 : PUnit →ₗ[K] _) ) (l23 := f.toLinearMap) |>.2
           fun x ↦ show F x = 0 ↔ _ by aesop
-
     refine h2 fun x y hxy => ?_
     specialize this (x - y)
     simp only [map_sub, sub_eq_zero, Set.mem_range, LinearMap.zero_apply, exists_const] at this

@@ -40,11 +40,6 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
     constructor
     have : 0 < Module.finrank F (Fin n → K) := Module.finrank_pos
     omega
-
-  -- haveI : IsCentralSimple F (Matrix (Fin (Module.finrank F (Fin n → K)))
-  --   (Fin (Module.finrank F (Fin n → K))) F) := by
-  --   apply MatrixRing.isCentralSimple
-
   haveI : Algebra.IsCentral F (Module.End F (Fin n → K)) := by
     have f := algEquivMatrix (R := F) (M := Fin n → K) (Module.finBasis _ _)
     refine f.symm.isCentral
@@ -135,7 +130,6 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
     change M^2 = m
     clear_value m M
     clear dim_eq2
-
     simp only [mul_eq_mul_right_iff, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true,
       pow_eq_zero_iff] at dim_eq1
     refine dim_eq1 |>.resolve_right hn.1 |>.symm
@@ -215,7 +209,6 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
         intros a x
         ext r a'
         simp [smul_eq_mul, smul_assoc, LinearMap.smul_apply] }
-
     let μ' : K ⊗[F] B →ₗ[F] Module.End K B := TensorProduct.lift μ
     let μ'' : K ⊗[F] B →ₗ[K] Module.End K B :=
     { __ := μ'

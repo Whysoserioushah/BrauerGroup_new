@@ -267,7 +267,6 @@ lemma Wedderburn_Artin.aux.one_eq
     {A : Type u} [Ring A] [simple : IsSimpleRing A]
     (I : Ideal A) (I_nontrivial : I ≠ ⊥) :
     ∃ (n : ℕ) (x : Fin n → A) (i : Fin n → I), ∑ j : Fin n, i j * x j = 1 := by
-
   letI I' : TwoSidedIdeal A := TwoSidedIdeal.span I
   have I'_is_everything : I' = ⊤ := simple.1.2 I' |>.resolve_left (fun r ↦ by
     obtain ⟨y, hy⟩ := Submodule.nonzero_mem_of_bot_lt (bot_lt_iff_ne_bot.mpr I_nontrivial)
@@ -278,7 +277,6 @@ lemma Wedderburn_Artin.aux.one_eq
     change _ = _ at hy'
     aesop)
   have one_mem_I' : 1 ∈ I' := by rw [I'_is_everything]; trivial
-
   rw [TwoSidedIdeal.mem_span_ideal_iff_exists_fin] at one_mem_I'
   obtain ⟨n, finn, x, y, hy⟩ := one_mem_I'
   exact ⟨Fintype.card n, x ∘ (Fintype.equivFin _).symm, y ∘ (Fintype.equivFin _).symm, hy ▸
@@ -322,7 +320,6 @@ lemma Wedderburn_Artin.aux.n_ne_zero
   let i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
   have one_eq : ∑ j : Fin n, (i j) * (x j) = 1 :=
     Wedderburn_Artin.aux.nxi_spec I I_nontrivial
-
   let e : Fin n ≃ Fin 0 := Fin.castOrderIso hn
   simpa using calc 1
     _ = _ := one_eq.symm
@@ -340,12 +337,10 @@ lemma Wedderburn_Artin.aux.nxi_ne_zero {A : Type u} [Ring A] [simple : IsSimpleR
   let x : Fin n → A := Wedderburn_Artin.aux.x I I_nontrivial
   let i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
   have one_eq : ∑ j : Fin n, i j * x j = 1 := Wedderburn_Artin.aux.nxi_spec I I_nontrivial
-
   by_contra! H
   obtain ⟨j, (hj : x j ≠ 0 → i j = 0)⟩ := H
   refine Nat.find_min (aux.one_eq I I_nontrivial) (m := n - 1)
     (show n - 1 < n by omega) ?_
-
   let e : Fin n ≃ Option (Fin (n - 1)) :=
     (Fin.castOrderIso <| by omega).toEquiv.trans (finSuccEquiv' (j.cast <| by omega))
   have one_eq := calc 1
@@ -370,18 +365,14 @@ lemma Wedderburn_Artin.aux.equivIdeal
   letI i : Fin n → I := Wedderburn_Artin.aux.i I I_nontrivial
   have one_eq : ∑ j : Fin n, (i j) * (x j) = 1 :=
     Wedderburn_Artin.aux.nxi_spec I I_nontrivial
-
   haveI : IsSimpleModule A I := minimal_ideal_isSimpleModule I I_nontrivial I_minimal
-
   letI g : (Fin n → I) →ₗ[A] A :=
   { toFun := fun v ↦ ∑ j : Fin n, v j * x j
     map_add' := fun v1 v2 => by simp [add_mul, Finset.sum_add_distrib]
     map_smul' := fun a v => by simp [Finset.mul_sum, mul_assoc] }
-
   have g_surj : Function.Surjective g := fun a ↦
     ⟨fun j ↦ ⟨a * (i j), I.mul_mem_left _ (i j).2⟩,
       by simp [g, mul_assoc, ← Finset.mul_sum, one_eq]⟩
-
   have g_inj : Function.Injective g := by
     rw [← LinearMap.ker_eq_bot]
     by_contra!
@@ -394,7 +385,6 @@ lemma Wedderburn_Artin.aux.equivIdeal
       (by simp only [Ideal.span_le, Set.singleton_subset_iff, Subtype.coe_prop]) (y j).1
       (by contrapose! hj; rwa [Subtype.ext_iff]) <| Ideal.subset_span
         (by simp only [Set.mem_singleton_iff])
-
     have mem : (i j).1 ∈ Ideal.span {(y j).1} := eq1.symm ▸ (i j).2
     rw [Ideal.mem_span_singleton'] at mem
     obtain ⟨r, hr⟩ := mem
@@ -405,7 +395,6 @@ lemma Wedderburn_Artin.aux.equivIdeal
     rw [← Finset.sum_sub_distrib, sub_zero] at one_eq'
     let e : Fin n ≃ Option (Fin (n - 1)) :=
       (Fin.castOrderIso <| by omega).toEquiv.trans (finSuccEquiv' (j.cast <| by omega))
-
     have one_eq' := calc 1
       _ = _ := one_eq'.symm
       _ = ∑ k : Option (Fin (n - 1)),
@@ -502,7 +491,7 @@ def algebraMapEndIdealMop (I : Ideal B) : K →+* (Module.End B I)ᵐᵒᵖ wher
     map_smul' := fun k' x => by ext; simp
   }
   map_one' := unop_injective <| by ext; simp
-  map_mul' _ _ := unop_injective <| by ext; simp [MulAction.mul_smul]
+  map_mul' _ _ := unop_injective <| by ext; simp [SemigroupAction.mul_smul]
   map_zero' := unop_injective <| by ext; simp
   map_add' _ _ := unop_injective <| by ext; simp [add_smul]
 
@@ -526,7 +515,6 @@ lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [
     Nonempty (A ≃ₐ[R] (M[Fin n, S])) := by
   classical
   obtain ⟨n, hn, I, inst_I, ⟨e⟩⟩ := Wedderburn_Artin_ideal_version A
-
   let endEquiv : Module.End A A ≃+* Module.End A (Fin n → I) :=
   { toFun := fun f ↦ e.symm ∘ₗ f ∘ₗ e
     invFun := fun f ↦ e ∘ₗ f ∘ₗ e.symm
@@ -534,7 +522,6 @@ lemma Wedderburn_Artin_algebra_version' (R : Type u) (A : Type v) [CommRing R] [
     right_inv := by intro f; ext; simp
     map_add' := by intros f g; ext; simp
     map_mul' := by intros f g; ext; simp }
-
   refine ⟨n, hn, (Module.End A I)ᵐᵒᵖ, inferInstance, inferInstance, ⟨AlgEquiv.ofRingEquiv
     (f := equivEndMop A |>.trans <| endEquiv.op.trans <| (endPowEquivMatrix A I n).op.trans
     (matrixEquivMatrixMop n (Module.End A I)).symm) ?_⟩⟩

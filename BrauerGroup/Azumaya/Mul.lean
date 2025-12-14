@@ -178,7 +178,8 @@ lemma comm_square4 :
   simp only [LinearMap.comp_apply]
   apply tensor_inclusion2_inj
   rw [← comm_square2_apply, LinearEquiv.coe_toLinearMap, comm_square3_apply]
-  simp [LinearMap.comp_assoc]
+  simp only [LinearMap.coe_mk, AddHom.coe_mk, LinearEquiv.coe_coe, LinearEquiv.apply_symm_apply,
+    LinearMap.comp_assoc, LinearMap.id_coe, id_eq]
   apply LinearMap.ext
   simp [projection2_inclusion2_apply]
 
@@ -373,14 +374,14 @@ End R A   ------------> End R B
 -/
 lemma small_comm_square (e : A ≃ₐ[R] B) :
     (AlgHom.mulLeftRight R B).comp (Algebra.TensorProduct.congr e e.op).toAlgHom =
-      (e.toLinearEquiv.algConj R).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
+      (e.toLinearEquiv.conjAlgEquiv R).toAlgHom.comp (AlgHom.mulLeftRight R A) := by
   apply AlgHom.ext
   intro a
   induction a using TensorProduct.induction_on with
   | zero => simp
   | tmul a a' =>
     ext
-    simp [AlgHom.mulLeftRight_apply, LinearEquiv.algConj]
+    simp [AlgHom.mulLeftRight_apply, LinearEquiv.conjAlgEquiv]
   | add _ _ _ _ => simp_all [map_add]
 
 lemma _root_.IsAzumaya.ofAlgEquiv (e : A ≃ₐ[R] B) (hA : IsAzumaya R A) : IsAzumaya R B :=
@@ -407,7 +408,8 @@ abbrev projection' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M
 lemma projection'_inclusion' (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
     [Module.Projective R M] : projection' R M ∘ₗ inclusion' R M = LinearMap.id := by
   ext f : 1
-  simp [LinearMap.comp_assoc, fg]
+  simp only [LinearMap.coe_comp, LinearMap.coe_mk, AddHom.coe_mk, comp_apply, LinearMap.comp_assoc,
+    fg, LinearMap.comp_id, LinearMap.id_coe, id_eq]
   rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp]
 
 lemma projection'_surj (M : Type v) [AddCommGroup M] [Module R M] [Module.Finite R M]
@@ -461,7 +463,10 @@ abbrev tensor_projection1' :
 
 lemma tensor_projection_inclusion1' : tensor_projection1' R M ∘ₗ tensor_inclusion1' R M = .id := by
   ext f g
-  simp [LinearMap.comp_assoc, fg]
+  simp only [TensorProduct.AlgebraTensorModule.curry_apply, LinearMap.restrictScalars_self,
+    TensorProduct.curry_apply, LinearMap.coe_comp, comp_apply, TensorProduct.map_tmul,
+    LinearMap.coe_mk, AddHom.coe_mk, LinearEquiv.coe_coe, coe_opLinearEquiv, coe_opLinearEquiv_symm,
+    LinearMap.comp_assoc, fg, LinearMap.comp_id, unop_op, LinearMap.id_coe, id_eq]
   rw [← LinearMap.comp_assoc, fg, LinearMap.id_comp, ← LinearMap.comp_assoc,
     fg, LinearMap.id_comp, op_unop]
 

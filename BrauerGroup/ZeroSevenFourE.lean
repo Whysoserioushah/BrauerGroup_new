@@ -77,7 +77,6 @@ lemma directSum_simple_module_over_simple_ring
   let iso₄₄ : e.inverse.obj (ModuleCat.of D (⨁ i : b, D)) ≅
     e.inverse.obj (ModuleCat.of D (b →₀ D)) :=
     e.inverse.mapIso (LinearEquiv.toModuleIso (finsuppLequivDFinsupp _).symm)
-
   let iso₄ :
       ModuleCat.of A (b →₀ e.inverse.obj (ModuleCat.of D D)) ≅
       e.inverse.obj (ModuleCat.of D (b →₀ D)) :=
@@ -98,13 +97,10 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     [Module k M] [Module k N]
     [IsScalarTower k A M] [IsScalarTower k A N]
     [Module.Finite A M] [Module.Finite A N] :
-
     Nonempty (M ≃ₗ[A] N) ↔
     Module.finrank k M = Module.finrank k N := by
-
   haveI : FiniteDimensional k M := Module.Finite.trans A M
   haveI : FiniteDimensional k N := Module.Finite.trans A N
-
   fconstructor
   · rintro ⟨iso⟩
     refine LinearEquiv.finrank_eq { iso with map_smul' := ?_ }
@@ -156,7 +152,6 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
         change iso (algebraMap k A a • _) = algebraMap k A a • _
         rw [map_smul] }
     have eq := LinearEquiv.finrank_eq ISO
-
     let ISO' : N ≃ₗ[k] ι' →₀ S :=
     { iso' with
       map_smul' := by
@@ -169,7 +164,6 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
     have eq' := LinearEquiv.finrank_eq ISO'
     have EQ : Module.finrank k (ι →₀ S) = Module.finrank k (ι' →₀ S) := by
       rw [← eq, h, eq']
-
     haveI : Module.Finite k (ι →₀ S) := Module.Finite.equiv ISO
     haveI : Module.Finite k (ι' →₀ S) := Module.Finite.equiv ISO'
     haveI : Module.Finite k S := by
@@ -185,7 +179,6 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
         (by rw [Cardinal.mk_ne_zero_iff]; infer_instance)
       rw [mul_comm] at ineq2
       exact lt_of_le_of_lt ineq2 ineq
-
     haveI : Fintype ι := by
       refine (@Cardinal.lt_aleph0_iff_fintype ι).1 ?_ |>.some
       apply_fun ((↑) : ℕ → Cardinal) at eq
@@ -200,7 +193,6 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           apply rank_pos)
       rw [mul_comm] at ineq2
       exact lt_of_le_of_lt ineq2 ineq
-
     haveI : Fintype ι' := by
       refine (@Cardinal.lt_aleph0_iff_fintype ι').1 ?_ |>.some
       apply_fun ((↑) : ℕ → Cardinal) at eq'
@@ -216,7 +208,6 @@ lemma linearEquiv_iff_finrank_eq_over_simple_ring
           apply rank_pos)
       rw [mul_comm] at ineq2
       exact lt_of_le_of_lt ineq2 ineq
-
     rw [Module.finrank_finsupp,  Module.finrank_finsupp] at EQ
     simp only [mul_eq_mul_right_iff] at EQ
     replace EQ := EQ.resolve_right
@@ -239,18 +230,12 @@ lemma simple_mod_of_wedderburn {n : ℕ} (hn : n ≠ 0)
   have : NeZero n := ⟨hn⟩
   let e : ModuleCat.{v} A ≌ ModuleCat (Matrix (Fin n) (Fin n) D) :=
     ModuleCat.restrictScalarsEquivalenceOfRingEquiv wdb.toRingEquiv.symm
-
   have inst1 : IsSimpleModule (Matrix (Fin n) (Fin n) D) (Fin n → D) := by
     haveI : IsSimpleModule D (ModuleCat.of D D) := inferInstanceAs <| IsSimpleModule D D
     exact IsMoritaEquivalent.division_ring.IsSimpleModule.functor D (Matrix (Fin n) (Fin n) D)
       (moritaEquivalentToMatrix D (Fin n)) (ModuleCat.of D D)
-
-  -- have : IsSimpleModule (Matrix (Fin n) (Fin n) D)
-  --   (ModuleCat.of (Matrix (Fin n) (Fin n) D) <| Fin n → D) := inst1
-
   have := IsMoritaEquivalent.division_ring.IsSimpleModule.functor (Matrix (Fin n) (Fin n) D) A
     e.symm (ModuleCat.of (Matrix (Fin n) (Fin n) D) (Fin n → D))
-
   exact this
 
 noncomputable section wedderburn
@@ -310,7 +295,6 @@ def end_simple_mod_of_wedderburn (n : ℕ) (hn : n ≠ 0) (D : Type v) [Division
           simp only [matrix_smul_vec_apply, Pi.smul_apply, smul_eq_mul, Algebra.mul_smul_comm,
             Finset.smul_sum] }
     Module.End A (Fin n → D) ≃ₐ[k] Dᵐᵒᵖ := by
-
   let _ : Module A (Fin n → D) := Module.compHom _ wdb.toRingEquiv.toRingHom
   have : IsScalarTower k (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
   { smul_assoc a b x := by
@@ -329,15 +313,12 @@ def end_simple_mod_of_wedderburn (n : ℕ) (hn : n ≠ 0) (D : Type v) [Division
         ext i
         simp only [matrix_smul_vec_apply, Pi.smul_apply, smul_eq_mul, Algebra.mul_smul_comm,
           Finset.smul_sum] }
-
   simp only [AlgEquiv.toRingEquiv_eq_coe, RingEquiv.toRingHom_eq_coe,
     AlgEquiv.toRingEquiv_toRingHom]
   have : NeZero n := ⟨hn⟩
   let E := moritaEquivalentToMatrix D (Fin n)
-
   haveI :  E.functor.Additive := {}
   haveI :  E.inverse.Additive := CategoryTheory.Equivalence.inverse_additive E
-
   let e₁ : Module.End A (Fin n → D) ≃ₐ[k] Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D) :=
     endCatEquiv k A n D wdb fun _ _ => rfl
   let e₂ : Module.End (Matrix (Fin n) (Fin n) D) (Fin n → D) ≃ₐ[k] Module.End D D :=
@@ -548,9 +529,8 @@ instance end_simple_mod_finite
     rw [← eq1, mul_comm] at inst1
     exact lt_of_le_of_lt (Cardinal.le_mul_left (a := Module.rank k D) (b := n * n) (by
       simpa only [ne_eq, mul_eq_zero, Nat.cast_eq_zero, or_self] using NeZero.ne n)) inst1
-
   have : FiniteDimensional k Dᵐᵒᵖ := E.symm.finiteDimensional
-  refine iso.symm.toLinearEquiv.finiteDimensional
+  exact iso.symm.toLinearEquiv.finiteDimensional
 
 -- instance (D : Type v) [DivisionRing D] : Module.Finite Dᵐᵒᵖ D := by
 --   rw [Module.finite_def]
@@ -636,7 +616,6 @@ lemma exists_gen (M : Type v) [AddCommGroup M]
     [Module A M] [IsSimpleModule A M] :
     ∃ m : M, m ≠ 0 ∧ ∀ m', ∃ a : A, m' = a • m := by
     have i : Submodule.IsPrincipal (⊤ : Submodule A M) := inferInstance
-
     refine ⟨i.1.choose, ?_, fun m ↦ by
       classical
       have : m ∈ Submodule.span A {i.1.choose} := by
@@ -720,9 +699,7 @@ lemma IsBalanced.congr_aux (M N : Type v) [AddCommGroup M] [AddCommGroup N] [Mod
   simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply]
   have := congr($hb <| l.symm n)
   simp only [toEndEnd_apply, DistribMulAction.toLinearMap_apply] at this
-
   apply_fun l at this
-  -- simp [this]
   aesop
 
 omit [IsSimpleRing A] in
@@ -844,7 +821,6 @@ lemma Wedderburn_Artin_uniqueness₁
     rw [← eq1, mul_comm] at inst1
     exact lt_of_le_of_lt (Cardinal.le_mul_left (a := Module.rank k D) (b := n * n) (by
       simpa only [ne_eq, mul_eq_zero, Nat.cast_eq_zero, or_self] using NeZero.ne n)) inst1
-
   have eq1 := Module.finrank_matrix k D (Fin n) (Fin n)
   have eq2 := Module.finrank_matrix k D (Fin n') (Fin n')
   simp only [Fintype.card_fin] at eq1 eq2
