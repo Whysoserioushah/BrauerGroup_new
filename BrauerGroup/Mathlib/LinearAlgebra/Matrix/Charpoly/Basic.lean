@@ -17,8 +17,8 @@ def thing' {α β : Type*} (b : β) : {i : α × β // i.2 = b} ≃ α :=
   Equiv.prodSubtypeSndEquivProdSubtype.trans (Equiv.prodUnique α {i : β // i = b})
 
 open Matrix in
-theorem Matrix.blockDiagonal_toSquareBlock {r} {n : Type*} [DecidableEq n] [Fintype n]
-    (A : Fin r → Matrix n n F) {i} :
+theorem Matrix.blockDiagonal_toSquareBlock {r} {n : Type*} [Fintype n] (A : Fin r → Matrix n n F)
+    {i} :
     (blockDiagonal A).toSquareBlock Prod.snd i = (A i).reindex (thing' _).symm (thing' _).symm := by
   aesop (add simp toSquareBlock_def)
 

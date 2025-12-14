@@ -45,12 +45,10 @@ theorem dim_max_subfield (k : SubField K D) (hk : IsMax k) :
           rw [mul_assoc, h2, ← mul_assoc, h1, mul_assoc]
         · intro _ _ _ _ _ _ h1 h2
           rw [← mul_assoc, h1, mul_assoc, h2, mul_assoc] }
-
     have : IsField (Algebra.adjoin K (insert a k) : Subalgebra K D) := by
       rw [ ← Algebra.IsIntegral.isField_iff_isField (R := K)]
       · exact Semifield.toIsField K
       · exact FaithfulSMul.algebraMap_injective K _
-
     let L : SubField K D := {
       __ := Algebra.adjoin K (insert a k.1)
       mul_comm x hx y hy := by
@@ -162,7 +160,7 @@ lemma IsMaxSubfield.ofAlgEquiv (L1 L2 : SubField K D) (e : L1 ≃ₐ[K] L2)
     (hL1 : IsMax L1) : IsMax L2 := by
   have hL11 := dim_max_subfield K D L1 hL1
   have dim_eq := e.toLinearEquiv.finrank_eq
-  simp [dim_eq] at hL11
+  rw [dim_eq] at hL11
   exact maxsubfield_of_div_iff K D L2|>.1 <| cor_two_2to3 K D L2 hL11
 
 end cors_of_DC

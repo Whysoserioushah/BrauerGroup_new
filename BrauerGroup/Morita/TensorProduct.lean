@@ -28,7 +28,9 @@ noncomputable abbrev aux0 (N : ModuleCat A) : Module.End A N →ₐ[R] Module.En
   map_add' f1 f2 := by simp [show ModuleCat.ofHom (f1 + f2) = ModuleCat.ofHom f1 +
     ModuleCat.ofHom f2 from rfl]
   commutes' r := by
-    ext n; simp [Algebra.algebraMap_eq_smul_one]
+    ext n
+    simp only [ModuleCat.of_coe, Algebra.algebraMap_eq_smul_one, LinearMap.smul_apply,
+      Module.End.one_apply]
     rw [show ModuleCat.ofHom (r • 1) = r • ModuleCat.ofHom 1 by ext; simp,
       e1.map_smul, Module.End.one_eq_id, ModuleCat.ofHom_id, e1.map_id, ModuleCat.hom_smul]
     rfl
@@ -61,8 +63,8 @@ abbrev moduleMap : B ⊗[R] C →ₐ[R]
     ((aux0 R A B e1 _).comp (moduleMapAux R A C _))) fun b c ↦ by ext; simp
 
 instance modulefromtensor (M : ModuleCat (A ⊗[R] C)) :
-  Module (B ⊗[R] C) (e1.obj ((ModuleCat.restrictScalars
-    (Algebra.TensorProduct.includeLeftRingHom)).obj M)) :=
+    Module (B ⊗[R] C) (e1.obj ((ModuleCat.restrictScalars
+      (Algebra.TensorProduct.includeLeftRingHom)).obj M)) :=
   Module.compHom _ (moduleMap R A B C e1 M).toRingHom
 
 -- set_option maxHeartbeats 800000 in
@@ -312,7 +314,7 @@ instance : (equivModuleOverTensor R A C).functor.Additive where
 
 instance : (equivModuleOverTensor R A C).functor.Linear R where
   map_smul {M N} f r := by
-    ext m; simp
+    ext m
     change (r • f.hom).hom m = _
     change (r • f.hom.hom) m = _
     rw [LinearMap.smul_apply]
@@ -355,9 +357,7 @@ instance (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linea
 
 instance (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     (MoritaTensorAux0 R A B C e).functor.Linear R where
-  map_smul {M N} f r := by
-    ext1; simp
-    exact e.functor.map_smul _ _
+  map_smul {M N} f r := by ext1; exact e.functor.map_smul _ _
 
 abbrev MoritaTensorAux1 (e : ModuleCat A ≌ ModuleCat B) [e.functor.Additive] [e.functor.Linear R] :
     ModuleCat (A ⊗[R] C) ≌ ModuleCat (B ⊗[R] C) :=
@@ -377,7 +377,9 @@ instance MoritaTensorAux1_linear (e : ModuleCat A ≌ ModuleCat B) [e.functor.Ad
     [e.functor.Linear R] : (MoritaTensorAux1 R A B C e).functor.Linear R where
   map_smul {M N} f r := by
     ext m
-    simp
+    simp only [Equivalence.trans_functor, Equivalence.symm_functor, Functor.comp_obj,
+      Functor.comp_map, Functor.map_smul, ModuleCat.hom_smul, ModuleCat.hom_ofHom, LinearMap.coe_mk,
+      LinearMap.coe_toAddHom, LinearMap.smul_apply]
     congr 1
     simp only [LinearMap.coe_coe, AlgHom.coe_comp, AlgHom.coe_mk, ModuleCat.of_coe, RingHom.coe_mk,
       MonoidHom.coe_mk, OneHom.coe_mk, Function.comp_apply, ← Algebra.TensorProduct.one_def,

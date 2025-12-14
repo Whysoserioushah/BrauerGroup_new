@@ -24,7 +24,7 @@ abbrev Endmop (A : Type*) [Ring A] [Algebra R A] : Module.End R A →ₐ[R] Modu
 
 abbrev EndmopEquiv (A : Type*) [Ring A] [Algebra R A] : Module.End R A ≃ₐ[R] Module.End R Aᵐᵒᵖ :=
   AlgEquiv.ofBijective (Endmop R A) ⟨
-  fun f1 f2 h ↦ by simp at h; exact h, fun f ↦ ⟨(opLinearEquiv R).symm.toLinearMap ∘ₗ f ∘ₗ
+  fun f1 f2 h ↦ by simpa using h, fun f ↦ ⟨(opLinearEquiv R).symm.toLinearMap ∘ₗ f ∘ₗ
     (opLinearEquiv R).toLinearMap, rfl⟩⟩
 
 

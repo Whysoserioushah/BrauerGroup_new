@@ -22,7 +22,7 @@ instance (M : Type*) [AddCommGroup M] [Module R M] : Module M[ι, R] (ι → M) 
   smul N v i := ∑ j : ι, N i j • v j
   one_smul v := funext fun i ↦ show ∑ _, _ = _ by simp [one_apply]
   mul_smul N₁ N₂ v := funext fun i ↦ show ∑ _, _ = ∑ _, _ • (∑ _, _) by
-    simp_rw [mul_apply, Finset.smul_sum, Finset.sum_smul, MulAction.mul_smul]
+    simp_rw [mul_apply, Finset.smul_sum, Finset.sum_smul, SemigroupAction.mul_smul]
     rw [Finset.sum_comm]
   smul_zero v := funext fun i ↦ show ∑ _, _ = _ by simp
   smul_add N v₁ v₂ := funext fun i ↦ show ∑ j : ι, N i j • (v₁ + v₂) j = (∑ _, _) + (∑ _, _) by
@@ -80,7 +80,7 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
     obtain ⟨y, hy⟩ := x.2
     refine ⟨(single default default a : M[ι, R]) • y, hy ▸ ?_⟩
     simp only
-    rw [← MulAction.mul_smul, ← MulAction.mul_smul]
+    rw [← SemigroupAction.mul_smul, ← SemigroupAction.mul_smul]
     congr 1
     ext i j
     simp
@@ -88,7 +88,7 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
     rintro ⟨_, x, rfl⟩
     ext
     change single _ _ _ • _ = single _ _ _ • _
-    rw [← MulAction.mul_smul]
+    rw [← SemigroupAction.mul_smul]
     congr 1
     ext i j
     simp
@@ -97,7 +97,7 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
     ext
     change single _ _ _ • _ = single _ _ _ • (single _ _ _ • _)
     dsimp only [id_eq, eq_mpr_eq_cast, cast_eq]
-    rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← MulAction.mul_smul]
+    rw [← SemigroupAction.mul_smul, ← SemigroupAction.mul_smul, ← SemigroupAction.mul_smul]
     congr 1
     ext i j
     simp
@@ -110,14 +110,15 @@ instance fromModuleCatOverMatrix.module_α (M : Type*) [AddCommGroup M] [Module 
     ext
     change single _ _ _ • _ = single _ _ _ • _ + single _ _ _ • _
     dsimp only [AddSubgroup.coe_add]
-    rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← smul_add, ← smul_add, ← MulAction.mul_smul]
+    rw [← SemigroupAction.mul_smul, ← SemigroupAction.mul_smul, ← smul_add, ← smul_add,
+      ← SemigroupAction.mul_smul]
   add_smul := by
     rintro a b ⟨_, x, rfl⟩
     ext
     change single _ _ _ • _ = single _ _ _ • _ + single _ _ _ • _
     dsimp only
-    rw [← MulAction.mul_smul, ← MulAction.mul_smul, ← MulAction.mul_smul, ← add_smul,
-      ← add_mul, ← single_add]
+    rw [← SemigroupAction.mul_smul, ← SemigroupAction.mul_smul, ← SemigroupAction.mul_smul,
+      ← add_smul, ← add_mul, ← single_add]
   zero_smul := by
     rintro ⟨_, x, rfl⟩
     ext
@@ -168,7 +169,7 @@ def matrix.unitIsoHom :
         rintro r ⟨_, x, rfl⟩
         simp only [toModuleCatOverMatrix_obj_carrier, RingHom.id_apply, Finset.smul_sum]
         refine Finset.sum_congr rfl fun i _ => ?_
-        rw [fromModuleCatOverMatrix.smul_α_coe, Subtype.coe_mk, ← MulAction.mul_smul]
+        rw [fromModuleCatOverMatrix.smul_α_coe, Subtype.coe_mk, ← SemigroupAction.mul_smul]
         change ∑ _, _ = r • ∑ _, _
         simp only [single_mul_single_same, mul_one]
         simp only [single, of_apply, ite_smul, zero_smul, one_smul, Finset.smul_sum,
@@ -241,7 +242,6 @@ def matrix.unitIsoInv :
       ← ModuleCat.ofHom_comp, toModuleCatOverMatrix_map, ModuleCat.hom_ofHom]
     change Function.update (0 : ι → Y) default (f x) i =
       f (Function.update (0 : ι → X) default x i)
-
     simp only [Function.update, eq_rec_constant, Pi.zero_apply, dite_eq_ite]
     split_ifs with h
     · rfl
@@ -301,7 +301,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
   LinearEquiv.toModuleIso <| .ofBijective
     ({toFun m i := by
         refine ⟨(single default i 1 : M[ι, R]) • m, (single default i 1 : M[ι, R]) • m, ?_⟩
-        simp only [← MulAction.mul_smul, single_mul_single_same, mul_one]
+        simp only [← SemigroupAction.mul_smul, single_mul_single_same, mul_one]
       map_add' x y := funext fun i ↦ Subtype.ext <|
         show (single default i 1 : M[ι, R]) • (x + y) =
           (single default i 1 : M[ι, R]) • x +
@@ -310,8 +310,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         simp only [RingHom.id_apply]
         change _ = Subtype.val (∑ _, _)
         simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe]
-
-        simp_rw [← MulAction.mul_smul, single_mul_single_same, mul_one, ← Finset.sum_smul]
+        simp_rw [← SemigroupAction.mul_smul, single_mul_single_same, mul_one, ← Finset.sum_smul]
         congr 2
         conv_lhs => rw [Matrix.matrix_eq_sum_single x]
         rw [Finset.mul_sum]
@@ -319,7 +318,6 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         rw [Finset.sum_eq_single_of_mem (a := i)]
         pick_goal 2
         · exact Finset.mem_univ i
-
         pick_goal 2
         · intro j _ hj
           apply Finset.sum_eq_zero
@@ -345,7 +343,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
       refine Submodule.sum_mem _ fun i _ => ?_
       rw [show (single i i 1 : M[ι, R]) =
         single i default 1 * single default i 1
-        by rw [single_mul_single_same, one_mul], MulAction.mul_smul]
+        by rw [single_mul_single_same, one_mul], SemigroupAction.mul_smul]
       refine Submodule.smul_mem _ _ ?_
       rw [show _ • x = 0 from Subtype.ext_iff.1 <| congr_fun hx i]
       rfl, fun v ↦ by
@@ -361,7 +359,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
       · subst hij
         change Subtype.val (∑ _, _) = _
         simp only [AddSubmonoidClass.coe_finset_sum, smul_α_coe, Function.update_self]
-        simp_rw [← MulAction.mul_smul, single_mul_single_same, mul_one]
+        simp_rw [← SemigroupAction.mul_smul, single_mul_single_same, mul_one]
         rw [Finset.sum_eq_single_of_mem (a := default), single_apply_same]
         pick_goal 2
         · exact Finset.mem_univ _
@@ -372,7 +370,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
           rfl
         obtain ⟨y, hy⟩ := (v i).2
         rw [← hy]
-        simp only [← MulAction.mul_smul, single_mul_single_same, mul_one]
+        simp only [← SemigroupAction.mul_smul, single_mul_single_same, mul_one]
       · rw [Function.update_of_ne]
         pick_goal 2
         · exact Ne.symm hij
@@ -456,7 +454,8 @@ noncomputable def moritaEquivalentToMatrix : ModuleCat R ≌ ModuleCat M[ι, R] 
     simp only [Subtype.mk.injEq]
     change _ = fun k ↦ ∑ j, _
     ext k
-    simp [Function.update_apply, single]
+    simp only [Function.update_apply, Pi.zero_apply, single, of_apply, ite_smul, one_smul,
+      zero_smul]
     split_ifs with h
     · subst h; simp
     · exact Eq.symm <| Finset.sum_eq_zero fun l _ ↦ by simp; tauto
@@ -503,7 +502,6 @@ lemma division_ring_exists_unique_isSimpleModule
       subst hr'
       simp only [zero_smul] at hr
       exact b.ne_zero _ hr.symm |>.elim
-
     subst eq
     refine ⟨b.repr ≪≫ₗ LinearEquiv.ofBijective ⟨⟨fun x => x ⟨i, by simp⟩, ?_⟩, ?_⟩ ⟨?_, ?_⟩⟩
     · intro x y; simp

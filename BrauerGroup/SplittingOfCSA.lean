@@ -86,12 +86,10 @@ theorem centralSimple_over_extension_iff_nontrivial
               Module.finrank k K *
               Module.finrank K (Subalgebra.center K (K ⊗[k] A)) := by
       rw [Module.finrank_mul_finrank]
-
     have eq4 : Module.finrank K (Subalgebra.center K (K ⊗[k] A)) = 1 := by
       rw [← Subalgebra.finrank_bot (F := K) (E := K ⊗[k] A)]
       have := hAt.center_eq_bot
       rw [this.symm]
-
     rw [eq4, mul_one] at eq3
     rw [eq3] at eq2
     have ineq0 : 0 < Module.finrank k K := Module.finrank_pos

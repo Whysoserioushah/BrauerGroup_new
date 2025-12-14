@@ -85,7 +85,6 @@ lemma centralizer_range_includeLeft_eq_center_tensorProduct [Module.Free R B] :
       sum_of_support_subset (s := b.support) (hs := support_mapRange) (h := by aesop)]
     simpa only [Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul, LinearMap.flip_apply,
       TensorProduct.mk_apply, Finsupp.mapRange_apply] using hw
-
   · rintro ⟨w, rfl⟩
     rw [Subalgebra.mem_centralizer_iff]
     rintro _ ⟨x, rfl⟩

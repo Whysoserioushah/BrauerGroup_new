@@ -290,7 +290,6 @@ theorem SkolemNoether (K A B M : Type u)
         simp only [smul1, smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe,
           AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk,
           TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_one, one_smul] }
-
   let a := ISO.symm Φ
   let b := ISO.symm Ψ
   refine ⟨⟨a, b, (by
@@ -339,5 +338,4 @@ theorem SkolemNoether' (K A B : Type u)
       AlgEquiv.toRingEquiv_toRingHom, RingHom.toMonoidHom_eq_coe, OneHom.toFun_eq_coe,
       MonoidHom.toOneHom_coe, MonoidHom.coe_coe, RingHom.coe_coe, ZeroHom.coe_mk, map_smul,
       Matrix.smul_apply, smul_eq_mul, Algebra.smul_mul_assoc, Finset.smul_sum]
-
   exact SkolemNoether K A B (Fin n → S) f g
