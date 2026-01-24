@@ -63,7 +63,6 @@ lemma mem_span_iff_exists_fin (s : Set R) (x : R) :
     simp only [span']
     generalize_proofs h1 h2 h3 h4 h5
     simp_all only [mem_mk', Set.mem_setOf_eq]
-
   rw [span, RingCon.ringConGen_eq]
   apply ringCon_injective
   refine sInf_eq_of_forall_ge_of_forall_gt_exists_lt ?_ ?_

@@ -8,7 +8,6 @@ lemma Submodule.mem_span_image_finset_iff_exists_fun {s : Finset α} :
     x ∈ span R (v '' s) ↔ ∃ c : α → R, ∑ i ∈ s, c i • v i = x := by
   refine ⟨?_, ?_⟩
   · intro hx
-    simp at hx
     refine Submodule.span_induction (hx := hx) ?_ ?_ ?_ ?_
     · rintro c ⟨c', hc1, hc2⟩
       classical

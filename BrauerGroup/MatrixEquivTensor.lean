@@ -32,7 +32,7 @@ abbrev toTensorMatrix_toFun_Klinear : K ⊗[F] Matrix n n A →ₗ[K] Matrix n n
    map_smul' k tensor := by
     induction tensor with
     | zero => simp
-    | tmul k0 M => simp [TensorProduct.smul_tmul', MulAction.mul_smul]
+    | tmul k0 M => simp [TensorProduct.smul_tmul', SemigroupAction.mul_smul]
     | add _ _ h1 h2 => simp_all}
 
 abbrev toTensorMatrix : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) :=
@@ -44,8 +44,10 @@ abbrev toTensorMatrix : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) 
     induction t2 with
     | zero => simp
     | tmul x0 y0 =>
-        simp [mul_comm x x0, MulAction.mul_smul]
-        erw [Matrix.map_mul]; rfl
+        simp only [Algebra.TensorProduct.tmul_mul_tmul, mul_comm x x0, LinearMap.coe_mk,
+          TensorProduct.lift.tmul', toTensorMartrix_toFun_bilinear_apply, AlgHom.mapMatrix_apply,
+          SemigroupAction.mul_smul, Algebra.mul_smul_comm, Algebra.smul_mul_assoc]
+        rw [Matrix.map_mul]
     | add _ _ h1 h2 => simp_all [mul_add]
   | add _ _ h1 h2 => simp_all [add_mul]
 

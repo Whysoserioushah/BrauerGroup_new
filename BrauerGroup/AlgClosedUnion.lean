@@ -212,7 +212,6 @@ theorem e_hat_linear_independent : LinearIndependent ℒ e^' := by
     apply_fun Submodule.subtype _ at h
     simpa only [IntermediateField.algebraMap_apply, map_sum, map_smul, Submodule.coe_subtype,
       map_zero] using h
-
   have H := (linearIndependent_iff'.1 <| e |>.linearIndependent) s (algebraMap ℒ k⁻ ∘ g) h'
   intro i hi
   simpa using H i hi

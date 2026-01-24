@@ -22,13 +22,18 @@ import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
 import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Lattice
 import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
 import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
+import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
+import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Determinant.Basic
+import BrauerGroup.Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Basic
 import BrauerGroup.Mathlib.LinearAlgebra.Span.Basic
 import BrauerGroup.Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 import BrauerGroup.Mathlib.RingTheory.Congruence.Basic
 import BrauerGroup.Mathlib.RingTheory.Congruence.Defs
+import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 import BrauerGroup.Mathlib.RingTheory.NonUnitalSubring.Defs
 import BrauerGroup.Mathlib.RingTheory.NonUnitalSubsemiring.Basic
 import BrauerGroup.Mathlib.RingTheory.NonUnitalSubsemiring.Defs
+import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Basic
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Kernel
 import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Lattice
@@ -43,6 +48,7 @@ import BrauerGroup.SkolemNoether
 import BrauerGroup.SplittingOfCSA
 import BrauerGroup.Subfield.Defs
 import BrauerGroup.Subfield.FiniteDimensional
+import BrauerGroup.Subfield.Separable
 import BrauerGroup.Subfield.Splitting
 import BrauerGroup.Subfield.Subfield
 import BrauerGroup.ToSecond

@@ -29,7 +29,6 @@ def orderIsoOfRingEquiv {F : Type*} [EquivLike F R S] [RingEquivClass F R S] (f 
     rw [le_iff, le_iff]
     constructor
     · rintro h x hx
-
       specialize @h (RingEquivClass.toRingEquiv f x) (by simpa [TwoSidedIdeal.mem_comap])
       simpa [TwoSidedIdeal.mem_comap] using h
     · intro h x hx

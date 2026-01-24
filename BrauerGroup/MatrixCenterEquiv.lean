@@ -45,7 +45,6 @@ def Matrix.centerEquivBase (n : ℕ) (hn : 0 < n) (R : Type*) [Ring R] :
     simp only [smul_eq_mul, mul_one]
   right_inv := by
     intro ⟨r, hr⟩; simp only [smul_apply, one_apply_eq, Subtype.mk.injEq]
-
     change r • (1 : R) = _
     simp only [smul_eq_mul, mul_one]
   map_mul' := by

@@ -9,8 +9,8 @@ open Module TensorProduct
 section Field
 variable (K : Type u) [Field K]
 
-lemma TensorProduct.flip_mk_injective {R M N : Type*} [CommRing R] [AddCommGroup M] [AddCommGroup N]
-    [Module R M] [Module R N] [NoZeroSMulDivisors R N] [Module.Flat R M] (a : N) (ha : a ≠ 0) :
+lemma TensorProduct.flip_mk_injective {R M N : Type*} [CommRing R] [IsDomain R] [AddCommGroup M]
+    [AddCommGroup N] [Module R M] [Module R N] [IsTorsionFree R N] [Flat R M] (a : N) (ha : a ≠ 0) :
     Function.Injective ((TensorProduct.mk R M N).flip a) := by
   intro x y e
   -- simp only [LinearMap.flip_apply, mk_apply] at e
@@ -53,12 +53,7 @@ lemma IsCentral.left_of_tensor (B C : Type*)
       map_zero' := by ext; simp
       map_add' := fun _ _ ↦ by ext; simp [add_tmul]
       commutes' := fun _ ↦ rfl}
-  have f_surj : Function.Surjective f := fun ⟨bc, ⟨⟨b, hb⟩, h⟩⟩ ↦ ⟨⟨b, hb⟩, by
-    simp [f]
-    change _ ⊗ₜ _ = _ at h
-    simp only [RingHom.coe_coe, Subalgebra.coe_val] at h⊢
-    exact h⟩
-
+  have f_surj : Function.Surjective f := fun ⟨bc, ⟨b, hb⟩, h⟩ ↦ ⟨⟨b, hb⟩, by simpa [f] using h⟩
   have e : ((Algebra.TensorProduct.includeLeft (R := K) (B := C)).comp
     (Subalgebra.center K B).val).range ≃ₐ[K] (Subalgebra.center K B) :=
     (AlgEquiv.ofBijective f
@@ -178,7 +173,7 @@ abbrev matrixAlgEquivMatrixMop (n : ℕ) :
   (AlgEquiv.toOpposite R R).mapMatrix.trans <| AlgEquiv.ofRingEquiv
   (f := matrixEquivMatrixMop n R) <|
   fun r ↦ by
-    simp [matrixEquivMatrixMop_apply]
+    simp only [matrixEquivMatrixMop_apply, MulOpposite.algebraMap_apply, op_inj]
     ext i j
     simp [Matrix.algebraMap_matrix_apply]
     split_ifs with h1 h2 h3 <;> tauto
@@ -218,7 +213,7 @@ abbrev Mat.inv (n : ℕ) : Module.End R (Matrix (Fin n) (Fin n) R) →ₗ[R]
   map_add' := fun f1 f2 ↦ by
     simp [add_smul, Finset.sum_add_distrib]
   map_smul' := fun r f ↦ by
-    simp [MulAction.mul_smul, Finset.smul_sum]
+    simp [SemigroupAction.mul_smul, Finset.smul_sum]
 
 lemma single.eq (n : ℕ) (i j : Fin n) :
     single i j (1 : R) = of (fun i' j' ↦ if i = i' ∧ j = j' then 1 else 0) := rfl
@@ -235,7 +230,10 @@ lemma Mat.inv_toFun2' (n : ℕ) :
   ext f : 1
   apply Basis.ext (Matrix.stdBasis _ _ _)
   intro ⟨i, j⟩
-  simp [AlgHom.mulLeftRight_apply, stdBasis_eq_single]
+  simp only [LinearMap.coe_comp, AlgHom.coe_toLinearMap, LinearMap.coe_mk, AddHom.coe_mk,
+    Function.comp_apply, map_sum, map_smul, stdBasis_eq_single, LinearMap.coe_sum, Finset.sum_apply,
+    LinearMap.smul_apply, AlgHom.mulLeftRight_apply, unop_op, single_mul_mul_single, one_mul,
+    mul_one, smul_single, smul_eq_mul, LinearMap.id_coe, id_eq]
   ext k l
   simp [sum_apply, single, Fintype.sum_prod_type, ite_and]
 

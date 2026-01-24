@@ -115,9 +115,7 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
   have : FiniteDimensional K (Matrix (Fin m) (Fin m) SB) :=
     .of_injective isoB.symm.toLinearMap isoB.symm.injective
   have : FiniteDimensional K SB := is_fin_dim_of_wdb _ _ hm _ isoB
-
   have eq2 : IsBrauerEquivalent ⟨.of K SA⟩ B := .trans eq1 h
-
   obtain ⟨a, a', ha, ha', ⟨e⟩⟩ := eq2
   haveI : FiniteDimensional K (Matrix (Fin a') (Fin a') B) :=
     LinearEquiv.finiteDimensional (matrixEquivTensor (Fin a') K B).toLinearEquiv.symm

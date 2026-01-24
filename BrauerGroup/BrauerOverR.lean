@@ -56,7 +56,7 @@ instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
   simp only [re_mul, zero_mul, _root_.one_mul, zero_sub, sub_zero, mul_zero, _root_.mul_one,
     imI_mul, zero_add, add_zero, imJ_mul, sub_self, imK_mul, AlgHom.toRingHom_eq_coe,
     RingHom.coe_coe] at *
-  simp [self_eq_neg, neg_eq_self] at *
+  simp only [neg_eq_self, self_eq_neg, Algebra.ofId_apply, algebraMap_def] at *
   change (⟨q.1, 0, 0, 0⟩ : ℍ[ℝ]) = ⟨q.1, q.2,q.3,q.4⟩
   ext <;> simp_all⟩
 
@@ -161,7 +161,7 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
       _ instHAdd (Quotient.mk'' A) (Quotient.mk'' B)=
       (Quotient.mk'' (mul A B) : Additive _) := rfl
     rw [hab']
-    simp
+    simp only [dite_eq_ite, Quotient.lift_mk]
     if hA : IsBrauerEquivalent A one_in' then
       if hB : IsBrauerEquivalent B one_in' then
         simp only [hA, ↓reduceIte, hB, add_zero, ite_eq_left_iff, one_ne_zero, imp_false,
@@ -211,6 +211,7 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
       IsBrauerEquivalent.matrix_eqv' _ _ _ ⟩⟩
     simp [this]
 
+set_option linter.flexible false in
 abbrev C2toBrauerOverR : ZMod 2 →+ Additive (BrauerGroup ℝ) where
   toFun x := if hx : x = 0 then Quotient.mk'' one_in' else Quotient.mk'' ⟨.of ℝ ℍ[ℝ]⟩
   map_zero' := by simp only [↓reduceDIte]; rfl
@@ -230,8 +231,7 @@ lemma toC2.left_inv : Function.LeftInverse C2toBrauerOverR toC2 := fun A ↦ by
     simp only [AddMonoidHom.coe_mk, dite_eq_ite, ZeroHom.coe_mk, Quotient.lift_mk, h1, ↓reduceIte]
     rw [Quotient.sound']; exact h1.symm
   · have : ¬ (IsBrauerEquivalent A one_in') := fun h ↦ QuaternionNotEquivR <| h2.symm.trans h
-    simp [this]
-    exact Quotient.sound' h2.symm
+    simpa [this] using Quotient.sound' h2.symm
 
 lemma toC2.right_inv : Function.RightInverse C2toBrauerOverR toC2 := fun x ↦ by
   fin_cases x
