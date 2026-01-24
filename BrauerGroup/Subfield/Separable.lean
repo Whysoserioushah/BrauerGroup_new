@@ -33,9 +33,10 @@ lemma SubField.adjoin_centralizer_mul_comm (L : SubField K D) (a : D)
     (ha : a ∈ Subalgebra.centralizer K L) : ∀ (x y : D), x ∈ Algebra.adjoin K (L ∪ {a}) →
     y ∈ Algebra.adjoin K (L ∪ {a}) → x * y = y * x :=
   fun x y hx hy ↦ by
-    simp [Algebra.mem_adjoin_iff, Subalgebra.mem_centralizer_iff] at hx hy ha
+    simp only [Set.union_singleton, Algebra.mem_adjoin_iff, Set.union_insert,
+      Subalgebra.mem_centralizer_iff, SetLike.mem_coe] at hx hy ha
     refine Subring.closure_induction₂ (R := D) (fun x1 y1 hx1 hy1 ↦ by
-      simp at hx1 hy1
+      simp only [Set.mem_insert_iff, Set.mem_union, Set.mem_range, SetLike.mem_coe] at hx1 hy1
       obtain hx11 | hx12 | hx13 := hx1
       all_goals obtain hy11 | hy12 | hy13 := hy1
       · simp_all
@@ -96,8 +97,9 @@ def SubField.adjoin (L : SubField K D) (a : D) (ha : a ∈ Subalgebra.centralize
       haveI := (this.3 (Subtype.coe_ne_coe.mp hx0 : (⟨x, hx⟩ : Algebra.adjoin _ _) ≠ 0)).choose_spec
       (Submonoid.mk_eq_one (Algebra.adjoin _ _).toSubring.toSubmonoid).mp this⟩⟩
 
-noncomputable local instance IsLAlg (L : SubField K D) (a : D) (ha : a ∈ Subalgebra.centralizer K L) :
-  Algebra L (SubField.adjoin K D L a ha) := RingHom.toAlgebra' (Subalgebra.inclusion <|
+noncomputable local instance IsLAlg (L : SubField K D) (a : D)
+    (ha : a ∈ Subalgebra.centralizer K L) :
+    Algebra L (SubField.adjoin K D L a ha) := RingHom.toAlgebra' (Subalgebra.inclusion <|
     Set.subset_union_left |>.trans Algebra.subset_adjoin).toRingHom fun ⟨x, hx⟩ ⟨y, hy⟩ ↦
     Subtype.ext_iff|>.2 <| SubField.adjoin_centralizer_mul_comm K D L a ha _ y
       (Subalgebra.inclusion _ (⟨x, hx⟩ : L)).2 hy
@@ -131,7 +133,6 @@ instance : PartialOrder (AllSepSubfield K D) where
   le_trans _ _ _ _ _ _ _ := by aesop
   le_antisymm _ _ _ _ := by aesop
 
-set_option maxHeartbeats 500000 in
 noncomputable abbrev iSup_chain_sepsubfield (c : Set (AllSepSubfield K D)) [Nonempty c]
     (hc1 : IsChain (· ≤ ·) c) : AllSepSubfield K D where
   val := {
@@ -143,7 +144,6 @@ noncomputable abbrev iSup_chain_sepsubfield (c : Set (AllSepSubfield K D)) [None
       dsimp at this
       change x ∈ (_ : Set _) at hx ; change _ ∈ ( _ : Set _) at hy
       erw [this] at hx hy
-
       -- rw [this] at hx hy
       simp only [Set.iUnion_coe_set, Set.mem_iUnion, SetLike.mem_coe, exists_prop] at hx hy
       obtain ⟨L1, hL1, hx⟩ := hx
@@ -168,17 +168,16 @@ noncomputable abbrev iSup_chain_sepsubfield (c : Set (AllSepSubfield K D)) [None
       · exact L1.1.3 hx hx0|>.choose_spec.2
   }
   property := by
-    simp only [Set.coe_setOf, Set.mem_setOf_eq]
-    rw [Algebra.isSeparable_def]
-    simp
+    simp only [Set.coe_setOf, Set.mem_setOf_eq, Algebra.isSeparable_def, Subtype.forall]
     intro a ha
     have := Subalgebra.coe_iSup_of_directed hc1.directed
-    simp at this
+    simp only [Set.coe_setOf, Set.mem_setOf_eq, SubField.coe_toSubalgebra,
+      Set.iUnion_coe_set] at this
     change a ∈ (_ : Set _) at ha
     erw [this] at ha
-    simp at ha
+    simp only [Set.mem_iUnion, SetLike.mem_coe, exists_prop, Subtype.exists, exists_and_right] at ha
     obtain ⟨L, ⟨ha', h⟩, hL2⟩ := ha
-    exact IsSeparable.map (F := K) (L := ((⨆ (L : c), L.1.1.1) : Subalgebra K D)) (x := (⟨a, hL2⟩ : L))
+    exact IsSeparable.map (F := K) (L := (⨆ L : c, L.1.1.1 : Subalgebra K D)) (x := (⟨a, hL2⟩ : L))
       (Subalgebra.inclusion (le_iSup_of_le ⟨⟨L, ha'⟩, h⟩ le_rfl))
       (Subalgebra.inclusion_injective _) <| Algebra.isSeparable_def _ _|>.1 ha' ⟨a, hL2⟩
 
@@ -198,7 +197,6 @@ theorem Set.centralizer.qsmul_mem (K D : Type u) [Field K] [DivisionRing D] [Alg
     q • a ∈ Set.centralizer L := by
   rw [Rat.smul_def]
   intro m hm
-  simp_all [mem_centralizer_iff]
   have (m : D) := Commute.left_comm <| Rat.cast_commute q m|>.symm
   rw [this, ha _ hm, mul_assoc]
 
@@ -227,7 +225,7 @@ lemma SubField.centralizer.nnratCast_eq (L : SubField K D) (q : NNRat) :
 
 instance centralizerSubfieldDiv (L : SubField K D) :
     DivisionRing (Subalgebra.centralizer K (A := D) L) where
-  mul_inv_cancel a ha := by ext; simp; rw [mul_inv_cancel₀ (by aesop)]
+  mul_inv_cancel a ha := by ext; simp [*]
   inv_zero := by ext; simp
   ratCast_def q := by ext; simp [Rat.cast_def]
   nnratCast q := ⟨q, Subalgebra.mem_centralizer_iff _|>.2 fun x _ ↦ NNRat.cast_commute _ _|>.symm⟩

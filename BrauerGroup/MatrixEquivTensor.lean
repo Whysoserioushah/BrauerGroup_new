@@ -47,7 +47,7 @@ abbrev toTensorMatrix : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) 
         simp only [Algebra.TensorProduct.tmul_mul_tmul, mul_comm x x0, LinearMap.coe_mk,
           TensorProduct.lift.tmul', toTensorMartrix_toFun_bilinear_apply, AlgHom.mapMatrix_apply,
           SemigroupAction.mul_smul, Algebra.mul_smul_comm, Algebra.smul_mul_assoc]
-        erw [Matrix.map_mul]; rfl
+        rw [Matrix.map_mul]
     | add _ _ h1 h2 => simp_all [mul_add]
   | add _ _ h1 h2 => simp_all [add_mul]
 

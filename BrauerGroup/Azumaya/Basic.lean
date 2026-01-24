@@ -9,8 +9,8 @@ open Module TensorProduct
 section Field
 variable (K : Type u) [Field K]
 
-lemma TensorProduct.flip_mk_injective {R M N : Type*} [CommRing R] [AddCommGroup M] [AddCommGroup N]
-    [Module R M] [Module R N] [NoZeroSMulDivisors R N] [Module.Flat R M] (a : N) (ha : a ≠ 0) :
+lemma TensorProduct.flip_mk_injective {R M N : Type*} [CommRing R] [IsDomain R] [AddCommGroup M]
+    [AddCommGroup N] [Module R M] [Module R N] [IsTorsionFree R N] [Flat R M] (a : N) (ha : a ≠ 0) :
     Function.Injective ((TensorProduct.mk R M N).flip a) := by
   intro x y e
   -- simp only [LinearMap.flip_apply, mk_apply] at e

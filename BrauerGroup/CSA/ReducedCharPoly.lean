@@ -3,6 +3,7 @@ import BrauerGroup.DoubleCentralizer
 import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
 import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
+import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 import BrauerGroup.Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Basic
 import Mathlib.Algebra.Central.TensorProduct
 import Mathlib.RingTheory.SimpleRing.Congr
