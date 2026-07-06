@@ -1,7 +1,6 @@
 module
 
 public import BrauerGroup.CentralSimple
-public import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Operations
 public import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
 
 @[expose] public section
@@ -88,6 +87,6 @@ lemma IsSimpleRing.right_of_tensor (B C : Type u)
     IsSimpleRing C := by
   haveI : IsSimpleRing (C ⊗[K] B) := by
     let e : C ⊗[K] B ≃ₐ[K] (B ⊗[K] C) := Algebra.TensorProduct.comm _ _ _
-    have := TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv
+    have := e.toRingEquiv.mapTwoSidedIdeal
     exact ⟨(OrderIso.isSimpleOrder_iff this).mpr hbc.1⟩
   apply IsSimpleRing.left_of_tensor (K := K) (B := C) (C := B)

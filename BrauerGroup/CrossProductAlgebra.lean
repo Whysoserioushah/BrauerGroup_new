@@ -1,9 +1,8 @@
 module
 
-public import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
-public import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
+public import Mathlib.FieldTheory.Galois.Notation
+public import Mathlib.Algebra.BigOperators.Finsupp.Basic
 public import BrauerGroup.Mathlib.RingTheory.Congruence.Basic
-public import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Lattice
 public import BrauerGroup.Subfield.Splitting
 public import Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 
@@ -361,14 +360,16 @@ instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
   -- Therefore `c = c_1 x_1 = (c_1 f(1, 1)) * 1` is a `F`-multiple of the identity.
   rw [← c.sum_of]
   obtain ⟨a, ha⟩ := key₁₁
-  refine finsuppSum_mem fun σ hσ ↦ ?_
+  refine AddSubmonoidClass.finsuppSum_mem _ _ _ fun σ hσ ↦ ?_
   simpa [incl_apply, hc₁ hσ, of_one, ← mul_smul, ← ha, Algebra.ofId]
     using Subalgebra.smul_mem _ (one_mem _) _
 
 /-! ### Simplicity -/
 
+
 variable {I : TwoSidedIdeal (CrossProductAlgebra f)}
 
+open TwoSidedIdeal in
 set_option backward.isDefEq.respectTransparency false in
 variable (I) in
 /-- The standard basis for `CrossProductAlgebra f` descends to a basis for any of its non-trivial
@@ -382,8 +383,8 @@ private def quotientBasis (hI : I ≠ ⊤) : Basis Gal(K/F) K I.ringCon.Quotient
     exact Quotient.mk_surjective
   classical
   -- We show that `ϕ(x_τ)` is linearly independent over `τ ∈ J` for any finset `J`.
-  rw [linearIndependent_iff_linearIndepOn_finset]
-  rintro J
+  rw [← linearIndepOn_univ_iff, linearIndepOn_iff_linearIndepOn_finset]
+  rintro J -
   -- For this, we do induction on `J`.
   induction J using Finset.cons_induction with
   -- The case `J = ∅` is trivial.
@@ -411,7 +412,7 @@ private def quotientBasis (hI : I ≠ ⊤) : Basis Gal(K/F) K I.ringCon.Quotient
       _ = ∑ τ ∈ J, ϕ (incl f <| σ c) * ϕ (incl f <| a τ) * ϕ (of f τ) := by
         simpa [← ha, Finset.mul_sum, Finset.sum_mul, mul_smul, mul_assoc, aux'] using aux σ
       _ = ∑ τ ∈ J, (σ c * a τ) • ϕ (of f τ) := by simp [mul_assoc, aux', ϕ_map_mul]
-  have : Nontrivial I.ringCon.Quotient := by simpa
+  have : Nontrivial I.ringCon.Quotient := by simpa [← top_ringCon, ringCon_injective.eq_iff]
   have aux τ : ϕ (of f τ) ≠ 0 := ((of f τ).isUnit.map I.ringCon.mk').ne_zero
   obtain ⟨τ, hτ, haτ⟩ := Finset.exists_ne_zero_of_sum_ne_zero <| ha.trans_ne <| aux _
   apply left_ne_zero_of_smul at haτ
@@ -432,7 +433,7 @@ private lemma coe_equivQuotient (hI) : (equivQuotient I hI).toLinearMap = I.ring
 
 instance : IsSimpleRing (CrossProductAlgebra f) := by
   refine ⟨⟨fun I ↦ Classical.or_iff_not_imp_right.2 fun hI ↦ ?_⟩⟩
-  rw [← I.ker_ringCon_mk', ← TwoSidedIdeal.injective_iff_ker_eq_bot]
+  rw [← I.ker_ringCon_mk', TwoSidedIdeal.ker_eq_bot]
   convert (equivQuotient I hI).injective
   exact congr(⇑$((coe_equivQuotient I hI).symm))
 

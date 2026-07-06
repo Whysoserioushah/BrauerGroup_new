@@ -2,7 +2,7 @@ module
 
 public import BrauerGroup.CentralSimple
 public import BrauerGroup.FieldCat
-public import BrauerGroup.Mathlib.RingTheory.TwoSidedIdeal.Operations
+public import Mathlib.Algebra.Azumaya.Defs
 public import Mathlib.Algebra.BrauerGroup.Defs
 public import Mathlib.Algebra.Central.Matrix
 public import Mathlib.Analysis.Complex.Polynomial.Basic
@@ -20,79 +20,36 @@ variable (A B : Type u) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
 
 open scoped TensorProduct
 
-lemma bijective_of_dim_eq_of_isCentralSimple
+lemma bijective_of_dim_eq_of_simple
     [csa_source : IsSimpleRing A]
     [fin_source : FiniteDimensional K A]
     [fin_target : FiniteDimensional K B]
     (f : A →ₐ[K] B) (h : Module.finrank K A = Module.finrank K B) :
     Function.Bijective f := by
-  obtain hA|hA := subsingleton_or_nontrivial A
-  · have eq1 : Module.finrank K A = 0 := by
-      rw [finrank_zero_iff_forall_zero]
-      intro x
-      apply Subsingleton.elim
-    rw [eq1] at h
-    replace h : Subsingleton B := by
-      constructor
-      symm at h
-      rw [finrank_zero_iff_forall_zero] at h
-      intro a b
-      rw [h a, h b]
-    rw [Function.bijective_iff_existsUnique]
-    intro b
-    refine ⟨0, Subsingleton.elim _ _, fun _ _ => Subsingleton.elim _ _⟩
-  · have := IsSimpleRing.iff_injective_ringHom_or_subsingleton_codomain A |>.1 csa_source
-      f.toRingHom
-    rcases this with (H|H)
-    · refine ⟨H, ?_⟩
-      change Function.Surjective f.toLinearMap
-      have := f.toLinearMap.finrank_range_add_finrank_ker
-      rw [show Module.finrank K (LinearMap.ker f.toLinearMap) = 0 by
-        rw [finrank_zero_iff_forall_zero]
-        rintro ⟨x, hx⟩
-        rw [LinearMap.ker_eq_bot (f := f.toLinearMap) |>.2 H] at hx
-        ext
-        exact hx, add_zero, h] at this
-      rw [← LinearMap.range_eq_top]
-      apply Submodule.eq_top_of_finrank_eq
-      exact this
-    · have : (1 : A) ∈ TwoSidedIdeal.ker f.toRingHom := by
-        simp only [AlgHom.toRingHom_eq_coe, TwoSidedIdeal.mem_ker, map_one]
-        exact Subsingleton.elim _ _
-      simp only [AlgHom.toRingHom_eq_coe, TwoSidedIdeal.mem_ker, map_one] at this
-      have hmm : Nontrivial B := by
-        let e := LinearEquiv.ofFinrankEq _ _ h
-        exact Equiv.nontrivial e.symm.toEquiv
-      exact one_ne_zero this |>.elim
+  have : Nontrivial B := Module.finrank_pos_iff.1 <| h ▸
+    (Module.finrank_pos_iff (R := K) (M := A)|>.2 inferInstance)
+  exact ⟨RingHom.injective f.toRingHom, f.toLinearMap.injective_iff_surjective_of_finrank_eq_finrank
+    h|>.1 <| RingHom.injective f.toRingHom⟩
 
 lemma bijective_of_surj_of_isCentralSimple
     [csa_source : IsSimpleRing A]
     (f : A →ₐ[K] B) [Nontrivial B] (h : Function.Surjective f) :
     Function.Bijective f :=
   ⟨IsSimpleRing.iff_injective_ringHom A |>.1 inferInstance f.toRingHom, h⟩
--- instance tensor_CSA_is_CSA
---     [Algebra.IsCentral K A] [hA : IsSimpleRing A]
---     [Algebra.IsCentral K B] [hB: IsSimpleRing B] :
---     IsSimpleRing (A ⊗[K] B) := inferInstance
-  --  is_central := IsCentralSimple.TensorProduct.isCentral K A B hA.is_central hB.is_central
-  --  simple := IsCentralSimple.TensorProduct.simple K A B
 
-instance CSA_op_is_CSA [hA : Algebra.IsCentral K A] : Algebra.IsCentral K Aᵐᵒᵖ where
-  out z hz:= by
-    let z': A := z.unop
-    have hz' : ∀ (x : A), x * z' = z' * x := by
-      rw [Subalgebra.mem_center_iff] at hz
-      intro x; specialize hz (MulOpposite.op x)
-      have z'_eq : MulOpposite.op z'= z := rfl
-      rw [← z'_eq, ← MulOpposite.op_mul, ← MulOpposite.op_mul] at hz
-      have : (MulOpposite.op (z' * x)).unop = z' * x := rfl
-      simp_all only [MulOpposite.op_mul, MulOpposite.op_unop, MulOpposite.unop_mul,
-          MulOpposite.unop_op, z']
-    obtain ⟨k, hk⟩ := hA.out <| Subalgebra.mem_center_iff.mpr hz'
-    exact ⟨k, MulOpposite.unop_inj.mp hk⟩
-  -- is_simple := @op_simple A _ hA.is_simple
-
--- instance [IsSimpleRing A] : IsSimpleRing Aᵐᵒᵖ := @op_simple A _ _
+-- instance CSA_op_is_CSA [hA : Algebra.IsCentral K A] : Algebra.IsCentral K Aᵐᵒᵖ where
+--   out z hz:= by
+--     let z': A := z.unop
+--     have hz' : ∀ (x : A), x * z' = z' * x := by
+--       rw [Subalgebra.mem_center_iff] at hz
+--       intro x; specialize hz (MulOpposite.op x)
+--       have z'_eq : MulOpposite.op z'= z := rfl
+--       rw [← z'_eq, ← MulOpposite.op_mul, ← MulOpposite.op_mul] at hz
+--       have : (MulOpposite.op (z' * x)).unop = z' * x := rfl
+--       simp_all only [MulOpposite.op_mul, MulOpposite.op_unop, MulOpposite.unop_mul,
+--           MulOpposite.unop_op, z']
+--     obtain ⟨k, hk⟩ := hA.out <| Subalgebra.mem_center_iff.mpr hz'
+--     exact ⟨k, MulOpposite.unop_inj.mp hk⟩
 
 namespace tensor_self_op
 
@@ -102,33 +59,6 @@ instance st : IsScalarTower K K (Module.End K A) where
   smul_assoc k₁ k₂ f := DFunLike.ext _ _ fun a ↦ by
     change (k₁ * k₂) • f a = k₁ • (k₂ • f a)
     rw [mul_smul]
-
-def toEnd : A ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
-  Algebra.TensorProduct.lift
-    { toFun a :=
-        { toFun x := a * x
-          map_add' := mul_add _
-          map_smul' := by simp }
-      map_one' := by aesop
-      map_mul' := by intros; ext; simp [mul_assoc]
-      map_zero' := by aesop
-      map_add' := by intros; ext; simp [add_mul]
-      commutes' k := DFunLike.ext _ _ fun a ↦ show (algebraMap K A) k * a = k • _ from
-        (Algebra.smul_def _ _).symm }
-    { toFun a :=
-        { toFun x := x * a.unop
-          map_add' := fun x y => by simp [add_mul]
-          map_smul' := by simp }
-      map_one' := by aesop
-      map_mul' := by intros; ext; simp [mul_assoc]
-      map_zero' := by aesop
-      map_add' := by intros; ext; simp [mul_add]
-      commutes' k := DFunLike.ext _ _ fun a ↦
-        show a * (algebraMap K A) k = k • _ by
-          rw [Algebra.smul_def, Algebra.commutes]
-          rfl }
-    fun a a' => show _ = _ from DFunLike.ext _ _ fun x ↦ show a * (x * a'.unop) = a * x * a'.unop
-      from mul_assoc _ _ _ |>.symm
 
 -- instance : Algebra.IsCentral K Aᵐᵒᵖ := inferInstance -- CSA_op_is_CSA K A inferInstance
 -- instance : FiniteDimensional K Aᵐᵒᵖ := LinearEquiv.finiteDimensional
@@ -145,12 +75,11 @@ lemma dim_eq :
     Module.finrank K (Matrix (Fin <| Module.finrank K A) (Fin <| Module.finrank K A) K) from
     (algEquivMatrix <| Module.finBasis _ _).toLinearEquiv.finrank_eq]
   rw [Module.finrank_matrix, Fintype.card_fin]
-  rw [show Module.finrank K Aᵐᵒᵖ = Module.finrank K A from
-    (MulOpposite.opLinearEquiv K : A ≃ₗ[K] Aᵐᵒᵖ).symm.finrank_eq]
+  rw [(MulOpposite.opLinearEquiv K : A ≃ₗ[K] Aᵐᵒᵖ).symm.finrank_eq]
   simp only [Module.finrank_self, mul_one]
 
 def equivEnd : A ⊗[K] Aᵐᵒᵖ ≃ₐ[K] Module.End K A :=
-  AlgEquiv.ofBijective (toEnd K A) <| bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <|
+  AlgEquiv.ofBijective (AlgHom.mulLeftRight K A) <| bijective_of_dim_eq_of_simple _ _ _ _ <|
     dim_eq K A
 
 end tensor_self_op
@@ -208,20 +137,11 @@ def matrix_eqv' (n m : ℕ) (A : Type*) [Ring A] [Algebra K A] :
 lemma iso_to_eqv (A B : CSA K) (h : A ≃ₐ[K] B) : IsBrauerEquivalent A B :=
     ⟨1, 1, one_ne_zero, one_ne_zero, ⟨h.mapMatrix (m := (Fin 1))⟩⟩
 
-theorem Braur_is_eqv : Equivalence (IsBrauerEquivalent (K := K)) where
-  refl := refl
-  symm := symm
-  trans := trans
-
 end IsBrauerEquivalent
 
 namespace BrauerGroup
 
-def CSA_Setoid : Setoid (CSA K) where
-  r := IsBrauerEquivalent
-  iseqv := IsBrauerEquivalent.Braur_is_eqv
-
-def mul (A B : CSA K) : CSA K where
+def mul (A B : CSA.{u, v} K) : CSA.{u, v} K where
   toAlgCat := .of K (A ⊗[K] B)
   fin_dim := Module.Finite.tensorProduct K A B
 
@@ -247,8 +167,8 @@ def mul_one_in (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
 
 def eqv_in (A : CSA K) (A' : Type*) [Ring A'] [Algebra K A'] (e : A ≃ₐ[K] A') : CSA K where
   toAlgCat := .of K A'
-  isCentral := AlgEquiv.isCentral e
-  isSimple := ⟨TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv.symm |>.isSimpleOrder⟩
+  isCentral := Algebra.IsCentral.of_algEquiv K _ _ e
+  isSimple := ⟨e.toRingEquiv.symm.mapTwoSidedIdeal |>.isSimpleOrder⟩
   fin_dim := LinearEquiv.finiteDimensional e.toLinearEquiv
 
 def matrix_A (n : ℕ) [hn : NeZero n] (A : CSA K) : CSA K :=
@@ -322,13 +242,13 @@ theorem eqv_tensor_eqv
 
 set_option backward.isDefEq.respectTransparency false in
 instance Mul : Mul <| BrauerGroup (K := K) :=
-  ⟨Quotient.lift₂ (fun A B ↦ Quotient.mk (CSA_Setoid) <| BrauerGroup.mul A B)
+  ⟨Quotient.lift₂ (fun A B ↦ Quotient.mk (Brauer.CSA_Setoid K) <| BrauerGroup.mul A B)
   (by
     simp only [Quotient.eq]
     intro A B C D hAB hCD
     exact eqv_tensor_eqv A C B D hAB hCD)⟩
 
-instance One : One (BrauerGroup (K := K)) := ⟨Quotient.mk (CSA_Setoid) one_in'⟩
+instance One : One (BrauerGroup (K := K)) := ⟨Quotient.mk (Brauer.CSA_Setoid K) one_in'⟩
 
 theorem mul_assoc' (A B C : BrauerGroup (K := K)) : A * B * C = A * (B * C) := by
   induction A using Quotient.inductionOn' with | h A
@@ -369,7 +289,7 @@ lemma inv_eqv (A B : CSA K) (hAB : IsBrauerEquivalent A B) :
 
 set_option backward.isDefEq.respectTransparency false in
 instance Inv : Inv (BrauerGroup (K := K)) where
-  inv := Quotient.lift (fun A ↦ Quotient.mk (CSA_Setoid) <| inv A) fun A B hAB ↦ by
+  inv := Quotient.lift (fun A ↦ Quotient.mk (Brauer.CSA_Setoid K) <| inv A) fun A B hAB ↦ by
     change IsBrauerEquivalent _ _ at hAB
     simp only [Quotient.eq]; change IsBrauerEquivalent _ _
     exact inv_eqv (K := K) A B hAB

@@ -34,7 +34,7 @@ variable (K F : Type) [Field K] [Field F] [Algebra F K]
 -- def φ3 :
 --     CrossProductAlgebra (F := F) (K := K) (a := 1) (ha := isMulCocycle₂_of_cocycles₂ 0) ≃ₐ[F]
 --     Module.End F K :=
---   AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
+--   AlgEquiv.ofBijective (φ2 K F) (bijective_of_dim_eq_of_simple _ _ _ _ <| by
 --     rw [CrossProductAlgebra.dim_eq_sq]
 --     rw [Module.finrank_linearMap, pow_two])
 
@@ -628,7 +628,8 @@ lemma exists_simple_module_directSum [IsGalois F K] :
   ∃ (S : Type) (_ : AddCommGroup S) (_ : Module C S) (_ : IsSimpleModule C S)
     (ι : Type) (_ : Fintype ι),
     Nonempty (C ≃ₗ[C] ι →₀ S) := by
-  obtain ⟨S, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring F C C
+  haveI : IsArtinianRing C := IsArtinianRing.of_finite F C
+  obtain ⟨S, _, _, _, ι, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring C C
   refine ⟨S, inferInstance, inferInstance, inferInstance, ι, ?_, ⟨iso⟩⟩
   haveI infinite : Module.Finite C (ι →₀ S) := Module.Finite.equiv iso
   letI : Module F S := Module.compHom S (algebraMap F C)
@@ -747,10 +748,10 @@ section C_iso
 
 def isoDagger (m : ℕ) [NeZero m] :
     Module.End C (Fin m → SM) ≃ₐ[F] Matrix (Fin m) (Fin m) (Module.End C SM) where
-  __ := endPowEquivMatrix C SM m
+  __ := endVecAlgEquivMatrixEnd (Fin m) ℤ C SM
   commutes' f := by
     ext i j x
-    simp only [endPowEquivMatrix, endVecAlgEquivMatrixEnd, endVecRingEquivMatrixEnd,
+    simp only [endVecAlgEquivMatrixEnd, endVecRingEquivMatrixEnd,
       RingEquiv.toEquiv_eq_coe, Equiv.toFun_as_coe, EquivLike.coe_coe, RingEquiv.coe_mk,
       Equiv.coe_fn_mk, LinearMap.coe_mk, AddHom.coe_mk, Matrix.algebraMap_matrix_apply]
     split_ifs with h
@@ -758,10 +759,7 @@ def isoDagger (m : ℕ) [NeZero m] :
     · simp only [algebraMap_end_apply, Pi.smul_apply, Pi.single_eq_of_ne h, smul_zero,
       LinearMap.zero_apply]
 
-def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C :=
-  .ofRingEquiv (f := mopEquivEnd C) fun f ↦ by
-  ext x
-  simp [mopEquivEnd, Algebra.algebraMap_eq_smul_one]
+def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C := AlgEquiv.moduleEndSelf F
 
 def C_iso_aux : Cᵐᵒᵖ ≃ₐ[F] Module.End C (Fin (Fintype.card ι) → SM) :=
   mopEquivEnd'.trans <| (isoιSMPow' α β).conjAlgEquiv F
@@ -805,7 +803,8 @@ end C_iso
 
 variable (α β) in
 lemma M_directSum : ∃ (ιM : Type) (_ : Fintype ιM), Nonempty (M α β ≃ₗ[C] ιM →₀ SM) := by
-  obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_ring' F C (M α β) SM
+  haveI : IsArtinianRing C := IsArtinianRing.of_finite F C
+  obtain ⟨ιM, ⟨iso⟩⟩ := directSum_simple_module_over_simple_algebra' C (M α β) SM
   refine ⟨ιM, ?_, ⟨iso⟩⟩
   haveI : LinearMap.CompatibleSMul C (ιM →₀ SM) F C := by
     constructor
@@ -954,7 +953,7 @@ lemma dim_endCM : finrank F (Module.End C (M α β)) = (finrank F K)^4 := by
 set_option maxSynthPendingDepth 3 in
 open MulOpposite in
 def φ1 : (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M α β) :=
-  .ofBijective φ0 <| bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by
+  .ofBijective φ0 <| bijective_of_dim_eq_of_simple _ _ _ _ <| by
     rw [dim_endCM, show finrank F (A ⊗[F] B)ᵐᵒᵖ = finrank F (A ⊗[F] B) by
       refine LinearEquiv.finrank_eq
         { toFun := unop

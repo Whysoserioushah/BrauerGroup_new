@@ -32,6 +32,19 @@ universe u v w
 
 open Module
 
+-- class IsCentralSimple
+--     (K : Type u) [Field K] (D : Type v) [Ring D] [Algebra K D] : Prop where
+--   is_central : Subalgebra.center K D ≤ ⊥
+--   [is_simple : IsSimpleRing D]
+
+-- lemma IsCentralSimple.center_eq
+--     (K D : Type*) [Field K] [Ring D] [Algebra K D] [IsCentralSimple K D] :
+--     Subalgebra.center K D = ⊥ :=
+--   le_antisymm IsCentralSimple.is_central <| by
+--     rintro _ ⟨x, rfl⟩
+--     rw [Subalgebra.mem_center_iff]
+--     exact (Algebra.commutes' x · |>.symm)
+
 variable (K : Type u) [Field K]
 
 namespace IsCentralSimple
@@ -129,6 +142,9 @@ end IsCentralSimple
 section CSA_implies_CSA
 variable (K : Type u) [Field K]
 variable (B : Type*) [Ring B]
+
+lemma top_eq_ring (R : Type*) [Ring R] : (⊤ : TwoSidedIdeal R) = (⊤ : Set R) := by
+  aesop
 
 theorem CSA_implies_CSA (K : Type*) (B : Type v) [Field K] [Ring B] [Algebra K B]
     (n : ℕ) (D : Type v) [NeZero n] (h : DivisionRing D) [Algebra K D]

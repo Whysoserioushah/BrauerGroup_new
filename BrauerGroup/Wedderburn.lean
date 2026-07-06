@@ -54,6 +54,19 @@ def mopToEnd : Aᵐᵒᵖ →+* Module.End A A where
   map_add' := by aesop
   map_mul' := by aesop
 
+/--
+For any ring `D`, `Mₙ(D) ≅ Mₙ(D)ᵒᵖ`.
+-/
+@[simps]
+def matrixEquivMatrixMop (n : ℕ) (D : Type*) [Ring D] :
+    Matrix (Fin n) (Fin n) Dᵐᵒᵖ ≃+* (Matrix (Fin n) (Fin n) D)ᵐᵒᵖ where
+  toFun M := MulOpposite.op (M.transpose.map (fun d => MulOpposite.unop d))
+  invFun M := (MulOpposite.unop M).transpose.map (fun d => MulOpposite.op d)
+  left_inv a := by aesop
+  right_inv a := by aesop
+  map_mul' x y := unop_injective <| by ext; simp [transpose_map, transpose_apply, mul_apply]
+  map_add' x y := by aesop
+
 end simple_ring
 
 universe u v w

@@ -106,7 +106,8 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
       Nonempty (A ≃ₐ[K] Matrix (Fin m) (Fin m) D) ∧
       Nonempty (B ≃ₐ[K] Matrix (Fin n) (Fin n) D) := by
   obtain ⟨n, hn, SA, _, _, ⟨isoA⟩⟩ := Wedderburn_Artin_algebra_version K A
-  haveI : Algebra.IsCentral K (Matrix (Fin n) (Fin n) SA) := isoA.isCentral
+  haveI : Algebra.IsCentral K (Matrix (Fin n) (Fin n) SA) :=
+    Algebra.IsCentral.of_algEquiv K _ _ isoA
   haveI : Algebra.IsCentral K SA := is_central_of_wdb _ _ _ _ hn isoA
   have : FiniteDimensional K (Matrix (Fin n) (Fin n) SA) :=
     Module.Finite.of_injective isoA.symm.toLinearMap isoA.symm.injective
@@ -114,7 +115,8 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
   have eq1 : IsBrauerEquivalent ⟨.of K SA⟩ A :=
     ⟨n, 1, hn, one_ne_zero, ⟨AlgEquiv.symm <| AlgEquiv.trans (dim_one_iso A) isoA⟩⟩
   obtain ⟨m, hm, SB, _, _, ⟨isoB⟩⟩ := Wedderburn_Artin_algebra_version K B
-  haveI : Algebra.IsCentral K (Matrix (Fin m) (Fin m) SB) := isoB.isCentral
+  haveI : Algebra.IsCentral K (Matrix (Fin m) (Fin m) SB) :=
+    Algebra.IsCentral.of_algEquiv K _ _ isoB
   haveI : Algebra.IsCentral K SB := is_central_of_wdb _ _ _ _ hm isoB
   have : FiniteDimensional K (Matrix (Fin m) (Fin m) SB) :=
     .of_injective isoB.symm.toLinearMap isoB.symm.injective

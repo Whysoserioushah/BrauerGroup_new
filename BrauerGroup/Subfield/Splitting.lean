@@ -2,6 +2,7 @@ module
 
 public import BrauerGroup.MatrixEquivTensor
 public import BrauerGroup.RelativeBrauer
+public import Mathlib.Algebra.Central.Basic
 public import BrauerGroup.Subfield.FiniteDimensional
 public import BrauerGroup.Subfield.Subfield
 
@@ -16,7 +17,6 @@ open FiniteDimensional MulOpposite BrauerGroup TensorProduct
 section CSA
 
 set_option backward.isDefEq.respectTransparency false in
-set_option maxSynthPendingDepth 2 in
 lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : isSplit F A K) :
     ∃ (B : CSA F), (Quotient.mk'' A : BrauerGroup F) * (Quotient.mk'' B) = 1 ∧
       ∃ (_ : K →ₐ[F] B), (Module.finrank F K)^2 = Module.finrank F B := by
@@ -34,23 +34,17 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
   let B := Subalgebra.centralizer F (AlgHom.range emb : Set (Module.End F (Fin n → K)))
   let e : A ≃ₐ[F] (AlgHom.range emb) :=
     AlgEquiv.ofInjective _ (IsSimpleRing.iff_injective_ringHom A|>.1 inferInstance emb.toRingHom)
-  haveI : Algebra.IsCentral F (AlgHom.range emb) := e.isCentral
-  haveI : IsSimpleRing (AlgHom.range emb) := by
-    constructor
-    rw [← TwoSidedIdeal.orderIsoOfRingEquiv e.toRingEquiv |>.isSimpleOrder_iff]
-    exact IsSimpleRing.simple
+  haveI : Algebra.IsCentral F (AlgHom.range emb) := Algebra.IsCentral.of_algEquiv F _ _ e
+  haveI : IsSimpleRing (AlgHom.range emb) := IsSimpleRing.of_ringEquiv e.toRingEquiv inferInstance
   haveI : NeZero (Module.finrank F (Fin n → K)) := by
     constructor
     have : 0 < Module.finrank F (Fin n → K) := Module.finrank_pos
     omega
   haveI : Algebra.IsCentral F (Module.End F (Fin n → K)) := by
     have f := algEquivMatrix (R := F) (M := Fin n → K) (Module.finBasis _ _)
-    refine f.symm.isCentral
-  haveI : IsSimpleRing (Module.End F (Fin n → K)) := by
-    have f := algEquivMatrix (R := F) (M := Fin n → K) (Module.finBasis _ _)
-    constructor
-    rw [TwoSidedIdeal.orderIsoOfRingEquiv f.toRingEquiv |>.isSimpleOrder_iff]
-    exact IsSimpleRing.simple
+    exact Algebra.IsCentral.of_algEquiv F _ _ f.symm
+  haveI : IsSimpleRing (Module.End F (Fin n → K)) := IsSimpleRing.of_ringEquiv
+    (algEquivMatrix (R := F) (M := Fin n → K) (Module.finBasis _ _)).toRingEquiv.symm inferInstance
   haveI : Algebra.IsCentral F B :=
   { out := fun x hx => by
       rw [Algebra.mem_bot]
@@ -70,7 +64,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       use r
       rw [Subtype.ext_iff, ← hr]
       rfl }
-  haveI : IsSimpleRing B := centralizer_isSimple _ (Module.Free.chooseBasis _ _)
+  haveI : IsSimpleRing B := centralizer_isSimple _
   refine ⟨⟨.of F B⟩, ?_,
     { toFun r :=
         ⟨{
@@ -248,7 +242,7 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
     rw [split_sound' K F A B (Quotient.eq''.1 eq)]
     refine ⟨Module.finrank K B, ⟨fun r => by have := Module.finrank_pos (R := K) (M := B); omega⟩,
       ⟨AlgEquiv.trans (AlgEquiv.ofBijective μAlg ?_) e⟩⟩
-    apply bijective_of_dim_eq_of_isCentralSimple
+    apply bijective_of_dim_eq_of_simple
     rw [show Module.finrank K (K ⊗[F] B) = n^2 by simp [dim_eq]]
     rw [show Module.finrank K (Module.End K B) = n^2 by
       rw [Module.finrank_linearMap]

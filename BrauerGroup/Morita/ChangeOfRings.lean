@@ -5,11 +5,11 @@ Authors: Jujian Zhang
 -/
 module
 
-public import BrauerGroup.MoritaEquivalence
 public import Mathlib.Algebra.Category.ModuleCat.Abelian
 public import Mathlib.RingTheory.HopkinsLevitzki
-public import Mathlib.RingTheory.Morita.Basic
+public import Mathlib.RingTheory.Morita.Matrix
 public import Mathlib.RingTheory.SimpleModule.Rank
+public import Mathlib.RingTheory.SimpleRing.DivisionRing
 
 @[expose] public section
 
@@ -26,99 +26,8 @@ universe u₀ u u' u''  v'
 
 variable (R : Type u₀) [CommRing R]
 
--- namespace IsMoritaEquivalent
-
--- lemma refl {A : Type u₁} [Ring A] [Algebra R A] : IsMoritaEquivalent R A A where
---   cond := ⟨.refl R A⟩
-
--- lemma symm {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
---     (h : IsMoritaEquivalent R A B) : IsMoritaEquivalent R B A where
---   cond := h.cond.map <| .symm R
-
--- lemma of_algEquiv {A : Type u₁} [Ring A] [Algebra R A] {B : Type u₂} [Ring B] [Algebra R B]
---     (f : A ≃ₐ[R] B) : IsMoritaEquivalent R A B where
---   cond := ⟨.ofAlgEquiv f⟩
-
--- end IsMoritaEquivalent
--- class IsMoritaEquivalent
---   (R : Type u) (S : Type u') [Ring R] [Ring S] : Prop where
--- out : Nonempty <| ModuleCat.{v} R ≌ ModuleCat.{v'} S
-
--- namespace IsMoritaEquivalent
-
--- variable (R : Type u) (S : Type u') (T : Type u'') [Ring R] [Ring S] [Ring T]
-
--- noncomputable def equiv [IsMoritaEquivalent R S] : ModuleCat R ≌ ModuleCat S :=
---   (inferInstance : IsMoritaEquivalent R S) |>.out.some
-
--- instance [IsMoritaEquivalent R S] : (equiv R S).functor.Additive := inferInstance
-
--- instance [IsMoritaEquivalent R S] : (equiv R S).inverse.Additive :=
--- inferInstance
-
--- @[refl]
--- lemma refl : IsMoritaEquivalent R R :=
--- ⟨⟨CategoryTheory.Equivalence.refl (C := ModuleCat.{v} R)⟩⟩
-
--- instance : IsMoritaEquivalent.{u, u, v, v} R R := refl R
-
--- @[symm]
--- lemma symm [IsMoritaEquivalent.{u, u', v, v'} R S] : IsMoritaEquivalent.{u', u, v', v} S R where
---   out := ⟨equiv R S |>.symm⟩
-
--- @[trans]
--- lemma trans [IsMoritaEquivalent.{u, u', v, v'} R S] [IsMoritaEquivalent.{u', u'', v', v''} S T] :
---     IsMoritaEquivalent.{u, u'', v, v''} R T where
---   out := ⟨(equiv R S).trans <| equiv S T⟩
-
 suppress_compilation
 
-namespace MoritaEquivalence
-
-variable (A B : Type u) [Ring A] [Ring B] [Algebra R A] [Algebra R B]
-
--- def equiv (h : MoritaEquivalence R A B) : ModuleCat A ≌ ModuleCat B :=
---   h.eqv
-
--- instance (h : IsMoritaEquivalent ℤ R S) : (equiv R S h).functor.Additive :=
---     Functor.additive_of_preserves_binary_products _
-
--- instance (h : IsMoritaEquivalent ℤ R S) : (equiv R S h).inverse.Additive :=
---     inferInstance
-
-instance (n : ℕ) [NeZero n] : Functor.Additive (moritaEquivalentToMatrix A (Fin n)).functor :=
-  Functor.additive_of_preserves_binary_products _
-
--- instance (N : ModuleCat A) : Module R N := Module.compHom N (algebraMap R A)
-
--- instance (N : ModuleCat A) : SMulCommClass A R N := sorry
-
-set_option backward.isDefEq.respectTransparency false in
-instance (n : ℕ) [NeZero n] : Functor.Linear R (moritaEquivalentToMatrix A (Fin n)).functor where
-  map_smul {M N} f r := by
-    ext m
-    apply funext
-    intro i
-    simp only [hom_smul, LinearMap.smul_apply, moritaEquivalentToMatrix,
-      toModuleCatOverMatrix_map, hom_ofHom]
-    change (algebraMap R A r) • (f.hom _) =
-      ∑ j : Fin n, (algebraMap R (Matrix (Fin n) (Fin n) A) r) _ _ • _
-    simp [Matrix.algebraMap_matrix_apply]
-    rfl
-
--- attribute [-instance] Linear.preadditiveIntLinear Linear.preadditiveNatLinear in
-def matrix (n : ℕ) : MoritaEquivalence R A (Matrix (Fin (n+1)) (Fin (n + 1)) A) :=
-  letI : NeZero (n + 1) := ⟨by omega⟩
-  { eqv :=
-      moritaEquivalentToMatrix A _
-    linear := inferInstance}
-  -- additive := inferIns
-  -- linear := _
-  -- out := ⟨⟩
-
-def matrix' (n : ℕ) [hn : NeZero n] : MoritaEquivalence R A (Matrix (Fin n) (Fin n) A) where
-  eqv := moritaEquivalentToMatrix A _
-end  MoritaEquivalence
 -- abbrev ofIsoApp1 (e : R ≃+* S) (X : ModuleCat R) : X ⟶
 --     (ModuleCat.restrictScalars e.symm.toRingHom ⋙ ModuleCat.restrictScalars e.toRingHom).obj X :=
 --   ModuleCat.ofHom (Y := (ModuleCat.restrictScalars e.symm.toRingHom ⋙
@@ -215,10 +124,10 @@ def mopToEnd : Aᵐᵒᵖ →ₐ[R] End (ModuleCat.of A A) where
 
 set_option backward.isDefEq.respectTransparency false in
 lemma moptoend_bij : Function.Bijective (mopToEnd R A) :=
-  ⟨RingHom.injective_iff_ker_eq_bot _ |>.mpr <|
+  ⟨TwoSidedIdeal.ker_eq_bot _ |>.1 <|
     SetLike.ext fun (α : Aᵐᵒᵖ) => ⟨fun (h : _ = _) => by
       rw [ModuleCat.hom_ext_iff] at h
-      simp only [mopToEnd, hom_zero, LinearMap.ext_iff, LinearMap.zero_apply] at h
+      simp only [mopToEnd, LinearMap.ext_iff] at h
       specialize h (1 : A)
       simp_all,
       by rintro rfl; simp⟩, fun φ => ⟨MulOpposite.op (φ.hom.toFun (1 : A)), ModuleCat.hom_ext <|
@@ -300,12 +209,10 @@ def aux1 : End (ModuleCat.of A A) ≃ₐ[R] End (e.eqv.functor.obj <| .of A A) w
 -- def aux1' : End (ModuleCat.of A A) ≃ₐ[R] End (e.functor.obj <| ModuleCat.of A A) := sorry
 
 noncomputable def aux20 : (e.eqv.functor.obj (ModuleCat.of A A)) ≅ ModuleCat.of B B := by
-  haveI : IsSimpleModule A A := by
-    rw [@isSimpleModule_iff_finrank_eq_one, Module.finrank_self]
-  have :  IsSimpleModule A (ModuleCat.of A A) := inferInstanceAs <| IsSimpleModule A A
+  have : IsSimpleModule A (ModuleCat.of A A) := inferInstanceAs <| IsSimpleModule A A
   have : IsSimpleModule B (e.eqv.functor.obj (ModuleCat.of A A)) :=
-    IsMoritaEquivalent.division_ring.IsSimpleModule.functor A B e.eqv (ModuleCat.of A A)
-  have := IsMoritaEquivalent.division_ring.division_ring_exists_unique_isSimpleModule B
+    IsSimpleModule.obj_of_isEquivalence e.eqv.functor (ModuleCat.of A A)
+  have := DivisionRing.nonempty_linearEquiv_of_isSimpleModule B
     (e.eqv.functor.obj <| .of A A)
   exact this.some.toModuleIso
 

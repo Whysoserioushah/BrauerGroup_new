@@ -34,7 +34,7 @@ def ιRange : K ≃ₐ[F] A.ι.range := .ofInjective _ (RingHom.injective _)
 instance : Algebra F A := inferInstanceAs <| Algebra F A
 
 instance : IsSimpleOrder (TwoSidedIdeal A.ι.range) :=
-  TwoSidedIdeal.orderIsoOfRingEquiv A.ιRange.symm |>.isSimpleOrder
+  A.ιRange.symm.toRingEquiv.mapTwoSidedIdeal.isSimpleOrder
 
 lemma centralizerιRange : Subalgebra.centralizer F A.ι.range = A.ι.range := by
   let L : SubField F A :=
