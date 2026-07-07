@@ -583,7 +583,7 @@ def CommG (G : Type*) (σ : G) [Group G] (hσ : Submonoid.powers σ = ⊤) : Com
     obtain ⟨m, rfl⟩ := SetLike.ext_iff.1 hσ b|>.2 (by trivial)
     simp [← pow_add, add_comm]
 
-variable (F K : Type) [Field F] [Field K] [Algebra F K] [IsGalois F K] (τ : Gal(K, F))
+variable (F K : Type) [Field F] [Field K] [Algebra F K] [IsGalois F K] (τ : Gal(K/F))
     (hτ : Submonoid.powers τ = ⊤) [FiniteDimensional F K]
 
 open scoped Classical in
@@ -593,8 +593,8 @@ abbrev BrauerOverCyclicAux :
     H2 (galAct F K) ≅
     ModuleCat.of ℤ ((galAct F K).ρ.invariants ⧸ (LinearMap.range (N' _ ℤ _).hom.toLinearMap).comap
     (galAct F K).ρ.invariants.subtype) :=
-  letI : CommGroup Gal(K, F) := CommG Gal(K, F) τ hτ
-  (CyclicCoh.groupCohEven 2 Gal(K, F) ℤ τ (by simp) (galAct F K) hτ)
+  letI : CommGroup Gal(K/F) := CommG Gal(K/F) τ hτ
+  (CyclicCoh.groupCohEven 2 Gal(K/F) ℤ τ (by simp) (galAct F K) hτ)
 
 abbrev BrauerOverCyclic' : Additive (RelativeBrGroup K F) ≃ₗ[ℤ] (↥(galAct F K).ρ.invariants ⧸
       Submodule.comap (galAct F K).ρ.invariants.subtype
@@ -602,7 +602,7 @@ abbrev BrauerOverCyclic' : Additive (RelativeBrGroup K F) ≃ₗ[ℤ] (↥(galAc
   (RelativeBrGroup.isoSnd K F).toIntLinearEquiv ≪≫ₗ (BrauerOverCyclicAux F K τ hτ).toLinearEquiv
 
 abbrev invariants_eq : ((galAct F K).ρ.invariants : Submodule ℤ
-  (Rep.ofMulDistribMulAction Gal(K, F) Kˣ).V) = sorry := sorry
+  (Rep.ofMulDistribMulAction Gal(K/F) Kˣ).V) = sorry := sorry
 
 abbrev BrauerOverCyclic : Additive (RelativeBrGroup K F) ≃+
     Additive (Fˣ⧸(Units.map (Algebra.norm (S := K) F)).range) :=

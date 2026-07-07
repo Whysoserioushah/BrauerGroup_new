@@ -87,9 +87,9 @@ end basic
 
 section single
 
-variable (ρ σ τ : Gal(K, F))
+variable (ρ σ τ : Gal(K/F))
 
-def conjFactor (σ : Gal(K, F)) : Type := {a : Aˣ // ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹}
+def conjFactor (σ : Gal(K/F)) : Type := {a : Aˣ // ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹}
 
 def arbitraryConjFactor : A.conjFactor σ where
   val := SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose
@@ -312,7 +312,7 @@ lemma conjFactorCompCoeff_comp_comp
   simpa using conjFactorCompCoeff_comp_comp₃ xρ xσ xτ xρσ xστ xρστ
 
 variable (A) in
-def toCocycles₂ (x_ : Π σ, A.conjFactor σ) : Gal(K, F) × Gal(K, F) → Kˣ :=
+def toCocycles₂ (x_ : Π σ, A.conjFactor σ) : Gal(K/F) × Gal(K/F) → Kˣ :=
 fun p =>
   conjFactorCompCoeffAsUnit
     (x_ p.1)
@@ -340,7 +340,7 @@ end single
 
 section double
 
-variable {σ τ : Gal(K, F)}
+variable {σ τ : Gal(K/F)}
 
 lemma exists_iso :
     Nonempty (A ≃ₐ[F] B) := by
@@ -483,7 +483,7 @@ lemma compare_conjFactorCompCoeff
   apply_fun A.ι using RingHom.injective _
   simp only [map_mul, eq1]
 
-def trivialFactorSet (c : Gal(K, F) → Kˣ) : Gal(K, F) × Gal(K, F) → Kˣ :=
+def trivialFactorSet (c : Gal(K/F) → Kˣ) : Gal(K/F) × Gal(K/F) → Kˣ :=
   fun p ↦ c p.1 * Units.map p.1.toRingEquiv.toRingHom.toMonoidHom (c p.2) * (c (p.1 * p.2))⁻¹
 
 lemma compare_toCocycles₂ (x_ : Π σ, A.conjFactor σ) (y_ : Π σ, B.conjFactor σ) :
@@ -522,9 +522,9 @@ def _root_.Amelia.toAdditive (M G : Type 0) [Monoid M] [CommGroup G] [MulDistrib
   Rep.ofMulDistribMulAction M G ≃+ Additive G := AddEquiv.refl _
 
 variable (F K) in
-noncomputable def galAct : Rep ℤ Gal(K, F) := .ofMulDistribMulAction Gal(K, F) Kˣ
+noncomputable def galAct : Rep ℤ Gal(K/F) := .ofMulDistribMulAction Gal(K/F) Kˣ
 
-@[simp] lemma galAct_ρ_apply (σ : Gal(K, F)) (x : Kˣ) :
+@[simp] lemma galAct_ρ_apply (σ : Gal(K/F)) (x : Kˣ) :
     (galAct F K).ρ σ (.ofMul x) = .ofMul (x.map σ) := rfl
 
 variable [FiniteDimensional F K]
@@ -568,7 +568,7 @@ lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
   rw [← sub_eq_zero, ← map_sub]
   rw [H2π_eq_zero_iff]
   set lhs := _; change lhs ∈ _
-  have : IsMulCoboundary₂ (G := Gal(K, F)) (M := Kˣ) (lhs) := by
+  have : IsMulCoboundary₂ (G := Gal(K/F)) (M := Kˣ) (lhs) := by
     apply GoodRep.compare_toCocycles₂'
   exact coboundariesOfIsMulCoboundary₂ this |>.2
 
@@ -580,14 +580,14 @@ variable {X : BrauerGroup F} (A : GoodRep K X)
 
 omit [FiniteDimensional F K] in
 lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
-    LinearIndependent K (v := fun (i : Gal(K, F)) => (x_ i).1.1) := by
+    LinearIndependent K (v := fun (i : Gal(K/F)) => (x_ i).1.1) := by
   classical
   by_contra! rid
-  obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : Gal(K, F)) => (x_ i).1.1)
+  obtain ⟨J, LI, maximal⟩ := exists_maximal_linearIndepOn K (fun (i : Gal(K/F)) => (x_ i).1.1)
   have ne : J ≠ Set.univ := by
     rintro rfl
     refine rid ?_
-    let e : (Set.univ : Set Gal(K, F)) ≃ Gal(K, F) := Equiv.Set.univ Gal(K, F)
+    let e : (Set.univ : Set Gal(K/F)) ≃ Gal(K/F) := Equiv.Set.univ Gal(K/F)
     have := linearIndependent_equiv e.symm |>.2 LI
     exact this
   rw [Set.ne_univ_iff_exists_notMem] at ne
@@ -668,9 +668,9 @@ lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
   subst eq7
   exact hσ τ.2
 variable [IsGalois F K] in
-def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis Gal(K, F) K A :=
+def conjFactorBasis (x_ : Π σ, A.conjFactor σ) : Basis Gal(K/F) K A :=
   basisOfLinearIndependentOfCardEqFinrank
-    (b := fun (i : Gal(K, F)) => (x_ i).1.1)
+    (b := fun (i : Gal(K/F)) => (x_ i).1.1)
     (A.conjFactor_linearIndependent x_)
     (by rw [A.dim_eq', Fintype.card_eq_nat_card, IsGalois.card_aut_eq_finrank])
 
@@ -684,7 +684,7 @@ section from_two
 
 open CrossProductAlgebra
 
-variable [IsGalois F K] [DecidableEq Gal(K, F)]
+variable [IsGalois F K] [DecidableEq Gal(K/F)]
 
 def fromCocycles₂ (f : cocycles₂ (galAct F K)) : RelativeBrGroup K F :=
   haveI := groupCohomology.isMulCocycle₂_of_mem_cocycles₂ _ f.2
@@ -711,7 +711,7 @@ def fromSnd :
     rw [← map_sub, H2π_eq_zero_iff] at H'
     have ha : Fact <| IsMulCocycle₂ a := ⟨isMulCocycle₂_of_mem_cocycles₂ a ha⟩
     have hb : Fact <| IsMulCocycle₂ b := ⟨isMulCocycle₂_of_mem_cocycles₂ b hb⟩
-    have hc : IsMulCoboundary₂ (G := Gal(K, F)) (M := Kˣ) (a / b) :=
+    have hc : IsMulCoboundary₂ (G := Gal(K/F)) (M := Kˣ) (a / b) :=
       isMulCoboundary₂_of_mem_coboundaries₂ _ H'
     obtain ⟨c, hc⟩ := hc
     simp only [fromCocycles₂, Subtype.mk.injEq, Quotient.eq'']
@@ -720,7 +720,7 @@ def fromSnd :
     change IsBrauerEquivalent A B
     letI : Module K A := inferInstanceAs <| Module K (CrossProductAlgebra a)
     letI : Module K B := inferInstanceAs <| Module K (CrossProductAlgebra b)
-    let basis : Basis Gal(K, F) K B := (basis (f := b)).unitsSMul c
+    let basis : Basis Gal(K/F) K B := (basis (f := b)).unitsSMul c
     let φ0 : A ≃ₗ[K] B := CrossProductAlgebra.basis.equiv basis (.refl _)
     haveI : LinearMap.CompatibleSMul A B F K := by
       constructor
@@ -854,7 +854,7 @@ lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id :=
     π_comp_H2Iso_hom_apply, CategoryTheory.Iso.inv_hom_id_apply]
   erw [fromSnd_wd]
   rw [toSnd_wd _ _ y_]
-  let b : Gal(K, F) × Gal(K, F) → Kˣ := A.toCocycles₂ y_
+  let b : Gal(K/F) × Gal(K/F) → Kˣ := A.toCocycles₂ y_
   change H2π _ _ = H2π _ _
   rw [← sub_eq_zero, ← map_sub, H2π_eq_zero_iff]
   -- rw [Submodule.quotientRel_def]
@@ -889,7 +889,7 @@ lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id 
   erw [fromSnd_wd]
   rw [Quotient.eq'']
   apply IsBrauerEquivalent.iso_to_eqv
-  set f : Gal(K, F) × Gal(K, F) → Kˣ :=
+  set f : Gal(K/F) × Gal(K/F) → Kˣ :=
     Additive.toMul ∘ cocyclesOfIsMulCocycle₂ (GoodRep.isMulCocycle₂
       A.arbitraryConjFactor)
   haveI : Fact (IsMulCocycle₂ f) := by

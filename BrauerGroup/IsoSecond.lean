@@ -16,7 +16,7 @@ variable (K F : Type) [Field K] [Field F] [Algebra F K]
 -- namespace map_one_proof
 -- section map_one
 
--- variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K, F)]
+-- variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K/F)]
 
 -- -- def φ0 :
 --     CrossProduct (F := F) (K := K) (a := 1)
@@ -64,7 +64,7 @@ section map_mul
 
 open groupCohomology
 
-variable {α β : Gal(K, F) × Gal(K, F) → Kˣ} [Fact (IsMulCocycle₂ α)] [Fact (IsMulCocycle₂ β)]
+variable {α β : Gal(K/F) × Gal(K/F) → Kˣ} [Fact (IsMulCocycle₂ α)] [Fact (IsMulCocycle₂ β)]
 
 local notation "A" => CrossProductAlgebra α
 local notation "B" => CrossProductAlgebra β
@@ -209,7 +209,7 @@ def C_smul_aux (c : C) : M α β →ₗ[F] M α β :=
   Submodule.mapQ (Submodule.span F (S α β)) (Submodule.span F (S α β))
     (TensorProduct.lift
       { toFun a := {
-          toFun b := ∑ σ : Gal(K, F), ((c.1 σ • basis σ) * a) ⊗ₜ (basis σ * b)
+          toFun b := ∑ σ : Gal(K/F), ((c.1 σ • basis σ) * a) ⊗ₜ (basis σ * b)
           map_add' b b' := by
             rw [← Finset.sum_add_distrib]
             refine Finset.sum_congr rfl fun σ _ => ?_
@@ -255,7 +255,7 @@ def C_smul_aux (c : C) : M α β →ₗ[F] M α β :=
       congr 1
       field_simp [← _root_.mul_assoc])
 
-lemma C_smul_aux_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
+lemma C_smul_aux_calc (k : K) (σ : Gal(K/F)) (a : A) (b : B) :
     C_smul_aux (k • basis σ) (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M α β) =
     Submodule.Quotient.mk (((k • basis σ) * a) ⊗ₜ (basis σ * b)) := by
   delta C_smul_aux
@@ -307,7 +307,7 @@ instance : SMul C (M α β) where
 
 lemma C_smul_def (c : C) (x : M α β) : c • x = C_smul c x := rfl
 
-lemma C_smul_calc (k : K) (σ : Gal(K, F)) (a : A) (b : B) :
+lemma C_smul_calc (k : K) (σ : Gal(K/F)) (a : A) (b : B) :
     (k • basis σ : C) • (Submodule.Quotient.mk (a ⊗ₜ[F] b) : M α β) =
     Submodule.Quotient.mk (((k • basis σ) * a) ⊗ₜ (basis σ * b)) :=
   C_smul_aux_calc k σ a b
@@ -1009,7 +1009,7 @@ end map_mul_proof
 
 namespace RelativeBrGroup
 
-variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K, F)]
+variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K/F)]
 
 -- @[simps]
 -- def fromSndAddMonoidHom :

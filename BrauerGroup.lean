@@ -1,4 +1,4 @@
-module  -- shake: keep-all
+module  -- shake: keep-all --deprecated_module: ignore
 
 public import BrauerGroup.AbsoluteIsoH2
 public import BrauerGroup.AlgClosedUnion
@@ -18,7 +18,6 @@ public import BrauerGroup.FiniteField
 public import BrauerGroup.FrobeniusTheorem
 public import BrauerGroup.IsoSecond
 public import BrauerGroup.LemmasAboutSimpleRing
-public import BrauerGroup.Mathlib.Algebra.Algebra.Equiv
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Lattice

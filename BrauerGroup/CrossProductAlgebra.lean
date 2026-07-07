@@ -1,6 +1,5 @@
 module
 
-public import BrauerGroup.Mathlib.Algebra.Algebra.Equiv
 public import BrauerGroup.Mathlib.Data.DFinsupp.Submonoid
 public import BrauerGroup.Mathlib.LinearAlgebra.LinearIndependent.Defs
 public import BrauerGroup.Mathlib.RingTheory.Congruence.Basic
@@ -25,11 +24,11 @@ open groupCohomology Function Module
 
 suppress_compilation
 
-variable {R S F K : Type*} [Field F] [Field K] [Algebra F K] {f : Gal(K, F) × Gal(K, F) → Kˣ}
+variable {R S F K : Type*} [Field F] [Field K] [Algebra F K] {f : Gal(K/F) × Gal(K/F) → Kˣ}
 
 @[ext]
-structure CrossProductAlgebra (f : Gal(K, F) × Gal(K, F) → Kˣ) where
-  val : Gal(K, F) →₀ K
+structure CrossProductAlgebra (f : Gal(K/F) × Gal(K/F) → Kˣ) where
+  val : Gal(K/F) →₀ K
 
 namespace CrossProductAlgebra
 variable {x y : CrossProductAlgebra f}
@@ -68,19 +67,19 @@ instance [Semiring R] [Module R K] : SMul R (CrossProductAlgebra f) where
 @[simp] lemma val_sub (x y : CrossProductAlgebra f) : (x - y).val = x.val - y.val := rfl
 
 @[simp] lemma mk_zero : (mk 0 : CrossProductAlgebra f) = 0 := rfl
-@[simp] lemma mk_add_mk (x y : Gal(K, F) →₀ K) :
+@[simp] lemma mk_add_mk (x y : Gal(K/F) →₀ K) :
     (mk x + mk y : CrossProductAlgebra f) = mk (x + y) := rfl
-@[simp] lemma smul_mk [Semiring R] [Module R K] (r : R) (x : Gal(K, F) →₀ K) :
+@[simp] lemma smul_mk [Semiring R] [Module R K] (r : R) (x : Gal(K/F) →₀ K) :
     (r • mk x : CrossProductAlgebra f) = mk (r • x) := rfl
-@[simp] lemma neg_mk (x : Gal(K, F) →₀ K) : (- mk x : CrossProductAlgebra f) = mk (-x) := rfl
-@[simp] lemma mk_sub_mk (x y : Gal(K, F) →₀ K) :
+@[simp] lemma neg_mk (x : Gal(K/F) →₀ K) : (- mk x : CrossProductAlgebra f) = mk (-x) := rfl
+@[simp] lemma mk_sub_mk (x y : Gal(K/F) →₀ K) :
     (mk x - mk y : CrossProductAlgebra f) = mk (x - y) := rfl
 
 instance addCommGroup : AddCommGroup (CrossProductAlgebra f) :=
   val_injective.addCommGroup val val_zero val_add val_neg val_sub (fun _ _ ↦ rfl) (fun _ _ ↦ rfl)
 
 @[simps]
-def valAddEquiv : CrossProductAlgebra f ≃+ (Gal(K, F) →₀ K) where
+def valAddEquiv : CrossProductAlgebra f ≃+ (Gal(K/F) →₀ K) where
   toFun := val
   invFun := mk
   left_inv _ := rfl
@@ -100,19 +99,19 @@ instance [Semiring R] [Semiring S] [Module R K] [Module S K] [Module R S] [IsSca
   smul_assoc r s x := by ext; simp [smul_assoc]
 
 @[simps]
-def valLinearEquiv [Semiring R] [Module R K] : CrossProductAlgebra f ≃ₗ[R] (Gal(K, F) →₀ K) where
+def valLinearEquiv [Semiring R] [Module R K] : CrossProductAlgebra f ≃ₗ[R] (Gal(K/F) →₀ K) where
   __ := valAddEquiv
   map_smul' := val_smul
 
 @[simps]
-def basis : Basis Gal(K, F) K (CrossProductAlgebra f) where
+def basis : Basis Gal(K/F) K (CrossProductAlgebra f) where
   repr := valLinearEquiv
 
-lemma basis_val (σ : Gal(K, F)) : (basis (f := f) σ).val = .single σ 1 := rfl
-lemma mk_single_one (σ : Gal(K, F)) : mk (.single σ 1) = basis (f := f) σ := rfl
+lemma basis_val (σ : Gal(K/F)) : (basis (f := f) σ).val = .single σ 1 := rfl
+lemma mk_single_one (σ : Gal(K/F)) : mk (.single σ 1) = basis (f := f) σ := rfl
 
 variable (f) in
-def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) :=
+def mulLinearMap : (Gal(K/F) →₀ K) →ₗ[F] (Gal(K/F) →₀ K) →ₗ[F] (Gal(K/F) →₀ K) :=
   Finsupp.lsum F fun σ =>
   { toFun c := Finsupp.lsum F fun τ =>
       { toFun d := .single (σ * τ) (c * σ d * f (σ, τ))
@@ -127,19 +126,19 @@ def mulLinearMap : (Gal(K, F) →₀ K) →ₗ[F] (Gal(K, F) →₀ K) →ₗ[F]
 
 variable (f) in
 @[simp]
-lemma mulLinearMap_single_single (c d : K) (σ τ : Gal(K, F)) :
+lemma mulLinearMap_single_single (c d : K) (σ τ : Gal(K/F)) :
     mulLinearMap f (.single σ c) (.single τ d) = .single (σ * τ) (c * σ d * f (σ, τ)) := by
   simp [mulLinearMap]
 
 variable (f) in
 @[simp]
-lemma mulLinearMap_single_left_apply (c : K) (σ : Gal(K, F)) (x : Gal(K, F) →₀ K) (τ : Gal(K, F)) :
+lemma mulLinearMap_single_left_apply (c : K) (σ : Gal(K/F)) (x : Gal(K/F) →₀ K) (τ : Gal(K/F)) :
     mulLinearMap f (.single σ c) x τ = c * σ (x (σ⁻¹ * τ)) * f (σ, σ⁻¹ * τ) := by
   classical simp +contextual [mulLinearMap, Finsupp.single_apply, ← eq_inv_mul_iff_mul_eq]
 
 variable (f) in
 @[simp]
-lemma mulLinearMap_single_right_apply (c : K) (σ : Gal(K, F)) (x : Gal(K, F) →₀ K) (τ : Gal(K, F)) :
+lemma mulLinearMap_single_right_apply (c : K) (σ : Gal(K/F)) (x : Gal(K/F) →₀ K) (τ : Gal(K/F)) :
     mulLinearMap f x (.single σ c) τ = x (τ * σ⁻¹) * τ (σ⁻¹ c) * f (τ * σ⁻¹, σ) := by
   classical simp +contextual [mulLinearMap, Finsupp.single_apply, ← eq_mul_inv_iff_mul_eq]
 
@@ -156,7 +155,7 @@ lemma one_def : (1 : CrossProductAlgebra f) = ⟨.single 1 (f (1, 1))⁻¹⟩ :=
 @[simp]
 lemma val_mul (x y : CrossProductAlgebra f) : (x * y).val = mulLinearMap f x.val y.val := rfl
 
-@[simp] lemma mk_mul_mk (x y : Gal(K, F) →₀ K) :
+@[simp] lemma mk_mul_mk (x y : Gal(K/F) →₀ K) :
     (mk x * mk y : CrossProductAlgebra f) = mk (mulLinearMap f x y) := rfl
 
 variable [Fact <| IsMulCocycle₂ f]
@@ -220,7 +219,7 @@ lemma algebraMap_val [CommSemiring R] [Algebra R F] [Algebra R K] [IsScalarTower
     Units.val_inv_eq_inv_val, ← Algebra.smul_def]
 
 omit [Fact <| IsMulCocycle₂ f] in
-lemma basis_smul_comm (σ : Gal(K, F)) (k1 k2 : K) (x : CrossProductAlgebra f) :
+lemma basis_smul_comm (σ : Gal(K/F)) (k1 k2 : K) (x : CrossProductAlgebra f) :
     (k1 • basis (f := f) σ) * (k2 • x) = σ k2 • k1 • basis σ * x := by
   apply val_injective
   simp only [basis, Basis.coe_ofRepr, valLinearEquiv_symm_apply, AddEquiv.toEquiv_eq_coe,
@@ -270,7 +269,7 @@ instance [CommSemiring R] [Algebra R K] :
 
 variable (f) in
 @[simps]
-def of (σ : Gal(K, F)) : (CrossProductAlgebra f)ˣ where
+def of (σ : Gal(K/F)) : (CrossProductAlgebra f)ˣ where
   val.val := .single σ 1
   inv.val := .single σ⁻¹ <| (f (σ⁻¹, σ))⁻¹ * (f (1, 1))⁻¹
   val_inv := by
@@ -292,20 +291,20 @@ def of (σ : Gal(K, F)) : (CrossProductAlgebra f)ˣ where
     inv_mul_cancel, map_one, mul_right_comm _ (f _ : K)⁻¹, mul_one, ne_eq, Units.ne_zero,
     not_false_eq_true, inv_mul_cancel₀, one_mul, val_one]
 
-lemma basis_eq_of (σ : Gal(K, F)) : basis σ = (of f σ).val := rfl
+lemma basis_eq_of (σ : Gal(K/F)) : basis σ = (of f σ).val := rfl
 
 variable (f) in
 @[simp] lemma of_one : of f 1 = incl f (f (1, 1)) := by ext; simp [incl_apply]
 
 variable (f) in
-@[simp] lemma of_mul_of (σ τ : Gal(K, F)) : of f σ * of f τ = incl f (f (σ, τ)) * of f (σ * τ) := by
+@[simp] lemma of_mul_of (σ τ : Gal(K/F)) : of f σ * of f τ = incl f (f (σ, τ)) * of f (σ * τ) := by
   ext; simp [incl_apply]
 
 @[simp]
-lemma basis_mul_basis (σ τ : Gal(K, F)) :
+lemma basis_mul_basis (σ τ : Gal(K/F)) :
     basis (f := f) σ * basis τ = incl f (f (σ, τ)) * basis (σ * τ) := of_mul_of ..
 
-lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) * of f σ := by
+lemma of_mul_incl (σ : Gal(K/F)) (c : K) : of f σ * incl f c = incl f (σ c) * of f σ := by
   ext : 1;
   simp only [incl_apply, val_mul, val_of_val, val_smul, val_one, Finsupp.smul_single, smul_eq_mul,
     mulLinearMap_single_single, mul_one, map_mul, map_inv₀, one_mul,
@@ -316,7 +315,7 @@ lemma of_mul_incl (σ : Gal(K, F)) (c : K) : of f σ * incl f c = incl f (σ c) 
 lemma sum_of (x : CrossProductAlgebra f) : x.val.sum (fun σ c ↦ c • (of f σ).val) = x := by
   ext; simp
 
-lemma of_conj (σ : Gal(K, F)) (k : K) : of f σ * incl f k * (of f σ)⁻¹ = incl f (σ k) := by
+lemma of_conj (σ : Gal(K/F)) (k : K) : of f σ * incl f k * (of f σ)⁻¹ = incl f (σ k) := by
   simp [of_mul_incl]
 
 variable [Module.Finite F K] [IsGalois F K]
@@ -340,16 +339,16 @@ instance : Algebra.IsCentral F (CrossProductAlgebra f) := by
   rw [Subalgebra.mem_center_iff] at hc
   -- By comparing the `σ * τ` coefficient of `c * d x_τ = d x_τ * c`,
   -- we get `d τ(c_{τ⁻¹στ}) f(τ, τ⁻¹στ) = c_σ σ(d) f(σ, τ)`.
-  have key (d : K) (σ τ : Gal(K, F)) :
+  have key (d : K) (σ τ : Gal(K/F)) :
       d * τ (c.val (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ) = c.val σ * σ d * f (σ, τ) := by
     simpa [incl_apply, mul_assoc] using congr(($(hc <| incl f d * (of f τ).val)).val (σ * τ))
   -- By substituting `d = 1` in the previous equality,
   -- we get `τ(c_{τ⁻¹στ}) f(τ, τ⁻¹στ) = c_σ f(σ, τ)`.
-  have key₁ (σ τ : Gal(K, F)) :
+  have key₁ (σ τ : Gal(K/F)) :
       τ (c.val (τ⁻¹ * σ * τ)) * f (τ, τ⁻¹ * σ * τ) = c.val σ * f (σ, τ) := by
     simpa using key 1 σ τ
   -- By substituting `σ = 1` in the previous equality, we get `τ(c_1 f(1, 1)) = c_1 f(1, 1)`.
-  have key₁₁ (τ : Gal(K, F)) : τ (c.val 1 * f (1, 1)) = c.val 1 * f (1, 1) := by
+  have key₁₁ (τ : Gal(K/F)) : τ (c.val 1 * f (1, 1)) = c.val 1 * f (1, 1) := by
     simpa [map_one_fst_of_isMulCocycle₂ Fact.out τ, map_one_snd_of_isMulCocycle₂ Fact.out τ]
       using key₁ 1 τ
   -- Since `τ` is arbitrary, this says `c_1 f(1, 1) ∈ F`.
@@ -374,7 +373,7 @@ set_option backward.isDefEq.respectTransparency false in
 variable (I) in
 /-- The standard basis for `CrossProductAlgebra f` descends to a basis for any of its non-trivial
 quotients. -/
-private def quotientBasis (hI : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotient := by
+private def quotientBasis (hI : I ≠ ⊤) : Basis Gal(K/F) K I.ringCon.Quotient := by
   -- Let `ϕ` be the quotient map.
   let ϕ := I.ringCon.mkL K
   refine .mk (v := ϕ ∘ basis) ?_ ?_; swap
@@ -391,7 +390,7 @@ private def quotientBasis (hI : I ≠ ⊤) : Basis Gal(K, F) K I.ringCon.Quotien
   | empty => simp
   -- Let's deal with the `J ∪ {σ}` case.
   | cons σ J hσ ih =>
-  -- Assume that there is some `a : Gal(K, F) → K` such that `∑ τ ∈ J, a_τ • ϕ(x_τ) = ϕ(x_σ)`.
+  -- Assume that there is some `a : Gal(K/F) → K` such that `∑ τ ∈ J, a_τ • ϕ(x_τ) = ϕ(x_σ)`.
   -- We want to prove `∀ τ ∈ J, a_τ = 0`.
   rw [Finset.coe_cons, linearIndepOn_insert <| Finset.mem_coe.not.2 hσ,
     Submodule.mem_span_image_finset_iff_exists_fun']
