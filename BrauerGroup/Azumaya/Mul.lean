@@ -13,7 +13,7 @@ suppress_compilation
 open Function
 open scoped TensorProduct
 
-universe u v
+universe v u
 
 variable (R : Type u) [CommRing R]
 
@@ -204,11 +204,11 @@ open MulOpposite
 --   [isAlgebra : Algebra R carrier]
 --   isAzumaya : IsAzumaya R carrier
 
-structure Azumaya (R : Type u) [CommRing R] extends AlgCat R where
+structure Azumaya (R : Type u) [CommRing R] extends AlgCat.{v} R where
   isAzumaya : IsAzumaya R carrier
 
 @[coe]
-instance : CoeSort (Azumaya R) (Type v) where
+instance : CoeSort (Azumaya.{v} R) (Type v) where
   coe s := s.carrier
 
 attribute [instance] Azumaya.isAzumaya
@@ -319,11 +319,11 @@ End R A ⊗ End R B ---------------> End R (A ⊗ B)
     |     |   `homTensorHomEquiv`     |   |
 End R Rⁿ ⊗ End R Rᵐ -------------> End R (Rⁿ ⊗ Rᵐ)
 -/
-lemma bij_homtensorhom (A B : Azumaya.{u, v} R) :
+lemma bij_homtensorhom (A B : Azumaya.{v} R) :
     Function.Bijective (TensorProduct.homTensorHomMap (.id R) A B A B) :=
   ⟨homTensorHomMap_inj R A B A B, homTensorHomMap_surj R A B A B⟩
 
-abbrev e1 (A B : Azumaya.{u, v} R) :
+abbrev e1 (A B : Azumaya.{v} R) :
     (Module.End R A ⊗[R] Module.End R B) ≃ₗ[R] Module.End R (A ⊗[R] B) :=
   .ofBijective (TensorProduct.homTensorHomMap _ A B A B) <| bij_homtensorhom R A B
 
@@ -336,7 +336,7 @@ lemma top_square_comm_apply (A B : Azumaya R) (x : (A ⊗[R] Aᵐᵒᵖ) ⊗[R] 
   erw [← AlgHom.comp_apply, AlgHom.coe_comp, ← top_square_comm]
   rfl
 
-lemma bij_mulLeftRight (A B : Azumaya.{u, v} R) :
+lemma bij_mulLeftRight (A B : Azumaya.{v} R) :
     Function.Bijective (AlgHom.mulLeftRight R (A ⊗[R] B)) :=
   Function.Bijective.of_comp_iff (AlgHom.mulLeftRight R (A ⊗[R] B))
     (e (R := R) (A := A) (B := B)).bijective|>.1 <| by
@@ -354,7 +354,7 @@ abbrev mul (A B : Azumaya R) : Azumaya R where
 instance : Mul (Azumaya R) where
   mul A B := mul R A B
 
-lemma mul_coe (A B : Azumaya R) : (A * B) = ⟨.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
+lemma mul_coe (A B : Azumaya.{v} R) : (A * B) = ⟨.of R (A ⊗[R] B), ⟨bij_mulLeftRight R A B⟩⟩ := rfl
 
 instance : One (Azumaya R) where
   one := ⟨.of R R, IsAzumaya_R R⟩
