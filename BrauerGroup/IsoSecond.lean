@@ -799,7 +799,7 @@ def C_iso_aux'' :
   commutes' f := by simp [Algebra.algebraMap_eq_smul_one]
 
 def C_iso : C ≃ₐ[F] (Matrix (Fin (Fintype.card ι)) (Fin (Fintype.card ι)) (Module.End C SM)ᵐᵒᵖ) :=
-  C_iso_aux''.trans (BrauerGroup.matrixEquivMatrixMop_algebra F (End C SM) (Fintype.card ι)).symm
+  C_iso_aux''.trans AlgEquiv.mopMatrix.symm
 
 end C_iso
 
@@ -989,7 +989,7 @@ def φ4 :
     (A ⊗[F] B) ≃ₐ[F]
     (Matrix (Fin (finrank F K * Fintype.card ι)) (Fin (finrank F K * Fintype.card ι))
       (Module.End C SM)ᵐᵒᵖ) :=
-  φ3.trans ((BrauerGroup.matrixEquivMatrixMop_algebra F _ _).symm)
+  φ3.trans (AlgEquiv.mopMatrix.symm)
 
 lemma isBrauerEquivalent : IsBrauerEquivalent (⟨.of F (A ⊗[F] B)⟩ : CSA F) ⟨.of F C⟩ := by
   let iso1 := C_iso (α := α) (β := β) |>.mapMatrix (m := Fin (finrank F K))

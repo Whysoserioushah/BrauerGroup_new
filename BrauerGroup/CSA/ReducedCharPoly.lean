@@ -2,7 +2,7 @@ module
 
 public import BrauerGroup.SplittingOfCSA
 public import BrauerGroup.DoubleCentralizer
-public import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
+public import Mathlib.RingTheory.TensorProduct.Maps
 public import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Basic
@@ -104,7 +104,7 @@ set_option maxSynthPendingDepth 2 in
 variable {K F E A n} in
 abbrev g (φ : F →ₐ[K] E) : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
   Algebra.TensorProduct.congr (Algebra.TensorProduct.rid φ.range E E|>.symm) AlgEquiv.refl |>.trans
-  <| Algebra.TensorProduct.assoc' K E φ.range E φ.range A|>.trans <|
+  <| Algebra.TensorProduct.assoc _ _ _ _ _ _|>.trans <|
   Algebra.TensorProduct.congr AlgEquiv.refl (e1'' A n e φ) |>.trans <|
   (matrixEquivTensor' _ _ _ ).symm
 
@@ -118,7 +118,7 @@ lemma mat_over_extension (φ : F →ₐ[K] E) (a : A) :
   use g e φ
   simp only [AlgEquiv.trans_apply, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom,
     Algebra.TensorProduct.map_tmul, map_one, Algebra.TensorProduct.one_def, AlgHom.coe_id, id_eq,
-    Algebra.TensorProduct.assoc'_apply, matrixEquivTensor'_symm_apply, one_smul,
+    Algebra.TensorProduct.assoc_tmul, matrixEquivTensor'_symm_apply, one_smul,
     AlgHom.mapMatrix_apply]
   ext i j
   simp [Matrix.map_apply]
@@ -368,7 +368,7 @@ theorem invariant_extend_scalars (L L_bar : Type u) [Field L] [Field L_bar] [Alg
     (ReducedCharPoly e a).mapAlgHom (Algebra.ofId F L) = ReducedCharPoly e0 (1 ⊗ₜ a) := by
   let e0' : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L := Algebra.TensorProduct.congr
     (Algebra.TensorProduct.rid F L L).symm AlgEquiv.refl|>.trans <|
-    Algebra.TensorProduct.assoc' _ _ _ _ _ _ |>.trans e0
+    Algebra.TensorProduct.assoc _ _ _ _ _ _ |>.trans e0
   obtain ⟨g, hg⟩ :=
     ReducedCharPoly.over_extension K F L A n e ((Algebra.ofId F L).restrictScalars K) a
   have : ReducedCharPoly e0' a = ReducedCharPoly e0 (1 ⊗ₜ a) := by simp [ReducedCharPoly, e0']

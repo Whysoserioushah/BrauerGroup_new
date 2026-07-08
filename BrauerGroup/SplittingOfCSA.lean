@@ -177,7 +177,8 @@ lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlg
   refine ⟨n, ?_⟩
   have := Module.finrank_matrix k_bar k_bar (Fin n) (Fin n)
   simp only [Fintype.card_fin, Module.finrank_self, mul_one] at this
-  exact dim_eq k k_bar A|>.trans <| LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
+  exact (Module.finrank_baseChange (R := k_bar) (S := k) (M' := A)).symm|>.trans <|
+    LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
 def deg (A : CSA k) : ℕ := dim_is_sq k A k_bar |>.choose
 

@@ -131,11 +131,11 @@ def toEnd : A ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
       from mul_assoc _ _ _ |>.symm
 
 -- instance : Algebra.IsCentral K Aᵐᵒᵖ := inferInstance -- CSA_op_is_CSA K A inferInstance
-instance : FiniteDimensional K Aᵐᵒᵖ := LinearEquiv.finiteDimensional
-  (MulOpposite.opLinearEquiv K : A ≃ₗ[K] Aᵐᵒᵖ)
+-- instance : FiniteDimensional K Aᵐᵒᵖ := LinearEquiv.finiteDimensional
+--   (MulOpposite.opLinearEquiv K : A ≃ₗ[K] Aᵐᵒᵖ)
 
-instance fin_end : FiniteDimensional K (Module.End K A) :=
-  LinearMap.finiteDimensional
+-- instance fin_end : FiniteDimensional K (Module.End K A) :=
+--   LinearMap.finiteDimensional
 
 omit [Algebra.IsCentral K A] hA in
 lemma dim_eq :
@@ -290,72 +290,6 @@ theorem eqv_mat (A : CSA K) (n : ℕ) [hn : NeZero n] : IsBrauerEquivalent A (ma
   unfold matrix_A one_mul_in eqv_in
   exact ⟨dim_one_iso _ |>.symm⟩
 
-def matrixEquivForward (m n : Type*) [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] :
-    Matrix m m K ⊗[K] Matrix n n K →ₐ[K] Matrix (m × n) (m × n) K :=
-  Algebra.TensorProduct.algHomOfLinearMapTensorProduct
-    (TensorProduct.lift Matrix.kroneckerBilinear)
-    (fun _ _ _ _ => Matrix.mul_kronecker_mul _ _ _ _)
-    (Matrix.one_kronecker_one (α := K))
-
-open scoped Kronecker in
-lemma matrixEquivForward_tmul (m n : Type*) [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
-    (M : Matrix m m K) (N : Matrix n n K) : matrixEquivForward m n (M ⊗ₜ N) = M ⊗ₖ N := rfl
-
-lemma matrixEquivForward_surjective
-    (n m : Type*) [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] :
-    Function.Surjective <| matrixEquivForward (K := K) m n := by
-  intro x
-  rw [Matrix.matrix_eq_sum_single x]
-  suffices H :
-      ∀ (i j : m × n), ∃ a, (matrixEquivForward m n) a = Matrix.single i j (x i j) by
-    choose a ha using H
-    use ∑ i : m × n, ∑ j : m × n, a i j
-    rw [map_sum]
-    simp_rw [map_sum]
-    simp_rw [ha]
-  intro i j
-  rw [show Matrix.single i j (x i j) = (x i j) • Matrix.single i j 1 by
-    rw [Matrix.smul_single, Algebra.smul_def,  mul_one]
-    rfl]
-  use (x i j) • ((Matrix.single i.1 j.1 1) ⊗ₜ (Matrix.single i.2 j.2 1))
-  rw [_root_.map_smul (f := (matrixEquivForward (K := K) m n)) (x i j)]
-  congr 1
-  simp only [matrixEquivForward, Algebra.TensorProduct.algHomOfLinearMapTensorProduct_apply,
-    TensorProduct.lift.tmul]
-  ext a b
-  erw [Matrix.kroneckerMapBilinear_apply_apply]
-  erw [Matrix.kroneckerMap_apply]
-  erw [Algebra.coe_lmul_eq_mul]
-  rw [LinearMap.mul]
-  simp only [LinearMap.mk₂_apply]
-  simp only [Matrix.single, Matrix.of_apply, mul_ite, mul_one, mul_zero]
-  split_ifs with h1 h2 h3 h4 h5
-  · rfl
-  · simp only [not_and, ne_eq] at h3
-    refine h3 ?_ ?_ |>.elim <;> ext <;> aesop
-  · simp only [not_and] at h2
-    refine h2 ?_ ?_ |>.elim <;> aesop
-  · rfl
-  · simp only [not_and] at h1
-    refine h1 ?_ ?_ |>.elim <;> aesop
-  · rfl
-
-def matrix_eqv (m n : ℕ) : (Matrix (Fin m) (Fin m) K) ⊗[K] (Matrix (Fin n) (Fin n) K) ≃ₐ[K]
-    Matrix (Fin m × Fin n) (Fin m × Fin n) K :=
-  .ofBijective (matrixEquivForward (Fin m) (Fin n)) <| by
-    if h : n = 0 ∨ m = 0
-    then
-      rcases h with h|h <;>
-      subst h <;>
-      refine ⟨?_, matrixEquivForward_surjective _ _⟩ <;>
-      intro x y _ <;>
-      apply Subsingleton.elim
-    else
-    have : Nonempty (Fin n) := ⟨0, by omega⟩
-    have : Nonempty (Fin m) := ⟨0, by omega⟩
-    apply bijective_of_surj_of_isCentralSimple
-    apply matrixEquivForward_surjective
-
 lemma one_mul (n : ℕ) [hn : NeZero n] (A : CSA K) :
     IsBrauerEquivalent A (one_mul_in n A) :=
   ⟨n, 1, hn.1, one_ne_zero, ⟨.symm <| (dim_one_iso _).trans <| matrixEquivTensor _ _ _ |>.symm⟩⟩
@@ -375,7 +309,7 @@ def kroneckerMatrixTensor' (A B : Type*) [Ring A] [Ring B] [Algebra K A] [Algebr
   .trans (Algebra.TensorProduct.congr (matrixEquivTensor (Fin n) K A) <|
     matrixEquivTensor (Fin m) K B) <| (Algebra.TensorProduct.tensorTensorTensorComm ..).trans <|
       .trans
-    (Algebra.TensorProduct.congr .refl <| (matrix_eqv ..).trans <| matrix_eqv' ..)
+    (Algebra.TensorProduct.congr .refl <| (Matrix.kroneckerAlgEquiv _ _ K).trans <| matrix_eqv' ..)
     (matrixEquivTensor ..).symm
 
 theorem eqv_tensor_eqv
@@ -426,30 +360,12 @@ lemma inv_mul (A : CSA.{u, u} K) : IsBrauerEquivalent (mul (inv (K := K) A) A) o
   have := tensor_op_self K A
   exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso _|>.trans this⟩⟩
 
-variable (K R : Type*) [CommSemiring K] [Semiring R] [Algebra K R] in
-open Matrix MulOpposite in
-/-- Mn(Rᵒᵖ) ≃ₐ[K] Mₙ(R)ᵒᵖ -/
-def matrixEquivMatrixMop_algebra (n : ℕ) :
-    Matrix (Fin n) (Fin n) Rᵐᵒᵖ ≃ₐ[K] (Matrix (Fin n) (Fin n) R)ᵐᵒᵖ where
-  toFun M := op (M.transpose.map (fun d => d.unop))
-  invFun M := M.unop.transpose.map (fun d => op d)
-  left_inv a := by aesop
-  right_inv a := by aesop
-  map_mul' x y := unop_injective <| by ext; simp [transpose_map, transpose_apply, mul_apply]
-  map_add' x y := by aesop
-  commutes' k := by
-    simp only [MulOpposite.algebraMap_apply, op_inj]; ext i j
-    simp only [map_apply, transpose_apply, algebraMap_matrix_apply]
-    if h : i = j then simp only [h, ↓reduceIte, MulOpposite.algebraMap_apply, unop_op]
-    else simp only [MulOpposite.algebraMap_apply, h, ↓reduceIte, unop_eq_zero_iff, ite_eq_right_iff,
-      op_eq_zero_iff]; tauto
-
 lemma inv_eqv (A B : CSA K) (hAB : IsBrauerEquivalent A B) :
     IsBrauerEquivalent (inv (K := K) A) (inv (K := K) B) := by
   unfold inv
   obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hAB
-  refine ⟨n, m, hn, hm, ⟨(matrixEquivMatrixMop_algebra _ _ _).trans <|
-    (AlgEquiv.op iso).trans (matrixEquivMatrixMop_algebra _ _ _).symm⟩⟩
+  refine ⟨n, m, hn, hm, ⟨AlgEquiv.mopMatrix.trans <|
+    (AlgEquiv.op iso).trans AlgEquiv.mopMatrix.symm⟩⟩
 
 set_option backward.isDefEq.respectTransparency false in
 instance Inv : Inv (BrauerGroup (K := K)) where

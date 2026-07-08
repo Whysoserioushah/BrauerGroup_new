@@ -54,17 +54,6 @@ def SubField.adjoin_commRing (L : SubField K D) (a : D) (ha : a ∈ Subalgebra.c
     ext
     simp [SubField.adjoin_centralizer_mul_comm K D L a ha x y hx hy]
 
-instance SubField.adjoin_isDomain (L : SubField K D) (a : D) :
-    IsDomain (Algebra.adjoin K (L ∪ {a})) where
-  mul_left_cancel_of_ne_zero {x} hx y z eq := by
-    have eq' := Subtype.ext_iff.1 eq
-    simp at eq'
-    exact eq'.resolve_right hx
-  mul_right_cancel_of_ne_zero {x} hx y z eq := by
-    have eq' := Subtype.ext_iff.1 eq
-    simp at eq'
-    exact eq'.resolve_right hx
-
 def SubField.adjoin (L : SubField K D) (a : D) (ha : a ∈ Subalgebra.centralizer K L) :
     SubField K D where
   __ := Algebra.adjoin K (L ∪ {a})
