@@ -26,6 +26,8 @@ group.
   two-sided ideals of `A ⊗[K] B`.
 * `Algebra.TensorProduct.isSimpleRing`: the tensor product of a central simple algebra and a
   simple algebra is simple.
+* `IsSimpleRing.left_of_tensor`, `IsSimpleRing.right_of_tensor`: conversely, simplicity
+  descends to both tensor factors (without any centrality assumption).
 
 ## References
 
@@ -199,3 +201,62 @@ instance Algebra.TensorProduct.isSimpleRing' [IsSimpleRing B] [Algebra.IsCentral
     [IsSimpleRing A] : IsSimpleRing (A ⊗[K] B) :=
   IsSimpleRing.of_ringEquiv (Algebra.TensorProduct.comm K B A).toRingEquiv <|
     Algebra.TensorProduct.isSimpleRing (K := K) (A := B) (B := A)
+
+/-- If `A ⊗[K] B` is nontrivial then so is the left factor `A`. -/
+theorem Algebra.TensorProduct.nontrivial_left [Nontrivial (A ⊗[K] B)] : Nontrivial A := by
+  by_contra h
+  rw [not_nontrivial_iff_subsingleton] at h
+  exact one_ne_zero (α := A ⊗[K] B) <| by
+    rw [Algebra.TensorProduct.one_def, Subsingleton.elim (1 : A) 0, zero_tmul]
+
+/-- If `A ⊗[K] B` is nontrivial then so is the right factor `B`. -/
+theorem Algebra.TensorProduct.nontrivial_right [Nontrivial (A ⊗[K] B)] : Nontrivial B := by
+  by_contra h
+  rw [not_nontrivial_iff_subsingleton] at h
+  exact one_ne_zero (α := A ⊗[K] B) <| by
+    rw [Algebra.TensorProduct.one_def, Subsingleton.elim (1 : B) 0, tmul_zero]
+
+namespace IsSimpleRing
+
+variable (K A B)
+
+/-- Simplicity descends to the left factor of a tensor product: if `A ⊗[K] B` is a simple
+ring then so is `A`. Note that no centrality is assumed. -/
+theorem left_of_tensor [h : IsSimpleRing (A ⊗[K] B)] : IsSimpleRing A := by
+  have hA : Nontrivial A := Algebra.TensorProduct.nontrivial_left (K := K) (B := B)
+  have hB : Nontrivial B := Algebra.TensorProduct.nontrivial_right (K := K) (A := A)
+  refine ⟨⟨fun I ↦ ?_⟩⟩
+  rcases eq_bot_or_eq_top (I.map (includeLeft : A →ₐ[K] A ⊗[K] B)) with hI | hI
+  · -- `I` maps to `⊥`, and `A` embeds into `A ⊗[K] B`, so `I = ⊥`.
+    refine Or.inl (eq_bot_iff.2 fun a ha ↦ (TwoSidedIdeal.mem_bot _).2 ?_)
+    have hmem := TwoSidedIdeal.mem_map_of_mem (f := (includeLeft : A →ₐ[K] A ⊗[K] B)) ha
+    rw [hI, TwoSidedIdeal.mem_bot] at hmem
+    exact Algebra.TensorProduct.includeLeft_injective (S := K)
+      (FaithfulSMul.algebraMap_injective K B) (by simpa using hmem)
+  · -- `I` maps to `⊤`; if `I ≠ ⊤` then `(A ⧸ I) ⊗[K] B` is nontrivial but killed by `⊤`.
+    right
+    by_contra hne
+    have h1 : (1 : A) ∉ I := fun h1 ↦ hne (TwoSidedIdeal.eq_top _ h1)
+    haveI : Nontrivial (A ⧸ I.asIdeal) := nontrivial_of_ne (Ideal.Quotient.mk _ 1) 0 fun h ↦
+      h1 (TwoSidedIdeal.mem_asIdeal.1 (Ideal.Quotient.eq_zero_iff_mem.1 h))
+    haveI : Nontrivial ((A ⧸ I.asIdeal) ⊗[K] B) :=
+      Algebra.TensorProduct.nontrivial_of_algebraMap_injective_of_flat_left _ _ _
+        (FaithfulSMul.algebraMap_injective K B)
+    have hle : I.map (includeLeft : A →ₐ[K] A ⊗[K] B) ≤
+        (⊥ : TwoSidedIdeal ((A ⧸ I.asIdeal) ⊗[K] B)).comap
+          (Algebra.TensorProduct.rTensor B (Ideal.Quotient.mkₐ K I.asIdeal)) :=
+      (TwoSidedIdeal.map_le_iff_le_comap _ _).2 fun a ha ↦ (TwoSidedIdeal.mem_comap _).2 <|
+        (TwoSidedIdeal.mem_bot _).2 <| by
+          simp [Ideal.Quotient.eq_zero_iff_mem.2 (TwoSidedIdeal.mem_asIdeal.2 ha)]
+    have hone := hle (show (1 : A ⊗[K] B) ∈ _ by rw [hI]; trivial)
+    rw [TwoSidedIdeal.mem_comap, TwoSidedIdeal.mem_bot, map_one] at hone
+    exact one_ne_zero hone
+
+/-- Simplicity descends to the right factor of a tensor product: if `A ⊗[K] B` is a simple
+ring then so is `B`. Note that no centrality is assumed. -/
+theorem right_of_tensor [IsSimpleRing (A ⊗[K] B)] : IsSimpleRing B :=
+  have : IsSimpleRing (B ⊗[K] A) :=
+    .of_ringEquiv (Algebra.TensorProduct.comm K A B).toRingEquiv ‹_›
+  left_of_tensor K B A
+
+end IsSimpleRing

@@ -49,3 +49,33 @@ instance Algebra.IsCentral.baseChange (L : Type*) [Field L] [Algebra k L] [Algeb
       simp only [AlgHom.toRingHom_eq_coe, toRingHom_ofId] at hr
       simp [-TensorProduct.tmul_smul, TensorProduct.smul_tmul, ← algebraMap_eq_smul_one, hr]
     | add x y h1 h2 => rw [map_add]; exact add_mem h1 h2
+
+/-- Centrality descends along a field base change: if `L ⊗[k] A` is a central `L`-algebra
+then `A` is a central `k`-algebra. Note the change of base field — this is not
+`Algebra.IsCentral.right_of_tensor`, which keeps the base field fixed (and cannot apply
+here, since the ring-center of `L ⊗[k] A` is `L·1`, not `k·1`). Neither nontriviality nor
+finite-dimensionality of `A` is needed. -/
+theorem Algebra.IsCentral.of_baseChange (L : Type*) [Field L] [Algebra k L]
+    [h : Algebra.IsCentral L (L ⊗[k] A)] : Algebra.IsCentral k A where
+  out z hz := by
+    -- `1 ⊗ z` is central in `L ⊗[k] A`, hence of the form `c ⊗ 1`
+    have h1 : (1 : L) ⊗ₜ[k] z ∈ Subalgebra.center L (L ⊗[k] A) := by
+      rw [Subalgebra.mem_center_iff]
+      intro x
+      induction x using TensorProduct.induction_on with
+      | zero => rw [zero_mul, mul_zero]
+      | tmul c a => rw [Algebra.TensorProduct.tmul_mul_tmul,
+          Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one,
+          Subalgebra.mem_center_iff.mp hz a]
+      | add u v hu hv => rw [add_mul, mul_add, hu, hv]
+    obtain ⟨c, hc⟩ := Algebra.mem_bot.mp (h.out h1)
+    -- retract `L` onto `k` linearly and apply the retraction to the first tensor factor
+    obtain ⟨g, hg⟩ := LinearMap.exists_leftInverse_of_injective (Algebra.linearMap k L)
+      (LinearMap.ker_eq_bot.mpr (FaithfulSMul.algebraMap_injective k L))
+    have hg1 : g 1 = 1 := by simpa using LinearMap.congr_fun hg 1
+    refine Algebra.mem_bot.mpr ⟨g c, ?_⟩
+    have h2 := congrArg (fun x => TensorProduct.lid k A (LinearMap.rTensor A g x)) hc
+    simp only [Algebra.TensorProduct.algebraMap_apply, Algebra.algebraMap_self,
+      RingHom.id_apply, LinearMap.rTensor_tmul, TensorProduct.lid_tmul, hg1, one_smul] at h2
+    rw [Algebra.algebraMap_eq_smul_one]
+    exact h2

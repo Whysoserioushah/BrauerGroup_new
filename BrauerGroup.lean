@@ -30,7 +30,6 @@ public import BrauerGroup.FieldCat
 public import BrauerGroup.FiniteField
 public import BrauerGroup.FrobeniusTheorem
 public import BrauerGroup.IsoSecond
-public import BrauerGroup.LemmasAboutSimpleRing
 public import BrauerGroup.LinearAlgebra.Dimension.Finite
 public import BrauerGroup.LinearAlgebra.Matrix.Module
 public import BrauerGroup.LinearAlgebra.Matrix.toLin

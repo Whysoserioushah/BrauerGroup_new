@@ -5,7 +5,7 @@ Authors: Jujian Zhang
 -/
 module
 
-public import BrauerGroup.LemmasAboutSimpleRing
+public import BrauerGroup.CentralSimple
 public import BrauerGroup.SkolemNoether
 public import Mathlib.LinearAlgebra.Basis.MulOpposite
 public import Mathlib.RingTheory.SimpleRing.Field
@@ -613,8 +613,8 @@ lemma centralizer_isSimple :
     rw [← OrderIso.isSimpleOrder_iff this]
     infer_instance
   exact IsSimpleRing.left_of_tensor (K := F)
-    (B := Subalgebra.centralizer F (B : Set A))
-    (C := Module.End F B)
+    (A := Subalgebra.centralizer F (B : Set A))
+    (B := Module.End F B)
 
 open centralizer_isSimple.aux in
 variable (F) in

@@ -2,7 +2,7 @@ module
 
 public import BrauerGroup.AlgClosedUnion
 public import BrauerGroup.ExtendScalar
-public import BrauerGroup.LemmasAboutSimpleRing
+public import BrauerGroup.CentralSimple
 public import Mathlib.Algebra.BrauerGroup.Defs
 public import Mathlib.Algebra.Central.Matrix
 public import Mathlib.Analysis.Normed.Ring.Lemmas
