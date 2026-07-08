@@ -1,5 +1,6 @@
 module
 
+public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 public import BrauerGroup.ToSecond
 
@@ -992,8 +993,7 @@ def φ4 :
 
 lemma isBrauerEquivalent : IsBrauerEquivalent (⟨.of F (A ⊗[F] B)⟩ : CSA F) ⟨.of F C⟩ := by
   let iso1 := C_iso (α := α) (β := β) |>.mapMatrix (m := Fin (finrank F K))
-  let iso11 := iso1.trans (Matrix.compAlgEquiv _ _ _ _) |>.trans
-    (Matrix.reindexAlgEquiv _ _ finProdFinEquiv)
+  let iso11 := iso1.trans (Matrix.compFinAlgEquiv _ _ _ _)
   let iso2 := φ4 (α := α) (β := β)
   let iso3 := iso11.trans iso2.symm
   haveI : NeZero (finrank F K) := ⟨by have : 0 < finrank F K := finrank_pos; omega⟩

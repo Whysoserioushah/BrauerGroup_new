@@ -4,8 +4,14 @@ public import BrauerGroup.AbsoluteIsoH2
 public import BrauerGroup.AlgClosedUnion
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Basic
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Centralizer
+public import BrauerGroup.Algebra.BrauerGroup.AlgClosed
+public import BrauerGroup.Algebra.BrauerGroup.BaseChange
 public import BrauerGroup.Algebra.BrauerGroup.Basic
+public import BrauerGroup.Algebra.BrauerGroup.FiniteField
+public import BrauerGroup.Algebra.BrauerGroup.Relative
+public import BrauerGroup.Algebra.Central.Matrix
 public import BrauerGroup.Algebra.Central.TensorProduct
+public import BrauerGroup.Algebra.Split
 public import BrauerGroup.Algebra.Module.LinearMap.End
 public import BrauerGroup.Azumaya.Basic
 public import BrauerGroup.Azumaya.Group
@@ -17,6 +23,7 @@ public import BrauerGroup.CategoryTheory.Endomorphism
 public import BrauerGroup.CentralSimple
 public import BrauerGroup.Centralizer
 public import BrauerGroup.CrossProductAlgebra
+public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.DoubleCentralizer
 public import BrauerGroup.ExtendScalar
 public import BrauerGroup.FieldCat
@@ -46,10 +53,12 @@ public import BrauerGroup.MatrixEquivTensor
 public import BrauerGroup.Morita.ChangeOfRings
 public import BrauerGroup.Morita.TensorProduct
 public import BrauerGroup.RelativeBrauer
+public import BrauerGroup.RingTheory.Finiteness.Basic
 public import BrauerGroup.RingTheory.Flat.TorsionFree
 public import BrauerGroup.RingTheory.Morita.End
 public import BrauerGroup.RingTheory.Morita.Matrix
 public import BrauerGroup.RingTheory.Morita.SimpleRing
+public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
 public import BrauerGroup.RingTheory.SimpleRing.TensorProduct
 public import BrauerGroup.RingTheory.TwoSidedIdeal.Operations
 public import BrauerGroup.RingTheory.TwoSidedIdeal.SpanAsSum

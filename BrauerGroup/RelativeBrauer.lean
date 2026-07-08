@@ -6,6 +6,7 @@ Authors: Yunzhou Xie, Jujian Zhang
 module
 
 public import BrauerGroup.BrauerGroup
+public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.SplittingOfCSA
 public import BrauerGroup.ZeroSevenFourE
 
@@ -60,15 +61,12 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
       let iso' := Wedderburn_Artin_algebra_version K (K ⊗[F] A)|>.choose_spec
         |>.2.choose_spec.choose_spec.choose_spec.some
       change K ⊗[F] A ≃ₐ[K] Matrix (Fin p) (Fin p) D at iso'
-      have e := Matrix.reindexAlgEquiv K _ (finProdFinEquiv.symm) |>.trans <|
-        Matrix.compAlgEquiv _ _ _ _|>.symm.trans <|
+      have e := (Matrix.compFinAlgEquiv _ _ _ K).symm.trans <|
         iso.mapMatrix (m := (Fin p))|>.symm.trans <|
         (Matrix.compAlgEquiv (Fin p) (Fin n) D K |>.trans <| Matrix.reindexAlgEquiv K D
         (Equiv.prodComm (Fin p) (Fin n))|>.trans <| Matrix.compAlgEquiv (Fin n) (Fin p) D K
         |>.symm.trans <| iso'.mapMatrix.symm).symm.mapMatrix |>.trans <|
-        Matrix.compAlgEquiv (Fin p) (Fin p) _ K |>.trans <| Matrix.reindexAlgEquiv K _
-        (finProdFinEquiv)|>.trans <| Matrix.compAlgEquiv _ _  D K|>.trans <|
-        Matrix.reindexAlgEquiv K _ (finProdFinEquiv)
+        Matrix.compFinAlgEquiv p p _ K |>.trans <| Matrix.compFinAlgEquiv _ _ D K
       have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) hp D iso'
       haveI : NeZero (p * p * n) := ⟨by simpa [hn]⟩
       haveI : NeZero (p * m) := ⟨by simpa [hm]⟩
@@ -130,8 +128,7 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
   have : NeZero m := ⟨hm⟩
   obtain ⟨isoAB⟩ := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin a') (Fin a') B) a (a' * m)
     SA e.symm SB <|
-      (AlgEquiv.mapMatrix ‹_›).trans <| (Matrix.compAlgEquiv _ _ _ _).trans <|
-        IsBrauerEquivalent.matrix_eqv' _ _ _
+      (AlgEquiv.mapMatrix ‹_›).trans <| Matrix.compFinAlgEquiv _ _ _ _
   exact ⟨SA, inferInstance, inferInstance, n, m, ⟨hn⟩, ⟨hm⟩, ⟨isoA⟩,
     ⟨isoB.trans isoAB.symm.mapMatrix⟩⟩
 

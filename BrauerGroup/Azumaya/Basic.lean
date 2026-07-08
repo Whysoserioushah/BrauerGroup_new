@@ -1,6 +1,7 @@
 module
 
 public import BrauerGroup.BrauerGroup
+public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.LemmasAboutSimpleRing
 public import BrauerGroup.Morita.ChangeOfRings
 public import Mathlib.RingTheory.SimpleRing.Congr
@@ -133,11 +134,9 @@ lemma IsMorita_iff_IsBrauer' (R : Type u) [CommRing R] (A B : Type v) [Ring A] [
     haveI h := MoritaEquivalence.trans R ww hAB.cond.some
     haveI h' := MoritaEquivalence.trans R h ww'
     have := MoritaEquivalence.algEquivOfDivisionRing R D E h'
-    refine ⟨m, n, hm, hn, ⟨e.mapMatrix.trans <| Matrix.compAlgEquiv _ _ _ _ |>.trans <|
-      Matrix.reindexAlgEquiv _ _ finProdFinEquiv |>.trans <| this.mapMatrix.trans <|
-      Matrix.reindexAlgEquiv _ _ finswap|>.trans <| Matrix.reindexAlgEquiv _ _
-      finProdFinEquiv.symm |>.trans <| Matrix.compAlgEquiv _ _ _ _|>.symm.trans
-      e'.symm.mapMatrix⟩⟩,
+    refine ⟨m, n, hm, hn, ⟨e.mapMatrix.trans <| Matrix.compFinAlgEquiv _ _ _ _ |>.trans <|
+      this.mapMatrix.trans <| Matrix.reindexAlgEquiv _ _ finswap|>.trans <|
+      (Matrix.compFinAlgEquiv _ _ _ _).symm.trans e'.symm.mapMatrix⟩⟩,
   fun ⟨n, m, hn, hm, ⟨e⟩⟩ ↦
   letI : NeZero n := ⟨hn⟩
   letI : NeZero m := ⟨hm⟩

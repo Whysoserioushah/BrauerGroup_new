@@ -1,5 +1,6 @@
 module
 
+public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.MatrixEquivTensor
 public import BrauerGroup.RelativeBrauer
 public import Mathlib.Algebra.Central.Basic
@@ -268,12 +269,11 @@ theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSp
   obtain ⟨p, hp, ⟨e⟩⟩ := hA
   obtain ⟨q, hq, D, hD1, _, ⟨e'⟩⟩ := Wedderburn_Artin_algebra_version K (K ⊗[F] B)
   haveI := is_fin_dim_of_wdb K (K ⊗[F] B) hq D e'
-  have ee := Matrix.reindexAlgEquiv _ _ finProdFinEquiv|>.symm.trans <|
-    Matrix.compAlgEquiv _ _ _ _ |>.symm.trans <| e'.mapMatrix.symm.trans <|
+  have ee := (Matrix.compFinAlgEquiv m q D K).symm.trans <| e'.mapMatrix.symm.trans <|
     matrixTensorEquivTensor K F B (Fin m) |>.symm.trans <|
     Algebra.TensorProduct.congr (A := K) (S := K) .refl iso|>.symm.trans <|
     matrixTensorEquivTensor K F A (Fin n)|>.trans <| e.mapMatrix (m := (Fin n))|>.trans <|
-      Matrix.compAlgEquiv (Fin n) (Fin p) K K |>.trans <| Matrix.reindexAlgEquiv K K finProdFinEquiv
+    Matrix.compFinAlgEquiv n p K K
   haveI : NeZero (m * q) := ⟨by aesop⟩
   haveI : NeZero (n * p) := ⟨by aesop⟩
   exact ⟨q, ⟨hq⟩, ⟨e'.trans <|
