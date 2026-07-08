@@ -56,5 +56,3 @@ public import BrauerGroup.ToSecond
 public import BrauerGroup.TwoSidedIdeal
 public import BrauerGroup.Wedderburn
 public import BrauerGroup.ZeroSevenFourE
-public import BrauerGroup.examples.CohomologyofCyclic
-public import BrauerGroup.examples.ShortComplex.LeftHomologyMapData
