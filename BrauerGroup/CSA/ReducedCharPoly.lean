@@ -5,7 +5,6 @@ public import BrauerGroup.DoubleCentralizer
 public import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
 public import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
-public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.GeneralLinearGroup.Basic
 public import Mathlib.Algebra.Central.TensorProduct
 public import Mathlib.RingTheory.SimpleRing.Congr
