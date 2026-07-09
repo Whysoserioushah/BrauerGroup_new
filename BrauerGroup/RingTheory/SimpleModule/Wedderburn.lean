@@ -33,7 +33,7 @@ theorem wedderburn_artin_divisionring_unique {n n' : ℕ} [NeZero n] [NeZero n']
   have : IsSimpleRing A := .of_ringEquiv wdb.symm.toRingEquiv inferInstance
   let _ : Module A (Fin n → D) := Module.compHom _ wdb.toRingEquiv.toRingHom
   have : IsScalarTower k A (Fin n → D) :=
-    IsSimpleRing.instIsScalarTowerForallFin_brauerGroup k A D wdb
+    IsSimpleRing.isScalarTower_compHom_pi k A D wdb
   haveI : IsSimpleModule A (Fin n → D) := simple_mod_of_wedderburn k A D wdb
   obtain ⟨iso⟩ := end_simple_mod_of_wedderburn' k A n D wdb (Fin n → D)
   obtain ⟨iso'⟩ := end_simple_mod_of_wedderburn' k A n' D' wdb' (Fin n → D)

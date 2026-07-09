@@ -202,7 +202,7 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
       simp [Algebra.algebraMap_eq_smul_one, ← Matrix.submatrix_submatrix] }
   ⟨r, deg_pos _ _ _, eq.symm,
   by
-    obtain ⟨u, hu⟩ := SkolemNoether' F _ _ h g
+    obtain ⟨u, hu⟩ := skolemNoether F _ _ h g
     specialize hu (1 ⊗ₜ a)
     delta ReducedCharPoly
     rw [hu, Matrix.coe_units_inv, Matrix.charpoly_units_conj u]

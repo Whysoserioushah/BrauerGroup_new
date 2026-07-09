@@ -5,8 +5,9 @@ Authors: Jujian Zhang
 -/
 module
 
+public import BrauerGroup.BrauerGroup
 public import BrauerGroup.CentralSimple
-public import BrauerGroup.SkolemNoether
+public import BrauerGroup.RingTheory.SkolemNoether
 public import Mathlib.LinearAlgebra.Basis.MulOpposite
 public import Mathlib.RingTheory.SimpleRing.Field
 
@@ -552,7 +553,7 @@ lemma step1 :
       ext
       simp only [LinearMap.mulLeft_apply, Algebra.smul_mul_assoc, one_mul, SetLike.val_smul,
         LinearMap.smul_apply, Module.End.one_apply] }
-  obtain ⟨x, hx⟩ := SkolemNoether' F (A ⊗[F] Module.End F B) B g f
+  obtain ⟨x, hx⟩ := skolemNoether F (A ⊗[F] Module.End F B) B g f
   use x
   have eq1 :
       ((Algebra.TensorProduct.includeLeft (R := F) (S := F) (A := A) (B := Module.End F B)).comp

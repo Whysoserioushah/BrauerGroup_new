@@ -30,7 +30,6 @@ public import BrauerGroup.FieldCat
 public import BrauerGroup.FiniteField
 public import BrauerGroup.FrobeniusTheorem
 public import BrauerGroup.IsoSecond
-public import BrauerGroup.LinearAlgebra.Dimension.Finite
 public import BrauerGroup.LinearAlgebra.Matrix.Module
 public import BrauerGroup.LinearAlgebra.Matrix.toLin
 public import BrauerGroup.LinearAlgebra.Quotient.Basic
@@ -59,9 +58,9 @@ public import BrauerGroup.RingTheory.Morita.Matrix
 public import BrauerGroup.RingTheory.Morita.SimpleRing
 public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
 public import BrauerGroup.RingTheory.SimpleRing.TensorProduct
+public import BrauerGroup.RingTheory.SkolemNoether
 public import BrauerGroup.RingTheory.TwoSidedIdeal.Operations
 public import BrauerGroup.RingTheory.TwoSidedIdeal.SpanAsSum
-public import BrauerGroup.SkolemNoether
 public import BrauerGroup.SplittingOfCSA
 public import BrauerGroup.Subfield.Defs
 public import BrauerGroup.Subfield.FiniteDimensional

@@ -1,5 +1,6 @@
 module
 
+public import BrauerGroup.ZeroSevenFourE
 public import BrauerGroup.FrobeniusTheorem
 
 @[expose] public section

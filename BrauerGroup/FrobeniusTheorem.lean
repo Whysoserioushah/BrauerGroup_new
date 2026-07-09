@@ -180,7 +180,7 @@ lemma linindep1i :
 variable [Algebra.IsCentral ℝ D] [FiniteDimensional ℝ D]
 
 lemma f_is_conjugation : ∃ (x : Dˣ), ∀ z, x.1⁻¹ * f k e z * x = k.val z := by
-  obtain ⟨x, hx⟩ := SkolemNoether' ℝ D k k.val (k.val.comp (f k e))
+  obtain ⟨x, hx⟩ := skolemNoether ℝ D k k.val (k.val.comp (f k e))
   use x
   intro z
   have hx2 := hx

@@ -92,8 +92,8 @@ variable (ρ σ τ : Gal(K/F))
 def conjFactor (σ : Gal(K/F)) : Type := {a : Aˣ // ∀ x : K, A.ι (σ x) = a * A.ι x * a⁻¹}
 
 def arbitraryConjFactor : A.conjFactor σ where
-  val := SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose
-  property x := SkolemNoether' F A K A.ι (A.ι.comp σ) |>.choose_spec x
+  val := skolemNoether F A K A.ι (A.ι.comp σ) |>.choose
+  property x := skolemNoether F A K A.ι (A.ι.comp σ) |>.choose_spec x
 
 variable {A ρ σ τ}
 
@@ -366,11 +366,11 @@ lemma exists_iso :
 def iso : A ≃ₐ[F] B := exists_iso A B |>.some
 
 def isoConjCoeff : Bˣ :=
-  SkolemNoether' F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose
+  skolemNoether F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose
 
 lemma isoConjCoeff_spec :
     ∀ r : K, B.ι r = (A.isoConjCoeff B) * (A.iso B <| A.ι r) * (A.isoConjCoeff B)⁻¹ :=
-  SkolemNoether' F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose_spec
+  skolemNoether F B K (AlgHom.comp (A.iso B).toAlgHom A.ι) B.ι |>.choose_spec
 
 lemma isoConjCoeff_spec' :
     ∀ r : K, (A.isoConjCoeff B)⁻¹ * B.ι r * (A.isoConjCoeff B) = (A.iso B <| A.ι r) := by
