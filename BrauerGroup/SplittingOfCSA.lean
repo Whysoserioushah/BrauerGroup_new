@@ -263,7 +263,7 @@ def extension_over_split (A : CSA k) (L L' : Type u) [Field L] [Field L'] [Algeb
     exact (e3.trans e4).trans <| Matrix.reindexAlgEquiv L' _ (finCongr e5)
 
 include k_bar in
-lemma extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
+theorem extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
     [Algebra.IsCentral k A] [FiniteDimensional k A] (L L' : Type u) [Field L] [Field L']
     [Algebra k L] (hA : isSplit k A L) [Algebra L L'] [Algebra k L'] [IsScalarTower k L L'] :
     isSplit k A L' := by

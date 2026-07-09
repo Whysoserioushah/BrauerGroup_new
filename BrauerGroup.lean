@@ -21,7 +21,6 @@ public import BrauerGroup.BrauerOverR
 public import BrauerGroup.CSA.ReducedCharPoly
 public import BrauerGroup.CategoryTheory.Endomorphism
 public import BrauerGroup.CentralSimple
-public import BrauerGroup.Centralizer
 public import BrauerGroup.CrossProductAlgebra
 public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.DoubleCentralizer
@@ -45,7 +44,6 @@ public import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 public import BrauerGroup.Mathlib.RingTheory.NonUnitalSubring.Defs
 public import BrauerGroup.Mathlib.RingTheory.NonUnitalSubsemiring.Basic
 public import BrauerGroup.Mathlib.RingTheory.NonUnitalSubsemiring.Defs
-public import BrauerGroup.Mathlib.RingTheory.TensorProduct.Basic
 public import BrauerGroup.MatrixCenterEquiv
 public import BrauerGroup.MatrixEquivTensor
 public import BrauerGroup.Morita.ChangeOfRings
