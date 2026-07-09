@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Algebra.Algebra.Subalgebra.Centralizer
+public import BrauerGroup.Algebra.Algebra.Opposite
 public import BrauerGroup.RingTheory.Flat.TorsionFree
 
 /-!
@@ -10,6 +11,8 @@ This file shows that the centralizer of tensor product of two subalgebras is equ
 of the centralizers of the two subalgebras.
 
 # Main results
+* `Subalgebra.centralizer_range_lmul` : inside `Module.End R B`, the centralizer of the left
+  regular representation is the right regular representation.
 * `centralizer_tensor_centralizer` : For subalgebras `B` of `A` and `B'` of `A'`,
   `C_A(B) ⊗ C_{A'}(B') = C_{A ⊗ A'}(B ⊗ B')`.
 
@@ -25,6 +28,26 @@ universe u v
 open scoped TensorProduct
 
 open Algebra.TensorProduct Subalgebra
+
+section RegularRepresentation
+
+variable (R B : Type*) [CommSemiring R] [Semiring B] [Algebra R B]
+
+/-- Inside `Module.End R B`, the centralizer of the left regular representation of `B` is the
+right regular representation: an endomorphism `φ` commuting with all left multiplications
+satisfies `φ z = z * φ 1`. -/
+theorem Subalgebra.centralizer_range_lmul :
+    Subalgebra.centralizer R (Algebra.lmul R B).range = (Algebra.rmul R B).range := by
+  ext φ
+  rw [Subalgebra.mem_centralizer_iff]
+  constructor
+  · intro h
+    exact ⟨.op (φ 1), LinearMap.ext fun z ↦ by
+      simpa using DFunLike.congr_fun (h (Algebra.lmul R B z) ⟨z, rfl⟩) (1 : B)⟩
+  · rintro ⟨c, rfl⟩ _ ⟨b, rfl⟩
+    exact LinearMap.ext fun z ↦ (mul_assoc b z c.unop).symm
+
+end RegularRepresentation
 
 variable {F A A' : Type*} [Field F] [Ring A] [Algebra F A] [Ring A']
   [Algebra F A'] (B : Subalgebra F A) (B' : Subalgebra F A')

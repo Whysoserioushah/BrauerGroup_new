@@ -5,6 +5,7 @@ Authors: Jujian Zhang
 -/
 module
 
+public import BrauerGroup.Algebra.Algebra.Subalgebra.Conj
 public import BrauerGroup.BrauerGroup
 public import BrauerGroup.CentralSimple
 public import BrauerGroup.RingTheory.SkolemNoether
@@ -255,181 +256,18 @@ lemma centralizer_mulLeft :
 
 end lemma2
 
-@[simps]
-def Subalgebra.conj (B : Subalgebra F A) (x : Aˣ) : Subalgebra F A where
-  carrier := {y | ∃ b ∈ B, y = x * b * x⁻¹}
-  mul_mem' := by
-    rintro _ _ ⟨b, hb, rfl⟩ ⟨c, hc, rfl⟩
-    exact ⟨b * c, B.mul_mem hb hc, by simp [mul_assoc]⟩
-  one_mem' := by
-    exact ⟨1, B.one_mem, by simp⟩
-  add_mem' := by
-    rintro _ _ ⟨b, hb, rfl⟩ ⟨c, hc, rfl⟩
-    exact ⟨b + c, B.add_mem hb hc, by simp [mul_add, add_mul]⟩
-  zero_mem' := by
-    exact ⟨0, B.zero_mem, by simp⟩
-  algebraMap_mem' := by
-    intro c
-    refine ⟨algebraMap _ _ c, B.algebraMap_mem c, ?_⟩
-    rw [mul_assoc, Algebra.commutes c (x⁻¹).1, ← mul_assoc]
-    simp
-
 omit [FiniteDimensional F A] [Algebra.IsCentral F A] [IsSimpleRing A] in
-lemma Subalgebra.mem_conj {B : Subalgebra F A} {x : Aˣ} {y : A} :
-    y ∈ B.conj x ↔ ∃ b ∈ B, y = x * b * x⁻¹ := by
-  simp only [conj]
-  rfl
-
-set_option backward.isDefEq.respectTransparency false in
-@[simps]
-def Subalgebra.toConj (B : Subalgebra F A) (x : Aˣ) : B →ₐ[F] B.conj x where
-  toFun b := ⟨x * b * x⁻¹, by simp [Subalgebra.mem_conj]⟩
-  map_one' := by
-    ext
-    simp
-  map_mul' := by
-    intros y z
-    ext
-    simp only [MulMemClass.coe_mul, MulMemClass.mk_mul_mk, mul_assoc]
-    rw [← mul_assoc x⁻¹.1, Units.inv_mul, one_mul]
-  map_zero' := by ext; simp
-  map_add' := by
-    intros y z
-    ext
-    simp only [AddMemClass.coe_add, mul_add, add_mul, AddMemClass.mk_add_mk]
-  commutes' := by
-    intros r
-    ext
-    simp only [SubalgebraClass.coe_algebraMap, mul_assoc]
-    rw [Algebra.commutes r, ← mul_assoc]
-    simp only [Units.mul_inv, one_mul]
-
-@[simps]
-def Subalgebra.fromConj (B : Subalgebra F A) (x : Aˣ) : B.conj x →ₐ[F] B where
-  toFun b := ⟨x⁻¹ * b * x, by
-    rcases b with ⟨_, ⟨b, hb, rfl⟩⟩
-    simpa [mul_assoc]⟩
-  map_one' := by
-    ext
-    simp
-  map_mul' := by
-    intros; ext; simp only [MulMemClass.coe_mul, ← mul_assoc, MulMemClass.mk_mul_mk,
-      Units.mul_inv_cancel_right]
-  map_zero' := by ext; simp
-  map_add' := by intros; ext; simp [mul_add, add_mul]
-  commutes' := by intros; ext; simp [← Algebra.commutes]
-
-def Subalgebra.conjEquiv (B : Subalgebra F A) (x : Aˣ) : B ≃ₐ[F] B.conj x :=
-  AlgEquiv.ofAlgHom (B.toConj x) (B.fromConj x)
-    (by ext; simp [mul_assoc]) (by ext; simp [mul_assoc])
-
-omit [FiniteDimensional F A] [Algebra.IsCentral F A] [IsSimpleRing A] in
-lemma Subalgebra.finrank_conj (B : Subalgebra F A) (x : Aˣ) :
-    Module.finrank F (B.conj x) = Module.finrank F B := by
-  rw [LinearEquiv.finrank_eq (Subalgebra.conjEquiv B x).toLinearEquiv]
-
-omit [FiniteDimensional F A] [Algebra.IsCentral F A] [IsSimpleRing A] in
-lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
+private lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
     IsSimpleOrder (TwoSidedIdeal <| B.conj x) ↔
-    IsSimpleOrder (TwoSidedIdeal B) := by
-  let e : TwoSidedIdeal (B.conj x) ≃o TwoSidedIdeal B :=
-  { toFun J := J.comap (B.toConj x)
-    invFun J := .mk'
-      (Set.image (B.toConj x) J)
-      (⟨0, TwoSidedIdeal.zero_mem _, by simp⟩)
-      (by
-        rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
-        rw [← map_add]
-        refine ⟨a + b, J.add_mem ha hb, rfl⟩)
-      (by
-        rintro _ ⟨a, ha, rfl⟩
-        rw [← map_neg]
-        refine ⟨-a, J.neg_mem ha, rfl⟩)
-      (by
-        rintro ⟨_, ⟨a, ha, rfl⟩⟩ _ ⟨b, hb, rfl⟩
-        refine ⟨⟨a, ha⟩ * b, J.mul_mem_left _ _ hb, ?_⟩
-        ext
-        simp only [toConj, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
-          MulMemClass.coe_mul, mul_assoc]
-        rw [← mul_assoc x⁻¹.1, Units.inv_mul, one_mul])
-      (by
-        rintro ⟨_, ⟨a, ha, rfl⟩⟩ ⟨_, ⟨b, hb, rfl⟩⟩ ⟨c, hc1, hc2⟩
-        simp only [toConj, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
-          Subtype.mk.injEq, Units.mul_left_inj, Units.mul_right_inj] at hc2
-        refine ⟨⟨a, ha⟩ * ⟨b, hb⟩, J.mul_mem_right _ _ <| by
-          simp_rw [← hc2]; exact hc1, ?_⟩
-        ext
-        simp only [toConj, MulMemClass.mk_mul_mk, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-          OneHom.coe_mk, mul_assoc]
-        rw [← mul_assoc x⁻¹.1, Units.inv_mul, one_mul])
-    left_inv := by
-      intro J
-      ext ⟨_, ⟨a, ha, rfl⟩⟩
-      simp only [toConj, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk]
-      generalize_proofs
-      rw [TwoSidedIdeal.mem_mk']
-      try assumption
-      simp only [Set.mem_image, SetLike.mem_coe, TwoSidedIdeal.mem_comap, AlgHom.coe_mk,
-        RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, Subtype.mk.injEq, Units.mul_left_inj,
-        Units.mul_right_inj, Subtype.exists, exists_and_right, exists_eq_right, ha,
-        exists_true_left]
-    right_inv := by
-      intro J
-      ext ⟨a, ha⟩
-      simp only [TwoSidedIdeal.mem_comap]
-      generalize_proofs
-      rw [TwoSidedIdeal.mem_mk']
-      try assumption
-      simp only [toConj, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
-        Set.mem_image, SetLike.mem_coe, Subtype.mk.injEq, Units.mul_left_inj, Units.mul_right_inj,
-        Subtype.exists, exists_and_right, exists_eq_right, ha, exists_true_left]
-    map_rel_iff' := by
-      intro J K
-      simp only [Equiv.coe_fn_mk]
-      constructor
-      · rintro H ⟨_, ⟨a, ha1, rfl⟩⟩ ha2
-        have := @H ⟨a, ha1⟩ (by
-          simp only [toConj, TwoSidedIdeal.mem_comap, AlgHom.coe_mk, RingHom.coe_mk,
-            MonoidHom.coe_mk, OneHom.coe_mk, ha2])
-        simp only [toConj, TwoSidedIdeal.mem_comap, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-          OneHom.coe_mk] at this
-        exact this
-      · intro H ⟨a, ha1⟩ ha2
-        simp only [toConj, TwoSidedIdeal.mem_comap, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-          OneHom.coe_mk] at ha2
-        simp only [toConj, TwoSidedIdeal.mem_comap, AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk,
-          OneHom.coe_mk]
-        exact H ha2 }
-  rw [OrderIso.isSimpleOrder_iff e]
+    IsSimpleOrder (TwoSidedIdeal B) :=
+  ⟨fun h ↦ ((B.isSimpleRing_conj_iff x).1 ⟨h⟩).simple,
+    fun h ↦ ((B.isSimpleRing_conj_iff x).2 ⟨h⟩).simple⟩
 
 omit [FiniteDimensional F A] [Algebra.IsCentral F A] [IsSimpleRing A] in
-lemma Subalgebra.conj_centralizer (B : Subalgebra F A) {x : Aˣ} :
-    Subalgebra.centralizer F (B.conj x : Set A) =
-    (Subalgebra.centralizer F B).conj x := by
-  ext a
-  simp only [coe_conj, mem_centralizer_iff, Set.mem_setOf_eq, forall_exists_index, and_imp,
-    mem_conj, SetLike.mem_coe]
-  constructor
-  · intro h
-    refine ⟨x⁻¹ * a * x, ?_, by simp [mul_assoc]⟩
-    intro b hb
-    have := h (x * b * x⁻¹) b hb rfl
-    apply_fun (x⁻¹.1 * ·) at this
-    apply_fun (· * x.1) at this
-    simp only [← mul_assoc, Units.inv_mul, one_mul, Units.inv_mul_cancel_right] at this ⊢
-    exact this
-  · rintro ⟨b, hb, rfl⟩
-    rintro _ a ha rfl
-    simp only [mul_assoc, Units.inv_mul_cancel_left, Units.mul_right_inj]
-    simp only [← mul_assoc, Units.mul_left_inj]
-    apply hb
-    exact ha
-
-omit [FiniteDimensional F A] [Algebra.IsCentral F A] [IsSimpleRing A] in
-lemma Subalgebra.conj_centralizer' (B : Subalgebra F A) {x : Aˣ} :
+private lemma Subalgebra.conj_centralizer' (B : Subalgebra F A) {x : Aˣ} :
     Subalgebra.centralizer F (B.conj x).carrier =
     (Subalgebra.centralizer F B).conj x :=
-  Subalgebra.conj_centralizer _
+  B.conj_centralizer x
 
 namespace centralizer_isSimple.aux
 

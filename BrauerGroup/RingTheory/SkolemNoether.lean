@@ -132,7 +132,6 @@ public theorem skolemNoether (K : Type u) (A B : Type v) [Field K] [Ring A] [Alg
   obtain ⟨φ⟩ := (linearEquiv_iff_finrank_eq_over_simple_ring K (B ⊗[K] Aᵐᵒᵖ)
     (Twist K A B f) (Twist K A B g)).2 rfl
   refine ⟨⟨_, _, mul_val_symm_eq_one φ, mul_val_symm_eq_one φ.symm⟩, fun b ↦ ?_⟩
-  rw [Units.eq_mul_inv_iff_mul_eq]
-  refine ((val_apply_mk φ (f b)).symm.trans <| by
-    simpa using congrArg (Twist.val K A B g)
-      (φ.map_smul (b ⊗ₜ[K] (1 : Aᵐᵒᵖ)) (Twist.mk K A B f 1))).symm
+  rw [Units.eq_mul_inv_iff_mul_eq, ← val_apply_mk φ (f b), ← mul_one (f b),
+    ← Twist.tmul_one_smul_mk, map_smul]
+  simp

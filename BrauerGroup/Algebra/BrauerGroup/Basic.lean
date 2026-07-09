@@ -1,7 +1,7 @@
 module
 
 public import BrauerGroup.Algebra.Central.TensorProduct
-public import BrauerGroup.LinearAlgebra.Matrix.toLin
+public import BrauerGroup.LinearAlgebra.Matrix.ToLin
 public import BrauerGroup.RingTheory.SimpleRing.TensorProduct
 public import Mathlib.Algebra.Azumaya.Basic
 public import Mathlib.Algebra.BrauerGroup.Defs

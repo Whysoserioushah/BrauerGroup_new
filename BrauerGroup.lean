@@ -2,8 +2,10 @@ module  -- shake: keep-all --deprecated_module: ignore
 
 public import BrauerGroup.AbsoluteIsoH2
 public import BrauerGroup.AlgClosedUnion
+public import BrauerGroup.Algebra.Algebra.Opposite
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Basic
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Centralizer
+public import BrauerGroup.Algebra.Algebra.Subalgebra.Conj
 public import BrauerGroup.Algebra.BrauerGroup.AlgClosed
 public import BrauerGroup.Algebra.BrauerGroup.BaseChange
 public import BrauerGroup.Algebra.BrauerGroup.Basic
@@ -30,7 +32,7 @@ public import BrauerGroup.FiniteField
 public import BrauerGroup.FrobeniusTheorem
 public import BrauerGroup.IsoSecond
 public import BrauerGroup.LinearAlgebra.Matrix.Module
-public import BrauerGroup.LinearAlgebra.Matrix.toLin
+public import BrauerGroup.LinearAlgebra.Matrix.ToLin
 public import BrauerGroup.LinearAlgebra.Quotient.Basic
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
@@ -55,6 +57,8 @@ public import BrauerGroup.RingTheory.Morita.End
 public import BrauerGroup.RingTheory.Morita.Matrix
 public import BrauerGroup.RingTheory.Morita.SimpleRing
 public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
+public import BrauerGroup.RingTheory.SimpleRing.Centralizer
+public import BrauerGroup.RingTheory.SimpleRing.End
 public import BrauerGroup.RingTheory.SimpleRing.TensorProduct
 public import BrauerGroup.RingTheory.SkolemNoether
 public import BrauerGroup.RingTheory.TwoSidedIdeal.Operations
