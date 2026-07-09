@@ -252,8 +252,7 @@ lemma mem_Kx (a : A) : ∃ f : K[X], ReducedCharPoly e a = f.mapAlgHom (Algebra.
   have fixed2 : ∀ m : ℕ, (e (1 ⊗ₜ a)).charpoly.coeff m ∈ (Algebra.ofId K F).range := fun m ↦
     fixedpoints K F _ fun φ ↦ fixed φ m |>.symm
   rw [ReducedCharPoly]
-  use ⟨(⟨(e (1 ⊗ₜ[K] a)).charpoly.support, fun m ↦ fixed2 m|>.choose, ?_⟩ : ℕ →₀ K)⟩
-  pick_goal 2
+  refine ⟨⟨.ofCoeff ⟨(e (1 ⊗ₜ[K] a)).charpoly.support, fun m ↦ fixed2 m|>.choose, ?_⟩⟩, ?_⟩
   · simp only [mem_support_iff, ne_eq, AlgHom.toRingHom_eq_coe, Algebra.toRingHom_ofId]
     intro k
     constructor
