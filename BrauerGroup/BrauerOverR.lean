@@ -1,5 +1,6 @@
 module
 
+public import BrauerGroup.ZeroSevenFourE
 public import BrauerGroup.FrobeniusTheorem
 
 @[expose] public section
@@ -65,10 +66,10 @@ instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
   change (⟨q.1, 0, 0, 0⟩ : ℍ[ℝ]) = ⟨q.1, q.2,q.3,q.4⟩
   ext <;> simp_all⟩
 
-instance : IsSimpleRing (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) := IsCentralSimple.TensorProduct.simple _ _ _
+instance : IsSimpleRing (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) := inferInstance
 
 lemma toEnd_bij : Function.Bijective toEnd :=
-  bijective_of_dim_eq_of_isCentralSimple ℝ (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) (Module.End ℝ ℍ[ℝ]) toEnd <| by
+  bijective_of_dim_eq_of_simple ℝ (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) (Module.End ℝ ℍ[ℝ]) toEnd <| by
     rw [show Module.finrank ℝ (Module.End ℝ _) =
       Module.finrank ℝ (Matrix (Fin <| Module.finrank ℝ ℍ[ℝ]) (Fin <| Module.finrank ℝ ℍ[ℝ]) ℝ)
       from (algEquivMatrix <| Module.finBasis _ _).toLinearEquiv.finrank_eq]

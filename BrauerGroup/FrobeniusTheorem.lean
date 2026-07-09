@@ -50,11 +50,11 @@ lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensio
   rcases dim_eq3 with ⟨h1⟩ | ⟨h2⟩
   · left
     exact Nonempty.intro <| AlgEquiv.symm <| AlgEquiv.ofBijective (Algebra.ofId _ _)
-      (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by simp [h1])
+      (bijective_of_dim_eq_of_simple _ _ _ _ <| by simp [h1])
   · right
     exact Nonempty.intro <| AlgEquiv.ofBijective
       (e.symm.toAlgHom.comp <| Algebra.ofId K CC |>.restrictScalars ℝ)
-      (bijective_of_dim_eq_of_isCentralSimple _ _ _ _ <| by simp [h2])
+      (bijective_of_dim_eq_of_simple _ _ _ _ <| by simp [h2])
 
 end prerequisites
 
@@ -180,7 +180,7 @@ lemma linindep1i :
 variable [Algebra.IsCentral ℝ D] [FiniteDimensional ℝ D]
 
 lemma f_is_conjugation : ∃ (x : Dˣ), ∀ z, x.1⁻¹ * f k e z * x = k.val z := by
-  obtain ⟨x, hx⟩ := SkolemNoether' ℝ D k k.val (k.val.comp (f k e))
+  obtain ⟨x, hx⟩ := skolemNoether ℝ D k k.val (k.val.comp (f k e))
   use x
   intro z
   have hx2 := hx

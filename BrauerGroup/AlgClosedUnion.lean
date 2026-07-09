@@ -13,18 +13,6 @@ open Module TensorProduct
 universe u
 
 section
-
-variable (K L : Type u) [Field K] [Field L] [Algebra K L]
-  (V : Type u) [AddCommGroup V] [Module K V] [Module.Finite K V]
-
-lemma dim_eq : Module.finrank K V = Module.finrank L (L ⊗[K] V) := by
-  let b := Module.finBasis K V
-  let b' := Algebra.TensorProduct.basis L b
-  rw [Module.finrank_eq_card_basis b, Module.finrank_eq_card_basis b']
-
-end
-
-section
 variable (K K_bar : Type u) [Field K] [Field K_bar] [Algebra K K_bar] [IsAlgClosure K K_bar]
 
 variable (A : Type u) [AddCommGroup A] [Module K A]
@@ -227,11 +215,12 @@ instance : Module ℒ (ℒ ⊗[k] A) := TensorProduct.leftModule
 instance : FiniteDimensional ℒ (intermediateTensor' k k⁻ A ℒ) :=
     Module.Finite.equiv (intermediateTensorEquiv' k k_bar A ℒ).symm
 
-omit [NeZero n] in
+omit [NeZero n] [FiniteDimensional k A] in
 theorem dim_ℒ_eq : Module.finrank ℒ (intermediateTensor' k k⁻ A ℒ) = n^2 := by
-    have eq1 := dim_eq k k⁻ A |>.trans iso.toLinearEquiv.finrank_eq
+    have eq1 := (Module.finrank_baseChange (R := k⁻) (S := k) (M' := A)).symm |>.trans
+      iso.toLinearEquiv.finrank_eq
     simp only [Module.finrank_matrix, Fintype.card_fin, Module.finrank_self, mul_one] at eq1
-    rw [pow_two, ← eq1, dim_eq k ℒ A]
+    rw [pow_two, ← eq1, (Module.finrank_baseChange (R := ℒ) (S := k) (M' := A)).symm]
     exact LinearEquiv.finrank_eq (intermediateTensorEquiv' k k_bar A ℒ)
 
 def e_hat : Basis (Fin n × Fin n) ℒ (intermediateTensor' k k_bar A ℒ) :=

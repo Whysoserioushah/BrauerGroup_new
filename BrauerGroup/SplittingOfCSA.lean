@@ -2,7 +2,7 @@ module
 
 public import BrauerGroup.AlgClosedUnion
 public import BrauerGroup.ExtendScalar
-public import BrauerGroup.LemmasAboutSimpleRing
+public import BrauerGroup.CentralSimple
 public import Mathlib.Algebra.BrauerGroup.Defs
 public import Mathlib.Algebra.Central.Matrix
 public import Mathlib.Analysis.Normed.Ring.Lemmas
@@ -165,8 +165,9 @@ theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
     exact ⟨_, _, inferInstance, ⟨lemma_tto.isoRestrict n k k_bar A iso⟩⟩
   · rintro ⟨n, hn, L, _, _, _, ⟨iso⟩⟩
     have : NeZero n := ⟨hn⟩
-    refine (centralsimple_over_extension_iff k A L).mpr <| ⟨iso.symm.isCentral, ⟨?_⟩⟩
-    rw [← TwoSidedIdeal.orderIsoOfRingEquiv iso.symm.toRingEquiv |>.isSimpleOrder_iff]
+    refine (centralsimple_over_extension_iff k A L).mpr <|
+      ⟨Algebra.IsCentral.of_algEquiv _ _ _ iso.symm, ⟨?_⟩⟩
+    rw [← RingEquiv.mapTwoSidedIdeal iso.symm.toRingEquiv |>.isSimpleOrder_iff]
     exact IsSimpleRing.simple
 
 lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
@@ -177,7 +178,8 @@ lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlg
   refine ⟨n, ?_⟩
   have := Module.finrank_matrix k_bar k_bar (Fin n) (Fin n)
   simp only [Fintype.card_fin, Module.finrank_self, mul_one] at this
-  exact dim_eq k k_bar A|>.trans <| LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
+  exact (Module.finrank_baseChange (R := k_bar) (S := k) (M' := A)).symm|>.trans <|
+    LinearEquiv.finrank_eq iso.toLinearEquiv|>.trans this
 
 def deg (A : CSA k) : ℕ := dim_is_sq k A k_bar |>.choose
 
@@ -261,7 +263,7 @@ def extension_over_split (A : CSA k) (L L' : Type u) [Field L] [Field L'] [Algeb
     exact (e3.trans e4).trans <| Matrix.reindexAlgEquiv L' _ (finCongr e5)
 
 include k_bar in
-lemma extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
+theorem extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
     [Algebra.IsCentral k A] [FiniteDimensional k A] (L L' : Type u) [Field L] [Field L']
     [Algebra k L] (hA : isSplit k A L) [Algebra L L'] [Algebra k L'] [IsScalarTower k L L'] :
     isSplit k A L' := by
