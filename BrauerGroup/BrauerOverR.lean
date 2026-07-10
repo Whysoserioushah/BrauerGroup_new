@@ -1,6 +1,6 @@
 module
 
-public import BrauerGroup.ZeroSevenFourE
+public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
 public import BrauerGroup.FrobeniusTheorem
 
 @[expose] public section
@@ -69,7 +69,8 @@ instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
 instance : IsSimpleRing (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) := inferInstance
 
 lemma toEnd_bij : Function.Bijective toEnd :=
-  bijective_of_dim_eq_of_simple ℝ (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) (Module.End ℝ ℍ[ℝ]) toEnd <| by
+  AlgHom.bijective_of_finrank_eq (F := ℝ) (A := ℍ[ℝ] ⊗[ℝ] ℍ[ℝ])
+      (B := Module.End ℝ ℍ[ℝ]) toEnd <| by
     rw [show Module.finrank ℝ (Module.End ℝ _) =
       Module.finrank ℝ (Matrix (Fin <| Module.finrank ℝ ℍ[ℝ]) (Fin <| Module.finrank ℝ ℍ[ℝ]) ℝ)
       from (algEquivMatrix <| Module.finBasis _ _).toLinearEquiv.finrank_eq]
@@ -87,8 +88,8 @@ lemma QuaternionNotEquivR : ¬ IsBrauerEquivalent (K := ℝ) ⟨.of ℝ ℍ[ℝ]
   obtain ⟨n, m, hn, hm, ⟨e⟩⟩ := h
   letI : NeZero n := ⟨hn⟩
   letI : NeZero m := ⟨hm⟩
-  obtain ⟨e'⟩ := Wedderburn_Artin_uniqueness₀ ℝ (Matrix (Fin n) (Fin n) ℍ[ℝ])
-    n m ℍ[ℝ] AlgEquiv.refl ℝ e
+  obtain ⟨e'⟩ := IsSimpleRing.wedderburn_artin_divisionring_unique ℝ
+    (Matrix (Fin n) (Fin n) ℍ[ℝ]) AlgEquiv.refl e
   have eq2 := e'.toLinearEquiv.finrank_eq
   simp only [Module.finrank_self] at eq2
   haveI := eq2.symm.trans <| Quaternion.finrank_eq_four (R := ℝ)

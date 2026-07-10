@@ -1,8 +1,14 @@
 module
 
+public import BrauerGroup.BrauerGroup
+public import BrauerGroup.RingTheory.SimpleRing.Center
 public import BrauerGroup.Subfield.FiniteDimensional
 public import BrauerGroup.Subfield.Subfield
 public import Mathlib.Algebra.QuaternionBasis
+public import Mathlib.Analysis.Complex.Polynomial.Basic
+public import Mathlib.FieldTheory.Finiteness
+public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
+public import Mathlib.FieldTheory.Tower
 public import Mathlib.Analysis.Quaternion
 public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
@@ -50,11 +56,11 @@ lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensio
   rcases dim_eq3 with ⟨h1⟩ | ⟨h2⟩
   · left
     exact Nonempty.intro <| AlgEquiv.symm <| AlgEquiv.ofBijective (Algebra.ofId _ _)
-      (bijective_of_dim_eq_of_simple _ _ _ _ <| by simp [h1])
+      (AlgHom.bijective_of_finrank_eq _ <| by simp [h1])
   · right
     exact Nonempty.intro <| AlgEquiv.ofBijective
       (e.symm.toAlgHom.comp <| Algebra.ofId K CC |>.restrictScalars ℝ)
-      (bijective_of_dim_eq_of_simple _ _ _ _ <| by simp [h2])
+      (AlgHom.bijective_of_finrank_eq _ <| by simp [h2])
 
 end prerequisites
 
@@ -782,6 +788,7 @@ set_option maxHeartbeats 600000 in
 -- FIXME: Get rid of the raised heartbeats
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
+  letI : Field (Subalgebra.center ℝ A) := inferInstanceAs (Field (Subring.center A))
   obtain ⟨⟨hR⟩⟩ | hC := RealExtension_is_RorC (Subalgebra.center ℝ A)
   · right
     have : Subalgebra.center ℝ A = ⊥ := by

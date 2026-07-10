@@ -2,11 +2,10 @@ module
 
 public import BrauerGroup.Algebra.BrauerGroup.Basic
 public import BrauerGroup.CentralSimple
-public import BrauerGroup.FieldCat
+public import BrauerGroup.RingTheory.SimpleRing.Basic
 public import Mathlib.Algebra.Azumaya.Defs
 public import Mathlib.Algebra.BrauerGroup.Defs
 public import Mathlib.Algebra.Central.Matrix
-public import Mathlib.Analysis.Complex.Polynomial.Basic
 public import Mathlib.LinearAlgebra.FreeModule.PID
 public import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
 public import Mathlib.RingTheory.SimpleRing.Matrix
@@ -21,36 +20,12 @@ variable (A B : Type u) [Ring A] [Ring B] [Algebra K A] [Algebra K B]
 
 open scoped TensorProduct
 
-lemma bijective_of_dim_eq_of_simple
-    [csa_source : IsSimpleRing A]
-    [fin_source : FiniteDimensional K A]
-    [fin_target : FiniteDimensional K B]
-    (f : A →ₐ[K] B) (h : Module.finrank K A = Module.finrank K B) :
-    Function.Bijective f := by
-  have : Nontrivial B := Module.finrank_pos_iff.1 <| h ▸
-    (Module.finrank_pos_iff (R := K) (M := A)|>.2 inferInstance)
-  exact ⟨RingHom.injective f.toRingHom, f.toLinearMap.injective_iff_surjective_of_finrank_eq_finrank
-    h|>.1 <| RingHom.injective f.toRingHom⟩
 
 lemma bijective_of_surj_of_isCentralSimple
     [csa_source : IsSimpleRing A]
     (f : A →ₐ[K] B) [Nontrivial B] (h : Function.Surjective f) :
     Function.Bijective f :=
   ⟨IsSimpleRing.iff_injective_ringHom A |>.1 inferInstance f.toRingHom, h⟩
-
--- instance CSA_op_is_CSA [hA : Algebra.IsCentral K A] : Algebra.IsCentral K Aᵐᵒᵖ where
---   out z hz:= by
---     let z': A := z.unop
---     have hz' : ∀ (x : A), x * z' = z' * x := by
---       rw [Subalgebra.mem_center_iff] at hz
---       intro x; specialize hz (MulOpposite.op x)
---       have z'_eq : MulOpposite.op z'= z := rfl
---       rw [← z'_eq, ← MulOpposite.op_mul, ← MulOpposite.op_mul] at hz
---       have : (MulOpposite.op (z' * x)).unop = z' * x := rfl
---       simp_all only [MulOpposite.op_mul, MulOpposite.op_unop, MulOpposite.unop_mul,
---           MulOpposite.unop_op, z']
---     obtain ⟨k, hk⟩ := hA.out <| Subalgebra.mem_center_iff.mpr hz'
---     exact ⟨k, MulOpposite.unop_inj.mp hk⟩
 
 namespace tensor_self_op
 
@@ -79,10 +54,6 @@ lemma dim_eq :
   rw [(MulOpposite.opLinearEquiv K : A ≃ₗ[K] Aᵐᵒᵖ).symm.finrank_eq]
   simp only [Module.finrank_self, mul_one]
 
-def equivEnd : A ⊗[K] Aᵐᵒᵖ ≃ₐ[K] Module.End K A :=
-  AlgEquiv.ofBijective (AlgHom.mulLeftRight K A) <| bijective_of_dim_eq_of_simple _ _ _ _ <|
-    dim_eq K A
-
 end tensor_self_op
 
 open tensor_self_op in
@@ -90,23 +61,8 @@ def tensor_self_op
     [Algebra.IsCentral K A] [hA : IsSimpleRing A] [FiniteDimensional K A] :
     A ⊗[K] Aᵐᵒᵖ ≃ₐ[K]
     (Matrix (Fin <| Module.finrank K A) (Fin <| Module.finrank K A) K) :=
-  equivEnd K A |>.trans <| algEquivMatrix <| Module.finBasis _ _
-
-def tensor_op_self
-    [Algebra.IsCentral K A] [hA : IsSimpleRing A] [FiniteDimensional K A] :
-    Aᵐᵒᵖ ⊗[K] A ≃ₐ[K]
-    (Matrix (Fin <| Module.finrank K A) (Fin <| Module.finrank K A) K) :=
-  (Algebra.TensorProduct.comm _ _ _).trans <| tensor_self_op _ _
-
-/-
-## TODO:
-  1. Define a Brauer equivalence relation on the set of All Central Simple
-     K-Algebras, namely A ~ B if A ≃ₐ[K] Mₙ(D) and B ≃ₐ[K] Mₘ(D) for some
-     m,n ∈ ℕ and D a division algebra over K.
-  2. Prove the set of All Central Simple K-Algebras under this equivalence relation
-     forms a group with mul := ⊗[K] and inv A := Aᵒᵖ.
-
--/
+  AlgEquiv.ofBijective (AlgHom.mulLeftRight K A) (AlgHom.bijective_of_finrank_eq _ <| dim_eq K A)
+    |>.trans <| algEquivMatrix <| Module.finBasis _ _
 
 variable {K : Type u} [Field K]
 
@@ -180,24 +136,6 @@ theorem eqv_tensor_eqv
   obtain ⟨p, q, hp, hq, ⟨e2⟩⟩ := hCD
   exact ⟨n * p, m * q, by simp_all, by simp_all, ⟨ (kroneckerMatrixTensor' A C n p).symm.trans <|
     (Algebra.TensorProduct.congr e1 e2).trans <| kroneckerMatrixTensor' B D m q⟩⟩
-
-lemma Alg_closed_equiv_one [IsAlgClosed K] : ∀(A : CSA K), IsBrauerEquivalent A one_in' := by
-  intro A
-  obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed K A
-  exact ⟨1, n, one_ne_zero, hn, ⟨dim_one_iso A|>.trans iso⟩⟩
-
-lemma Alg_closed_eq_one [IsAlgClosed K] : ∀(A : BrauerGroup (K := K)), A = 1 := by
-  intro A; induction A using Quotient.inductionOn' with | h A
-  change _ = Quotient.mk'' one_in'; apply Quotient.sound
-  change IsBrauerEquivalent _ _; exact Alg_closed_equiv_one A
-
-instance [IsAlgClosed K] : Unique (BrauerGroup (K := K)) where
-  default := 1
-  uniq := Alg_closed_eq_one
-
-theorem Alg_closed_Brauer_trivial [IsAlgClosed K] : (⊤ : Subgroup (BrauerGroup K)) =
-    (⊥ : Subgroup <| BrauerGroup (K := K)) :=
-  Subgroup.ext fun _ ↦ ⟨fun _ ↦ Alg_closed_eq_one _, fun _ ↦ ⟨⟩⟩
 
 end BrauerGroup
 
@@ -542,106 +480,6 @@ abbrev BaseChange : BrauerGroup (K := K) →* BrauerGroup (K := E) where
     exact ⟨1, 1, one_ne_zero, one_ne_zero,
       ⟨(dim_one_iso _).trans <| .symm <| (dim_one_iso _).trans <| someEquivs.e6 A B⟩⟩
 
-abbrev BaseChange_Q_to_C := BaseChange (K := ℚ) (E := ℂ)
-
-lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
-  haveI : IsAlgClosed ℂ := Complex.isAlgClosed
-  ext A; simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.one_apply]
-  induction A using Quotient.inductionOn' with | h A;
-  simp only [Quotient.map'_mk'']; apply Quotient.sound
-  exact BrauerGroup.Alg_closed_equiv_one _
-
 end Q_to_C
-
-open CategoryTheory
-
-@[simps!]
-def baseChange_idem.Aux (F K E : Type u) [Field F] [Field K] [Field E]
-    [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] (A : CSA F) :
-    E ⊗[K] (K ⊗[F] A) ≃ₗ[E] (E ⊗[F] A.carrier) :=
-  have : SMulCommClass F K E :=
-    { smul_comm := fun a b c => by
-        rw [Algebra.smul_def, Algebra.smul_def, ← _root_.mul_assoc, mul_comm (algebraMap _ _ a),
-          Algebra.smul_def, Algebra.smul_def, _root_.mul_assoc] }
-  (TensorProduct.AlgebraTensorModule.assoc F K E E K A).symm ≪≫ₗ
-  TensorProduct.AlgebraTensorModule.congr
-    (TensorProduct.AlgebraTensorModule.rid _ _ _) (LinearEquiv.refl _ _)
-
-set_option maxHeartbeats 600000 in
--- FIXME: Get rid of the raised heartbeats
-def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
-    [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] (A : CSA F) :
-    E ⊗[K] (K ⊗[F] A) ≃ₐ[E] (E ⊗[F] A.carrier) := by
-  have : SMulCommClass F K E :=
-    { smul_comm := fun a b c => by
-        rw [Algebra.smul_def, Algebra.smul_def, ← _root_.mul_assoc, mul_comm (algebraMap _ _ a),
-          Algebra.smul_def, Algebra.smul_def, _root_.mul_assoc] }
-  refine .ofLinearEquiv (baseChange_idem.Aux F K E A) ?_ fun x y ↦ ?_
-  · simp [Algebra.TensorProduct.one_def]
-  induction x using TensorProduct.induction_on with
-  | zero => rw [zero_mul, (baseChange_idem.Aux F K E A).map_zero, zero_mul]
-  | add => simp only [add_mul, (Aux F K E A).map_add, *]
-  | tmul =>
-  induction y using TensorProduct.induction_on with
-  | zero => rw [mul_zero, (baseChange_idem.Aux F K E A).map_zero, mul_zero]
-  | add => simp only [mul_add, (Aux F K E A).map_add, *]
-  | tmul =>
-  rename_i x1 y1 x2 y2
-  simp only [Aux, Algebra.TensorProduct.tmul_mul_tmul, LinearEquiv.trans_apply]
-  set f := (TensorProduct.AlgebraTensorModule.congr
-    (TensorProduct.AlgebraTensorModule.rid K E E) (LinearEquiv.refl F A))
-  set g := (TensorProduct.AlgebraTensorModule.assoc F K E E K A.carrier).symm
-  change f (g _) = _
-  induction y1 using TensorProduct.induction_on with
-  | zero =>
-    rw [zero_mul, TensorProduct.tmul_zero, g.map_zero, f.map_zero, TensorProduct.tmul_zero,
-      g.map_zero, f.map_zero, zero_mul]
-  | add => simp only [add_mul, TensorProduct.tmul_add, g.map_add, f.map_add, *]
-  | tmul k1 a1 =>
-  induction y2 using TensorProduct.induction_on with
-  | zero =>
-    rw [mul_zero, TensorProduct.tmul_zero, TensorProduct.tmul_zero, g.map_zero, f.map_zero,
-      mul_zero]
-  | add => simp only [mul_add, TensorProduct.tmul_add, g.map_add, f.map_add, *]
-  | tmul k2 a2 =>
-  simp only [Algebra.TensorProduct.tmul_mul_tmul, *]
-  simp only [TensorProduct.AlgebraTensorModule.assoc_symm_tmul,
-    TensorProduct.AlgebraTensorModule.congr_tmul, TensorProduct.AlgebraTensorModule.rid_tmul,
-    LinearEquiv.refl_apply, Algebra.TensorProduct.tmul_mul_tmul, Algebra.mul_smul_comm,
-    Algebra.smul_mul_assoc, f, g]
-  congr 1
-  rw [mul_comm k1 k2]
-  exact mul_smul k2 k1 (x1 * x2)
-
-lemma baseChange_idem (F K E : Type u) [Field F] [Field K] [Field E]
-    [Algebra F K] [Algebra F E] [Algebra K E] [IsScalarTower F K E] :
-    BrauerGroupHom.BaseChange (K := F) (E := E) =
-    (BrauerGroupHom.BaseChange (K := K) (E := E)).comp
-    BrauerGroupHom.BaseChange := by
-  ext A
-  simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.coe_comp, Function.comp_apply]
-  induction A using Quotient.inductionOn' with | h A
-  simp only [Quotient.map'_mk'', Quotient.eq'']
-  exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨.mapMatrix <| .symm <| baseChange_idem.Aux' ..⟩⟩
-
-def Br : FieldCat ⥤ CommGrpCat where
-  obj F := .of <| BrauerGroup F
-  map {F K} f := CommGrpCat.ofHom <| @BrauerGroupHom.BaseChange F _ K _ (RingHom.toAlgebra f.hom)
-  map_id F := by
-    ext A
-    simp only [CommGrpCat.coe_of]
-    induction A using Quotient.inductionOn' with | h A
-    simp only [CommGrpCat.hom_ofHom, MonoidHom.coe_mk, OneHom.coe_mk,
-      Quotient.map'_mk'', CommGrpCat.hom_id, MonoidHom.id_apply, Quotient.eq]
-    change IsBrauerEquivalent _ _
-    exact ⟨1, 1, one_ne_zero, one_ne_zero, ⟨AlgEquiv.mapMatrix <| Algebra.TensorProduct.lid _ _⟩⟩
-  map_comp {F K E} f g := by
-    simp only [← CommGrpCat.ofHom_comp]
-    congr 1
-    apply +allowSynthFailures baseChange_idem
-    letI : Algebra F E := RingHom.toAlgebra (f ≫ g).hom
-    letI : Algebra F K := RingHom.toAlgebra f.hom
-    letI : Algebra K E := RingHom.toAlgebra g.hom
-    exact IsScalarTower.of_algebraMap_smul (R := F) (A := K) (M := E) fun r ↦ congrFun rfl
 
 end BrauerGroupHom

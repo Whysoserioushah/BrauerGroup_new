@@ -62,6 +62,14 @@ lemma conj_centralizer :
       (Subalgebra.centralizer R (B : Set A)).conj x :=
   (map_centralizer _ B).symm
 
+/-- Two algebra homomorphisms that are conjugate under a unit have conjugate ranges. -/
+lemma _root_.AlgHom.range_conj {B : Type*} [Semiring B] [Algebra R B]
+    {f g : B →ₐ[R] A} {x : Aˣ} (hx : ∀ b, g b = ↑x * f b * ↑x⁻¹) :
+    g.range = f.range.conj x := by
+  have : g = (MulSemiringAction.toAlgEquiv R A (ConjAct.toConjAct x) : A →ₐ[R] A).comp f :=
+    AlgHom.ext fun b ↦ by simp [hx b, ConjAct.units_smul_def]
+  rw [this, AlgHom.range_comp, Subalgebra.conj]
+
 end Semiring
 
 lemma isSimpleRing_conj_iff {R A : Type*} [CommRing R] [Ring A] [Algebra R A]

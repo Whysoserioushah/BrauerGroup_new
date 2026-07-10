@@ -1,7 +1,8 @@
 module
 
 public import BrauerGroup.SplittingOfCSA
-public import BrauerGroup.DoubleCentralizer
+public import Mathlib.FieldTheory.Galois.Basic
+public import BrauerGroup.RingTheory.SimpleRing.Centralizer
 public import Mathlib.RingTheory.TensorProduct.Maps
 public import BrauerGroup.Mathlib.RingTheory.MatrixAlgebra
 public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
@@ -156,9 +157,9 @@ lemma eq_pow_reducedCharpoly (g : F ⊗[K] A →ₐ[F] Matrix (Fin m) (Fin m) F)
   have iso: F ⊗[K] A ≃ₐ[F] g.range := AlgEquiv.ofInjective _ <| RingHom.injective _
   haveI : Algebra.IsCentral F g.range := .of_algEquiv F _ _ iso
   haveI : IsSimpleRing g.range := .of_ringEquiv iso.toRingEquiv inferInstance
-  have ee := writeAsTensorProduct (F := F) (A := Matrix (Fin m) (Fin m) F) g.range
+  have ee := Subalgebra.tensorCentralizerEquiv (F := F) (A := Matrix (Fin m) (Fin m) F) g.range
   haveI : IsSimpleRing (Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range) :=
-    centralizer_isSimple (A := Matrix (Fin m) (Fin m) F) g.range
+    Subalgebra.centralizer_isSimple (A := Matrix (Fin m) (Fin m) F) g.range
   haveI : Algebra.IsCentral F (g.range ⊗[F] (Subalgebra.centralizer F (SetLike.coe g.range))) :=
     .of_algEquiv F _ (g.range ⊗[F] (Subalgebra.centralizer F (SetLike.coe g.range))) ee
   haveI : Algebra.IsCentral F (Subalgebra.centralizer (A := Matrix (Fin m) (Fin m) F) F g.range) :=

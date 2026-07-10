@@ -25,9 +25,7 @@ public import BrauerGroup.CategoryTheory.Endomorphism
 public import BrauerGroup.CentralSimple
 public import BrauerGroup.CrossProductAlgebra
 public import BrauerGroup.Data.Matrix.Composition
-public import BrauerGroup.DoubleCentralizer
 public import BrauerGroup.ExtendScalar
-public import BrauerGroup.FieldCat
 public import BrauerGroup.FiniteField
 public import BrauerGroup.FrobeniusTheorem
 public import BrauerGroup.IsoSecond
@@ -57,6 +55,8 @@ public import BrauerGroup.RingTheory.Morita.End
 public import BrauerGroup.RingTheory.Morita.Matrix
 public import BrauerGroup.RingTheory.Morita.SimpleRing
 public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
+public import BrauerGroup.RingTheory.SimpleRing.Basic
+public import BrauerGroup.RingTheory.SimpleRing.Center
 public import BrauerGroup.RingTheory.SimpleRing.Centralizer
 public import BrauerGroup.RingTheory.SimpleRing.End
 public import BrauerGroup.RingTheory.SimpleRing.TensorProduct
@@ -72,4 +72,3 @@ public import BrauerGroup.Subfield.Subfield
 public import BrauerGroup.ToSecond
 public import BrauerGroup.TwoSidedIdeal
 public import BrauerGroup.Wedderburn
-public import BrauerGroup.ZeroSevenFourE

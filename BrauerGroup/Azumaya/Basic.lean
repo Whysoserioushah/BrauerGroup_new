@@ -45,7 +45,7 @@ theorem IsAzumaya_iff_CentralSimple [Nontrivial A] : IsAzumaya K A ↔ FiniteDim
         rw [← Algebra.algebraMap_eq_smul_one, ← Algebra.algebraMap_eq_smul_one] at ha
         exact FaithfulSMul.algebraMap_injective _ _ ha
       fg_top := fin.1
-      bij := bijective_of_dim_eq_of_simple K _ _
+      bij := AlgHom.bijective_of_finrank_eq
         (AlgHom.mulLeftRight K A) <| tensor_self_op.dim_eq _ _
     }⟩
 

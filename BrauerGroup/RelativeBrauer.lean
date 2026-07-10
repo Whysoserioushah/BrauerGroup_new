@@ -8,7 +8,7 @@ module
 public import BrauerGroup.BrauerGroup
 public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.SplittingOfCSA
-public import BrauerGroup.ZeroSevenFourE
+public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
 
 /-!
 # Relative Brauer Group
@@ -70,11 +70,9 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
       have D_findim := is_fin_dim_of_wdb K (K ⊗[F] A) hp D iso'
       haveI : NeZero (p * p * n) := ⟨by simpa [hn]⟩
       haveI : NeZero (p * m) := ⟨by simpa [hm]⟩
-      have := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (p * p * n)) (Fin (p * p * n)) D)
-        (p * p * n) (p * m) D AlgEquiv.refl K e.symm
-      exact ⟨p, ⟨hp⟩, ⟨iso'.trans <| Wedderburn_Artin_uniqueness₀ K
+      exact ⟨p, ⟨hp⟩, ⟨iso'.trans <| IsSimpleRing.wedderburn_artin_divisionring_unique K
         (Matrix (Fin (p * p * n)) (Fin (p * p * n)) D)
-        (p * p * n) (p * m) D .refl K e.symm |>.some.mapMatrix⟩⟩⟩
+        .refl e.symm |>.some.mapMatrix⟩⟩⟩
 
 lemma mem_relativeBrGroup (A : CSA F) :
     Quotient.mk'' A ∈ RelativeBrGroup K F ↔
@@ -126,8 +124,8 @@ lemma exists_common_division_algebra (A B : CSA.{u, u} K) (h : IsBrauerEquivalen
   haveI : NeZero a' := ⟨ha'⟩
   haveI : NeZero a := ⟨ha⟩
   have : NeZero m := ⟨hm⟩
-  obtain ⟨isoAB⟩ := Wedderburn_Artin_uniqueness₀ K (Matrix (Fin a') (Fin a') B) a (a' * m)
-    SA e.symm SB <|
+  obtain ⟨isoAB⟩ := IsSimpleRing.wedderburn_artin_divisionring_unique K
+    (Matrix (Fin a') (Fin a') B) e.symm <|
       (AlgEquiv.mapMatrix ‹_›).trans <| Matrix.compFinAlgEquiv _ _ _ _
   exact ⟨SA, inferInstance, inferInstance, n, m, ⟨hn⟩, ⟨hm⟩, ⟨isoA⟩,
     ⟨isoB.trans isoAB.symm.mapMatrix⟩⟩

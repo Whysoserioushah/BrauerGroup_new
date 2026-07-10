@@ -954,7 +954,9 @@ lemma dim_endCM : finrank F (Module.End C (M α β)) = (finrank F K)^4 := by
 set_option maxSynthPendingDepth 3 in
 open MulOpposite in
 def φ1 : (A ⊗[F] B)ᵐᵒᵖ ≃ₐ[F] Module.End C (M α β) :=
-  .ofBijective φ0 <| bijective_of_dim_eq_of_simple _ _ _ _ <| by
+  haveI : Nontrivial (Module.End C (M α β)) := Module.nontrivial_of_finrank_pos (R := F)
+    (by rw [dim_endCM]; exact pow_pos Module.finrank_pos 4)
+  .ofBijective φ0 <| AlgHom.bijective_of_finrank_eq _ <| by
     rw [dim_endCM, show finrank F (A ⊗[F] B)ᵐᵒᵖ = finrank F (A ⊗[F] B) by
       refine LinearEquiv.finrank_eq
         { toFun := unop

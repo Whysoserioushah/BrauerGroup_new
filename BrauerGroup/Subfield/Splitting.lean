@@ -51,7 +51,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       rw [Algebra.mem_bot]
       rw [Subalgebra.mem_center_iff] at hx
       have hx' : ⟨x, by
-          rw [← double_centralizer (B := emb.range)]
+          rw [← Subalgebra.centralizer_centralizer (B := emb.range)]
           intro y hy
           specialize hx ⟨y, hy⟩
           simpa [Subtype.ext_iff] using hx⟩ ∈ Subalgebra.center F emb.range := by
@@ -65,7 +65,7 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
       use r
       rw [Subtype.ext_iff, ← hr]
       rfl }
-  haveI : IsSimpleRing B := centralizer_isSimple _
+  haveI : IsSimpleRing B := Subalgebra.centralizer_isSimple _
   refine ⟨⟨.of F B⟩, ?_,
     { toFun r :=
         ⟨{
@@ -93,17 +93,17 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
         AddHom.coe_mk, LinearMap.coe_single, Function.comp_apply, Pi.smul_apply,
         SubalgebraClass.coe_algebraMap, Module.algebraMap_end_apply] }, ?_⟩
   · change Quotient.mk'' _ = Quotient.mk'' (⟨AlgCat.of F F⟩ : CSA F)
-    have := writeAsTensorProduct (B := emb.range)
+    have := Subalgebra.tensorCentralizerEquiv (B := emb.range)
     have iso : A ⊗[F] B ≃ₐ[F] Matrix (Fin (Module.finrank F (Fin n → K)))
       (Fin (Module.finrank F (Fin n → K))) F :=
       AlgEquiv.symm <|
         AlgEquiv.trans (algEquivMatrix (R := F) (M := Fin n → K) (Module.finBasis _ _)).symm
-        (writeAsTensorProduct (B := emb.range) |>.trans <|
+        (Subalgebra.tensorCentralizerEquiv (B := emb.range) |>.trans <|
           Algebra.TensorProduct.congr e.symm AlgEquiv.refl)
     apply Quotient.sound'
     exact ⟨1, Module.finrank F (Fin n → K), one_ne_zero, by aesop, ⟨(dim_one_iso _).trans iso⟩⟩
   · change Module.finrank F K ^ 2 = Module.finrank F B
-    have dim_eq1 : Module.finrank F B * _ = _ := dim_centralizer F emb.range
+    have dim_eq1 : Module.finrank F B * _ = _ := Subalgebra.finrank_centralizer_mul_finrank (F := F) emb.range
     rw [Module.finrank_linearMap, show Module.finrank F (Fin n → K) =
       Module.finrank F K * Module.finrank K (Fin n → K) from
       (Module.finrank_mul_finrank F K (Fin n → K)).symm, Module.finrank_fin_fun,
@@ -243,7 +243,7 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
     rw [split_sound' K F A B (Quotient.eq''.1 eq)]
     refine ⟨Module.finrank K B, ⟨fun r => by have := Module.finrank_pos (R := K) (M := B); omega⟩,
       ⟨AlgEquiv.trans (AlgEquiv.ofBijective μAlg ?_) e⟩⟩
-    apply bijective_of_dim_eq_of_simple
+    apply AlgHom.bijective_of_finrank_eq
     rw [show Module.finrank K (K ⊗[F] B) = n^2 by simp [dim_eq]]
     rw [show Module.finrank K (Module.End K B) = n^2 by
       rw [Module.finrank_linearMap]
@@ -277,8 +277,8 @@ theorem isSplit_if_equiv (A B : CSA F) (hAB : IsBrauerEquivalent A B) (hA : isSp
   haveI : NeZero (m * q) := ⟨by aesop⟩
   haveI : NeZero (n * p) := ⟨by aesop⟩
   exact ⟨q, ⟨hq⟩, ⟨e'.trans <|
-    Wedderburn_Artin_uniqueness₀ K (Matrix (Fin (m * q)) (Fin (m * q)) D) (m * q) (n * p)
-      D AlgEquiv.refl K ee |>.some.mapMatrix⟩⟩
+    IsSimpleRing.wedderburn_artin_divisionring_unique K
+      (Matrix (Fin (m * q)) (Fin (m * q)) D) AlgEquiv.refl ee |>.some.mapMatrix⟩⟩
 
 end CSA2
 

@@ -29,12 +29,12 @@ variable (K : Type u) (A B : Type v) [Field K] [Ring A] [Algebra K A] [Ring B] [
 
 /-- The algebra map `B ⊗[K] Aᵐᵒᵖ →ₐ[K] End K A` sending `b ⊗ aᵒᵖ` to `x ↦ f b * x * a`,
 twisting the left-multiplication part of `AlgHom.mulLeftRight` by `f`. -/
-public def toEnd (f : B →ₐ[K] A) : B ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
+public def Algebra.tensorMopToEnd (f : B →ₐ[K] A) : B ⊗[K] Aᵐᵒᵖ →ₐ[K] Module.End K A :=
   (AlgHom.mulLeftRight K A).comp (Algebra.TensorProduct.map f (AlgHom.id K Aᵐᵒᵖ))
 
-public lemma toEnd_tmul (f : B →ₐ[K] A) (b : B) (a : Aᵐᵒᵖ) (x : A) :
-    toEnd K A B f (b ⊗ₜ[K] a) x = f b * x * a.unop := by
-  simp [toEnd, AlgHom.mulLeftRight_apply]
+public lemma Algebra.tensorMopToEnd_tmul (f : B →ₐ[K] A) (b : B) (a : Aᵐᵒᵖ) (x : A) :
+    Algebra.tensorMopToEnd K A B f (b ⊗ₜ[K] a) x = f b * x * a.unop := by
+  simp [Algebra.tensorMopToEnd, AlgHom.mulLeftRight_apply]
 
 /-- `A`, regarded as a `B ⊗[K] Aᵐᵒᵖ`-module through `f : B →ₐ[K] A`:
 `(b ⊗ aᵒᵖ) • x = f b * x * a`. -/
@@ -47,7 +47,7 @@ namespace Twist
 variable (f : B →ₐ[K] A)
 
 instance : Module (B ⊗[K] Aᵐᵒᵖ) (Twist K A B f) :=
-  Module.compHom A (toEnd K A B f).toRingHom
+  Module.compHom A (Algebra.tensorMopToEnd K A B f).toRingHom
 
 /-- The identity map `A → Twist K A B f`. -/
 def mk (x : A) : Twist K A B f := x
@@ -64,15 +64,15 @@ variable {K A B f}
 @[simp] lemma mk_val (x : Twist K A B f) : mk K A B f (val K A B f x) = x := rfl
 
 lemma val_smul (r : B ⊗[K] Aᵐᵒᵖ) (x : Twist K A B f) :
-    val K A B f (r • x) = toEnd K A B f r (val K A B f x) := rfl
+    val K A B f (r • x) = Algebra.tensorMopToEnd K A B f r (val K A B f x) := rfl
 
 @[simp] lemma val_one_op_smul (a : A) (x : Twist K A B f) :
     val K A B f (((1 : B) ⊗ₜ[K] MulOpposite.op a) • x) = val K A B f x * a := by
-  rw [val_smul, toEnd_tmul, map_one, one_mul, MulOpposite.unop_op]
+  rw [val_smul, Algebra.tensorMopToEnd_tmul, map_one, one_mul, MulOpposite.unop_op]
 
 @[simp] lemma val_tmul_one_smul (b : B) (x : Twist K A B f) :
     val K A B f ((b ⊗ₜ[K] (1 : Aᵐᵒᵖ)) • x) = f b * val K A B f x := by
-  rw [val_smul, toEnd_tmul, MulOpposite.unop_one, mul_one]
+  rw [val_smul, Algebra.tensorMopToEnd_tmul, MulOpposite.unop_one, mul_one]
 
 @[simp] lemma one_op_smul_mk (a x : A) :
     ((1 : B) ⊗ₜ[K] MulOpposite.op a) • mk K A B f x = mk K A B f (x * a) :=

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib.FieldTheory.Galois.Basic
 public import Mathlib.FieldTheory.Galois.Notation
 public import Mathlib.Algebra.BigOperators.Finsupp.Basic
 public import BrauerGroup.Mathlib.RingTheory.Congruence.Basic

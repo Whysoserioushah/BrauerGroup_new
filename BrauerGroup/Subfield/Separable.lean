@@ -2,6 +2,7 @@ module
 
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Lattice
 public import BrauerGroup.Mathlib.FieldTheory.Separable
+public import BrauerGroup.RingTheory.SimpleRing.Center
 public import BrauerGroup.Subfield.Splitting
 public import Mathlib.FieldTheory.JacobsonNoether
 
@@ -13,6 +14,8 @@ variable (K D : Type u) [Field K] [DivisionRing D] [Algebra K D] [Algebra.IsCent
   [FiniteDimensional K D]
 
 open Polynomial
+
+open scoped Subalgebra.center
 
 omit [Algebra.IsCentral K D] [FiniteDimensional K D] in
 lemma SubField.adjoin_centralizer_mul_comm (L : SubField K D) (a : D)
@@ -292,7 +295,7 @@ theorem exists_sep_masSubfield' : ∃ (a : D), IsMax (SubField.bot_adjoin K D a)
   let CCL := Subalgebra.centralizer K (A := D) CL
   letI : Field L.1 := inferInstance
   haveI sim : IsSimpleRing L.1.1 := inferInstance
-  have eq1 := double_centralizer (F := K) (A := D) L.1.1
+  have eq1 := Subalgebra.centralizer_centralizer (F := K) (A := D) L.1.1
   change CCL = L.1.1 at eq1
   have eq2 : CCL = ZCL.map (Subalgebra.val _) := by
     dsimp [CCL, ZCL, CL] at *
@@ -310,8 +313,9 @@ theorem exists_sep_masSubfield' : ∃ (a : D), IsMax (SubField.bot_adjoin K D a)
         (Subalgebra.map_centralizer_le_centralizer_image ⊤ (centralizer K (L.1.1 : Set D)).val)
     -- rw [eq1]
   rw [eq1] at eq2
+  letI : Field (Subalgebra.center K CL) := inferInstanceAs (Field (Subring.center CL))
   haveI inst1 : Algebra.IsAlgebraic L CL := Algebra.IsAlgebraic.of_finite L CL
-  haveI inst2 : FiniteDimensional ZCL CL := inferInstance
+  haveI inst2 : FiniteDimensional ZCL CL := FiniteDimensional.right K ZCL CL
   haveI inst3: Algebra.IsAlgebraic ZCL CL := Algebra.IsAlgebraic.of_finite ZCL CL
   have ass : Subring.center ↥CL ≠ ⊤ := by
     rw [eq2] at h
@@ -340,6 +344,8 @@ theorem exists_sep_masSubfield' : ∃ (a : D), IsMax (SubField.bot_adjoin K D a)
   simp_all only
   let e1 := Subalgebra.equivOfEq L.1 _ eq2
   let e2 := ZCL_equiv_ZCL_map K D L
+  letI : Field (Subalgebra.center K (Subalgebra.centralizer K (A := D) L)) :=
+    inferInstanceAs (Field (Subring.center (Subalgebra.centralizer K (A := D) L)))
   have asep := IsSeparable.of_equiv_equiv
     (A₁ := Subalgebra.center K (Subalgebra.centralizer K (A := D) L))
     (A₂ := L) (e2.trans e1.symm).toRingEquiv (RingEquiv.refl _) (by
