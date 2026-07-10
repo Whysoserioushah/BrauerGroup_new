@@ -2,6 +2,7 @@ module
 
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Centralizer
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Conj
+public import BrauerGroup.Algebra.Algebra.Subalgebra.Lattice
 public import BrauerGroup.Algebra.Central.TensorProduct
 public import BrauerGroup.RingTheory.SimpleRing.Basic
 public import BrauerGroup.RingTheory.SimpleRing.End
@@ -212,5 +213,51 @@ noncomputable def Subalgebra.tensorCentralizerEquiv [FiniteDimensional F A]
       fun b c ↦ show _ = _ by simpa using c.2 b b.2)
     (AlgHom.bijective_of_finrank_eq _ (by
       rw [Module.finrank_tensorProduct, ← B.finrank_centralizer_mul_finrank, mul_comm]))).symm
+
+-- variable {k A : Type*} [Field k] [Ring A] [Algebra k A]
+--   [Module.Finite k A] [Algebra.IsCentral k A] [IsSimpleRing A]
+
+lemma Subalgebra.isMaximal_comm_iff_finrank [Module.Finite F A] (L : Subalgebra F A)
+    [IsMulCommutative L] [IsSimpleRing L] :
+    Subalgebra.centralizer F (L : Set A) = L ↔
+      Module.finrank F A = Module.finrank F L * Module.finrank F L := by
+  refine ⟨fun hL ↦ ?_, fun hL ↦ ?_⟩
+  · nth_rw 1 [← (Subalgebra.equivOfEq _ _ hL).toLinearEquiv.finrank_eq]
+    exact L.finrank_centralizer_mul_finrank.symm
+  · have h : Module.finrank F L = Module.finrank F (Subalgebra.centralizer F (L : Set A)) := by
+      simpa [ne_of_gt (Module.finrank_pos (M := L))] using
+        hL.symm.trans L.finrank_centralizer_mul_finrank.symm
+    apply Subalgebra.toSubmodule_injective
+    refine symm <| Submodule.eq_of_le_of_finrank_eq (Subalgebra.toSubmodule.le_iff_le.2 ?_) h
+    exact Subalgebra.le_centralizer_iff_isMulCommutative L|>.2 inferInstance
+
+namespace Subalgebra
+
+variable (L : Subalgebra F A) [IsMulCommutative L]
+
+open scoped IsMulCommutative
+
+/-- The centralizer of a commutative subalgebra `L` is an `L`-algebra via the inclusion
+`L ≤ C_A(L)`. -/
+scoped instance : Algebra L (Subalgebra.centralizer F (L : Set A)) :=
+  RingHom.toAlgebra'
+    (Subalgebra.inclusion ((le_centralizer_iff_isMulCommutative L).2 inferInstance)).toRingHom
+    fun l c ↦ Subtype.ext <| (Subalgebra.mem_centralizer_iff F).1 c.2 l.1 l.2
+
+/-- The centralizer of a commutative simple subalgebra `L` of a finite-dimensional central
+simple algebra is central over `L`: by the double centralizer theorem, anything commuting
+with all of `C_A(L)` already lies in `L`. -/
+scoped instance isCentral_centralizer [FiniteDimensional F A] [IsSimpleRing L] :
+    Algebra.IsCentral L (Subalgebra.centralizer F (L : Set A)) where
+  out := by
+    intro z hz
+    rw [Subalgebra.mem_center_iff] at hz
+    have hzA : (z : A) ∈ Subalgebra.centralizer F
+        (Subalgebra.centralizer F (L : Set A) : Set A) :=
+      (Subalgebra.mem_centralizer_iff F).2 fun g hg ↦ congrArg Subtype.val (hz ⟨g, hg⟩)
+    rw [L.centralizer_centralizer] at hzA
+    exact Algebra.mem_bot.2 ⟨⟨(z : A), hzA⟩, Subtype.ext rfl⟩
+
+end Subalgebra
 
 end CentralSimple

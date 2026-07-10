@@ -6,6 +6,8 @@ public import BrauerGroup.Algebra.Algebra.Opposite
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Basic
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Centralizer
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Conj
+public import BrauerGroup.Algebra.Algebra.Subalgebra.Directed
+public import BrauerGroup.Algebra.Algebra.Subalgebra.Lattice
 public import BrauerGroup.Algebra.BrauerGroup.AlgClosed
 public import BrauerGroup.Algebra.BrauerGroup.BaseChange
 public import BrauerGroup.Algebra.BrauerGroup.Basic
@@ -13,8 +15,9 @@ public import BrauerGroup.Algebra.BrauerGroup.FiniteField
 public import BrauerGroup.Algebra.BrauerGroup.Relative
 public import BrauerGroup.Algebra.Central.Matrix
 public import BrauerGroup.Algebra.Central.TensorProduct
-public import BrauerGroup.Algebra.Split
+public import BrauerGroup.Algebra.Group.Subgroup.Directed
 public import BrauerGroup.Algebra.Module.LinearMap.End
+public import BrauerGroup.Algebra.Split
 public import BrauerGroup.Azumaya.Basic
 public import BrauerGroup.Azumaya.Group
 public import BrauerGroup.Azumaya.Mul
@@ -29,6 +32,7 @@ public import BrauerGroup.ExtendScalar
 public import BrauerGroup.FiniteField
 public import BrauerGroup.FrobeniusTheorem
 public import BrauerGroup.IsoSecond
+public import BrauerGroup.LinearAlgebra.FiniteDimensional.Basic
 public import BrauerGroup.LinearAlgebra.Matrix.Module
 public import BrauerGroup.LinearAlgebra.Matrix.ToLin
 public import BrauerGroup.LinearAlgebra.Quotient.Basic
@@ -70,5 +74,6 @@ public import BrauerGroup.Subfield.Separable
 public import BrauerGroup.Subfield.Splitting
 public import BrauerGroup.Subfield.Subfield
 public import BrauerGroup.ToSecond
+public import BrauerGroup.Topology.Instances.AddCircle.Rat
 public import BrauerGroup.TwoSidedIdeal
 public import BrauerGroup.Wedderburn
