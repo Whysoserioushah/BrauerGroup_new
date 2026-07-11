@@ -8,6 +8,7 @@ public import Mathlib.Algebra.BrauerGroup.Defs
 public import Mathlib.Algebra.Central.Matrix
 public import Mathlib.LinearAlgebra.Basis.MulOpposite
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+public import Mathlib.LinearAlgebra.FreeModule.Finite.Matrix
 public import Mathlib.LinearAlgebra.Matrix.Unique
 public import Mathlib.RingTheory.SimpleRing.Matrix
 
@@ -32,7 +33,7 @@ lemma mulLeftRight_bijective_of_simple (n : ℕ) [IsSimpleRing A] [Algebra.IsCen
   let e := algEquivMatrix (Module.finBasisOfFinrankEq k A hn)
   refine ⟨RingHom.injective _, LinearMap.injective_iff_surjective_of_finrank_eq_finrank
     (f := (AlgHom.mulLeftRight k A).toLinearMap) ?_|>.1 <| RingHom.injective _⟩
-  simp [Module.End.finrank_eq, MulOpposite.finrank, pow_two]
+  simp [Module.finrank_linearMap, MulOpposite.finrank]
 
 @[stacks 074I]
 noncomputable def centralSimpleTensorOp (n : ℕ) [IsSimpleRing A] [Algebra.IsCentral k A]

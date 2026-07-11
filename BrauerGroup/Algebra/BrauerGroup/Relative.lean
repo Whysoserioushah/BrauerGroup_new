@@ -2,7 +2,7 @@ module
 
 public import Mathlib
 public import BrauerGroup.Algebra.BrauerGroup.BaseChange
-public import BrauerGroup.Algebra.Split
+public import BrauerGroup.Algebra.Split.Basic
 
 /-!
 # Relative Brauer group

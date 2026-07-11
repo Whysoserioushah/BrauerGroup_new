@@ -9,6 +9,7 @@ public import BrauerGroup.RingTheory.SimpleRing.End
 public import BrauerGroup.RingTheory.SimpleRing.TensorProduct
 public import BrauerGroup.RingTheory.SkolemNoether
 public import Mathlib.Algebra.Central.End
+public import Mathlib.LinearAlgebra.FreeModule.Finite.Matrix
 public import Mathlib.LinearAlgebra.Basis.MulOpposite
 
 /-!
@@ -183,7 +184,7 @@ theorem Subalgebra.finrank_centralizer_mul_finrank [FiniteDimensional F A]
     ((congrArg (fun S : Subalgebra F (A ⊗[F] Module.End F B) ↦ Module.finrank F ↥S) hE).trans
       (Subalgebra.finrank_conj _ x)).symm.trans <|
     finrank_centralizer_includeRight_lmul (F := F) (A := A) B
-  rw [Module.End.finrank_eq (Module.finrank F B) rfl, pow_two, ← mul_assoc] at key
+  rw [Module.finrank_linearMap, ← mul_assoc] at key
   exact Nat.eq_of_mul_eq_mul_right (Nat.pos_of_ne_zero Module.finrank_pos.ne') key
 
 /-- The double centralizer theorem: in a finite-dimensional central simple algebra `A`, the

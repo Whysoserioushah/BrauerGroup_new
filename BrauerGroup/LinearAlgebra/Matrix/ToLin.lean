@@ -12,12 +12,6 @@ over a not necessarily commutative semiring.
 
 @[expose] public section
 
-lemma Module.End.finrank_eq {R M : Type*} [CommSemiring R] [StrongRankCondition R] [AddCommMonoid M]
-    [Module R M] [Module.Free R M] [Module.Finite R M] (n : ℕ) (hn : Module.finrank R M = n) :
-    Module.finrank R (Module.End R M) = n ^ 2 := by
-  simp [(algEquivMatrix (Module.finBasisOfFinrankEq R M hn)).toLinearEquiv.finrank_eq,
-    finrank_matrix, pow_two]
-
 variable {ι A M : Type*} [Fintype ι] [DecidableEq ι] [Semiring A] [AddCommMonoid M] [Module A M]
 
 /-- The `RingEquiv` version of `algEquivMatrix` over a not necessarily commutative semiring:
