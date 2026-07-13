@@ -1,6 +1,6 @@
 module
 
-public import BrauerGroup.CrossProductAlgebra
+public import BrauerGroup.Algebra.CrossProduct.CentralSimple
 public import BrauerGroup.Mathlib.RingTheory.Congruence.Defs
 public import BrauerGroup.Subfield.Splitting
 public import Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
@@ -521,11 +521,8 @@ end GoodRep
 def _root_.Amelia.toAdditive (M G : Type 0) [Monoid M] [CommGroup G] [MulDistribMulAction M G] :
   Rep.ofMulDistribMulAction M G ≃+ Additive G := AddEquiv.refl _
 
-variable (F K) in
-noncomputable def galAct : Rep ℤ Gal(K/F) := .ofMulDistribMulAction Gal(K/F) Kˣ
-
-@[simp] lemma galAct_ρ_apply (σ : Gal(K/F)) (x : Kˣ) :
-    (galAct F K).ρ σ (.ofMul x) = .ofMul (x.map σ) := rfl
+@[simp] lemma ofAlgebraAutOnUnits_ρ_apply (σ : Gal(K/F)) (x : Kˣ) :
+    (Rep.ofAlgebraAutOnUnits F K).ρ σ (.ofMul x) = .ofMul (x.map σ) := rfl
 
 variable [FiniteDimensional F K]
 
@@ -552,12 +549,13 @@ namespace GoodRep
 variable {X : BrauerGroup F} (A : GoodRep K X)
 
 open groupCohomology in
-def toH2 (x_ : Π σ, A.conjFactor σ) : H2 (galAct F K) :=
-  H2π (galAct F K) <| cocyclesOfIsMulCocycle₂ (A.isMulCocycle₂ x_)
+def toH2 (x_ : Π σ, A.conjFactor σ) : H2 (Rep.ofAlgebraAutOnUnits F K) :=
+  H2π (Rep.ofAlgebraAutOnUnits F K) <| cocyclesOfIsMulCocycle₂ (A.isMulCocycle₂ x_)
 
 end GoodRep
 
-def RelativeBrGroup.toSnd :  RelativeBrGroup K F → groupCohomology.H2 (galAct F K) :=
+def RelativeBrGroup.toSnd :
+    RelativeBrGroup K F → groupCohomology.H2 (Rep.ofAlgebraAutOnUnits F K) :=
   fun X ↦ (goodRep X).toH2 (goodRep X).arbitraryConjFactor
 
 lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
@@ -686,7 +684,7 @@ open CrossProductAlgebra
 
 variable [IsGalois F K] [DecidableEq Gal(K/F)]
 
-def fromCocycles₂ (f : cocycles₂ (galAct F K)) : RelativeBrGroup K F :=
+def fromCocycles₂ (f : cocycles₂ (Rep.ofAlgebraAutOnUnits F K)) : RelativeBrGroup K F :=
   haveI := groupCohomology.isMulCocycle₂_of_mem_cocycles₂ _ f.2
   haveI : Fact (IsMulCocycle₂ (M := Kˣ) (Additive.toMul ∘ f)) := ⟨this⟩
   ⟨Quotient.mk'' (asCSA (⇑Additive.toMul ∘ f.1)), mem_relativeBrGroup_iff_nonempty_goodRep.2 <|
@@ -696,12 +694,13 @@ set_option backward.isDefEq.respectTransparency false in
 open CategoryTheory in
 variable (F K) in
 def fromSnd :
-    (groupCohomology.shortComplexH2 (galAct F K)).moduleCatLeftHomologyData.H
-    -- H2 (galAct F K)
+    (groupCohomology.shortComplexH2 (Rep.ofAlgebraAutOnUnits F K)).moduleCatLeftHomologyData.H
+    -- H2 (Rep.ofAlgebraAutOnUnits F K)
     → RelativeBrGroup K F :=
   Quotient.lift fromCocycles₂ <| by
     rintro ⟨(a : _ → Kˣ), ha⟩ ⟨(b : _ → Kˣ), hb⟩ (hab : Submodule.quotientRel _ _ _)
-    have H' : H2π (galAct F K) ⟨a, ha⟩ - H2π (galAct F K) ⟨b, hb⟩ = 0 := by
+    have H' : H2π (Rep.ofAlgebraAutOnUnits F K) ⟨a, ha⟩ -
+        H2π (Rep.ofAlgebraAutOnUnits F K) ⟨b, hb⟩ = 0 := by
       rw [← map_sub, H2π_eq_zero_iff]
       simp only [Submodule.quotientRel_def, LinearMap.mem_range] at hab
       obtain ⟨y, hy⟩ := hab
@@ -823,7 +822,7 @@ def fromSnd :
 end from_two
 
 variable [IsGalois F K]
-lemma fromSnd_wd (a : cocycles₂ (galAct F K)) :
+lemma fromSnd_wd (a : cocycles₂ (Rep.ofAlgebraAutOnUnits F K)) :
     haveI : Fact (IsMulCocycle₂ (M := Kˣ) (Additive.toMul ∘ a)) :=
       ⟨isMulCocycle₂_of_mem_cocycles₂ _ a.2⟩
     (fromSnd F K <| Submodule.mkQ _ a) =
@@ -838,7 +837,7 @@ def _root_.Amfix.coboundariesOfIsMulCoboundary₂ {G M : Type} [Group G] [CommGr
 
 set_option backward.isDefEq.respectTransparency false in
 open GoodRep groupCohomology in
-lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id := by
+lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (Rep.ofAlgebraAutOnUnits F K)).hom = id := by
   ext a
   induction a using H2_induction_on with | h a =>
   let am := Additive.toMul ∘ Amelia.toAdditive _ _ ∘ a
@@ -877,7 +876,7 @@ lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id :=
   rfl
 
 set_option backward.isDefEq.respectTransparency false in
-lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id := by
+lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (Rep.ofAlgebraAutOnUnits F K)).hom) ∘ toSnd = id := by
   ext X
   obtain ⟨A⟩ := mem_relativeBrGroup_iff_nonempty_goodRep.1 X.2
   simp only [Function.comp_apply, id_eq, SetLike.coe_eq_coe]
@@ -998,9 +997,9 @@ lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id 
     simp [-GoodRep.conjFactor_prop]
 
 @[simp]
-def equivSnd : RelativeBrGroup K F ≃ H2 (galAct F K) where
+def equivSnd : RelativeBrGroup K F ≃ H2 (Rep.ofAlgebraAutOnUnits F K) where
   toFun := toSnd
-  invFun := (fromSnd F K ∘ (H2Iso (galAct F K)).hom)
+  invFun := (fromSnd F K ∘ (H2Iso (Rep.ofAlgebraAutOnUnits F K)).hom)
   left_inv := congr_fun fromSnd_toSnd
   right_inv := congr_fun toSnd_fromSnd
 

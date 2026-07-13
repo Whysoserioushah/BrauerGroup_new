@@ -1,7 +1,8 @@
 module
 
-public import Mathlib
 public import BrauerGroup.Algebra.BrauerGroup.Basic
+public import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
+public import Mathlib.RingTheory.SimpleModule.IsAlgClosed
 
 /-!
 # The Brauer group of an algebraically closed field is trivial

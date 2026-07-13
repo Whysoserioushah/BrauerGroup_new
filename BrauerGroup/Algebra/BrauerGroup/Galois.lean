@@ -1,6 +1,6 @@
 module
 
-public import BrauerGroup.Algebra.BrauerGroup.Relative
+public import BrauerGroup.Algebra.BrauerGroup.Relative.Basic
 public import BrauerGroup.Algebra.Split.DivisionRing
 
 /-!

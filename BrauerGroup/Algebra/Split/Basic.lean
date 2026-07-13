@@ -1,8 +1,10 @@
 module
 
-public import Mathlib
 public import BrauerGroup.Algebra.BrauerGroup.BaseChange
 public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
+public import Mathlib.Algebra.Field.ULift
+public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
+public import Mathlib.RingTheory.SimpleModule.IsAlgClosed
 
 /-!
 # Splitting fields of algebras
@@ -97,6 +99,12 @@ theorem isSplit_iff_baseChange_eq_one :
     obtain ⟨isoD⟩ := IsSimpleRing.wedderburn_artin_divisionring_unique L
       (Matrix (Fin m) (Fin m) L) e'.symm (ULift.algEquiv (R := L) (A := L)).symm.mapMatrix
     exact ⟨p, hp.out, ⟨wdb.trans (isoD.trans ULift.algEquiv).mapMatrix⟩⟩
+
+/-- If `L` splits `A` then `L` splits the opposite algebra: inversion in the Brauer group
+preserves the relative Brauer group. -/
+theorem IsSplit.op (h : IsSplit K A L) : IsSplit K Aᵐᵒᵖ L := by
+  rw [isSplit_iff_baseChange_eq_one] at h ⊢
+  rw [← BrauerGroup.mk_inv, map_inv, h, inv_one]
 
 /-- A field splits a central simple algebra if and only if it splits any matrix algebra
 over it. -/

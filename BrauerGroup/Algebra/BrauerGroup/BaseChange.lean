@@ -1,6 +1,5 @@
 module
 
-public import Mathlib
 public import BrauerGroup.Algebra.BrauerGroup.Basic
 
 @[expose] public section

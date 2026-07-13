@@ -1,6 +1,7 @@
 module
 
-public import Mathlib
+public import Mathlib.Algebra.Central.Defs
+public import Mathlib.Data.Matrix.Basic
 
 /-!
 # Centrality descends from matrix algebras

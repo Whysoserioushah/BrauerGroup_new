@@ -1,6 +1,14 @@
 module
 
-public import Mathlib
+public import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.RingTheory.Henselian
+public import Mathlib.RingTheory.LittleWedderburn
+public import Mathlib.RingTheory.PicardGroup
+public import Mathlib.RingTheory.RegularLocalRing.Defs
+public import Mathlib.RingTheory.SimpleModule.WedderburnArtin
+public import Mathlib.RingTheory.SimpleRing.Principal
+public import Mathlib.RingTheory.TotallySplit
 public import BrauerGroup.Algebra.BrauerGroup.Basic
 public import BrauerGroup.Algebra.Central.Matrix
 public import BrauerGroup.RingTheory.Finiteness.Basic
@@ -43,3 +51,4 @@ instance instUniqueOfFinite : Unique (BrauerGroup K) where
   uniq := eq_one_of_finite K
 
 end BrauerGroup
+

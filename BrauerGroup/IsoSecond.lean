@@ -1014,7 +1014,7 @@ variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K/F)]
 
 -- @[simps]
 -- def fromSndAddMonoidHom :
---     H2 (galAct F K) →+ Additive (RelativeBrGroup K F) where
+--     H2 (Rep.ofAlgebraAutOnUnits F K) →+ Additive (RelativeBrGroup K F) where
 --   toFun := Additive.ofMul ∘ RelativeBrGroup.fromSnd _ _
 --   map_zero' := by
 --     simpa only [Function.comp_apply, ofMul_eq_zero] using map_one_proof.fromSnd_zero K F
@@ -1036,7 +1036,7 @@ variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K/F)]
 --     rw [Quotient.eq'']
 --     exact map_mul_proof.isBrauerEquivalent hx hy |>.symm
 
--- def toSndAddMonoidHom : Additive (RelativeBrGroup K F) →+ H2 (galAct F K) where
+-- def toSndAddMonoidHom : Additive (RelativeBrGroup K F) →+ H2 (Rep.ofAlgebraAutOnUnits F K) where
 --   toFun := RelativeBrGroup.toSnd ∘ Additive.toMul
 --   map_zero' := by
 --     simp only [Function.comp_apply, toMul_zero]
@@ -1054,7 +1054,7 @@ variable [FiniteDimensional F K] [IsGalois F K] [DecidableEq Gal(K/F)]
 
 set_option backward.isDefEq.respectTransparency false in
 open groupCohomology in
-def isoSnd : Additive (RelativeBrGroup K F) ≃+ H2 (galAct F K) :=
+def isoSnd : Additive (RelativeBrGroup K F) ≃+ H2 (Rep.ofAlgebraAutOnUnits F K) :=
   .symm <| .mk' (Additive.ofMul.symm.trans <| equivSnd (F := F) (K := K)).symm fun x y ↦ by
     induction x using H2_induction_on with | h x =>
     induction y using H2_induction_on with | h y =>
