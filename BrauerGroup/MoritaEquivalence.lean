@@ -449,7 +449,7 @@ lemma division_ring_exists_unique_isSimpleModule
       exact b.ne_zero ⟨i, hi⟩ h)
     have eq : s = {i} := by
       refine le_antisymm ?_ (by simpa)
-      simp only [Set.le_eq_subset, Set.subset_singleton_iff]
+      simp only [Set.subset_singleton_iff]
       intro j hj
       have mem : b ⟨j, hj⟩ ∈ Submodule.span S {b ⟨i, hi⟩} := eq0 ▸ ⟨⟩
       rw [Submodule.mem_span_singleton] at mem
