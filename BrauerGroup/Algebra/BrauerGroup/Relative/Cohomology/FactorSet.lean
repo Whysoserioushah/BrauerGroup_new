@@ -369,4 +369,3 @@ theorem factorSet_powFamily [Module.Finite K L] (u : conjFactor A σ) :
 end cyclic
 
 end BrauerGroup
-

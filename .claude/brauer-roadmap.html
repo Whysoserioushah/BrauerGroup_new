@@ -1,0 +1,457 @@
+<title>Br(K) ≅ ℚ/ℤ — Roadmap</title>
+<style>
+:root{
+  --bg:#f8f7f3; --surface:#fffefb; --ink:#232a3c; --muted:#6b7183; --line:#e3e1d8;
+  --accent:#30549c; --accent-soft:#e7ecf6;
+  --ok:#2e7d4f; --ok-soft:#e3f0e8; --risk:#b3383e; --risk-soft:#f7e6e7;
+  --amber:#a06c14; --amber-soft:#f5edd9; --violet:#6d4fa3; --violet-soft:#ece5f5;
+  --teal:#2e7d84; --teal-soft:#e0eff0;
+  --serif:'Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#151a22; --surface:#1c232e; --ink:#e6e4dc; --muted:#8b93a5; --line:#2a3342;
+    --accent:#8fabe0; --accent-soft:#243149;
+    --ok:#5cb883; --ok-soft:#1e3328; --risk:#e07a80; --risk-soft:#3d2226;
+    --amber:#d9a94e; --amber-soft:#382e19; --violet:#a68fd4; --violet-soft:#2e2740;
+    --teal:#6fc0c7; --teal-soft:#1b3336;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151a22; --surface:#1c232e; --ink:#e6e4dc; --muted:#8b93a5; --line:#2a3342;
+  --accent:#8fabe0; --accent-soft:#243149;
+  --ok:#5cb883; --ok-soft:#1e3328; --risk:#e07a80; --risk-soft:#3d2226;
+  --amber:#d9a94e; --amber-soft:#382e19; --violet:#a68fd4; --violet-soft:#2e2740;
+  --teal:#6fc0c7; --teal-soft:#1b3336;
+}
+:root[data-theme="light"]{
+  --bg:#f8f7f3; --surface:#fffefb; --ink:#232a3c; --muted:#6b7183; --line:#e3e1d8;
+  --accent:#30549c; --accent-soft:#e7ecf6;
+  --ok:#2e7d4f; --ok-soft:#e3f0e8; --risk:#b3383e; --risk-soft:#f7e6e7;
+  --amber:#a06c14; --amber-soft:#f5edd9; --violet:#6d4fa3; --violet-soft:#ece5f5;
+  --teal:#2e7d84; --teal-soft:#e0eff0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.5}
+.wrap{max-width:1000px;margin:0 auto;padding:36px 20px 90px}
+a{color:var(--accent)}
+
+/* header */
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--serif);font-size:clamp(30px,5vw,42px);font-weight:600;margin:0;letter-spacing:.01em;text-wrap:balance}
+h1 .thm{font-style:italic}
+.subtitle{color:var(--muted);margin:8px 0 0;max-width:62ch}
+.subtitle code{font-family:var(--mono);font-size:.88em;color:var(--ink)}
+
+/* summary strip */
+.summary{margin-top:26px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.sumrow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.bignum{font-family:var(--serif);font-size:30px;font-variant-numeric:tabular-nums;line-height:1}
+.bignum small{font-size:15px;color:var(--muted);font-family:var(--sans)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.chip{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip b{color:var(--ink);font-weight:600}
+.chip.c-ms{border-color:var(--amber);color:var(--amber)}
+.chip.c-risk{border-color:var(--risk);color:var(--risk)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease}
+@media (prefers-reduced-motion:reduce){.bar>i{transition:none}}
+
+/* controls */
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:22px 0 6px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:5;border-bottom:1px solid var(--line)}
+.search{flex:1 1 200px;min-width:170px;padding:7px 12px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);font:inherit}
+.search:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.fbtn{font:inherit;font-size:13px;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap}
+.fbtn:hover{border-color:var(--accent);color:var(--accent)}
+.fbtn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.fbtn.on{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:600}
+.copybtn{margin-left:auto}
+
+/* phases */
+.phase{margin-top:26px;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.phead{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;user-select:none;background:none;border:none;width:100%;text-align:left;font:inherit;color:inherit}
+.phead:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.phead .chev{color:var(--muted);font-size:11px;width:12px;flex:none;transition:transform .2s}
+@media (prefers-reduced-motion:reduce){.phead .chev{transition:none}}
+.phase.closed .chev{transform:rotate(-90deg)}
+.pnum{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:700;flex:none}
+.ptitle{font-family:var(--serif);font-size:18.5px;font-weight:600;letter-spacing:.005em}
+.pmeta{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+.pcount{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pbar{width:90px;height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+.pbar>i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.pnote{padding:0 16px 12px 40px;color:var(--muted);font-size:13px;max-width:75ch}
+.pnote .arr{color:var(--accent)}
+.phase.closed .pnote,.phase.closed .tasks{display:none}
+
+/* tasks */
+.tasks{border-top:1px solid var(--line)}
+.task{display:grid;grid-template-columns:30px 1fr auto;gap:4px 10px;padding:11px 16px 11px 14px;border-bottom:1px solid var(--line);align-items:start}
+.task:last-child{border-bottom:none}
+.task.done{opacity:.55}
+.task.hidden{display:none}
+.tcheck{margin-top:2px}
+.tcheck input{width:16px;height:16px;accent-color:var(--ok);cursor:pointer}
+.tmain{min-width:0}
+.ttitle{font-weight:600;font-size:14px}
+.task.done .ttitle{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:var(--muted)}
+.tid{font-family:var(--mono);font-size:11.5px;color:var(--accent);margin-right:7px;font-weight:400}
+.tdetail{color:var(--muted);font-size:13px;margin-top:3px;max-width:78ch}
+.tdetail code,.trefs code{font-family:var(--mono);font-size:.9em;background:var(--accent-soft);color:var(--ink);padding:1px 5px;border-radius:4px;white-space:nowrap}
+.trefs{margin-top:5px;display:flex;flex-wrap:wrap;gap:5px 7px;font-size:12px;color:var(--muted)}
+.trefs .lbl{letter-spacing:.06em;text-transform:uppercase;font-size:10px;align-self:center;color:var(--muted)}
+.tdep{margin-top:4px;font-size:12px;color:var(--amber)}
+.tbadges{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex:none}
+.tag{font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;padding:2.5px 8px;border-radius:4px;white-space:nowrap}
+.tag.port{background:var(--accent-soft);color:var(--accent)}
+.tag.reprove{background:var(--amber-soft);color:var(--amber)}
+.tag.new{background:var(--teal-soft);color:var(--teal)}
+.tag.glue{background:var(--line);color:var(--muted)}
+.tag.cleanup{background:var(--line);color:var(--muted)}
+.b-risk{font-size:11px;color:var(--risk);background:var(--risk-soft);padding:2.5px 8px;border-radius:4px;white-space:nowrap;font-weight:600}
+.b-pr{font-size:11px;color:var(--violet);background:var(--violet-soft);padding:2.5px 8px;border-radius:4px;white-space:nowrap;font-weight:600}
+.b-ms{font-size:11px;color:var(--amber);background:var(--amber-soft);padding:2.5px 8px;border-radius:4px;white-space:nowrap;font-weight:700}
+.b-opt{font-size:11px;color:var(--muted);padding:2.5px 4px;white-space:nowrap}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 18px;border-radius:7px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+.empty{padding:18px 16px;color:var(--muted);font-size:13px;font-style:italic}
+footer{margin-top:34px;color:var(--muted);font-size:12.5px;max-width:70ch}
+footer code{font-family:var(--mono);font-size:.9em}
+@media (max-width:640px){
+  .task{grid-template-columns:28px 1fr}
+  .tbadges{grid-column:2;flex-direction:row;flex-wrap:wrap;justify-content:flex-start;margin-top:4px}
+  .pmeta .pbar{display:none}
+}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">BrauerGroup · formalization roadmap · Lean 4 + mathlib · updated 2026-07-14 (rev 54: 5.5a DONE — cyclic coboundary ⟺ norm (both directions + div corollary), P2 generalized into a mathlib-mirror shim (PR candidate); CYCLIC CORE COMPLETE (5.1/5.2/5.3/5.5a) — Phase 5’s remainder is all trunk-gated, the trunk (4.5b next) is now the sole Goal-A front; 50/132, build 8723, uncommitted since f831c29. rev 53: 4.13 DONE + CHECKPOINT f831c29 pushed — min_imports pass, mk_all root regeneration, everything wired, build 8722, 49/132. rev 52: 5.2 DONE — oneEquivEnd : CPA(1) ≅ₐ End_K(L) + mk_one_eq_one in new Algebra/BrauerGroup/Cyclic.lean, with @[simp] calc kit; 48/132; cyclic core now 3/4 — only 5.5a buildable-today remains, then Phase 5 waits on trunk 4.5/4.8/4.11/4.14. rev 51: 5.3 DONE — power family + powScalar descent + factorSet_powFamily in FactorSet.lean §cyclic (every GoodRep with a conjFactor at a generator carries the carry cocycle); genExp refactored onto mathlib zmodMulEquivOfGenerator (abbrev, spec lemmas kept); 47/132. Next: 5.2 descent iso CPA(1) ≅ End → 5.5a coboundary ⟺ norm. rev 50: 5.1 DONE — CyclicAlgebra := CPA(carry cocycle) in new Algebra/CrossProduct/Cyclic.lean + GroupTheory/CyclicIndex.lean, presentation lemmas uⁿ = a; build green 8718. rev 49: TWO-GOAL RESTRUCTURE + CFT PORT WAVE. Goal A = Br(K) ≅ ℚ/ℤ, cohomology-free via cyclic algebras + unramified local fields (Phase 5 rebuilt around CyclicAlgebra := CPA(carry cocycle); old πEven route dropped from every critical path). Goal B = Br ≅ H², finite level → absolute colimit (new Phase B after 8; the H²-interface tasks moved there from Phase 4). Phase 4 recast as the shared TRUNK; NEW 4.14 inflation theorem CPA(inf f) ~ CPA(f) replaces the old cohomological 6.9. Phase 6 reshaped by the kbuzzard/ClassFieldTheory survey (Apache-2.0, Edison co-authors, same module system, one pin behind): port waves 6.3a–c bring finite-ext-is-local + e·f = [L:K] + UnramifiedExtension(roots-of-unity construction) + Teichmüller; their ONE load-bearing sorry = our 6.3d (Module.Finite 𝒪K 𝒪L); genuinely open for everyone: Frobenius layer 6.5, WALL #3 6.6, Laurent 6.2. 6.1 ℚ_p: PROOF COMPLETE in Algebra/test.lean (builds green 8636) — kept OPEN for cleanup/rehome only. 127 → 132 tasks, 45 done. rev 48: granularity re-cut, every open task ≤ ~3 steps. Next: trunk 4.5b–e, or cyclic layer 5.1/5.2, or port wave 6.3a — three independent fronts)</p>
+  <h1><span class="thm">Br(K) ≅ ℚ/ℤ</span> for a nonarchimedean local field</h1>
+  <p class="subtitle">Clean rebuild on <code>Algebra/BrauerGroup/Basic.lean</code> + <code>BaseChange.lean</code>. Route: unramified tower, degreewise — <span style="font-family:var(--serif);font-style:italic">Br(K) = ⋃ₙ Br(Kₙ/K) ≅ colim ℤ/n</span> — via crossed products, cyclic H², and the reduced-norm valuation. No Ẑ, no continuous cohomology.</p>
+
+  <div class="summary">
+    <div class="sumrow">
+      <div class="bignum" id="sum-num">0<small> / 0 tasks</small></div>
+      <div class="chips" id="sum-chips"></div>
+    </div>
+    <div class="bar"><i id="sum-bar" style="width:0%"></i></div>
+  </div>
+
+  <div class="controls">
+    <input class="search" id="search" type="search" placeholder="Search tasks, decls, files…" aria-label="Search tasks">
+    <button class="fbtn on" data-f="all">All</button>
+    <button class="fbtn" data-f="todo">To do</button>
+    <button class="fbtn" data-f="done">Done</button>
+    <button class="fbtn" data-f="risk">⚠ Risk</button>
+    <button class="fbtn" data-f="pr">mathlib PR</button>
+    <button class="fbtn" data-f="ms">Milestones</button>
+    <button class="fbtn copybtn" id="copy">Copy TODO report</button>
+  </div>
+
+  <div id="phases"></div>
+
+  <footer>
+    <p><strong>Legend.</strong> <span class="tag port">port</span> statement + proof survive, re-target to the new API · <span class="tag reprove">reprove</span> statement kept, proof redone clean · <span class="tag new">new</span> not in the old repo or mathlib · <span class="tag glue">glue</span> instantiate existing mathlib API · <span class="b-risk">⚠ risk</span> where the real difficulty concentrates · <span class="b-pr">PR ↥</span> mathlib upstream candidate · <span class="b-ms">🏁</span> milestone.</p>
+    <p><strong>Granularity discipline (rev 48).</strong> Every open task is cut to ≤ ~3 nontrivial Lean steps, grounded in the survey sweep of the legacy proofs and the mathlib pin. If a task balloons mid-flight, split it on the dashboard <em>before</em> grinding — the split itself is the deliverable that keeps velocity visible.</p>
+    <p>Checkbox state lives in your browser (<code>localStorage</code>) under stable task IDs, so it survives dashboard updates. "Copy TODO report" produces a markdown summary of what's left — paste it into a session to sync progress.</p>
+  </footer>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+const PHASES = [
+ {n:'0', title:'Foundation', note:'Done — the clean group structure and base change everything else targets.'},
+ {n:'1', title:'Relative Brauer group & splitting', note:'Target <code>Algebra/BrauerGroup/Relative.lean</code> (stub exists). Unlocks → 2, 3, 4.'},
+ {n:'2', title:'Skolem–Noether & double centralizer', note:'Structure theory mathlib lacks entirely. The 074E Morita files are already clean. Unlocks → 3.'},
+ {n:'3', title:'Maximal subfields & finite Galois splitting', note:'Koethe + splitting-field theory → clean <code>Subfield/</code>, rebuilt WITHOUT a SubField structure. DESIGN (Zulip “Refactor Subfield”, Apr 2025 — Junyan Xu / Eric Wieser consensus): predicate spelling on <code>Subalgebra K A</code> — commutativity via <code>IsMulCommutative</code>, maximality via <code>Maximal</code>; fields recovered on demand (<code>division_commsubalg_isField</code>, letI only). NO bundled Subfield anywhere: the division-ring plumbing on the centralizer is private to the Koethe induction; its public trace is Z(C_D(L)) = L via 2.8. Keystone done: max-commutative ↔ self-centralizing ↔ dim², plugged into the 074S cluster. Ends with Br(K) = ⋃ Br(L/K). Unlocks → 4, 7.'},
+ {n:'4', title:'TRUNK: crossed-product calculus', note:'The shared algebra core BOTH goals consume — everything here is cohomology-free (IsMulCocycle₂ as an elementary Prop; no H², no Rep). Comparison chain 4.5 (⟹ split-iff-norm at 5.5), conjFactor basis 4.7 + structure theorem 4.8 (⟹ every class is cyclic at 5.4), canonical-units glue 4.9 (⟹ Goal B round trip), multiplicativity 4.11a–e on the LEGACY BIMODULE route modernized (corner-idempotent alternative rejected: pin has no corner-ring/Morita API; C_mul_smul′ retamed by the new basis API, choose ladders die to mathlib Isotypic + repo Morita/End.lean), and NEW 4.14: the inflation theorem CPA(inf f) ~ CPA(f) via W := L′ ⊗[L] A_f (free right module ⟹ End = matrices — easier than 4.11, replaces the old cohomological 6.9, feeds Goal A’s 5.6 and Goal B’s B.7). Done H²-facing pieces (4.4a/4.5a cores, 4.10 fromH2) keep their IDs here; the open H²-interface tasks moved to Phase B. map_one never needed (MulEquiv.mk′).'},
+ {n:'5', title:'GOAL A: cyclic algebras & the level iso', note:'Zero cohomology — the level isomorphism by pure algebra. CyclicAlgebra(σ, a) := CrossProductAlgebra of the explicit carry cocycle f_{σ,a} (reuses ALL of 4.1’s infrastructure; the cocycle Fact is carry arithmetic — literally the same arithmetic as CFT’s proved carry_add_carry lemmas). invₙ (6.8) = surjectivity (5.4: every relative class is cyclic) + split-iff-norm (5.5) + multiplicativity (5.7 ⇐ trunk 4.11) + tower formula (5.6 ⇐ trunk 4.14). WALL #2 DISSOLVES: cyclic algebras carry their generator as data, so generator-explicitness is automatic rather than a discipline. The rev-48 πEven/norm-bridge route is DROPPED from every critical path (optional comparison lives at B.10).'},
+ {n:'6', title:'GOAL A: local fields — CFT port + the real holes', note:'RESHAPED rev 49 by the kbuzzard/ClassFieldTheory survey (Apache-2.0, Edison co-authors, new module system, mathlib pin one generation behind ours). Port waves 6.3a–c vendor their ~90%-done IsNonarchimedeanLocalField tree: finite-ext-is-local via spectral norm + automatic FiniteDimensional + uniqueness, full e/f API with e·f = [L:K], <code>UnramifiedExtension K n := SplittingField(X^{q^n−1}−1)</code> (f = n, e = 1, IsGalois, universal property (K_n →ₐ L) ↔ n ∣ f, uniqueness, maximalUnramified — SMARTER than raw Hensel-lifting), Teichmüller character, Galois-invariance of the valuation, 𝔪-adic completeness, the 767-line HenselPolynomial engine. Old 6.4a–c absorbed by the port. GENUINELY OPEN — here as there: 6.3d Module.Finite 𝒪K 𝒪L (their one load-bearing sorry), the Frobenius layer 6.5 (grep Frobenius = 0 hits in CFT; de-choice their .choose-transported structures first), WALL #3 6.6 (sorried in CFT by BOTH routes), 6.2 Laurent series (untouched by everyone). 6.1 ℚ_p: proof complete in Algebra/test.lean, open for cleanup only. WATCH: ResidueField smul diamond (CFT carries a workaround shim), pin drift 23b0068d → cef1e7de.'},
+ {n:'7', title:'Unramified splitting via reduced norm', note:'Survey (rev 48): CSA/ReducedCharPoly.lean is healthier than assumed — eq_pow_reducedCharpoly, eq_polys, mem_Kx (= all of 7.2) and the whole norm/trace multiplicativity layer are PROVED; the true gaps are unique_onver_split (3 sorries + 1.6M heartbeats — IsField.toField @-hacks), reducedNorm_ne_zero_iff, inv_under_extend/algEquiv, trace TODOs. Route: degree-kit migration 7.1a (also unblocks deletion wave X.1a) → closure-free overfield argument 7.1b–c → K-valued Nrd 7.3 → unit criterion 7.4 → subfield formula 7.6 → valuation w = (1/n)·v∘Nrd 7.7 → residue theory 7.8 → e = f = n + Teichmüller lift 7.9 → Br(K) = ⋃ₙ Br(Kₙ/K). Output shape for 8.2: ⨆ₙ relativeBrGroup K_n = ⊤ plus n ∣ m monotonicity — the divisibility-directed system mirroring RatAddCircle.cyclic.'},
+ {n:'8', title:'GOAL A assembly: Br(K) ≅ ℚ/ℤ', note:'Glue the tower into <span style="font-family:var(--serif);font-style:italic">Br(K) ≅ ℚ/ℤ</span> = <code>AddCircle (1 : ℚ)</code>. TARGET SIDE DONE: Rat.lean (8.1) + Subgroup.iSupLift (8.5) are verified code; what remains is pure plumbing once 5–7 deliver the eₙ — tower compatibility now comes from the cyclic inflation formula (5.6) + the Frobenius-compatible tower (6.5d), no cohomology anywhere.'},
+ {n:'B', title:'GOAL B: Br ≅ H² — finite level to absolute', note:'Scheduled after 8.3; independent of Goal A’s critical path. B.1–B.5 = the H²-interface moved from Phase 4 (half done already: fromH2 + FactorSet cores are trunk ✓), stated over an ARBITRARY base field — the mathlib-PR track. B.6–B.7 inflation squares: algebra half = trunk 4.14, cohomology half = CFT’s PROVED infl/rest δ-natural transformations (their inf-res EXACTNESS sorries are NOT needed — H² transition-map injectivity comes free from the Brauer side through the B.5 squares). B.8 = the absolute theorem as a plain DirectLimit of finite-level H²s along inflation — no profinite topology, no continuous cohomology; the AbsoluteIsoH2 stub finally gets a job. B.9 optional ContCohomology upgrade once mathlib matures; B.10 optional invariant-comparison corollary via CFT’s proved carry-cocycle localInv.'},
+ {n:'X', title:'Cross-cutting: cleanup & upstreaming', note:'Deletions once deps are rewired, and the mathlib PR batch.'},
+];
+
+/* t=title d=detail src=old source ml=mathlib input tag=port|reprove|new|glue|cleanup
+   risk / pr / ms / opt = flags, done = ground truth, dep = prerequisite note */
+const TASKS = [
+ {id:'0.1',p:'0',t:'BrauerGroup group structure via mk / lift / lift₂',d:'CommGroup instance on mathlib’s BrauerGroup k; mk_eq_mk, mk_congr, mk_matrix_eq_one, induction.',src:'Algebra/BrauerGroup/Basic.lean',tag:'port',done:true},
+ {id:'0.2',p:'0',t:'baseChange : BrauerGroup K →* BrauerGroup L',d:'matrixEquivTensorL + matrixBaseChange replace the 300-line someEquivs.e1–e7 chain.',src:'Algebra/BrauerGroup/BaseChange.lean',tag:'port',done:true},
+ {id:'0.3',p:'0',t:'baseChange_self, baseChange_comp, universe tower',d:'Composition across three universe levels (K : Type u, L : max u u₂, M : max u u₂ u₃).',src:'Algebra/BrauerGroup/BaseChange.lean',tag:'port',done:true},
+
+ {id:'1.1',p:'1',t:'relativeBrGroup K L := (baseChange K L).ker',d:'Done 2026-07-08: Algebra/BrauerGroup/Relative.lean — abbrev relativeBrGroup + mem_relativeBrGroup_iff; BaseChange/Relative added to root imports.',src:'RelativeBrauer.lean:38',tag:'port',done:true},
+ {id:'1.2',p:'1',t:'isSplit predicate on the new API; kill the data-valued split structure',d:'Done 2026-07-08: Algebra/Split.lean — Algebra.IsSplit (Prop, mathlib naming, cross-universe) + IsSplit.of_algEquiv. Old data-valued split dies with SplittingOfCSA (X.1).',src:'SplittingOfCSA.lean',tag:'port',done:true},
+ {id:'1.3',p:'1',t:'split_iff : isSplit F A K ↔ baseChange F K (mk A) = 1',d:'Done 2026-07-08: Algebra.isSplit_iff_baseChange_eq_one in Split.lean §CentralSimple — forward = mk_congr + mk_matrix_eq_one; backward = mathlib W-A existence + wedderburn_artin_divisionring_unique (1.6). Also: 1.6 lemmas live at IsSimpleRing.wedderburn_artin_{divisionring,size}_unique; Module.finite_of_matrix added in RingTheory/Finiteness/Basic.lean.',src:'RelativeBrauer.lean:40',ml:'IsSimpleRing.exists_algEquiv_matrix_divisionRing',tag:'reprove',dep:'needs 1.6',done:true},
+ {id:'1.4',p:'1',t:'split_sound / split_sound′ / mem_relativeBrGroup',d:'Done 2026-07-08: Algebra.isSplit_congr (Split.lean, one rw via 1.3, mk-equality hypothesis) + mk_mem_relativeBrGroup_iff_isSplit (Relative.lean, now imports Split).',src:'RelativeBrauer.lean',tag:'port',dep:'needs 1.3',done:true},
+ {id:'1.5',p:'1',t:'Splitting tower: isSplit L A → isSplit L′ A for L ⊆ L′',d:'Done 2026-07-08: IsSplit.of_isScalarTower in Algebra/Split.lean — 4-step equiv chain (congr rid + assoc + matrixEquivTensorL), no k̄/deg detour; matrix helpers in BaseChange.lean freed from the max-universe tower.',src:'SplittingOfCSA.lean',tag:'new',done:true},
+ {id:'1.12',p:'1',t:'IsSplit.of_isAlgClosed: algebraically closed extensions split every CSA',d:'Done 2026-07-08: in Algebra/Split.lean — Prop-level replacement of old split_by_alg_closure (data version dropped); 3 lines via mathlib + repo tensor-simplicity instance.',src:'SplittingOfCSA.lean (split_by_alg_closure)',ml:'IsSimpleRing.exists_algEquiv_matrix_of_isAlgClosed',tag:'new',done:true},
+ {id:'1.6',p:'1',t:'Wedderburn–Artin uniqueness₀ / uniqueness₁',d:'Done 2026-07-08: RingTheory/SimpleModule/Wedderburn.lean — Matrix.divisionRing_unique + Matrix.size_unique (renamed, stacks 074E tags, D D′ universe freed from A, cleaner n = n′ ending via Nat.eq_of_mul_eq_mul_right).',src:'ZeroSevenFourE.lean',ml:'IsSimpleRing.isIsotypic',tag:'port',pr:true,done:true},
+ {id:'1.7',p:'1',t:'exists_common_division_algebra',d:'Done 2026-07-08: IsSimpleRing.wedderburn_artin_common_divisionring in RingTheory/SimpleModule/Wedderburn.lean — de-Brauerized: hypothesis is the raw Mₙ(A) ≃ Mₘ(B) iso between f.d. simple algebras (no CSA bundle, no centrality; B\u2019s f.d. derived). Brauer callers destructure mk_eq_mk at the call site.',src:'RelativeBrauer.lean:103',tag:'reprove',dep:'needs 1.6',done:true},
+ {id:'1.8',p:'1',t:'Subsingleton (BrauerGroup k) for algebraically closed k',d:'Done 2026-07-08: new file Algebra/BrauerGroup/AlgClosed.lean — eq_one_of_isAlgClosed (3 lines) + Unique instance; replaces the old 4-decl Alg_closed_* cluster.',src:'BrauerGroup.lean (Alg_closed_*)',ml:'IsSimpleRing.exists_algEquiv_matrix_of_isAlgClosed',tag:'new',done:true},
+ {id:'1.9',p:'1',t:'Subsingleton (BrauerGroup 𝔽_q)',d:'Done 2026-07-08: Algebra/BrauerGroup/FiniteField.lean — eq_one_of_finite + Unique instance; new shim Algebra/Central/Matrix.lean adds the missing centrality descent Algebra.IsCentral.of_matrix (reverse of mathlib IsCentral.matrix, PR candidate).',src:'FiniteField.lean',ml:'littleWedderburn',tag:'port',done:true},
+ {id:'1.10',p:'1',t:'CSA descent: A is CSA over k ↔ K ⊗ A is CSA over K (A nontrivial)',d:'Done 2026-07-09: reduced to ONE missing lemma — Algebra.IsCentral.of_baseChange (Algebra/Central/TensorProduct.lean, next to the ascent instance). Simplicity descent was already IsSimpleRing.right_of_tensor; centrality could NOT come from right_of_tensor_of_field (base-field mismatch: ring-center of L ⊗[k] A is L·1). New proof via linear retraction L → k: needs NO Nontrivial, NO FiniteDimensional. No iff bundle; assemble at use sites.',src:'RelativeBrauer.lean',ml:'LinearMap.exists_leftInverse_of_injective',tag:'reprove',done:true},
+ {id:'1.11',p:'1',t:'deg A := Nat.sqrt (finrank k A); dim_is_sq, deg_sq_eq_dim, deg_pos',d:'Done 2026-07-09: Algebra.IsCentralSimple.{degree, isSquare_finrank, degree_sq_eq_finrank, degree_pos, NeZero} in Split.lean — Nat.sqrt-based, no choice/k̄ argument, cross-universe; namespace chosen as umbrella for future CSA invariants (index/exponent/reducedNorm).',src:'SplittingOfCSA.lean',ml:'Module.finrank_baseChange',tag:'reprove',done:true},
+
+ {id:'2.1',p:'2',t:'Port the 074E Morita trio; swap in mathlib’s Isotypic API',d:'Done 2026-07-09, in place: 074E(1) reproved via prod-embedding + IsSimpleRing.isIsotypic (no category equivalences); 074E(2) via IsIsotypicOfType.linearEquiv_finsupp (no ModuleCat coproduct gymnastics). Helper file LinearAlgebra/Dimension/Finite.lean deleted; End/Matrix.lean unchanged (signatures stable).',src:'RingTheory/Morita/*',ml:'IsIsotypic.linearEquiv_fun',tag:'port',done:true},
+ {id:'2.2',p:'2',t:'linearEquiv_iff_finrank_eq_over_simple_ring',d:'Done 2026-07-09: uniform proof via IsIsotypicOfType.linearEquiv_fun + finrank_pi_fintype + Hopkins–Levitzki (noetherian instance); empty-index case handled uniformly, Fintype.ofFinite hack and finite_finsupp_iff resolve-chains gone.',src:'RingTheory/Morita/SimpleRing.lean',tag:'port',done:true},
+ {id:'2.3',p:'2',t:'Skolem–Noether, clean reproof',d:'PREP DONE 2026-07-09: SkolemNoether.lean rewired off the old core — now depends only on Central/Matrix + Morita/End + SimpleRing/TensorProduct + mathlib W-A (Wedderburn_Artin_algebra_version → exists_algEquiv_matrix_divisionRing, CSA_implies_CSA → of_algEquiv + of_matrix, hand-rolled tower → named scoped instance). Done 2026-07-09: RingTheory/SkolemNoether.lean, theorem skolemNoether — regular-representation proof (A as B ⊗ Aᵐᵒᵖ-module via mulLeftRight ∘ map f id + Module.compHom; mk/val discipline; module-system-minimal public surface, deriving-instances). 145 lines vs 347, ZERO set_options/erw, no simple module, no end_end_iso. Old file deleted (4th this week); 7 call sites in 4 files retargeted drop-in.',src:'SkolemNoether.lean',tag:'reprove',risk:true,pr:true,done:true},
+ {id:'2.4',p:'2',t:'simple ⊗ central-simple is simple; IsSimpleRing.left/right_of_tensor',d:'Done 2026-07-09: left/right_of_tensor reproved in RingTheory/SimpleRing/TensorProduct.lean via a direct two-sided-ideal argument (no iff_eq_zero_or_injective′, no PUnit-exactness, no faithful flatness; universe restriction dropped); reusable Algebra.TensorProduct.nontrivial_left/right split out. LemmasAboutSimpleRing.lean deleted, 3 consumers rewired. The ⊗-is-simple instances were already in the file.',src:'RingTheory/SimpleRing/TensorProduct.lean, LemmasAboutSimpleRing.lean',tag:'port',pr:true,done:true},
+ {id:'2.5',p:'2',t:'centralizer_mulLeft via the Azumaya route',d:'Done 2026-07-09: Subalgebra.centralizer_range_lmul in Algebra/Algebra/Subalgebra/Centralizer.lean, with Algebra.rmul (right regular rep as AlgHom from B-op, in its own file Algebra/Algebra/Opposite.lean mirroring mathlib). Azumaya route unnecessary: an endo commuting with left-mults satisfies phi z = z * phi 1, so the whole 200-line proof (central case + center reduction) collapsed to ~10 lines, no simplicity/finiteness hypotheses at all.',src:'Algebra/Algebra/Subalgebra/Centralizer.lean',ml:'Algebra.lmul, LinearMap.mulRight',tag:'reprove',done:true},
+ {id:'2.6',p:'2',t:'centralizer_isSimple',d:'Done 2026-07-09: Subalgebra.centralizer_isSimple (stacks 074S) in RingTheory/SimpleRing/Centralizer.lean. Skolem-Noether conjugates the two embeddings B to A tensor End F B; centralizers computed via mathlib centralizer_coe_map_includeLeft/Right lemmas; refactored into 3 named private lemmas (conj transfer, A-tensor-B-op computation, tensor descent) + 8-line main proof. Instance IsSimpleRing (Module.End R M) generalized to any simple ring with StrongRankCondition, in RingTheory/SimpleRing/End.lean via new Module.Basis.endRingEquivMatrixOpposite (LinearAlgebra/Matrix/ToLin.lean). NO maxHeartbeats, no set_options, no erw.',src:'RingTheory/SimpleRing/Centralizer.lean',ml:'centralizer_coe_map_include*, Module.Flat.lTensor/rTensor',tag:'reprove',done:true},
+ {id:'2.7',p:'2',t:'dim_centralizer : finrank C_A(B) · finrank B = finrank A',d:'Done 2026-07-09: Subalgebra.finrank_centralizer_mul_finrank (stacks 074S first part) in RingTheory/SimpleRing/Centralizer.lean — placement decided by #min_imports on a test file. Same Skolem-Noether skeleton as 2.6: dim C(f.range) = c*n^2, dim C(g.range) = a*n, conjugate ranges equal dims via new AlgHom.range_conj + conj_centralizer + finrank_conj, cancel n. Bonus: 2.6 transport machinery (conj_mem_centralizer_range + inline RingEquiv) replaced by the same three conj lemmas.',src:'RingTheory/SimpleRing/Centralizer.lean',tag:'reprove',dep:'needs 2.3',done:true},
+ {id:'2.8',p:'2',t:'double_centralizer : C_A(C_A(B)) = B',d:'Done 2026-07-10: Subalgebra.centralizer_centralizer (stacks 074S third part) in RingTheory/SimpleRing/Centralizer.lean. Nearly free after 2.6+2.7: le_centralizer_centralizer + two applications of finrank_centralizer_mul_finrank + Nat cancellation; 1.8M heartbeats. File also got a perf pass: proofs restructured to avoid rw under IsSimpleRing/finrank of big subalgebra terms (rewrite plain Subalgebra equalities, transport by application) — main theorems 45.6M->32.3M and 49.6M->41.4M hb.',src:'RingTheory/SimpleRing/Centralizer.lean',tag:'port',dep:'needs 2.6, 2.7',pr:true,done:true},
+ {id:'2.9',p:'2',t:'writeAsTensorProduct (stacks 074U)',d:'Done 2026-07-10: Subalgebra.tensorCentralizerEquiv (stacks 074U, A equiv B tensor C_A(B)) in RingTheory/SimpleRing/Centralizer.lean, via new AlgHom.bijective_of_finrank_eq in RingTheory/SimpleRing/Basic.lean (clean replacement for old bijective_of_dim_eq_of_simple). Old DoubleCentralizer.lean deleted; center-of-simple-algebra instances rescued into RingTheory/SimpleRing/Center.lean (Field/Algebra/FiniteDimensional over the center); 11 call sites in 4 files retargeted.',src:'RingTheory/SimpleRing/Centralizer.lean',tag:'port',done:true},
+ {id:'2.10',p:'2',t:'Subalgebra.conj API',d:'Done 2026-07-09: Algebra/Algebra/Subalgebra/Conj.lean — conj := B.map of the ConjAct conjugation automorphism (MulSemiringAction.toAlgEquiv); mem_conj, conjEquiv (= AlgEquiv.subalgebraMap), finrank_conj, isSimpleRing_conj_iff, conj_centralizer via new general map_centralizer. 78 lines replace ~175; old block in DoubleCentralizer.lean deleted, two private shims keep old proofs compiling.',src:'Algebra/Algebra/Subalgebra/Conj.lean',tag:'port',done:true},
+
+ {id:'3.1',p:'3',t:'Predicate layer: maximal commutative subalgebras — NO SubField structure',d:'Done 2026-07-10: exists_maximal_comm_subalgebra in Algebra/Algebra/Subalgebra/Directed.lean — every commutative subalgebra lies under a Maximal (fun S : Subalgebra R A ↦ IsMulCommutative S) one; zorn_le_nonempty₀ + mathlib Subalgebra.isMulCommutative_iSup (chain → directedOn → directed_val), CommSemiring/Semiring generality, 12 lines. Design cuts vs plan: NO abbrev (raw Maximal spelling, used verbatim downstream) and no iSup lemma needed (already in mathlib). Deletion of Subfield/Defs.lean + FiniteDimensional.lean DEFERRED until 3.2–3.5 rewire the consumers. TODO: root import not yet added.',src:'Subfield/Defs.lean',tag:'reprove',pr:true,done:true},
+ {id:'3.2',p:'3',t:'Z(C_D(L)) = L: IsCentral of the centralizer over a simple commutative subalgebra',d:'Done 2026-07-11, in RingTheory/SimpleRing/Centralizer.lean §CentralSimple next to 2.8, as two SCOPED instances (namespace Subalgebra): (1) Algebra ↥L ↥(centralizer F ↑L) for commutative L — inclusion via RingHom.toAlgebra′ (NOT toAlgebra: codomain noncommutative!), where the commuting obligation is literally the centralizer property; (2) isCentral_centralizer : Algebra.IsCentral ↥L ↥(centralizer F ↑L) for L commutative simple — mem_center → mem centralizer-of-centralizer → 2.8 rewrite (value-level, perf-safe) → Algebra.mem_bot with Subtype.ext rfl (algebraMap IS the inclusion definitionally). Gotcha: needs open scoped IsMulCommutative for CommSemiring ↥L — any consumer stating goals over this structure needs it too. This is the hypothesis Jacobson–Noether (exists_separable_and_not_isCentral′) consumes; remaining plumbing (DivisionRing ↥C, Module.Finite ↥L ↥C, tower) stays private to 3.6. NO bundled Subfield anywhere; Subfield.centralizer survives as an independent mathlib-PR idea. Build green 8714.',src:'Subfield/Separable.lean',tag:'new',pr:true,dep:'needs 2.8',done:true},
+ {id:'3.3',p:'3',t:'Division-algebra upgrade: commutative ⟹ field; adjoin commutativity for free',d:'Done 2026-07-10 as division_commsubalg_isField (IsField via the mulLeft f.d. trick); SUPERSEDED 2026-07-11 during 3.6 by the diamond-safe data form: Subalgebra.fieldOfIsMulCommutative (+ divisionRingOfFinite, inv_mem_of_finite, isUnit_or_eq_zero_of_finite) in Algebra/Algebra/Subalgebra/DivisionRing.lean — abbrevs over the canonical Ring/CommRing via ofIsUnitOrEqZero, ambient inverse. The original IsField lemma had zero remaining users and its file (LinearAlgebra/FiniteDimensional/Basic.lean) was DELETED (it was a hair more general — Module.Finite k ↥L only — recoverable if ever needed). Adjoin half free from mathlib (isMulCommutative_adjoin). Lesson kept: never letI IsField.toField on subalgebra subtypes.',src:'Algebra/Algebra/Subalgebra/DivisionRing.lean',tag:'reprove',done:true},
+ {id:'3.4',p:'3',t:'Keystone: max-commutative ↔ self-centralizing (general) ↔ dim square (L simple)',d:'Done 2026-07-10 in two halves. Part I (mathlib-ready file Algebra/Algebra/Subalgebra/Lattice.lean, CommSemiring/Semiring generality): le_centralizer_iff_isMulCommutative (bridge), isMulCommutative_adjoin_insert_of_mem_centralizer (adjoin-insert gadget — 3.6 reuses it), le_centralizer_of_le, maximal_comm_iff_self_centralizer (MC ↔ SC). A tempting shortcut instance “C(L) is commutative” was caught FALSE (⊥ in M₂; equivalent to the conclusion) via #print axioms showing sorryAx — replaced by the adjoin argument. Part II (Subalgebra.isMaximal_comm_iff_finrank, RingTheory/SimpleRing/Centralizer.lean §CentralSimple, kept out of the mathlib-ready file): centralizer = L ↔ finrank A = finrank L * finrank L for L commutative simple, via 2.7 + equivOfEq/finrank_eq transport + Submodule.eq_of_le_of_finrank_eq. L simple ESSENTIAL (Schur’s dim-5 example in M₄: 16 ≠ 25). Composite MC ↔ dim² = trans of the two iffs, to be stated at 3.5 call sites. Build green 8714.',src:'Subfield/Subfield.lean',tag:'reprove',dep:'needs 2.7',done:true},
+ {id:'3.5',p:'3',t:'Division-algebra corollaries: dim_max_subfield + max-commutative = max-subfield',d:'Done 2026-07-11 by ABSORPTION: dim_max_subfield = maximal_comm_iff_self_centralizer → isMaximal_comm_iff_finrank (3.4), consumed inline in 3.7’s exists_finite_sep_split exactly once; the AlgEquiv-transport corollary is obsolete (no SubField order exists to transport). No standalone statement warranted.',src:'Subfield/Subfield.lean',tag:'reprove',dep:'needs 3.3, 3.4',done:true},
+ {id:'3.6',p:'3',t:'Koethe: separable maximal commutative subalgebra exists',d:'Done 2026-07-11: DivisionRing.exists_separable_maxSubfield in Algebra/Algebra/Subalgebra/DivisionRing.lean (mathlib-standard, slim imports, strategy documented) — ∃ L, centralizer k L = L ∧ Algebra.IsSeparable k L, for f.d. CENTRAL D (IsCentral required: 𝔽_p(t^{1/p}) over 𝔽_p(t) kills the non-central statement). Zorn over {commutative ∧ separable} (new PUBLIC Subalgebra.isSeparable_iSup_of_directed, companion to isMulCommutative_iSup); J–N (exists_separable_and_not_isCentral′) applied to the CENTRALIZER (not the adjoin — IsCentral is unsatisfiable there); enlargement via isMulCommutative_adjoin_insert_of_mem_centralizer + isSeparable_map_iff transport + adjoin_L{x}=⊤ by dependent adjoin_induction + isSeparable_adjoin_simple_iff + IsSeparable.trans. DIAMOND CURE (the key unblocking insight): never IsField.toField — new PUBLIC Subalgebra.inv_mem_of_finite / isUnit_or_eq_zero_of_finite / divisionRingOfFinite / fieldOfIsMulCommutative, abbrevs over the canonical Ring/CommRing via ofIsUnitOrEqZero, so every projection is the canonical instance path (supersedes division_commsubalg_isField in practice). Old exists_sep_masSubfield monolith + AllSepSubfield order dead. Build green 8715.',src:'Subfield/Separable.lean',ml:'exists_separable_and_not_isCentral′ (FieldTheory/JacobsonNoether)',tag:'reprove',risk:true,dep:'needs 3.2, 3.4',pr:true,done:true},
+ {id:'3.7',p:'3',t:'Finite separable + finite Galois splitting fields',d:'Done 2026-07-11: Algebra/Split/DivisionRing.lean. exists_finite_sep_split — every f.d. CSA has a finite SEPARABLE splitting field as an IntermediateField of ANY algebraically closed extension (W-A reduction + isSplit_congr; Koethe; keystone dim; split_iff_finrank L.val; IsAlgClosed.lift + fieldRange + of_algEquiv′ transport). exists_finite_galois_split — finite GALOIS splitting field, [Algebra.IsAlgebraic k k̄] added (needed: normalClosure.normal wants Normal k k̄, false for transcendental ambients); IsAlgClosure.normal + normalClosure instances + separability of the compositum via isSeparable_iSup over conjugate fieldRanges (IsGalois.normalClosure unusable in char p — Galois-ambient hypothesis); tower ascent free from normalClosure.algebra instances — the promised no-toAlgebra-hacks proof. Build green 8716.',src:'Subfield/Separable.lean',tag:'reprove',dep:'needs 3.6, 3.8',done:true},
+ {id:'3.8',p:'3',t:'isSplit_iff_dimension + exists_embedding_of_isSplit',d:'Done 2026-07-11 (core): Algebra/Split/Finrank.lean, Shape-A design — abstract field + embedding f : L →ₐ[k] A; the Subalgebra form falls out with f := L.val, dodging the Module ↥L B left-action instance clash. rightMod (right-mult module via f, letI only), split_of_finrank (embedding + dim = deg² ⟹ IsSplit: one-factor Algebra.TensorProduct.lift of left-mult into Module.End L A — the L-factor is absorbed by the End’s algebra structure, commuting condition = Algebra.commutes; bijective_of_finrank_eq + mathlib finrank_linearMap), split_iff_finrank for DIVISION algebras (the CSA-general iff is FALSE: M₂(k) is split by k — caught before proving). Privates: finrank_le_degree (CSA-general, via 2.7 + finrank_mono), matrix_size_eq_degree, degree_le_finrank (split-module count via compHom along algEquivMatrix′ ∘ e — the ≤-form of index-divides, dvd version extractable for Phase 6). Repo Module.End.finrank_eq deleted for mathlib Module.finrank_linearMap. exists_embedding_of_isSplit (split ⟹ embedding into a Brauer rep) DEFERRED to Phase 7, its only consumer. Build green 8715.',src:'Subfield/Splitting.lean',tag:'reprove',risk:true,dep:'needs 2.7',pr:true,done:true},
+ {id:'3.9',p:'3',t:'isSplit_of_isMaximalCommutative',d:'Done 2026-07-11, realized INLINE as the hL3 step of exists_finite_sep_split: split_iff_finrank L.val + isMaximal_comm_iff_finrank. Extract as a named lemma only when a consumer appears (Phase 7 embedding arguments are the likely customer).',src:'Subfield/Splitting.lean',tag:'port',dep:'needs 3.4, 3.8',done:true},
+ {id:'3.10',p:'3',t:'Directed union: k̄ ⊗ A = ⋃ (L ⊗ A) over finite intermediate L',d:'CLOSED 2026-07-11 as confirmed obsolete: 3.7/3.12 landed without it, so the directed-union tensor descent has no consumer in the new architecture. AlgClosedUnion.lean (and the old SplittingOfCSA route) join the X-phase deletion pile.',src:'AlgClosedUnion.lean',tag:'reprove',done:true},
+ {id:'3.11',p:'3',t:'Every CSA is split by a finite extension (CSA_iff_exist_split)',d:'CLOSED 2026-07-11 by absorption: exists_finite_sep_split (3.7) IS this statement in its strongest form (finite, separable, inside k̄). Old SplittingOfCSA decl dies in the X-phase purge.',src:'SplittingOfCSA.lean',ml:'IsSimpleRing.exists_algEquiv_matrix_of_isAlgClosed',tag:'reprove',dep:'needs 3.7',done:true},
+ {id:'3.12',p:'3',t:'Br(K) = ⋃ Br(L/K) over finite Galois L/K',d:'Done 2026-07-11 — PHASE 3 COMPLETE: Algebra/BrauerGroup/Galois.lean. exists_finite_galois_mem (every Brauer class lies in the relative Brauer group of a finite Galois subextension of AlgebraicClosure k — BrauerGroup.induction + exists_finite_galois_split + 1.4) and iSup_relativeBrGroup_eq_top (the subtype-indexed supremum of relative Brauer groups over {finite Galois N} is ⊤ — the exact mirror of RatAddCircle.iSup_cyclic on the source side). The 8.2 glue now has both endpoints. Build green 8717.',tag:'new',ms:true,dep:'needs 3.7, 3.11',done:true},
+
+ {id:'4.1',p:'4',t:'Port CrossProductAlgebra.lean (near-verbatim)',d:'Done 2026-07-11: split into Algebra/CrossProduct/Basic.lean (module + basis + mulLinearMap, NO cocycle hypothesis, no group-cohomology import) and CentralSimple.lean (Ring/Algebra + incl/of + dim_eq_sq + IsCentral + IsSimpleRing + asCSA under [Fact IsMulCocycle₂]). Dead Subfield/Splitting import dropped; RingCon.mkL kept as promoted shim RingTheory/Congruence/Basic.lean (mathlib-PR-able) instead of inlined; Galois.Notation import restored (Galois.Basic does not pull the Gal(K/F) macro); ToSecond retargeted; old file deleted.',src:'CrossProductAlgebra.lean',ml:'groupCohomology.IsMulCocycle₂',tag:'port',done:true},
+ {id:'4.2',p:'4',t:'GoodRep structure on the mk foundation',d:'Done 2026-07-12: GoodRep + smart mk + instances + self_centralize in FactorSet.lean; GoodRep.nonempty via NEW Algebra.IsSplit.exists_embedding (Split/Embedding.lean, in root imports) — the long-deferred 3.8 converse, proved via the op-twist: E := Dᵐᵒᵖ splits for free (IsSplit.op, group-inverse), W := column module of L⊗E with colMod letI-actions, tower count [L:K] = d·m, B := End_E W ≅ M_m(Eᵐᵒᵖ) via new endAlgEquivMatrixOpposite (ToLin.lean), class = ((mk D)⁻¹)⁻¹ = mk A. d∣[L:K] extractable for Phase 6.',src:'ToSecond.lean',tag:'port',dep:'needs 3.8',done:true},
+ {id:'4.3',p:'4',t:'conjFactor + twist/composition coefficient API',d:'Done 2026-07-12 (Relative/Cohomology/FactorSet.lean, draft imports): GoodRep structure (mk foundation, instance fields, CoeSort) + self_centralize (keystone 3.4 applied to ι.range); conjFactor subtype + existence (skolemNoether; carrier pinned to L-universe there) + conjFactor_rel (∃! via self_centralize) + mul/diff/diff_spec/diff_unique; factorSet + master equation factorSet_spec/-_unique.',src:'ToSecond.lean',tag:'port',dep:'needs 2.3',done:true},
+ {id:'4.4a',p:'4',t:'Cocycle identity for the factor set',d:'Done 2026-07-12: isMulCocycle₂_factorSet in FactorSet.lean — double association expansion (mul_expand_left/right), Units.mul_left_inj cancel, ι-injectivity; erw-free, universe-polymorphic.',src:'ToSecond.lean',tag:'port',done:true},
+ {id:'4.5a',p:'4',t:'Coboundary comparison across conjFactor choices (same GoodRep)',d:'Done 2026-07-12: isMulCoboundary₂_factorSet_div — two conjFactor families differ by ∂(diff-family), mathlib convention on the nose (mul_expand_diff_left/right).',src:'ToSecond.lean',tag:'port',done:true},
+ {id:'4.5b',p:'4',t:'W-A packaging: same class + same finrank ⟹ ≃ₐ[K]',d:'Standalone: two f.d. simple K-algebras with mk K B₁ = mk K B₂ and equal finrank are isomorphic. mk_eq_mk destructure → wedderburn_artin_common_divisionring (1.7) → cancel matrix sizes by finrank. ~3 steps; reusable (7.9c wants it too).',tag:'new',dep:'needs 1.7'},
+ {id:'4.5c',p:'4',t:'Skolem–Noether alignment of the two L-embeddings',d:'Given e : B₁ ≃ₐ[K] B₂ between GoodReps of x, correct it to intertwine the ι’s: skolemNoether on ι₂ vs e ∘ ι₁ gives u with (conj u ∘ e) ∘ ι₁ = ι₂. 2 steps.',src:'ToSecond.lean (exists_iso)',tag:'reprove',dep:'needs 2.3, 4.5b'},
+ {id:'4.5d',p:'4',t:'factorSet transport along an ι-intertwining iso',d:'Units.map e′ sends conjFactors to conjFactors with the SAME factor set — one factorSet_unique application (master-equation discipline, never unfold diff). 1–2 steps.',src:'ToSecond.lean (pushConjFactor)',tag:'reprove',dep:'needs 4.5c'},
+ {id:'4.5e',p:'4',t:'Cross-GoodRep coboundary comparison (finale)',d:'4.5c+4.5d move b₁ into A₂; 4.5a compares with b₂: factor sets of ANY two GoodReps of x differ by a coboundary. Pure assembly, ≤2 steps.',src:'ToSecond.lean (compare_toCocycles₂)',tag:'reprove',dep:'needs 4.5a, 4.5c, 4.5d'},
+ {id:'4.7a',p:'4',t:'L-module structure on a GoodRep via ι',d:'Module L A.carrier by compHom along ι (letI/private-abbrev discipline — data-dependent instance), smul_def, and finrank_ι : finrank L A.carrier = [L:K] (tower + dim_eq_sq; old dim_eq′). 1–2 steps.',src:'ToSecond.lean:58-84',tag:'port'},
+ {id:'4.7b',p:'4',t:'Dedekind coefficient lemma',d:'From u_σ = Σ_{τ∈J} ι(b_τ)·u_τ derive b_τ·τ(c) = σ(c)·b_τ for all c: expand ι(σ c)·u_σ two ways (conjFactor property termwise vs left-multiplying the dependence), subtract, compare coefficients of an independent family. The isolated heart of old ToSecond:579-667. 2–3 steps.',src:'ToSecond.lean:579-667',ml:'linearIndependent_monoidHom (model)',tag:'reprove'},
+ {id:'4.7c',p:'4',t:'conjFactor units are L-linearly independent',d:'by_contra, maximal linearIndepOn subfamily J (exists_maximal_linearIndepOn), rescale u_σ into the span; 4.7b + b_τ ≠ 0 forces τ = σ on the (nonempty) support — σ ∈ J contradiction. Old Finsupp/span sludge should shrink with the linearIndepOn API. 3 steps.',src:'ToSecond.lean:579-667',tag:'reprove',dep:'needs 4.7b'},
+ {id:'4.7d',p:'4',t:'conjFactorBasis',d:'basisOfLinearIndependentOfCardEqFinrank + IsGalois.card_aut_eq_finrank + 4.7a. 1 step.',src:'ToSecond.lean:668-673',tag:'glue',dep:'needs 4.7a, 4.7c'},
+ {id:'4.8a',p:'4',t:'Crossed-product comparison: linear equiv',d:'φ₀ : CrossProductAlgebra (factorSet A b) ≃ₗ[L] A.carrier := Basis.equiv (CrossProductAlgebra.basis → conjFactorBasis); restrictScalars K via a CompatibleSMul instance (Finsupp.induction_linear). 2 steps.',src:'ToSecond.lean:899-913',tag:'reprove',dep:'needs 4.7d'},
+ {id:'4.8b',p:'4',t:'Crossed-product comparison: multiplicativity',d:'AlgEquiv.ofLinearEquiv: map_mul on single·single — basis_mul_basis vs the master equation factorSet_spec match verbatim; map_one from the σ = 1 coefficient. Old ToSecond:916-997 grind tamed by the new API. 3 steps.',src:'ToSecond.lean:916-997',tag:'reprove',dep:'needs 4.8a'},
+ {id:'4.8c',p:'4',t:'Structure-theorem corollary: mk K (CPA (factorSet A b)) = x',d:'mk_congr on 4.8b + A.quot_eq — the bridge both round trips consume. 1 step.',tag:'glue',dep:'needs 4.8b'},
+ {id:'4.9a',p:'4',t:'CrossProductAlgebra as its own GoodRep; canonical conjFactors',d:'GoodRep.mk on toRelBr data (incl as ι, dim_eq_sq); canonical family σ ↦ ⟨unit of (of f σ), of_conj⟩. 2 steps.',src:'ToSecond.lean:850-851',tag:'reprove'},
+ {id:'4.9b',p:'4',t:'factorSet of the canonical conjFactors = f',d:'of_mul_of matches factorSet_spec verbatim → factorSet_unique. ~3 lines; kills the Amelia.toAdditive shim for good. 1 step.',src:'ToSecond.lean:871-876',tag:'glue',dep:'needs 4.9a'},
+ {id:'4.10',p:'4',t:'fromSnd : H² → relativeBrGroup, defined on H2 itself',d:'Done 2026-07-12 (draft in Relative/Cohomology/Maps.lean, builds by name; slim imports before wiring into root — currently imports Mathlib + root, would cycle): IsMulCocycle₂.toRelBr (membership via split_of_finrank on incl + dim_eq_sq), equivOfCoboundary (Basis.unitsSMul descent; only map_mul needs the cocycle Facts), toRelBr_eq_of_isMulCoboundary₂, then relativeBrGroup.{cocycleFun, fromCocycles₂, fromCocycles₂_eq_of_H2π_eq, fromH2, fromH2_H2π @[simp] spec}. fromH2 = fromCocycles₂ ∘ surjInv via new H2π_surjective (1-liner: mathlib has Epi (H2π A); PR candidate). NO moduleCatLeftHomologyData/H2Iso anywhere — a Quotient.lift variant was tried and REJECTED (needs allowUnsafeReducibility + fights instances-transparency in every proof). Downstream must use only fromH2_H2π.',src:'ToSecond.lean',tag:'reprove',risk:true,done:true},
+ {id:'4.11a',p:'4',t:'Bimodule M: balanced product with right (A⊗B)ᵐᵒᵖ-action',d:'M := (A ⊗[K] B) ⧸ span {(ι_A l)a ⊗ b − a ⊗ (ι_B l)b}; right multiplication descends (commutes with the middle-L relations). Old IsoSecond:76-203, letI discipline. 2–3 steps.',src:'IsoSecond.lean:76-203',tag:'reprove'},
+ {id:'4.11b',p:'4',t:'Left CrossProductAlgebra(αβ)-action on M',d:'c • (a⊗b) := Σ_σ (c_σ·u^α_σ·a) ⊗ (u^β_σ·b); mul_smul is the old 1.2M-heartbeat C_mul_smul′ (IsoSecond:316) — retame via basis_mul_basis/smul_eq_incl_mul + one master-equation rewrite per factor. The heart of 4.11. 3 steps.',src:'IsoSecond.lean:204-415',tag:'reprove',risk:true,dep:'needs 4.11a'},
+ {id:'4.11c',p:'4',t:'Bimodule glue + dim M = [L:K]³',d:'SMulCommClass (A⊗B)ᵐᵒᵖ C M, IsScalarTower, finrank via the A ⊗[K-old] B identification (old Aox_KBEquivM liftQ pair) or a direct basis count. 2–3 steps.',src:'IsoSecond.lean:417-460, 536-623',tag:'reprove',dep:'needs 4.11b'},
+ {id:'4.11d',p:'4',t:'End computation: End_C M and dim = [L:K]⁴',d:'φ₀ : (A⊗B)ᵐᵒᵖ →ₐ[K] End C M from the right action; M isotypic over simple C (IsSimpleRing.isIsotypic) → End via repo Morita/End.lean (end_simple_mod_of_wedderburn, finrank_end_of_wedderburn) — NO choose ladders. 3 steps.',src:'IsoSecond.lean:625-952',ml:'IsSimpleRing.isIsotypic, IsSemisimpleModule.exists_end_algEquiv_pi_matrix_end',tag:'reprove',dep:'needs 4.11c'},
+ {id:'4.11e',p:'4',t:'Multiplicativity: mk(CPA α)·mk(CPA β) = mk(CPA αβ)',d:'φ₀ bijective by AlgHom.bijective_of_finrank_eq (both sides [L:K]⁴); A⊗B ≅ End_C M ≅ matrices over C’s division part → mk-equation via mk_eq_mk (replaces IsBrauerEquivalent plumbing); fromH2 multiplicative via fromH2_H2π. 3 steps.',src:'IsoSecond.lean:954-1003',tag:'reprove',dep:'needs 4.11d'},
+ {id:'4.13',p:'4',t:'Wire Cohomology/{FactorSet,Maps}.lean into the root',d:'Done 2026-07-14: #min_imports pass — FactorSet (root+Mathlib → 9 specific imports, killing the cycle risk), Algebra/BrauerGroup/Cyclic + FiniteField slimmed, Maps already slim, test.lean module-ized; root regenerated with lake exe mk_all (Cohomology files, cyclic layer, Embedding, CyclicIndex, test all wired); full build green 8722, no import cycles. CHECKPOINT f831c29 pushed — first commit since b6afa84 (21 files, +1538/−186).',tag:'cleanup',done:true},
+ {id:'4.14a',p:'4',t:'Inflation theorem I: the bimodule W = L′ ⊗[L] A_f',d:'Galois L′/K ⊇ L/K, factor set f on Gal(L/K): FIRST define inflate (cocycles along AlgEquiv.restrictNormalHom + Units.map, with the IsMulCocycle₂ preservation Fact) — 5.6 consumes this def too. Then W := L′ ⊗[L] A_f (tensor over a FIELD — no balanced-product quotient) with left CPA(inflate f)-action (u′_g : ℓ ⊗ x ↦ g(ℓ) ⊗ u_{g|L}·x) commuting with the right A_f-action; W free of rank [L′:L] as right A_f-module. 2–3 steps.',tag:'new'},
+ {id:'4.14b',p:'4',t:'Inflation theorem II: CPA(inf f) ~ CPA(f)',d:'CPA(inf f) →ₐ End_{A_f}(W) ≅ M_{[L′:L]}(A_f): injective (simple) + equal dims (AlgHom.bijective_of_finrank_eq) ⟹ iso; mk-equation via mk_eq_mk. Replaces the old cohomological 6.9; consumed by 5.6 (Goal A tower) and B.7 (Goal B squares). Notably easier than 4.11. 2–3 steps.',tag:'new',dep:'needs 4.14a'},
+
+ {id:'5.1',p:'5',t:'CyclicAlgebra (σ, a) := CPA of the carry cocycle',d:'Done 2026-07-13: NEW GroupTheory/CyclicIndex.lean (genExp via finEquivZPowers; ℤ-valued carry + cocycle identity ported from CFT LocalInv, Apache-2.0 attribution in header) + Algebra/CrossProduct/Cyclic.lean (cyclicCocycle, Fact instance — Galois-fixedness of a kills the action, carry_cocycle closes; CyclicAlgebra abbrev; presentation lemmas of_pow_eq_of and of_pow_orderOf i.e. uⁿ = a, stated with σ ≠ 1 — FAILS for σ = 1; cocycle half of 5.7). Both in root, build green 8718. GOTCHAS: of_one/of_mul_of are CARRIER-level equations — unit-level rewriting needs Units.ext + Units.val_mul first; Units.map (algebraMap F K) needs a `: Kˣ` ascription in statement positions; slim-import files must import Mathlib.Tactic.Ring/Zify explicitly; CPA letters are F base / K top (FactorSet: K base / L top).',src:'CFT Cohomology/LocalInv.lean (carry model)',tag:'new',done:true},
+ {id:'5.2',p:'5',t:'Split: CPA(trivial factor set) ≅ End_K(L)',d:'Done 2026-07-13 (Edison, NEW Algebra/BrauerGroup/Cyclic.lean — K base / L top; draft imports incl. full Mathlib, slim before root wiring): Fact (IsMulCocycle₂ 1); oneToEnd := AlgHom.ofLinearMap over Finsupp.lsum/toSpanSingleton (map_mul by double Finsupp.induction_linear); oneEquivEnd via bijective_of_finrank_eq (dim_eq_sq vs finrank_linearMap); BrauerGroup.mk_one_eq_one by mk_congr ×2 + mk_matrix_eq_one. Calc kit: @[simp] oneToEnd_mk_single/of/incl, oneEquivEnd_apply, symm_toLinearMap, symm_smul_one. Build green 8651 by name.',ml:'AlgHom.bijective_of_finrank_eq, algEquivMatrix',tag:'new',done:true},
+ {id:'5.3',p:'5',t:'Power family: the conjFactors uⁱ and their factor set',d:'Done 2026-07-13 (Edison hands-on, FactorSet.lean §cyclic): conjFactor.one/cast (@[no_expose], val-preserving transport)/pow + val simp kit; powFamily := cast ∘ pow; powUnitL := diff-at-1, Galois-fixed via ι_mul_cancel + ℤ-power induction — descent needs NO finiteness (InfiniteGalois.mem_range_algebraMap_iff_fixed); powScalar : Kˣ with algebraMap_/map_/ι_powScalar specs; factorSet_powFamily via factorSet_unique + carry_eq_ite split (%-facts materialized before lia; carry case closes through ι_powScalar + AlgHom.commutes). Build green 8718.',tag:'new',done:true},
+ {id:'5.4',p:'5',t:'Every class in Br(L/K) is cyclic (L/K cyclic)',d:'GoodRep.nonempty (4.2 ✓) + conjFactor at σ (4.3 ✓) + 5.3 + structure-theorem corollary 4.8c: x = mk K (CyclicAlgebra σ uⁿ). 2 steps.',tag:'new',dep:'needs 4.8c, 5.3'},
+ {id:'5.5a',p:'5',t:'Cyclic coboundary ⟺ norm quotient',d:'Done 2026-07-14 (CrossProduct/Cyclic.lean): isMulCoboundary₂_cyclicCocycle_iff (single-coefficient) + _div_iff corollary. (⇐) partial-product cochain ∏_{k<v(τ)} σᵏ•c, differential computed by coboundary_aux (telescope + carry split); (⇒) x(σᵐ) recurrence by induction + final evaluation at (σⁿ⁻¹, σ), closed by Units.map_injective; σ = 1 handled as a branch (norm_algebraMap + finrank 1 via Nat.card-valued card_aut_eq_finrank). Ingredients: P0 prod_univ_eq_prod_range_pow (CyclicIndex), P1 prod_range_smul_eq_map_norm, P2 GENERALIZED to Finset.prod_range_add_pow_smul in new shim BrauerGroup/Algebra/BigOperators/GroupWithZero/Action.lean (moved out of the Mathlib-mirror dir by Edison 07-14) (Monoid G, CommMonoid M, MulDistribMulAction — PR candidate, = pow_add in M ⋊ G). Build 8723.',tag:'new',pr:true,done:true},
+ {id:'5.5b',p:'5',t:'Split iff norm: mk (CyclicAlgebra σ a) = 1 ↔ a ∈ N(Lˣ)',d:'(⇐) 5.5a + equivOfCoboundary (Maps.lean ✓ — cohomology-free) + 5.2. (⇒) same class + same finrank ⟹ ≃ₐ (4.5b), align ι (4.5c), transport the CANONICAL conjFactors (4.9a) whose factor sets are f_{σ,a} and 1 (4.9b), coboundary via 4.5d + 4.5a, read off via 5.5a. 2–3 steps.',tag:'new',dep:'needs 4.5b–e, 4.9a, 4.9b, 5.2, 5.5a'},
+ {id:'5.6',p:'5',t:'Cyclic inflation formula',d:'[(L/K, σ, a)] = [(L′/K, σ′, a^{[L′:L]})] for cyclic towers with σ′|L = σ: inf f_{σ,a} and f_{σ′,a^s} differ by the EXPLICIT coboundary β(σ′ⁱ) = a^⌊i/n⌋ (carry arithmetic), then trunk 4.14b. Feeds 8.2b tower compatibility — the cohomology-free replacement of old 6.9. 2–3 steps.',tag:'new',dep:'needs 4.14b, 5.5a'},
+ {id:'5.7',p:'5',t:'Multiplicativity, cyclic case',d:'[(σ,a)]·[(σ,b)] = [(σ,ab)]: instance of trunk 4.11e. The cocycle half (cyclicCocycle_mul_cyclicCocycle: carry exponents add) shipped with 5.1 — only the 4.11e instantiation remains. 1 step.',tag:'glue',dep:'needs 4.11e'},
+
+ {id:'6.1',p:'6',t:'IsNonarchimedeanLocalField ℚ_[p]: cleanup + rehome',d:'Proof COMPLETE in Algebra/test.lean (builds green 8636, 2026-07-13): IsValuativeTopology ℚ_[p] via the ‖·‖ ↔ mulValuation ball dictionary, then instance assembly. Remaining: golf to mathlib standard, slim imports (drop import Mathlib), proper home; decide spelling vs CFT’s more general NormedField.isValuativeTopology shim (ultrametric normed field ⟹ IsValuativeTopology). Closes CFT’s Basic.lean:66 sorry verbatim — PR it back upstream. 1–2 steps.',src:'BrauerGroup/Algebra/test.lean',ml:'Padic.norm_eq_zpow_log_mulValuation',tag:'new',pr:true},
+ {id:'6.2a',p:'6',t:'ValuativeRel + IsValuativeTopology for 𝔽_q⸨t⸩',d:'ValuativeRel.ofValuation on LaurentSeries.valued (ℤᵐ⁰) + Compatible + IsNontrivial + RankLeOne; topology agreement. 2 steps.',ml:'LaurentSeries.valued',tag:'new'},
+ {id:'6.2b',p:'6',t:'Integers + residue field of 𝔽_q⸨t⸩',d:'Valued.integer K⸨X⸩ ≅ K⟦X⟧ (val_le_one_iff_eq_coe or the powerSeriesRingEquiv detour); residue ≅ K via residueFieldOfPowerSeries ⟹ Finite 𝕜. 2–3 steps.',ml:'LaurentSeries.val_le_one_iff_eq_coe, residueFieldOfPowerSeries',tag:'new'},
+ {id:'6.2c',p:'6',t:'IsNonarchimedeanLocalField 𝔽_q⸨t⸩',d:'Local compactness in REVERSE: compactSpace_iff_completeSpace_and_isDiscreteValuationRing_and_finite_residueField + properSpace_iff_compactSpace_integer (instLaurentSeriesComplete + K⟦X⟧ DVR + 6.2b). 2 steps.',ml:'Valued.integer.compactSpace_iff_…_finite_residueField',tag:'new',pr:true,dep:'needs 6.2a, 6.2b'},
+ {id:'6.3a',p:'6',t:'CFT port wave 1: mathlib shims',d:'Vendor the ~15 shims the local-field tree consumes (HenselPolynomial 767-line factorization engine, Finite/IntermediateField primitive-root minpoly degree, roots-of-unity, DVR/uniformizer lemmas, Int/WithZero, NormedValued, ResidueField smul-diamond workaround…); DROP the already-upstreamed ones at cef1e7de (groupCohomology/groupHomology Functoriality, IsSeparable.iff_of_equiv_equiv). All sorry-free, same module system — mechanical + pin-drift fixes.',src:'CFT ClassFieldTheory/Mathlib/*',tag:'port'},
+ {id:'6.3b',p:'6',t:'CFT port wave 2: local-field core',d:'Basic (minus its ℚ_p sorry — 6.1 replaces it), Valuation (ℤ-valuation v + SES 𝒪ˣ → Kˣ → ℤ), Adic (IsAdicComplete), Actions (Galois preserves valuation, IsInvariantSubring 𝒪 — NOT the superseded Instances.lean), Tower, IntermediateField, Continuity. Brings finite-ext-is-local (spectral norm), automatic FiniteDimensional, uniqueness, e/f API + e·f = [L:K]. Merge test.lean’s isNonarch_of_finiteDimensional (proved on OUR pin; hypotheses [ValuativeExtension] + [IsModuleTopology] + [IsRankLeOne]).',src:'CFT IsNonarchimedeanLocalField/*, BrauerGroup/Algebra/test.lean',tag:'port',risk:true},
+ {id:'6.3c',p:'6',t:'CFT port wave 3: unramified theory + Teichmüller',d:'Unramified.lean (UnramifiedExtension K n := SplittingField(X^{q^n−1}−1): finrank = n, f = n, e = 1, IsGalois, universal property (K_n →ₐ L) ↔ n ∣ f, uniqueness for unramified L, maximalUnramified), RamificationInertia.lean (e/f tower calculus, IsUnramified transitivity), Teichmuller.lean (𝕜 →*₀ 𝒪 character, fields). Absorbs the old 6.4a–c entirely.',src:'CFT IsNonarchimedeanLocalField/*, LocalCFT/Teichmuller.lean',tag:'port'},
+ {id:'6.3d',p:'6',t:'Fill: Module.Finite 𝒪[K] 𝒪[L]',d:'THE load-bearing CFT sorry (their Basic.lean:365, “power series shenanigans”): integers of a finite extension are module-finite over 𝒪_K. Everything e/f (incl. e·f = [L:K], residue finiteness of the extension) sits on it. Route: ported IsIntegralClosure + DVR + completeness ⟹ finiteness, or the compact-lattice argument. Feeds 7.9a. 3 steps.',tag:'new',risk:true,dep:'needs 6.3b'},
+ {id:'6.5a',p:'6',t:'De-choice the unramified tower data',d:'CFT’s local-field structure on UnramifiedExtension K n and the K_n ↪ K_m embeddings are .choose/Nonempty-based — fix canonical data (chosen ValuativeRel/topology bundle, chosen compatible embeddings for n ∣ m) so Frobenius-compatibility becomes stateable. Design task; spec-lemma discipline (mirror fromH2_H2π). 2 steps.',tag:'new',dep:'needs 6.3c'},
+ {id:'6.5b',p:'6',t:'Reduction iso Gal(K_n/K) ≅ Gal(𝕜_n/𝕜)',d:'Reduction hom on 𝒪-points (ported Actions/IsInvariantSubring); injective (e = 1 kills inertia: σ fixing residues fixes the Teichmüller generator — ported character helps), surjective by order count. WATCH the mathlib ResidueField smul diamond (CFT shim carries the workaround). 3 steps.',ml:'Ideal.Quotient.stabilizerQuotientInertiaEquiv',tag:'new',risk:true,dep:'needs 6.3d, 6.5a'},
+ {id:'6.5c',p:'6',t:'Frobenius generator; Gal(K_n/K) ≅ ZMod n',d:'Pull back the residue Frobenius (frobeniusAlgEquivOfAlgebraic generates, orderOf = n); generator-explicit ZMod n presentation — the σ that Phase 5 consumes. Absent from CFT (grep Frobenius = 0 hits). 1–2 steps.',ml:'FiniteField.frobeniusAlgEquivOfAlgebraic',tag:'new',dep:'needs 6.5b'},
+ {id:'6.5d',p:'6',t:'Frobenius-compatible tower K_n ↪ K_m (n ∣ m)',d:'On the de-choiced embeddings (6.5a): Frob_m|K_n = Frob_n via the reduction square. CFT has only choice-based embeddings, no compatibility. Consumed by 5.6-side gluing, 7.10, 8.2b. 2–3 steps.',tag:'new',risk:true,dep:'needs 6.5a, 6.5c'},
+ {id:'6.6a',p:'6',t:'Residue norm & trace surjectivity',d:'FiniteField.norm_surjective + Algebra.trace_surjective — both IN the pin; instantiate for 𝕜_n/𝕜. 1 step.',ml:'FiniteField.norm_surjective, Algebra.trace_surjective',tag:'glue'},
+ {id:'6.6b',p:'6',t:'One-step approximation for unit norms',d:'u ≡ N(x) mod 𝔪^i ⟹ ∃ y : u ≡ N(x(1 + ϖ^i y)) mod 𝔪^{i+1} — first-order norm expansion; unramified grading 𝔪^i/𝔪^{i+1} ≅ 𝕜 + trace surjectivity. 2–3 steps.',tag:'new',risk:true,dep:'needs 6.6a'},
+ {id:'6.6c',p:'6',t:'Limit: N : 𝒪_{K_n}ˣ ↠ 𝒪_Kˣ',d:'Iterate 6.6b into a Cauchy sequence, converge by completeness (ported IsAdicComplete). WALL #3 falls here — CFT has this sorried by BOTH its routes (UnramifiedCohomology vanishing AND Herbrand h(𝒪ˣ)=1, flagged “hard work”); first solver shares upstream. Their proved IsFilterComplete filtration kit is portable tooling if useful. 2 steps.',tag:'new',risk:true,dep:'needs 6.6b'},
+ {id:'6.7a',p:'6',t:'N(K_nˣ) = 𝒪_Kˣ · ϖ^{nℤ}',d:'v(N x) = n·w(x) (unramified: ϖ_K stays a uniformizer, N(ϖ) = ϖ^n·unit); ⊆ from the valuation count, ⊇ from 6.6c. 2 steps.',tag:'new',dep:'needs 6.6c'},
+ {id:'6.7b',p:'6',t:'Kˣ/N(K_nˣ) ≅ ZMod n via the valuation',d:'v : Kˣ ↠ ℤ kills 𝒪_Kˣ, sends the norm group onto nℤ; stated generator-explicitly (ϖ-class ↦ 1) as the interface 5.2/6.8 consume. 1–2 steps.',tag:'new',dep:'needs 6.7a'},
+ {id:'6.8',p:'6',t:'invₙ : Br(Kₙ/K) ≃* ZMod n via cyclic algebras',d:'r ↦ [(Kₙ/K, Frob, ϖʳ)]: surjective (5.4 + unit-adjust by 6.7a), injective (5.5b + 6.7b), group hom (5.7). Generator-explicit by construction — wall #2 dissolved; NO cohomology anywhere in the definition. 2–3 steps.',tag:'new',ms:true,dep:'needs 5.4, 5.5b, 5.7, 6.7b'},
+
+ {id:'7.1a',p:'7',t:'Migrate ReducedCharPoly to the degree kit',d:'deg / deg_sq_eq_dim / deg_pos → Algebra.IsCentralSimple.{degree, degree_sq_eq_finrank, degree_pos} — kills the F_bar/IsAlgClosure hypotheses in the ALREADY-PROVED eq_pow_reducedCharpoly / eq_polys / mem_Kx. Unblocks deletion wave X.1a. 2–3 steps, mostly mechanical.',src:'CSA/ReducedCharPoly.lean',tag:'reprove'},
+ {id:'7.1b',p:'7',t:'Clean common overfield of two splitting fields',d:'E := (F ⊗[K] L) ⧸ max ideal with a REAL Field instance (no IsField.toField @-hacks — the source of the 1.6M heartbeats); embeddings φ : F →ₐ E, ψ : L →ₐ E. 2 steps.',src:'CSA/ReducedCharPoly.lean:297-359',tag:'reprove',dep:'needs 7.1a'},
+ {id:'7.1c',p:'7',t:'Finish unique_onver_split',d:'over_extension along φ and ψ + closure-free eq_polys over E + descend f = g by K[X] → E[X] injectivity. Replaces 3 sorries (the sorried IsScalarTower pair + the entire final comparison). 3 steps.',src:'CSA/ReducedCharPoly.lean:297-359',tag:'reprove',risk:true,dep:'needs 7.1b'},
+ {id:'7.2',p:'7',t:'Coefficients descend to K (mem_Kx)',d:'ALREADY PROVED in the old file (fixedpoints + mem_Kx via IsGalois fixed points); 7.1a carries it over. 1 step.',src:'CSA/ReducedCharPoly.lean:227-278',tag:'port',dep:'needs 7.1a'},
+ {id:'7.3',p:'7',t:'reducedNorm / reducedTrace, K-valued',d:'Old file: F-valued defs + FULL multiplicativity layer proved (reducedNorm_mul, _algebraMap, →*₀ and →ₗ packagings). Re-express K-valued via the 7.1c descent. 2–3 steps.',src:'CSA/ReducedCharPoly.lean:388-438',tag:'reprove',dep:'needs 7.1c'},
+ {id:'7.4a',p:'7',t:'Unit ⟹ reducedNorm ≠ 0',d:'Multiplicativity + Nrd 1 = 1 (reducedNormHom). 1 step.',src:'CSA/ReducedCharPoly.lean:440',tag:'reprove',dep:'needs 7.3'},
+ {id:'7.4b',p:'7',t:'reducedNorm ≠ 0 ⟹ unit',d:'Cayley–Hamilton / adjugate: x · (charpoly-tail polynomial in x) = ±Nrd x; a nonzero scalar gives the inverse. 2–3 steps.',src:'CSA/ReducedCharPoly.lean:440',tag:'reprove',risk:true,dep:'needs 7.3'},
+ {id:'7.5a',p:'7',t:'Nrd under scalar extension',d:'inv_under_extend: det = ±constant coefficient of the reduced charpoly + invariant_extend_scalars (PROVED). 1–2 steps.',src:'CSA/ReducedCharPoly.lean:443-449',tag:'reprove'},
+ {id:'7.5b',p:'7',t:'Nrd under algEquiv; trace analogues',d:'inv_under_algEquiv via invariant_algEquiv (PROVED); the two TODO trace versions mimic. 2 steps.',src:'CSA/ReducedCharPoly.lean:451-459',tag:'reprove'},
+ {id:'7.6a',p:'7',t:'Reduced charpoly of a subfield element',d:'x ∈ K(x) ⊆ D: ReducedCharPoly x = (minpoly K x)^{n/[K(x):K]} — splitting field through K(x), block-diagonal computation. 3 steps.',tag:'new',dep:'needs 7.1c'},
+ {id:'7.6b',p:'7',t:'Nrd(x) = N_{K(x)/K}(x)^{n/m}',d:'Constant term of 7.6a — the bridge to commutative valuation theory. 1–2 steps.',tag:'new',dep:'needs 7.6a'},
+ {id:'7.7a',p:'7',t:'w := (1/n)·v∘Nrd multiplicative, extends v',d:'reducedNormHom multiplicativity + Nrd(algebraMap k) = k^n. 1–2 steps.',tag:'new',dep:'needs 7.3'},
+ {id:'7.7b',p:'7',t:'w restricted to K(x) is THE canonical extension valuation',d:'7.6b identifies w|K(x) = (1/m)·v∘N_{K(x)/K}; spectral-norm uniqueness (the 6.3 package on the commutative subfield) pins it. 2–3 steps.',ml:'spectralNorm_unique',tag:'new',risk:true,dep:'needs 6.3b, 7.6b'},
+ {id:'7.7c',p:'7',t:'w is a valuation on D',d:'Ultrametric: reduce w(1+x) to the commutative subfield K(x) where 7.7b gives a genuine valuation; package as Valuation on D. 2 steps.',tag:'new',dep:'needs 7.7b'},
+ {id:'7.8a',p:'7',t:'𝒪_D, 𝔪_D, residue division ring',d:'w-integers subring (ultrametric), maximal two-sided ideal, residue is a division ring, algebraic over 𝕜 of bounded degree (independence lift). 2–3 steps.',tag:'new',dep:'needs 7.7c'},
+ {id:'7.8b',p:'7',t:'Residue of D is a finite field',d:'Finite (bounded degree over finite 𝕜) + littleWedderburn. 1–2 steps.',ml:'littleWedderburn',tag:'glue',dep:'needs 7.8a'},
+ {id:'7.9a',p:'7',t:'e·f accounting for D: e = f = n',d:'e ≤ n (w takes values in (1/n)·v(Kˣ)), f ≤ n (a lifted commutative subfield bounds it), e·f = n² (filtration count as in 6.3d) ⟹ e = f = n. 3 steps.',tag:'new',risk:true,dep:'needs 6.3d, 7.8b'},
+ {id:'7.9b',p:'7',t:'Unramified maximal subfield of D',d:'Teichmüller/Hensel lift of a 𝕜_D-generator into a complete commutative K(x) ⊆ D: residue 𝕜_D, degree n = deg D — maximal. Field-level template ported in 6.3c (CFT Teichmuller.lean): the x^{q^ⁿ} Cauchy argument transfers verbatim to a commutative closed subring of 𝒪_D. 3 steps.',tag:'new',risk:true,dep:'needs 7.9a'},
+ {id:'7.9c',p:'7',t:'D is split by K_n',d:'K(x) ≅ K_n (tower/uniqueness, 6.5d) + maximal subfield splits (3.9: split_iff_finrank + isMaximal_comm_iff_finrank). 2 steps.',tag:'new',dep:'needs 6.5d, 7.9b'},
+ {id:'7.10',p:'7',t:'Br(K) = ⋃ₙ Br(Kₙ/K)',d:'W-A to the division representative, 7.9c splits it at level deg D; ⨆ₙ relativeBrGroup Kₙ = ⊤ + n ∣ m monotonicity (1.5 + 6.5d) — the divisibility-directed system 8.2 consumes. 2–3 steps.',tag:'new',ms:true,dep:'needs 7.9c'},
+
+ {id:'8.1',p:'8',t:'ZMod n ↪ AddCircle (1 : ℚ) with n ∣ m compatibility',d:'Done 2026-07-10: Topology/Instances/AddCircle/Rat.lean — RatAddCircle := AddCircle (1:ℚ); ZMod.toRatAddCircle (via ZMod.lift, mimicking the Real.lean API) injective with range cyclic N := zmultiples (1/N); cyclic_le (m ∣ n) + directed_cyclic + iSup_cyclic = ⊤ (denominator argument); ZMod.toRatAddCircleEquiv : ZMod N ≃+ cyclic N and iSupCyclicEquiv : (⨆ N, cyclic N) ≃+ RatAddCircle. Gotcha: zmultiples-membership goals are beta-redexes — prove the ℚ-level equality, then rewrite through QuotientAddGroup.mk_zsmul.',src:'Topology/Instances/AddCircle/Rat.lean',ml:'AddCircle, ZMod.toAddCircle (model)',tag:'new',done:true},
+ {id:'8.2a',p:'8',t:'Level maps eₙ : Br(Kₙ/K) →* Multiplicative ℚ/ℤ',d:'invₙ (6.8) ∘ ZMod.toRatAddCircle (8.1); all Multiplicative/Additive bookkeeping localized here. 1–2 steps.',tag:'glue',dep:'needs 6.8'},
+ {id:'8.2b',p:'8',t:'Tower compatibility of the eₙ',d:'e_m restricted to Br(Kₙ/K) = eₙ — the cyclic inflation formula (5.6) on the Frob-compatible tower (6.5d) + toRatAddCircle divisibility compat (8.1 cyclic_le): [(Frobₙ,ϖʳ)] ↦ [(Frobₘ,ϖ^{rm/n})] ↦ r/n in ℚ/ℤ. 2 steps.',tag:'glue',dep:'needs 5.6, 6.5d, 8.2a'},
+ {id:'8.2c',p:'8',t:'Glue: inv : Br(K) →* Multiplicative ℚ/ℤ',d:'Subgroup.iSupLift (8.5) over ⨆ relativeBrGroup Kₙ = ⊤ (7.10) with the 8.2b compatibility. 1–2 steps.',tag:'glue',dep:'needs 7.10, 8.2b'},
+ {id:'8.3',p:'8',t:'BrauerGroup K ≃* Multiplicative (AddCircle (1 : ℚ))',d:'Injective (each eₙ injective + every class at some level); surjective (range ⊇ cyclic n for all n, iSup_cyclic = ⊤ from 8.1); package the MulEquiv. 2–3 steps.',tag:'new',ms:true,dep:'needs 8.2c'},
+ {id:'8.4',p:'8',t:'Invariant API: inv of the degree-n cyclic algebra is 1/n; order = index',d:'Corollaries that make the theorem usable.',tag:'new',opt:true},
+ {id:'8.5',p:'8',t:'AddSubgroup.iSupLift: glue compatible homs on a directed iSup',d:'Done 2026-07-10: Algebra/Group/Subgroup/Directed.lean — Subgroup.iSupLift + AddSubgroup.iSupLift (via to_additive) with iSupLift_of_mem/_inclusion/_mk/_comp_inclusion, mirroring Subalgebra.iSupLift on Set.iUnionLift. Gotchas: exposed public defs cannot reference private ones (aux made public); Subgroup.inclusion is not Set.inclusion-based so lemmas derive from iUnionLift_of_mem with fully pinned implicits; unfold + simp only [comp_apply, coe_mk] before applying. Mathlib PR candidate.',src:'Algebra/Group/Subgroup/Directed.lean',ml:'Subgroup.mem_iSup_of_directed, Subalgebra.iSupLift',tag:'new',done:true},
+
+ {id:'B.1',p:'B',t:'toCocycles₂ packaging (Type-0 section)',d:'One line: cocyclesOfIsMulCocycle₂ (mathlib LowDegree ofMulDistribMulAction section, Type 0) applied to isMulCocycle₂_factorSet. Watch the Additive trap: ascribed cocycleFun + explicit (M := Lˣ). ≤1 step.',ml:'groupCohomology.cocyclesOfIsMulCocycle₂',tag:'glue'},
+ {id:'B.2',p:'B',t:'toH2 : relativeBrGroup K L → H² + spec lemma',d:'Define via nonempty.some + arbitrary conjFactors + H2π ∘ toCocycles₂; spec lemma toH2_eq : toH2 x = H2π (toCocycles₂ A b) for EVERY GoodRep/family — coboundariesOfIsMulCoboundary₂ + H2π_eq_iff + 4.5e. Downstream uses only the spec (fromH2_H2π discipline). 2–3 steps.',src:'ToSecond.lean',tag:'reprove',dep:'needs B.1, 4.5e'},
+ {id:'B.3',p:'B',t:'Round trip 1: fromH2 ∘ toH2 = id',d:'toH2_eq (B.2) + 4.8c: fromH2 (toH2 x) = mk (CPA (factorSet A b)) = x through fromH2_H2π. 2 steps.',src:'ToSecond.lean:878-997',tag:'reprove',dep:'needs B.2, 4.8c'},
+ {id:'B.4',p:'B',t:'Round trip 2: toH2 ∘ fromH2 = id',d:'H2_induction_on: for x = H2π a, fromH2 x = mk (CPA a); 4.9b gives its factorSet = a; toH2_eq closes. 2 steps.',src:'ToSecond.lean:838-876',tag:'reprove',dep:'needs B.2, 4.9b'},
+ {id:'B.5',p:'B',t:'Br(L/K) ≃* H²(Gal(L/K), Lˣ) — arbitrary base field',d:'MulEquiv.mk′ from the bijection (B.3/B.4) + map_mul (trunk 4.11e); map_one free, no Additive/AddEquiv detour. Stated over ANY base field — prime mathlib-PR material. 1–2 steps.',src:'IsoSecond.lean (isoSnd)',tag:'reprove',ms:true,pr:true,dep:'needs 4.11e, B.3, B.4'},
+ {id:'B.6',p:'B',t:'Port CFT inflation/restriction machinery',d:'infl and rest as δ-natural transformations (PROVED in CFT, same module system). SKIP their sorried inf-res exactness (4+2 sorries) — not needed: H²-transition injectivity comes free from the Brauer side through the B.5 squares.',src:'CFT Cohomology/Functors/{Inflation,Restriction}.lean',tag:'port'},
+ {id:'B.7',p:'B',t:'Compatibility: B.5 commutes with inflation',d:'Algebra half = trunk 4.14b (CPA(inf f) ~ CPA(f)); cohomology half = B.6 infl; the square closes via the spec lemmas (fromH2_H2π / toH2_eq). 2–3 steps.',tag:'new',risk:true,dep:'needs 4.14b, B.5, B.6'},
+ {id:'B.8',p:'B',t:'Absolute theorem: Br(K) ≅ colim H²(Gal(L/K), Lˣ)',d:'Directed colimit (AddCommGroup/Module.DirectLimit) over finite Galois subextensions of K̄ along inflation; the canonical map from crossed products; iso via 3.12 + B.5 + B.7. NO profinite topology. AbsoluteIsoH2 stub’s new home; the ℚ/ℤ corollary for local K is free from Goal A. 3 steps.',tag:'new',ms:true,dep:'needs B.7'},
+ {id:'B.9',p:'B',t:'Continuous-cohomology upgrade',d:'Identify the colimit with H²_cont(Gal(K̄/K), K̄ˣ) once mathlib’s young ContCohomology grows the comparison — quarantined as an upgrade, never a blocker.',tag:'new',opt:true,pr:true,dep:'needs B.8'},
+ {id:'B.10',p:'B',t:'Invariant comparison: cyclic inv = cohomological inv',d:'Optional corollary linking the two goals; tool = CFT’s PROVED carry-cocycle localInv (H²(ℤ/n,ℤ) ≃+ ZMod n) — the factor set of (σ,a) IS a^carry, so the comparison is cocycle-level. Port LocalInv.lean if/when wanted.',src:'CFT Cohomology/LocalInv.lean',tag:'new',opt:true,dep:'needs 6.8, B.5'},
+
+ {id:'X.1a',p:'X',t:'Deletion wave 1: SplittingOfCSA cluster',d:'After 7.1a (degree-kit migration): delete SplittingOfCSA + AlgClosedUnion + ExtendScalar (13-agent audit 2026-07-11: only ReducedCharPoly pins them, via deg/deg_sq_eq_dim/deg_pos; CrossProductAlgebra’s dead import already dropped in 4.1). Build + prune root. 1–2 steps.',tag:'cleanup',dep:'needs 7.1a'},
+ {id:'X.1b',p:'X',t:'Deletion wave 2: ToSecond/IsoSecond + Subfield quartet',d:'After 4.13 + B.5 (all legacy content re-proved): delete ToSecond, IsoSecond, RelativeBrauer, Subfield/{Defs,FiniteDimensional,Subfield,Splitting} + Mathlib/Subalgebra/{Basic,Directed} shims. BLOCKER (survey rev 48): FrobeniusTheorem uses SubField/IsMax/cor_two_1to2/exists_isMax/dim_max_subfield from the quartet — port it to the predicate layer (3.x keystones cover the math) or keep a minimal rump; decide at deletion time. 2–3 steps.',tag:'cleanup',dep:'needs 4.13, B.5'},
+ {id:'X.1c',p:'X',t:'Deletion wave 3: endgame legacy',d:'FrobeniusTheorem port/keep decision, BrauerOverR (imports only Wedderburn + FrobeniusTheorem), AbsoluteIsoH2 stub, CentralSimple remnants — final sweep once Phases 4–8 land.',tag:'cleanup'},
+ {id:'X.2',p:'X',t:'Generalize mathlib’s cancelBaseChange to noncommutative B',d:'Pinned mathlib demands CommSemiring on both factors (verified at TensorProduct/Maps.lean:466) — so it does NOT replace absorb_eqv yet. The ofLinearEquiv proof likely generalizes; small PR.',ml:'Algebra.TensorProduct.cancelBaseChange',tag:'new',pr:true},
+ {id:'X.3',p:'X',t:'Upstream PR batch',d:'W-A uniqueness, Skolem–Noether, double centralizer, crossed products, IsNonarchimedeanLocalField instances — each lightens this repo permanently.',tag:'new',pr:true,opt:true},
+];
+
+const LSK='brlf-tasks-v1', LSC='brlf-collapsed-v1';
+let state={}, collapsed={};
+try{state=JSON.parse(localStorage.getItem(LSK)||'{}')}catch(e){}
+try{collapsed=JSON.parse(localStorage.getItem(LSC)||'{}')}catch(e){}
+/* ground-truth done (baked into the data by Claude after a verified green build) always wins;
+   localStorage only adds user checkmarks on top */
+const isDone=t=> !!t.done || !!state[t.id];
+let filter='all', query='';
+
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function codeify(s){return esc(s)}
+
+function matches(t){
+  if(filter==='todo'&&isDone(t))return false;
+  if(filter==='done'&&!isDone(t))return false;
+  if(filter==='risk'&&!t.risk)return false;
+  if(filter==='pr'&&!t.pr)return false;
+  if(filter==='ms'&&!t.ms)return false;
+  if(query){
+    const hay=(t.id+' '+t.t+' '+(t.d||'')+' '+(t.src||'')+' '+(t.ml||'')).toLowerCase();
+    if(!hay.includes(query))return false;
+  }
+  return true;
+}
+
+function render(){
+  const root=document.getElementById('phases');
+  root.innerHTML='';
+  let total=0,done=0,msTotal=0,msDone=0,riskOpen=0,prOpen=0;
+  for(const t of TASKS){
+    total++; if(isDone(t))done++;
+    if(t.ms){msTotal++;if(isDone(t))msDone++;}
+    if(t.risk&&!isDone(t))riskOpen++;
+    if(t.pr&&!isDone(t))prOpen++;
+  }
+  document.getElementById('sum-num').innerHTML=done+'<small> / '+total+' tasks</small>';
+  document.getElementById('sum-bar').style.width=(total?100*done/total:0)+'%';
+  document.getElementById('sum-chips').innerHTML=
+    '<span class="chip c-ms">🏁 <b>'+msDone+'</b>/'+msTotal+' milestones</span>'+
+    '<span class="chip c-risk">⚠ <b>'+riskOpen+'</b> risky open</span>'+
+    '<span class="chip">PR ↥ <b>'+prOpen+'</b> open</span>';
+
+  for(const ph of PHASES){
+    const ts=TASKS.filter(t=>t.p===ph.n);
+    const shown=ts.filter(matches);
+    if(shown.length===0&&(filter!=='all'||query))continue;
+    const pd=ts.filter(isDone).length;
+    const sec=document.createElement('section');
+    sec.className='phase'+(collapsed[ph.n]?' closed':'');
+    const pct=ts.length?100*pd/ts.length:0;
+    sec.innerHTML=
+      '<button class="phead" aria-expanded="'+(!collapsed[ph.n])+'">'+
+        '<span class="chev">▼</span>'+
+        '<span class="pnum">Phase '+ph.n+'</span>'+
+        '<span class="ptitle">'+ph.title+'</span>'+
+        '<span class="pmeta"><span class="pbar"><i style="width:'+pct+'%"></i></span>'+
+        '<span class="pcount">'+pd+' / '+ts.length+'</span></span>'+
+      '</button>'+
+      '<p class="pnote">'+ph.note+'</p>'+
+      '<div class="tasks"></div>';
+    const list=sec.querySelector('.tasks');
+    if(shown.length===0){
+      list.innerHTML='<div class="empty">No tasks match the current filter.</div>';
+    }
+    for(const t of shown){
+      const row=document.createElement('div');
+      row.className='task'+(isDone(t)?' done':'');
+      let refs='';
+      if(t.src)refs+='<span class="lbl">from</span> <code>'+codeify(t.src)+'</code>';
+      if(t.ml)refs+='<span class="lbl">mathlib</span> <code>'+codeify(t.ml)+'</code>';
+      let badges='<span class="tag '+t.tag+'">'+t.tag+'</span>';
+      if(t.ms)badges+='<span class="b-ms">🏁 milestone</span>';
+      if(t.risk)badges+='<span class="b-risk">⚠ risk</span>';
+      if(t.pr)badges+='<span class="b-pr">PR ↥</span>';
+      if(t.opt)badges+='<span class="b-opt">optional</span>';
+      row.innerHTML=
+        '<div class="tcheck"><input type="checkbox" '+(isDone(t)?'checked ':'')+(t.done?'disabled title="Verified done (green build) — locked" ':'')+'aria-label="Mark '+esc(t.id)+' done"></div>'+
+        '<div class="tmain">'+
+          '<div class="ttitle"><span class="tid">'+esc(t.id)+'</span>'+esc(t.t)+'</div>'+
+          (t.d?'<div class="tdetail">'+esc(t.d)+'</div>':'')+
+          (refs?'<div class="trefs">'+refs+'</div>':'')+
+          (t.dep?'<div class="tdep">⧗ '+esc(t.dep)+'</div>':'')+
+        '</div>'+
+        '<div class="tbadges">'+badges+'</div>';
+      row.querySelector('input').addEventListener('change',ev=>{
+        state[t.id]=ev.target.checked;
+        localStorage.setItem(LSK,JSON.stringify(state));
+        render();
+      });
+      list.appendChild(row);
+    }
+    sec.querySelector('.phead').addEventListener('click',()=>{
+      collapsed[ph.n]=!collapsed[ph.n];
+      localStorage.setItem(LSC,JSON.stringify(collapsed));
+      render();
+    });
+    root.appendChild(sec);
+  }
+}
+
+document.querySelectorAll('.fbtn[data-f]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    filter=b.dataset.f;
+    document.querySelectorAll('.fbtn[data-f]').forEach(x=>x.classList.toggle('on',x===b));
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();});
+
+document.getElementById('copy').addEventListener('click',()=>{
+  let out='# Br(K) ≅ ℚ/ℤ — remaining TODOs\n';
+  let total=TASKS.length, done=TASKS.filter(isDone).length;
+  out+='Progress: '+done+'/'+total+' tasks done\n';
+  for(const ph of PHASES){
+    const open=TASKS.filter(t=>t.p===ph.n&&!isDone(t));
+    if(open.length===0)continue;
+    out+='\n## Phase '+ph.n+' — '+ph.title+'\n';
+    for(const t of open){
+      out+='- [ ] '+t.id+' '+t.t+(t.risk?' ⚠':'')+(t.ms?' 🏁':'')+(t.dep?' ('+t.dep+')':'')+'\n';
+    }
+  }
+  navigator.clipboard.writeText(out).then(()=>{
+    const el=document.getElementById('toast');
+    el.textContent='TODO report copied — paste it into a Claude session to sync';
+    el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'),2200);
+  });
+});
+
+render();
+</script>

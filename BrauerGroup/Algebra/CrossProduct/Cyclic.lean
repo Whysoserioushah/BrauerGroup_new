@@ -2,6 +2,8 @@ module
 
 public import BrauerGroup.Algebra.CrossProduct.CentralSimple
 public import BrauerGroup.GroupTheory.CyclicIndex
+public import BrauerGroup.Algebra.BigOperators.GroupWithZero.Action
+public import Mathlib.RingTheory.Norm.Transitivity
 
 /-!
 # Cyclic algebras as crossed products
@@ -126,5 +128,106 @@ lemma cyclicCocycle_mul_cyclicCocycle (b : Fˣ) :
   funext p
   obtain ⟨τ₁, τ₂⟩ := p
   simp [cyclicCocycle_apply, Pi.mul_apply, map_mul, mul_zpow]
+
+include hσ in
+lemma prod_range_smul_eq_map_norm [IsGalois F K] (c : Kˣ) :
+    ∏ k ∈ Finset.range (orderOf σ), ((σ ^ k) • c)
+      = Units.map (algebraMap F K) (Units.map (Algebra.norm F) c) := by
+  rw [← prod_univ_eq_prod_range_pow σ hσ (HSMul.hSMul · c)]
+  ext; simp [Algebra.norm_eq_prod_automorphisms]
+
+/-- The coboundary computation for the partial-product cochain
+`x τ := ∏ k < (genExp τ).val, σᵏ • c`: its differential is the carry cocycle at the norm
+of `c`. -/
+private lemma coboundary_aux [IsGalois F K] (c : Kˣ) (g h : Gal(K/F)) :
+    g • (∏ k ∈ Finset.range (genExp σ hσ h).val, (σ ^ k) • c)
+        * ∏ k ∈ Finset.range (genExp σ hσ g).val, (σ ^ k) • c
+      = Units.map (algebraMap F K) (Units.map (Algebra.norm F) c)
+            ^ ZMod.carry (genExp σ hσ g) (genExp σ hσ h)
+        * ∏ k ∈ Finset.range (genExp σ hσ (g * h)).val, (σ ^ k) • c := by
+  have hsplit : (∏ k ∈ Finset.range (genExp σ hσ g).val, (σ ^ k) • c)
+      * g • ∏ k ∈ Finset.range (genExp σ hσ h).val, (σ ^ k) • c
+      = ∏ k ∈ Finset.range ((genExp σ hσ g).val + (genExp σ hσ h).val), (σ ^ k) • c := by
+    rw [Finset.prod_range_add_pow_smul, pow_genExp_val]
+  have hval : (genExp σ hσ (g * h)).val
+      = ((genExp σ hσ g).val + (genExp σ hσ h).val) % orderOf σ := by
+    rw [genExp_mul, ZMod.val_add]
+  have hv₁ := (genExp σ hσ g).val_lt
+  have hv₂ := (genExp σ hσ h).val_lt
+  rw [mul_comm, hsplit, ZMod.carry_eq_ite]
+  by_cases hc : orderOf σ ≤ (genExp σ hσ g).val + (genExp σ hσ h).val
+  · have hmod : ((genExp σ hσ g).val + (genExp σ hσ h).val) % orderOf σ
+        = (genExp σ hσ g).val + (genExp σ hσ h).val - orderOf σ := by
+      rw [Nat.mod_eq_sub_mod hc, Nat.mod_eq_of_lt (by omega)]
+    have h12 : (genExp σ hσ g).val + (genExp σ hσ h).val
+        = orderOf σ + (genExp σ hσ (g * h)).val := by omega
+    rw [if_pos hc, zpow_one, h12, Finset.prod_range_add_pow_smul,
+      prod_range_smul_eq_map_norm σ hσ, pow_orderOf_eq_one, one_smul]
+  · have h12 : (genExp σ hσ (g * h)).val
+        = (genExp σ hσ g).val + (genExp σ hσ h).val := by
+      rw [hval, Nat.mod_eq_of_lt (by omega)]
+    rw [if_neg hc, zpow_zero, one_mul, h12]
+
+/-- **Cyclic coboundary ⟺ norm**: the carry cocycle at `a` is a coboundary iff `a` is a
+norm from `K`. The coboundary side of Hilbert's theory for cyclic extensions, with the
+partial-product cochain as the explicit witness. -/
+theorem isMulCoboundary₂_cyclicCocycle_iff [IsGalois F K] (a : Fˣ) :
+    IsMulCoboundary₂ (cyclicCocycle σ hσ a) ↔
+      ∃ c : Kˣ, Units.map (Algebra.norm F (S := K)) c = a := by
+  constructor
+  · rintro ⟨x, hx⟩
+    have hx1 : x 1 = 1 := by simpa using hx 1 1
+    rcases eq_or_ne (orderOf σ) 1 with hn | hn
+    · refine ⟨Units.map (algebraMap F K) a, ?_⟩
+      have hcard : Module.finrank F K = 1 := by
+        rw [← IsGalois.card_aut_eq_finrank, natCard_eq_orderOf σ hσ, hn]
+      ext
+      simp [Algebra.norm_algebraMap, hcard]
+    · have h1 : 1 < orderOf σ := by have := orderOf_pos σ; omega
+      have hgen : genExp σ hσ σ = (1 : ZMod (orderOf σ)) := by simpa using genExp_pow σ hσ 1
+      have key : ∀ m : ℕ, m < orderOf σ →
+          x (σ ^ m) = ∏ k ∈ Finset.range m, (σ ^ k) • x σ := by
+        intro m
+        induction m with
+        | zero => intro _; simpa using hx1
+        | succ m ih =>
+          intro hm
+          have hcocy : cyclicCocycle σ hσ a (σ ^ m, σ) = 1 := by
+            rw [cyclicCocycle_apply, genExp_pow, hgen, ZMod.carry_eq_ite,
+              ZMod.val_one'' (by omega), ZMod.val_natCast, Nat.mod_eq_of_lt (by omega),
+              if_neg (by omega), zpow_zero]
+          have h := hx (σ ^ m) σ
+          rw [hcocy, ← pow_succ, div_mul_eq_mul_div, div_eq_one] at h
+          rw [← h, ih (by omega), Finset.prod_range_succ, mul_comm]
+      refine ⟨x σ, ?_⟩
+      have hcarry : cyclicCocycle σ hσ a (σ ^ (orderOf σ - 1), σ)
+          = Units.map (algebraMap F K) a := by
+        rw [cyclicCocycle_apply, genExp_pow, hgen, ZMod.carry_eq_ite,
+          ZMod.val_one'' (by omega), ZMod.val_natCast, Nat.mod_eq_of_lt (by omega),
+          if_pos (by omega), zpow_one]
+      have hfin := hx (σ ^ (orderOf σ - 1)) σ
+      rw [hcarry, ← pow_succ, Nat.sub_add_cancel (by omega), pow_orderOf_eq_one, hx1,
+        div_one, key _ (by omega), mul_comm, ← Finset.prod_range_succ,
+        Nat.sub_add_cancel (by omega), prod_range_smul_eq_map_norm σ hσ] at hfin
+      exact Units.map_injective (FaithfulSMul.algebraMap_injective F K) hfin
+  · rintro ⟨c, rfl⟩
+    refine ⟨fun τ ↦ ∏ k ∈ Finset.range (genExp σ hσ τ).val, (σ ^ k) • c, fun g h ↦ ?_⟩
+    rw [div_mul_eq_mul_div, div_eq_iff_eq_mul, cyclicCocycle_apply]
+    exact coboundary_aux σ hσ c g h
+
+omit [FiniteDimensional F K] in
+lemma cyclicCocycle_div_cyclicCocycle (b : Fˣ) :
+    cyclicCocycle σ hσ a / cyclicCocycle σ hσ b = cyclicCocycle σ hσ (a / b) := by
+  funext p
+  obtain ⟨τ₁, τ₂⟩ := p
+  simp [cyclicCocycle_apply, Pi.div_apply, map_div', div_zpow]
+
+/-- The quotient form 5.5b consumes: two carry cocycles differ by a coboundary iff the
+quotient of their coefficients is a norm. -/
+theorem isMulCoboundary₂_cyclicCocycle_div_iff [IsGalois F K] (a b : Fˣ) :
+    IsMulCoboundary₂ (cyclicCocycle σ hσ a / cyclicCocycle σ hσ b)
+      ↔ ∃ c : Kˣ, Units.map (Algebra.norm F (S := K)) c = a / b := by
+  rw [cyclicCocycle_div_cyclicCocycle]
+  exact isMulCoboundary₂_cyclicCocycle_iff σ hσ (a / b)
 
 end CyclicAlgebra

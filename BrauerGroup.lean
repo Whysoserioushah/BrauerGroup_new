@@ -49,6 +49,7 @@ public import BrauerGroup.LinearAlgebra.Matrix.ToLin
 public import BrauerGroup.LinearAlgebra.Quotient.Basic
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
+public import BrauerGroup.Algebra.BigOperators.GroupWithZero.Action
 public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 public import BrauerGroup.Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 public import BrauerGroup.Mathlib.RingTheory.Congruence.Defs

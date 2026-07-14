@@ -106,4 +106,26 @@ omit [Finite G] in
 lemma genExp_mul (x y : G) : genExp σ hσ (x * y) = genExp σ hσ x + genExp σ hσ y := by
   simp [genExp, map_mul]
 
+include hσ in
+attribute [local instance] Fintype.ofFinite in
+lemma prod_univ_eq_prod_range_pow [Fintype G] {M} [CommMonoid M] (φ : G → M) :
+    ∏ g : G, φ g = ∏ k ∈ Finset.range (orderOf σ), φ (σ ^ k) := by
+  have eq1 : Finset.univ (α := G) = (zpowers σ : Set G).toFinset := by
+    simp [Finset.ext_iff, hσ]
+  let e : Fin (orderOf σ) ≃ (zpowers σ : Set G).toFinset := {
+    toFun i := ⟨finEquivZPowers (orderOf_pos_iff.1 (orderOf_pos σ)) i, by simp⟩
+    invFun t := (finEquivZPowers (orderOf_pos_iff.1 (orderOf_pos σ))).symm ⟨t.1, by simp_all⟩
+    left_inv _ := by simp
+    right_inv _ := by simp}
+  rw [eq1, ← Finset.prod_finset_coe]
+  convert Finset.prod_equiv (s := (Finset.univ : Finset (zpowers σ : Set G).toFinset))
+      (t := Finset.univ (α := Fin (orderOf σ))) (f := fun x ↦ φ x.1) (g := fun x ↦ φ (σ ^ x.val))
+      e.symm (by simp) (by
+        simp only [Finset.univ_eq_attach, Finset.mem_attach, forall_const, Subtype.forall,
+          Set.mem_toFinset, SetLike.mem_coe]
+        intro g hg
+        obtain ⟨k, rfl⟩ := mem_zpowers_iff.1 hg;
+        simp [e, pow_finEquivZPowers_symm_apply])
+  exact Fin.prod_univ_eq_prod_range _ _|>.symm
+
 end GenExp

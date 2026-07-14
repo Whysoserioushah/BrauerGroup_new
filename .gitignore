@@ -25,3 +25,5 @@ blueprint/src/_region_.prv/*
 
 .history/*
 .claude/*
+!.claude/ROADMAP.md
+!.claude/brauer-roadmap.html
