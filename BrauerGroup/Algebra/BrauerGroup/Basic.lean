@@ -1,16 +1,14 @@
 module
 
 public import BrauerGroup.Algebra.Central.TensorProduct
-public import BrauerGroup.LinearAlgebra.Matrix.ToLin
+public import BrauerGroup.RingTheory.SimpleModule.WedderburnArtin
 public import BrauerGroup.RingTheory.SimpleRing.TensorProduct
 public import Mathlib.Algebra.Azumaya.Basic
 public import Mathlib.Algebra.BrauerGroup.Defs
 public import Mathlib.Algebra.Central.Matrix
 public import Mathlib.LinearAlgebra.Basis.MulOpposite
-public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 public import Mathlib.LinearAlgebra.FreeModule.Finite.Matrix
 public import Mathlib.LinearAlgebra.Matrix.Unique
-public import Mathlib.RingTheory.SimpleRing.Matrix
 
 /-!
 ## Multiplication in Brauer group
@@ -215,5 +213,19 @@ lemma map_mk (L : Type*) [Field L] [Algebra k L] (h : ∀ (A B : CSA k),
     (.mk (.of L (L ⊗[k] B)))) (A : Type v) [Ring A] [Algebra k A] [FiniteDimensional k A]
     [IsSimpleRing A] [Algebra.IsCentral k A] :
     BrauerGroup.map L h (BrauerGroup.mk k A) = BrauerGroup.mk L (L ⊗[k] A) := rfl
+
+theorem nonempty_algEquiv_of_mk_eq_of_finrank_eq
+    [IsSimpleRing A] [Algebra.IsCentral k A] [IsSimpleRing B] [Algebra.IsCentral k B]
+    (h : mk k A = mk k B) (hrank : Module.finrank k A = Module.finrank k B) :
+    Nonempty (A ≃ₐ[k] B) := by
+  obtain ⟨n, m, hn, hm, ⟨e⟩⟩ := mk_eq_mk.1 h
+  have : NeZero n := ⟨hn⟩
+  have : NeZero m := ⟨hm⟩
+  obtain ⟨D, _, _, _, p, q, _, _, ⟨e1⟩, ⟨e2⟩⟩ :=
+    IsSimpleRing.wedderburn_artin_common_divisionring k A e
+  refine ⟨e1.trans ((Matrix.reindexAlgEquiv _ _ (finCongr ?_)).trans e2.symm)⟩
+  have : p * p * Module.finrank k D = q * q * Module.finrank k D := by
+    simp_all [Module.finrank_matrix, e1.toLinearEquiv.finrank_eq, e2.toLinearEquiv.finrank_eq]
+  simpa [← pow_two, ne_of_gt (Module.finrank_pos (R := k) (M := D))]
 
 end BrauerGroup

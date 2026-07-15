@@ -9,7 +9,13 @@
 > The live dashboard Artifact may be tied to an old account; `.claude/brauer-roadmap.html` in
 > this folder is a snapshot of its source and can be re-published as a new Artifact if needed.
 
-Last updated: **2026-07-14** (dashboard rev 54, **50/132 tasks done**, build green 8723 jobs).
+Last updated: **2026-07-15** (dashboard rev 60, **57/132 tasks done**, build green 8723 jobs).
+🏁 **FIRST GOAL-A KEYSTONE LANDED: `CyclicAlgebra.mk_eq_one_iff` — a cyclic algebra is split
+iff its parameter is a norm** (`Algebra/BrauerGroup/Cyclic.lean`), cohomology-free end to end.
+Eight tasks landed 2026-07-15: 4.5b/c/d/e, 4.9a/b, 5.5b, plus the W-A `Module.Finite` upgrade.
+Phase-5 remainder is trunk-gated: 5.4 ⇐ 4.8c (via 4.7a–d), 5.6 ⇐ 4.14a/b, 5.7 ⇐ 4.11a–e.
+Open fronts: trunk **4.7a–d** (conjFactor basis → 4.8 structure theorem → 5.4) or **4.14a**
+(inflation) or port wave **6.3a**.
 
 ---
 
@@ -45,16 +51,21 @@ Declared milestones: 3.12 ✓ · 6.8 · 7.10 · 8.3 · B.5 · B.8.
 
 ## 2. Status snapshot (2026-07-14)
 
-- Branch `edison/cleanup`, last commit **39ff8ce** (2026-07-14, pushed): 5.5a proof, P0,
-  `prod_range_add_pow_smul` shim, this doc + dashboard snapshot, .gitignore exceptions.
-  Tree clean.
+- Branch `edison/cleanup`, last pushed commit **27655a6** (2026-07-14).
+  **Uncommitted since**: the 4.5b batch (`nonempty_algEquiv_of_mk_eq_of_finrank_eq`,
+  `Module.Finite k D` upgrade to `wedderburn_artin_common_divisionring`, Edison's rename
+  `SimpleModule/Wedderburn.lean → WedderburnArtin.lean` + import retargets) and the 4.5c
+  batch (`GoodRep.exists_algEquiv_ι` in FactorSet.lean §comparison).
 - **Cyclic core COMPLETE**: 5.1 (CyclicAlgebra + uⁿ = a), 5.2 (CPA(1) ≅ End, `mk_one_eq_one`),
-  5.3 (power family + `factorSet_powFamily`), 5.5a (coboundary ⟺ norm).
-- Phase 5 remainder entirely **trunk-gated**: 5.4⇐4.8c, 5.5b⇐4.5b–e+4.9, 5.6⇐4.14b, 5.7⇐4.11e.
-- **Two open fronts**: trunk **4.5b** (W-A same-class + same-finrank ⟹ ≃ₐ; unlocks the 4.5
-  chain → 5.5b) or port wave **6.3a** (CFT shims).
-- Note 2026-07-14: the shim was moved (by Edison) from `BrauerGroup/Mathlib/Algebra/…` to
-  **`BrauerGroup/Algebra/BigOperators/GroupWithZero/Action.lean`**; imports retargeted to match.
+  5.3 (power family + `factorSet_powFamily`), 5.5a (coboundary ⟺ norm). **4.5b + 4.5c done** —
+  the trunk comparison chain is two steps from closing.
+- Phase 5 remainder entirely **trunk-gated**: 5.4⇐4.8c, 5.5b⇐4.5d/e+4.9, 5.6⇐4.14b, 5.7⇐4.11e.
+- **Two open fronts**: trunk **4.5d** (factorSet transport along the intertwining iso — one
+  `factorSet_unique` application — then 4.5e finale; with 4.9a/b that unlocks 5.5b) or port
+  wave **6.3a** (CFT shims).
+- Note 2026-07-14: the P2 shim lives at
+  **`BrauerGroup/Algebra/BigOperators/GroupWithZero/Action.lean`** (moved out of the
+  Mathlib-mirror dir by Edison; imports retargeted).
 
 ### Toolchain
 
@@ -115,7 +126,10 @@ Declared milestones: 3.12 ✓ · 6.8 · 7.10 · 8.3 · B.5 · B.8.
   universe), `Subalgebra.centralizer_isSimple`, `finrank_centralizer_mul_finrank`,
   `centralizer_centralizer`, `tensorCentralizerEquiv`, `AlgHom.bijective_of_finrank_eq`,
   W-A uniqueness `IsSimpleRing.wedderburn_artin_{divisionring,size}_unique` +
-  `wedderburn_artin_common_divisionring` (the 4.5b ingredient).
+  `wedderburn_artin_common_divisionring` (in `SimpleModule/WedderburnArtin.lean`; its
+  existential also returns `Module.Finite k D`), and its Brauer-level packaging
+  `BrauerGroup.nonempty_algEquiv_of_mk_eq_of_finrank_eq` (same class + same finrank ⟹ ≃ₐ,
+  in `BrauerGroup/Basic.lean` — 4.5b).
 - **CrossProductAlgebra** (`Algebra/CrossProduct/Basic.lean` + `CentralSimple.lean`):
   structure wrapping `Gal(K/F) →₀ K`; `basis`, `mulLinearMap_single_single`
   (`single σ c * single τ d = single (στ) (c · σ d · f(σ,τ))`), `one_def` coefficient
@@ -129,7 +143,10 @@ Declared milestones: 3.12 ✓ · 6.8 · 7.10 · 8.3 · B.5 · B.8.
   `conjFactor.mul/diff/diff_spec/diff_unique`, `factorSet` + `factorSet_spec`/`factorSet_unique`
   (produces `c = factorSet` — often need `.symm`), `isMulCocycle₂_factorSet`,
   `isMulCoboundary₂_factorSet_div`; §cyclic: `conjFactor.one/cast/pow`, `powFamily`,
-  `powUnitL`, `powScalar : Kˣ`, `factorSet_powFamily`.
+  `powUnitL`, `powScalar : Kˣ`, `factorSet_powFamily`; §comparison:
+  `GoodRep.exists_algEquiv_ι` (any two GoodReps of x isomorphic intertwining the ι's,
+  stated at `GoodRep.{v}` — the skolemNoether same-universe pin), `conjFactor.map` +
+  `factorSet_map` (transport preserves the factor set on the nose).
 - **Maps** (`Relative/Cohomology/Maps.lean`): `IsMulCocycle₂.toRelBr`, `equivOfCoboundary`,
   `relativeBrGroup.fromCocycles₂/fromH2` + `fromH2_H2π` (@[simp] spec — downstream uses ONLY
   this), `groupCohomology.H2π_surjective`.
@@ -192,6 +209,10 @@ ZERO instances · mathlib `cancelBaseChange` needs CommSemiring on BOTH factors 
 - `simpa using X` can eat X with its own `@[simp]` attribute (True mismatch) — use exact/trans.
 - `Additive X` unfolds to X → ascribe the cocycle function + explicit `(M := Lˣ)` on the
   LowDegree bridges (see Maps.lean).
+- Anonymous-constructor `_` for an ∃-bound CLASS binder is solved only by unification, never
+  by TC fallback — if later components mention the instance (e.g. a `Nonempty (… Matrix … D)`
+  forces `DivisionRing D`) the `_` works, otherwise (e.g. `Module.Finite k D`) pass the term
+  explicitly.
 - `Rep k G` is polymorphic BUT LowDegree's H²/ofMulDistribMulAction sections pin **G : Type 0**
   — keep algebra-side lemmas universe-polymorphic, specialize only the cohomology section.
 - `of_ringEquiv` on subalgebra subtypes hits Mul-instance-path diamonds — inline the RingEquiv
@@ -287,10 +308,10 @@ Full mirror of the dashboard `TASKS` array. `[x]` = done (ground-truth build gre
 - [x] **4.3** conjFactor + diff/mul API + factorSet + master equation (`FactorSet.lean`).
 - [x] **4.4a** `isMulCocycle₂_factorSet` — double-association expansion, erw-free.
 - [x] **4.5a** `isMulCoboundary₂_factorSet_div` — same-GoodRep comparison.
-- [ ] **4.5b** W-A packaging: same class + same finrank ⟹ `≃ₐ[K]` — mk_eq_mk destructure → `wedderburn_artin_common_divisionring` → cancel matrix sizes. ~3 steps; 7.9c wants it too. **← NEXT trunk front**
-- [ ] **4.5c** Skolem–Noether alignment of the two L-embeddings — correct e to intertwine the ι's. 2 steps.
-- [ ] **4.5d** factorSet transport along an ι-intertwining iso — one `factorSet_unique` application. 1–2 steps.
-- [ ] **4.5e** Cross-GoodRep coboundary comparison (finale) — assembly of 4.5c+d+a. ≤2 steps.
+- [x] **4.5b** W-A packaging — Done 2026-07-15 (Edison + Fable): `BrauerGroup.nonempty_algEquiv_of_mk_eq_of_finrank_eq` in `BrauerGroup/Basic.lean`; mk_eq_mk destructure → common_divisionring → dimension count → `reindexAlgEquiv`/`finCongr` finish. `common_divisionring` upgraded to return `Module.Finite k D` (pass the binder explicitly — see gotchas); `Wedderburn.lean` renamed `WedderburnArtin.lean`.
+- [x] **4.5c** Skolem–Noether alignment — Done 2026-07-15: `GoodRep.exists_algEquiv_ι` (FactorSet.lean §comparison); 4.5b on the `quot_eq`/`dim_eq_sq` projections + `skolemNoether` correction via `MulSemiringAction.toAlgEquiv (ConjAct.toConjAct u)`. `GoodRep.{v}` pin kept (Subsingleton-split bypass analyzed and rejected; ULift / two-universe skolemNoether are the real escape hatches if ever needed).
+- [x] **4.5d** factorSet transport — Done 2026-07-15 (Edison): `conjFactor.map` (+ `@[simp] map_val`) and `factorSet_map` in §comparison; transported family has the SAME factor set on the nose. No universe pin (same x forces same universe via `quot_eq`). Gotcha: `← map_inv` before `Units.coe_map`.
+- [x] **4.5e** Cross-GoodRep coboundary comparison — Done 2026-07-15 (Edison): `isMulCoboundary₂_factorSet_div'` in §comparison, 3 lines (`exists_algEquiv_ι` + `rw [← factorSet_map]` + 4.5a). **Chain closed.**
 - [ ] **4.7a** `Module L A.carrier` via compHom along ι (letI discipline) + `finrank_ι`. 1–2 steps.
 - [ ] **4.7b** Dedekind coefficient lemma — expand ι(σc)·u_σ two ways, compare coefficients. 2–3 steps.
 - [ ] **4.7c** conjFactor units L-linearly independent — maximal `linearIndepOn` subfamily + 4.7b. 3 steps.
@@ -298,8 +319,8 @@ Full mirror of the dashboard `TASKS` array. `[x]` = done (ground-truth build gre
 - [ ] **4.8a** Comparison linear equiv `CPA (factorSet A b) ≃ₗ[L] A.carrier` (Basis.equiv; restrictScalars via CompatibleSMul). 2 steps.
 - [ ] **4.8b** Multiplicativity: AlgEquiv.ofLinearEquiv — basis_mul_basis vs factorSet_spec match verbatim. 3 steps.
 - [ ] **4.8c** Structure-theorem corollary `mk K (CPA (factorSet A b)) = x`. 1 step. **← gates 5.4**
-- [ ] **4.9a** CPA as its own GoodRep; canonical conjFactors from `of`. 2 steps.
-- [ ] **4.9b** factorSet of the canonical conjFactors = f — of_mul_of + factorSet_unique, ~3 lines.
+- [x] **4.9a** CPA as its own GoodRep — Done 2026-07-15 (Edison): `GoodRep.ofCrossProduct f (h : mk K (CPA f) = x)` (h-parameterized — lets two CPAs sit over one class) + `ofFamily` + `@[simp] ofFamily_val`, FactorSet.lean §canonical.
+- [x] **4.9b** factorSet of canonical conjFactors = f — Done 2026-07-15 (Edison): `factorSet_ofFamily`, 3 lines (`of_mul_of` IS the obligation).
 - [x] **4.10** `fromH2 : H² → relativeBrGroup` on H2 itself (`Maps.lean`) — toRelBr, equivOfCoboundary, fromH2_H2π spec; H2π_surjective 1-liner (PR candidate). NO H2Iso/moduleCatLeftHomologyData anywhere.
 - [ ] **4.11a** Bimodule M := (A ⊗[K] B) ⧸ middle-L relations, right (A⊗B)ᵐᵒᵖ-action. 2–3 steps.
 - [ ] **4.11b** Left CPA(αβ)-action on M — the old 1.2M-hb C_mul_smul′, retamed via master-equation rewrites. 3 steps. **The heart of 4.11.**
@@ -316,7 +337,7 @@ Full mirror of the dashboard `TASKS` array. `[x]` = done (ground-truth build gre
 - [x] **5.3** Power family uⁱ + `powScalar` + `factorSet_powFamily` (`FactorSet.lean` §cyclic, Edison + carry-case fill) — ℤ-power induction, no finiteness in descent.
 - [ ] **5.4** Every class in Br(L/K) cyclic (L/K cyclic) — GoodRep.nonempty + conjFactor at σ + 5.3 + **4.8c**: x = mk (CyclicAlgebra σ uⁿ). 2 steps.
 - [x] **5.5a** Cyclic coboundary ⟺ norm — `isMulCoboundary₂_cyclicCocycle_iff` + `_div_iff`; P0/P1/P2 prep, coboundary_aux telescope, recurrence + (σⁿ⁻¹,σ) evaluation, Units.map_injective. Build 8723.
-- [ ] **5.5b** Split iff norm: `mk (CyclicAlgebra σ a) = 1 ↔ a ∈ N(Lˣ)` — (⇐) 5.5a + equivOfCoboundary + 5.2; (⇒) **4.5b–e** + **4.9a/b** + 5.5a. 2–3 steps.
+- [x] **5.5b** 🏁 Split iff norm — Done 2026-07-15 (Edison): `CyclicAlgebra.mk_eq_one_iff` in `Algebra/BrauerGroup/Cyclic.lean`; `rw [← isMulCoboundary₂_cyclicCocycle_iff]` up front, (⇒) via 4.5e + 4.9 with the CPA(1) GoodRep in the first slot, (⇐) via `equivOfCoboundary` + `mk_one_eq_one`. File slimmed to 6 imports by #min_imports.
 - [ ] **5.6** Cyclic inflation formula [(L/K,σ,a)] = [(L′/K,σ′,a^{[L′:L]})] — explicit coboundary β(σ′ⁱ) = a^⌊i/n⌋ + **4.14b**. Feeds 8.2b. 2–3 steps.
 - [ ] **5.7** Multiplicativity [(σ,a)]·[(σ,b)] = [(σ,ab)] — instance of **4.11e** (cocycle half shipped with 5.1). 1 step.
 
@@ -435,3 +456,4 @@ B.5 itself · `Subfield.centralizer` idea.
 | 2026-07-11 | b6afa84 | Phase 3 complete + X-phase deletions wave 0 |
 | 2026-07-14 | f831c29 | b6afa84→now batch: CrossProduct split, galAct removal, Relative rehoming, Maps/FactorSet/Embedding, CyclicIndex, cyclic layer, test.lean, min_imports + mk_all (4.13) |
 | 2026-07-14 | 39ff8ce | 5.5a proof + P0 + `prod_range_add_pow_smul` shim (at `Algebra/BigOperators/`) + `.claude/ROADMAP.md` + dashboard snapshot + .gitignore exceptions |
+| 2026-07-15 | *(uncommitted)* | 4.5b: `nonempty_algEquiv_of_mk_eq_of_finrank_eq`, `Module.Finite k D` in common_divisionring's existential, `Wedderburn.lean` → `WedderburnArtin.lean` rename; 4.5c: `GoodRep.exists_algEquiv_ι`; 4.5d: `conjFactor.map` + `factorSet_map`; 4.5e: `isMulCoboundary₂_factorSet_div'`; 4.9a/b: `GoodRep.ofCrossProduct` + `ofFamily` + `factorSet_ofFamily` |

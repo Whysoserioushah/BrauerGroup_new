@@ -368,4 +368,80 @@ theorem factorSet_powFamily [Module.Finite K L] (u : conjFactor A σ) :
 
 end cyclic
 
+section comparison
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+  (σ : Gal(L/K)) (hσ : ∀ τ, τ ∈ Subgroup.zpowers σ)
+  {x : BrauerGroup K} (A : GoodRep L x)
+
+/-- Any two `GoodRep`s of the same Brauer class are isomorphic by an isomorphism
+intertwining the two embeddings of `L`: Wedderburn–Artin uniqueness matches up the
+carriers, and Skolem–Noether corrects the isomorphism by an inner automorphism. -/
+theorem GoodRep.exists_algEquiv_ι (A₁ A₂ : GoodRep.{v} L x) :
+    ∃ e : A₁.carrier ≃ₐ[K] A₂.carrier, ∀ c : L, e (A₁.ι c) = A₂.ι c := by
+  obtain ⟨e₀⟩ := nonempty_algEquiv_of_mk_eq_of_finrank_eq
+    (A₁.quot_eq.trans A₂.quot_eq.symm) (A₁.dim_eq_sq.trans A₂.dim_eq_sq.symm)
+  obtain ⟨u, hu⟩ := skolemNoether K A₂.carrier L (e₀.toAlgHom.comp A₁.ι) A₂.ι
+  exact ⟨e₀.trans (MulSemiringAction.toAlgEquiv K A₂.carrier (ConjAct.toConjAct u)),
+    fun c ↦ by simp [hu c, ConjAct.units_smul_def]⟩
+
+/-- Transport a conjugation factor along an isomorphism intertwining the `L`-embeddings. -/
+def conjFactor.map {A₁ A₂ : GoodRep L x} (e : A₁.carrier ≃ₐ[K] A₂.carrier)
+    (he : ∀ c : L, e (A₁.ι c) = A₂.ι c) {σ : Gal(L/K)} (u : conjFactor A₁ σ) :
+    conjFactor A₂ σ :=
+  ⟨Units.map (e : A₁.carrier →* A₂.carrier) u.1, fun c ↦ by
+    rw [← map_inv, Units.coe_map, Units.coe_map, MonoidHom.coe_coe, ← he c, ← he (σ c),
+      ← map_mul, ← map_mul, u.2 c]⟩
+
+@[simp] lemma conjFactor.map_val {A₁ A₂ : GoodRep L x} (e : A₁.carrier ≃ₐ[K] A₂.carrier)
+    (he : ∀ c : L, e (A₁.ι c) = A₂.ι c) {σ : Gal(L/K)} (u : conjFactor A₁ σ) :
+    (conjFactor.map e he u).1 = Units.map (e : A₁.carrier →* A₂.carrier) u.1 := rfl
+
+theorem factorSet_map {A₁ A₂ : GoodRep L x} (e : A₁.carrier ≃ₐ[K] A₂.carrier)
+    (he : ∀ c : L, e (A₁.ι c) = A₂.ι c) (b : (σ : Gal(L/K)) → conjFactor A₁ σ) :
+    factorSet A₂ (fun σ ↦ (b σ).map e he) = factorSet A₁ b := by
+  funext ⟨σ, τ⟩
+  refine (factorSet_unique A₂ _ σ τ ?_).symm
+  simpa [map_mul, he] using congrArg e (factorSet_spec A₁ b σ τ)
+
+open groupCohomology in
+/-- The factor sets attached to any two `GoodRep`s of the same Brauer class differ by a
+coboundary: the H²-class of the factor set depends only on `x`. -/
+theorem isMulCoboundary₂_factorSet_div' (A₁ A₂ : GoodRep.{v} L x)
+    (b₁ : (σ : Gal(L/K)) → conjFactor A₁ σ) (b₂ : (σ : Gal(L/K)) → conjFactor A₂ σ) :
+    IsMulCoboundary₂ (factorSet A₂ b₂ / factorSet A₁ b₁) := by
+  obtain ⟨e, he⟩ := A₁.exists_algEquiv_ι A₂
+  rw [← factorSet_map e he b₁]
+  exact isMulCoboundary₂_factorSet_div A₂ _ b₂
+
+end comparison
+
+section canonical
+
+open groupCohomology
+
+variable {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
+  (f : Gal(L/K) × Gal(L/K) → Lˣ) [Fact <| IsMulCocycle₂ f]
+  [Module.Finite K L] [IsGalois K L] {x : BrauerGroup K}
+
+/-- The crossed product of a cocycle, as a `GoodRep` of any class it represents. -/
+noncomputable def GoodRep.ofCrossProduct (h : BrauerGroup.mk K (CrossProductAlgebra f) = x) :
+    GoodRep L x :=
+  .mk (CrossProductAlgebra f) (CrossProductAlgebra.incl f) h CrossProductAlgebra.dim_eq_sq
+
+/-- The canonical conjugation factors of the crossed product: the units `of f σ`. -/
+noncomputable def ofFamily (h : BrauerGroup.mk K (CrossProductAlgebra f) = x) (σ : Gal(L/K)) :
+    conjFactor (GoodRep.ofCrossProduct f h) σ :=
+  ⟨CrossProductAlgebra.of f σ, fun c ↦ CrossProductAlgebra.of_conj σ c⟩
+
+@[simp] lemma ofFamily_val (h : BrauerGroup.mk K (CrossProductAlgebra f) = x) (σ : Gal(L/K)) :
+    (ofFamily f h σ).1 = CrossProductAlgebra.of f σ := rfl
+
+/-- The factor set of the canonical conjugation factors is `f` itself. -/
+theorem factorSet_ofFamily (h : BrauerGroup.mk K (CrossProductAlgebra f) = x) :
+    factorSet (GoodRep.ofCrossProduct f h) (ofFamily f h) = f := by
+  funext ⟨σ, τ⟩
+  exact (factorSet_unique _ _ σ τ (CrossProductAlgebra.of_mul_of _ σ τ)).symm
+
+end canonical
+
 end BrauerGroup

@@ -1,7 +1,7 @@
 module
 
 public import BrauerGroup.Algebra.BrauerGroup.BaseChange
-public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
+public import BrauerGroup.RingTheory.SimpleModule.WedderburnArtin
 public import Mathlib.Algebra.Field.ULift
 public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 public import Mathlib.RingTheory.SimpleModule.IsAlgClosed

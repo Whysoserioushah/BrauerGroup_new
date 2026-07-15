@@ -68,7 +68,7 @@ public import BrauerGroup.RingTheory.Flat.TorsionFree
 public import BrauerGroup.RingTheory.Morita.End
 public import BrauerGroup.RingTheory.Morita.Matrix
 public import BrauerGroup.RingTheory.Morita.SimpleRing
-public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
+public import BrauerGroup.RingTheory.SimpleModule.WedderburnArtin
 public import BrauerGroup.RingTheory.SimpleRing.Basic
 public import BrauerGroup.RingTheory.SimpleRing.Center
 public import BrauerGroup.RingTheory.SimpleRing.Centralizer

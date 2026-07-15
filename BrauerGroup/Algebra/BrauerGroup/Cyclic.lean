@@ -1,14 +1,10 @@
 module
 
-public import BrauerGroup.Algebra.BrauerGroup.Basic
-public import BrauerGroup.Algebra.CrossProduct.CentralSimple
-public import BrauerGroup.RingTheory.SimpleRing.Basic
-public import BrauerGroup.RingTheory.SimpleRing.End
+public import BrauerGroup.Algebra.BrauerGroup.Relative.Cohomology.FactorSet
+public import BrauerGroup.Algebra.BrauerGroup.Relative.Cohomology.Maps
+public import Mathlib.Algebra.Algebra.IsSimpleRing
 public import Mathlib.LinearAlgebra.FreeModule.PID
 public import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
-public import Mathlib.RingTheory.Henselian
-public import Mathlib.RingTheory.RegularLocalRing.Defs
-public import Mathlib.RingTheory.SimpleRing.Principal
 public import Mathlib.RingTheory.TotallySplit
 
 @[expose] public section
@@ -105,4 +101,27 @@ theorem BrauerGroup.mk_one_eq_one [IsGalois K L] [Module.Finite K L] :
   rw [BrauerGroup.mk_congr (oneEquivEnd K L),
     BrauerGroup.mk_congr (algEquivMatrix (Module.finBasis K L)),
     BrauerGroup.mk_matrix_eq_one]
+
+open groupCohomology BrauerGroup CrossProductAlgebra
+
+/-- A cyclic algebra is split iff its parameter is a norm:
+`[(L/K, σ, a)] = 1 ↔ a ∈ N(Lˣ)`. -/
+theorem CyclicAlgebra.mk_eq_one_iff [IsGalois K L] [Module.Finite K L]
+    (σ : Gal(L/K)) (hσ : ∀ τ, τ ∈ Subgroup.zpowers σ) (a : Kˣ) :
+    BrauerGroup.mk K (CyclicAlgebra σ hσ a) = 1 ↔
+      ∃ c : Lˣ, Units.map (Algebra.norm K (S := L)) c = a := by
+  rw [← isMulCoboundary₂_cyclicCocycle_iff σ hσ a]
+  constructor
+  · intro hsplit
+    have h1 : BrauerGroup.mk K (CrossProductAlgebra (1 : Gal(L/K) × Gal(L/K) → Lˣ))
+        = BrauerGroup.mk K (CyclicAlgebra σ hσ a) :=
+      BrauerGroup.mk_one_eq_one.trans hsplit.symm
+    have hcob := isMulCoboundary₂_factorSet_div'
+      (GoodRep.ofCrossProduct 1 h1) (GoodRep.ofCrossProduct (cyclicCocycle σ hσ a) rfl)
+      (ofFamily 1 h1) (ofFamily (cyclicCocycle σ hσ a) rfl)
+    simpa [factorSet_ofFamily] using hcob
+  · rintro ⟨β, hβ⟩
+    refine (BrauerGroup.mk_congr (equivOfCoboundary β fun g h ↦ ?_)).trans
+      BrauerGroup.mk_one_eq_one
+    simpa using hβ g h
 

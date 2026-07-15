@@ -56,12 +56,13 @@ theorem wedderburn_artin_size_unique {n n' : ℕ} [NeZero n] [NeZero n']
   simpa [this.symm,  Nat.mul_self_inj] using eq3
 
 /-- Two finite-dimensional simple algebras whose matrix algebras are isomorphic are matrix
-algebras over a common division algebra. Note that finite-dimensionality of `B` follows
-from the isomorphism, and no centrality is assumed. -/
+algebras over a common finite-dimensional division algebra. Note that finite-dimensionality
+of `B` follows from the isomorphism, and no centrality is assumed. -/
 theorem wedderburn_artin_common_divisionring {n m : ℕ} [NeZero n] [NeZero m]
     {B : Type v} [Ring B] [Algebra k B] [IsSimpleRing A] [IsSimpleRing B]
     (e : Matrix (Fin n) (Fin n) A ≃ₐ[k] Matrix (Fin m) (Fin m) B) :
-    ∃ (D : Type v) (_ : DivisionRing D) (_ : Algebra k D) (p q : ℕ) (_ : NeZero p) (_ : NeZero q),
+    ∃ (D : Type v) (_ : DivisionRing D) (_ : Algebra k D) (_ : Module.Finite k D)
+      (p q : ℕ) (_ : NeZero p) (_ : NeZero q),
       Nonempty (A ≃ₐ[k] Matrix (Fin p) (Fin p) D) ∧
         Nonempty (B ≃ₐ[k] Matrix (Fin q) (Fin q) D) := by
   have : IsArtinianRing A := .of_finite k A
@@ -73,6 +74,8 @@ theorem wedderburn_artin_common_divisionring {n m : ℕ} [NeZero n] [NeZero m]
   obtain ⟨isoD⟩ := wedderburn_artin_divisionring_unique k (Matrix (Fin n) (Fin n) A)
     (wdbA.mapMatrix.trans <| Matrix.compFinAlgEquiv n p D k)
     (e.trans <| wdbB.mapMatrix.trans <| Matrix.compFinAlgEquiv m q D' k)
-  exact ⟨D, _, _, p, q, hp, hq, ⟨wdbA⟩, ⟨wdbB.trans isoD.symm.mapMatrix⟩⟩
+  have : Module.Finite k (Matrix (Fin p) (Fin p) D) := .equiv wdbA.toLinearEquiv
+  have finD : Module.Finite k D := Module.finite_of_matrix (Fin p) (Fin p)
+  exact ⟨D, _, _, finD, p, q, hp, hq, ⟨wdbA⟩, ⟨wdbB.trans isoD.symm.mapMatrix⟩⟩
 
 end IsSimpleRing

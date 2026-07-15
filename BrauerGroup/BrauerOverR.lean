@@ -1,6 +1,6 @@
 module
 
-public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
+public import BrauerGroup.RingTheory.SimpleModule.WedderburnArtin
 public import BrauerGroup.FrobeniusTheorem
 
 @[expose] public section

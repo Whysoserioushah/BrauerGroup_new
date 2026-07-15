@@ -8,7 +8,7 @@ module
 public import BrauerGroup.BrauerGroup
 public import BrauerGroup.Data.Matrix.Composition
 public import BrauerGroup.SplittingOfCSA
-public import BrauerGroup.RingTheory.SimpleModule.Wedderburn
+public import BrauerGroup.RingTheory.SimpleModule.WedderburnArtin
 
 /-!
 # Relative Brauer Group
