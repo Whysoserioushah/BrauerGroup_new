@@ -51,11 +51,8 @@ Declared milestones: 3.12 ✓ · 6.8 · 7.10 · 8.3 · B.5 · B.8.
 
 ## 2. Status snapshot (2026-07-14)
 
-- Branch `edison/cleanup`, last pushed commit **27655a6** (2026-07-14).
-  **Uncommitted since**: the 4.5b batch (`nonempty_algEquiv_of_mk_eq_of_finrank_eq`,
-  `Module.Finite k D` upgrade to `wedderburn_artin_common_divisionring`, Edison's rename
-  `SimpleModule/Wedderburn.lean → WedderburnArtin.lean` + import retargets) and the 4.5c
-  batch (`GoodRep.exists_algEquiv_ι` in FactorSet.lean §comparison).
+- Branch `edison/cleanup`, last commit **ba259cd** (2026-07-15, pushed): the full
+  4.5-chain + 4.9 + 5.5b batch. Tree clean.
 - **Cyclic core COMPLETE**: 5.1 (CyclicAlgebra + uⁿ = a), 5.2 (CPA(1) ≅ End, `mk_one_eq_one`),
   5.3 (power family + `factorSet_powFamily`), 5.5a (coboundary ⟺ norm). **4.5b + 4.5c done** —
   the trunk comparison chain is two steps from closing.
@@ -456,4 +453,4 @@ B.5 itself · `Subfield.centralizer` idea.
 | 2026-07-11 | b6afa84 | Phase 3 complete + X-phase deletions wave 0 |
 | 2026-07-14 | f831c29 | b6afa84→now batch: CrossProduct split, galAct removal, Relative rehoming, Maps/FactorSet/Embedding, CyclicIndex, cyclic layer, test.lean, min_imports + mk_all (4.13) |
 | 2026-07-14 | 39ff8ce | 5.5a proof + P0 + `prod_range_add_pow_smul` shim (at `Algebra/BigOperators/`) + `.claude/ROADMAP.md` + dashboard snapshot + .gitignore exceptions |
-| 2026-07-15 | *(uncommitted)* | 4.5b: `nonempty_algEquiv_of_mk_eq_of_finrank_eq`, `Module.Finite k D` in common_divisionring's existential, `Wedderburn.lean` → `WedderburnArtin.lean` rename; 4.5c: `GoodRep.exists_algEquiv_ι`; 4.5d: `conjFactor.map` + `factorSet_map`; 4.5e: `isMulCoboundary₂_factorSet_div'`; 4.9a/b: `GoodRep.ofCrossProduct` + `ofFamily` + `factorSet_ofFamily` |
+| 2026-07-15 | ba259cd | The whole day's batch: 4.5b/c/d/e comparison chain (+ `Module.Finite k D` in common_divisionring, `WedderburnArtin.lean` rename), 4.9a/b canonical GoodRep, 🏁 5.5b `CyclicAlgebra.mk_eq_one_iff` (split iff norm), #min_imports pass |
