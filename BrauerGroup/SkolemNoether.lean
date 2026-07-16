@@ -58,6 +58,7 @@ def smul1AddHom' (K A B M : Type u)
     simp only [map_add, AddMonoidHom.coe_mk, ZeroHom.coe_mk, AddMonoidHom.add_apply]
     exact Module.add_smul (f b1) (f b2) (l m)
 
+set_option backward.isDefEq.respectTransparency false in
 def smul1AddHom (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
@@ -67,6 +68,7 @@ def smul1AddHom (K A B M : Type u)
       smul_assoc, LinearMap.smul_apply]
     rw [smul_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 def smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B]
     [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
@@ -89,6 +91,7 @@ def smul1 (K A B M : Type u)
         simp only [smul_add, map_add, hbl1, hbl2]
   }
 
+set_option backward.isDefEq.respectTransparency false in
 lemma one_smul1 (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A] [Ring B] [Algebra K B] [AddCommGroup M]
     [Module K M] [Module A M] [IsScalarTower K A M] (f : B →ₐ[K] A) :
@@ -182,6 +185,7 @@ instance (K A B M : Type u)
     | add x y hx hy =>
       rw [smul_add, add_smul, hx, hy, add_smul, smul_add]
 
+set_option backward.isDefEq.respectTransparency false in
 instance module_inst_findim (K A B M : Type u)
     [Field K] [Ring A] [Algebra K A] [FiniteDimensional K A]
     [Ring B] [Algebra K B]

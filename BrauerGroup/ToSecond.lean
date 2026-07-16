@@ -271,6 +271,7 @@ lemma conjFactorCompCoeff_eq (x : A.conjFactor σ) (y : A.conjFactor τ) (z : A.
   simp only [AlgEquiv.mul_apply, Units.mul_inv_cancel_right]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma conjFactorCompCoeff_comp_comp₂
     (xρ : A.conjFactor ρ) (xσ : A.conjFactor σ) (xτ : A.conjFactor τ)
     (xστ : A.conjFactor (σ * τ))
@@ -560,6 +561,7 @@ end GoodRep
 def RelativeBrGroup.toSnd :  RelativeBrGroup K F → groupCohomology.H2 (galAct F K) :=
   fun X ↦ (goodRep X).toH2 (goodRep X).arbitraryConjFactor
 
+set_option backward.isDefEq.respectTransparency false in
 lemma RelativeBrGroup.toSnd_wd (X : RelativeBrGroup K F)
     (A : GoodRep K X.1) (x_ : Π σ, A.conjFactor σ) :
     toSnd X = A.toH2 x_ := by
@@ -579,6 +581,7 @@ section galois
 variable {X : BrauerGroup F} (A : GoodRep K X)
 
 omit [FiniteDimensional F K] in
+set_option backward.isDefEq.respectTransparency false in
 lemma conjFactor_linearIndependent (x_ : Π σ, A.conjFactor σ) :
     LinearIndependent K (v := fun (i : Gal(K/F)) => (x_ i).1.1) := by
   classical

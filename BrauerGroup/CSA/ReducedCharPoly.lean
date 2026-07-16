@@ -41,6 +41,7 @@ variable (K F E K_bar F_bar A : Type*) [Field K] [Field F] [Field E] [Field F_ba
 section defs
 
 variable {K F E} in
+set_option backward.isDefEq.respectTransparency false in
 @[simps]
 def φ_m (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F →ₐ[K] Matrix (Fin n) (Fin n) E where
   toFun M := fun i j ↦ φ (M i j)
@@ -59,6 +60,7 @@ lemma φ_m_inj (φ : F →ₐ[K] E) : Function.Injective (φ_m n φ) := fun M N 
   funext fun j ↦ by rw [← Matrix.ext_iff] at h; exact φ.injective (h i j)
 
 variable {K F E} in
+set_option backward.isDefEq.respectTransparency false in
 abbrev e1Aux (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) φ.range ≃ₐ[K] (φ_m n φ).range where
   toFun M := ⟨(M · · |>.1), fun i j ↦ M i j |>.2.choose, by ext i j; exact M i j|>.2.choose_spec⟩
   invFun := fun ⟨M, h⟩ i j ↦ ⟨M i j, h.choose i j, Matrix.ext_iff.2 h.choose_spec i j⟩
@@ -112,6 +114,7 @@ end defs
 
 variable {K E F} in
 omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
+set_option backward.isDefEq.respectTransparency false in
 lemma mat_over_extension (φ : F →ₐ[K] E) (a : A) :
     ∃ g : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E, g (1 ⊗ₜ a) =
     φ.mapMatrix (e (1 ⊗ₜ a)) := by

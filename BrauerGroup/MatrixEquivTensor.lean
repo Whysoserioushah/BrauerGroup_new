@@ -37,6 +37,7 @@ abbrev toTensorMatrix_toFun_Klinear : K ⊗[F] Matrix n n A →ₗ[K] Matrix n n
     | tmul k0 M => simp [TensorProduct.smul_tmul', SemigroupAction.mul_smul]
     | add _ _ h1 h2 => simp_all}
 
+set_option backward.isDefEq.respectTransparency false in
 abbrev toTensorMatrix : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) := by
   refine .ofLinearMap (toTensorMatrix_toFun_Klinear K F A n)
     (by simp [Algebra.TensorProduct.one_def]) fun t1 t2 ↦ ?_

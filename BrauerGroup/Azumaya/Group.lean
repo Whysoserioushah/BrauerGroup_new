@@ -26,6 +26,7 @@ abbrev Endmop (A : Type*) [Ring A] [Algebra R A] : Module.End R A →ₐ[R] Modu
   map_add' _ _ := rfl
   commutes' _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 abbrev EndmopEquiv (A : Type*) [Ring A] [Algebra R A] : Module.End R A ≃ₐ[R] Module.End R Aᵐᵒᵖ :=
   AlgEquiv.ofBijective (Endmop R A) ⟨
   fun f1 f2 h ↦ by simpa using h, fun f ↦ ⟨(opLinearEquiv R).symm.toLinearMap ∘ₗ f ∘ₗ
@@ -39,6 +40,7 @@ example (A : Type*) [Ring A] [Algebra R A] : Aᵐᵒᵖᵐᵒᵖ ≃ₐ[R] A := 
     -- ((Algebra.TensorProduct.congr (AlgEquiv.refl (A₁ := Aᵐᵒᵖ)) (AlgEquiv.opOp R A).symm).trans
     -- (Algebra.TensorProduct.comm _ _ _)).toAlgHom
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 ```
   A ⊗ Aᵐᵒᵖ -----------------> End R A

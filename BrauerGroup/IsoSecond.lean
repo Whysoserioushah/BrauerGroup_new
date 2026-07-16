@@ -745,6 +745,7 @@ instance : SMulCommClass C F SM where
 
 section C_iso
 
+set_option backward.isDefEq.respectTransparency false in
 def isoDagger (m : ℕ) [NeZero m] :
     Module.End C (Fin m → SM) ≃ₐ[F] Matrix (Fin m) (Fin m) (Module.End C SM) where
   __ := endPowEquivMatrix C SM m
@@ -758,6 +759,7 @@ def isoDagger (m : ℕ) [NeZero m] :
     · simp only [algebraMap_end_apply, Pi.smul_apply, Pi.single_eq_of_ne h, smul_zero,
       LinearMap.zero_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 def mopEquivEnd' : Cᵐᵒᵖ ≃ₐ[F] Module.End C C :=
   .ofRingEquiv (f := mopEquivEnd C) fun f ↦ by
   ext x

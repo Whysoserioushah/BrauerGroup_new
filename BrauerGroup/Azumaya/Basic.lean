@@ -23,6 +23,7 @@ lemma TensorProduct.flip_mk_injective {R M N : Type*} [CommRing R] [IsDomain R] 
     (smul_left_injective R ha)
   simpa using e
 
+set_option backward.isDefEq.respectTransparency false in
 lemma IsCentral.left_of_tensor (B C : Type*)
     [Ring B] [Ring C] [Nontrivial B] [Nontrivial C] [Algebra K C] [Algebra K B]
     [FiniteDimensional K B] [hbc : Algebra.IsCentral K (B ⊗[K] C)] :
@@ -182,6 +183,7 @@ abbrev matrixAlgEquivMatrixMop (n : ℕ) :
     simp [Matrix.algebraMap_matrix_apply]
     split_ifs with h1 h2 h3 <;> tauto
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable abbrev mopAlgEquivEnd : Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
   AlgEquiv.ofRingEquiv (f := mopEquivEnd R) fun r ↦ by
     ext; simp [mopEquivEnd]
@@ -189,6 +191,7 @@ noncomputable abbrev mopAlgEquivEnd : Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
 noncomputable abbrev tensorEquivEnd : R ⊗[R] Rᵐᵒᵖ ≃ₐ[R] Module.End R R :=
   Algebra.TensorProduct.lid R Rᵐᵒᵖ|>.trans <| mopAlgEquivEnd R
 
+set_option backward.isDefEq.respectTransparency false in
 lemma equal_mulLeftRight : tensorEquivEnd R = AlgHom.mulLeftRight R R := by
   ext r
   simp [mopEquivEnd, AlgHom.mulLeftRight_apply]

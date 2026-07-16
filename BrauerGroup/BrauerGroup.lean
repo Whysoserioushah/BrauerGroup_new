@@ -297,10 +297,12 @@ def matrixEquivForward (m n : Type*) [Fintype m] [Fintype n] [DecidableEq m] [De
     (fun _ _ _ _ => Matrix.mul_kronecker_mul _ _ _ _)
     (Matrix.one_kronecker_one (α := K))
 
+set_option backward.isDefEq.respectTransparency false in
 open scoped Kronecker in
 lemma matrixEquivForward_tmul (m n : Type*) [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
     (M : Matrix m m K) (N : Matrix n n K) : matrixEquivForward m n (M ⊗ₜ N) = M ⊗ₖ N := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 lemma matrixEquivForward_surjective
     (n m : Type*) [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n] :
     Function.Surjective <| matrixEquivForward (K := K) m n := by
@@ -714,6 +716,7 @@ def e4 :
 def e5 (e : A ≃ₐ[K] B) : (E ⊗[K] A) ≃ₐ[E] (E ⊗[K] B) :=
   Algebra.TensorProduct.congr AlgEquiv.refl e
 
+set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 800000 in
 -- FIXME: Get rid of the raised heartbeats
 def e6Aux0 : (E ⊗[K] A) ⊗[E] (E ⊗[K] B) →ₐ[E] E ⊗[K] (A ⊗[K] B) :=
@@ -778,6 +781,7 @@ def e6Aux0 : (E ⊗[K] A) ⊗[E] (E ⊗[K] B) →ₐ[E] E ⊗[K] (A ⊗[K] B) :=
         simp only [Algebra.TensorProduct.tmul_mul_tmul, _root_.mul_one, _root_.one_mul]
         rw [mul_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 -- e6: equivalence (E ⊗[K] A) ⊗[E] (E ⊗[K] B) ≃ₐ[E] E ⊗[K] (A ⊗[K] B)
 def e6 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A]
     [Algebra.IsCentral K B] [csa_B : IsSimpleRing B] :

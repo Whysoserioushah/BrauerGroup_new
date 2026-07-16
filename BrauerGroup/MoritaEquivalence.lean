@@ -160,6 +160,7 @@ def fromModuleCatOverMatrix : ModuleCat M[ι, R] ⥤ ModuleCat R where
   map_id _ := by ext; rfl
   map_comp _ _ := by ext; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simps]
 def matrix.unitIsoHom :
     toModuleCatOverMatrix R ι ⋙ fromModuleCatOverMatrix R ι ⟶ 𝟭 (ModuleCat R) where
@@ -241,6 +242,7 @@ def matrix.unitIsoInv :
     · rfl
     · rw [map_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simps]
 def matrix.unitIso :
     toModuleCatOverMatrix R ι ⋙ fromModuleCatOverMatrix R ι ≅ 𝟭 (ModuleCat R) where
@@ -362,6 +364,7 @@ noncomputable def matrix.counitIsoHomMap (M : ModuleCat M[ι, R]) :
         rw [single_apply_of_ne, single_zero, zero_smul]
         tauto⟩
 
+set_option backward.isDefEq.respectTransparency false in
 @[simps]
 noncomputable def matrix.counitIsoHom :
     fromModuleCatOverMatrix R ι ⋙ toModuleCatOverMatrix R ι ⟶ 𝟭 (ModuleCat M[ι, R]) where
@@ -375,6 +378,7 @@ noncomputable def matrix.counitIsoHom :
     change f (single default i 1 • x) = single default i 1 • f x
     rw [map_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simps]
 noncomputable def matrix.counitIsoInv :
     𝟭 (ModuleCat M[ι, R]) ⟶
@@ -396,6 +400,7 @@ noncomputable def matrix.counitIso :
   hom_inv_id := by ext X x; simp
   inv_hom_id := by ext; simp
 
+set_option backward.isDefEq.respectTransparency false in
 @[simps!]
 noncomputable def moritaEquivalentToMatrix : ModuleCat R ≌ ModuleCat M[ι, R] where
   functor := toModuleCatOverMatrix R ι
@@ -428,6 +433,7 @@ namespace division_ring -- auxilaries for division rings, don't use
 variable (R : Type u) (S : Type u) [DivisionRing R] [DivisionRing S]
 variable (e : ModuleCat.{u} R ≌ ModuleCat.{u} S)
 
+set_option backward.isDefEq.respectTransparency false in
 -- This is a lemma on purpose, **don't** attempt to look at its definition
 lemma division_ring_exists_unique_isSimpleModule
     (S : Type u) [DivisionRing S] (N : Type*) [AddCommGroup N] [Module S N] [IsSimpleModule S N] :
@@ -436,40 +442,36 @@ lemma division_ring_exists_unique_isSimpleModule
   have H := Module.Free.of_divisionRing S N
   rw [Module.free_iff_set] at H
   obtain ⟨s, ⟨b⟩⟩ := H
-  if hs1 : s = ∅
-  then
-    subst hs1
-    have := b.index_nonempty
+  obtain rfl | ⟨i, hi⟩ := s.eq_empty_or_nonempty
+  · have := b.index_nonempty
     simp only [nonempty_subtype, Set.mem_empty_iff_false, exists_const] at this
-  else
-    obtain ⟨i, hi⟩ := Set.nonempty_iff_ne_empty.mpr hs1
-    have eq0 := IsSimpleOrder.eq_bot_or_eq_top (Submodule.span S {b ⟨i, hi⟩}) |>.resolve_left (by
-      intro h
-      simp only [Submodule.span_singleton_eq_bot] at h
-      exact b.ne_zero ⟨i, hi⟩ h)
-    have eq : s = {i} := by
-      refine le_antisymm ?_ (by simpa)
-      simp only [Set.subset_singleton_iff]
-      intro j hj
-      have mem : b ⟨j, hj⟩ ∈ Submodule.span S {b ⟨i, hi⟩} := eq0 ▸ ⟨⟩
-      rw [Submodule.mem_span_singleton] at mem
-      obtain ⟨r, hr⟩ := mem
-      have hr' := congr(b.repr $hr)
-      simp only [LinearMapClass.map_smul, Basis.repr_self, Finsupp.smul_single, smul_eq_mul,
-        mul_one] at hr'
-      by_contra rid
-      have hr' := congr($hr' ⟨i, hi⟩)
-      rw [Finsupp.single_eq_same, Finsupp.single_eq_of_ne (h := by simpa [eq_comm] using rid)]
-        at hr'
-      subst hr'
-      simp only [zero_smul] at hr
-      exact b.ne_zero _ hr.symm |>.elim
-    subst eq
-    refine ⟨b.repr ≪≫ₗ LinearEquiv.ofBijective ⟨⟨fun x => x ⟨i, by simp⟩, ?_⟩, ?_⟩ ⟨?_, ?_⟩⟩
-    · intro x y; simp
-    · intro x y; simp
-    · intro x y hxy; ext; simpa using hxy
-    · intro x; exact ⟨Finsupp.single ⟨i, by simp⟩ x, by simp⟩
+  have eq0 := IsSimpleOrder.eq_bot_or_eq_top (Submodule.span S {b ⟨i, hi⟩}) |>.resolve_left (by
+    intro h
+    simp only [Submodule.span_singleton_eq_bot] at h
+    exact b.ne_zero ⟨i, hi⟩ h)
+  have eq : s = {i} := by
+    refine le_antisymm ?_ (by simpa)
+    simp only [Set.subset_singleton_iff]
+    intro j hj
+    have mem : b ⟨j, hj⟩ ∈ Submodule.span S {b ⟨i, hi⟩} := eq0 ▸ ⟨⟩
+    rw [Submodule.mem_span_singleton] at mem
+    obtain ⟨r, hr⟩ := mem
+    have hr' := congr(b.repr $hr)
+    simp only [LinearMapClass.map_smul, Basis.repr_self, Finsupp.smul_single, smul_eq_mul,
+      mul_one] at hr'
+    by_contra rid
+    have hr' := congr($hr' ⟨i, hi⟩)
+    rw [Finsupp.single_eq_same, Finsupp.single_eq_of_ne (h := by simpa [eq_comm] using rid)]
+      at hr'
+    subst hr'
+    simp only [zero_smul] at hr
+    exact b.ne_zero _ hr.symm |>.elim
+  subst eq
+  refine ⟨b.repr ≪≫ₗ LinearEquiv.ofBijective ⟨⟨fun x => x ⟨i, by simp⟩, ?_⟩, ?_⟩ ⟨?_, ?_⟩⟩
+  · intro x y; simp
+  · intro x y; simp
+  · intro x y hxy; ext; simpa using hxy
+  · intro x; exact ⟨Finsupp.single ⟨i, by simp⟩ x, by simp⟩
 
 instance : e.functor.Additive :=
   Functor.additive_of_preserves_binary_products _
