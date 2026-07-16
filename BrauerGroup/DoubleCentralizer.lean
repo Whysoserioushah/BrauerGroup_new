@@ -192,6 +192,7 @@ section central_simple_case
 variable (F B : Type u) [Field F] [Ring B] [Algebra F B] [Algebra.IsCentral F B] [IsSimpleRing B]
   [FiniteDimensional F B]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma centralizer_mulLeft_le_of_isCentralSimple :
     (Subalgebra.centralizer F (Set.range <| LinearMap.mulLeft F : Set  <| Module.End F B) : Set _) ≤
     Set.range (LinearMap.mulRight F (A := B)) := by
@@ -497,6 +498,7 @@ lemma Subalgebra.finrank_conj (B : Subalgebra F A) (x : Aˣ) :
   rw [LinearEquiv.finrank_eq (Subalgebra.conjEquiv B x).toLinearEquiv]
 
 omit [FiniteDimensional F A] [Algebra.IsCentral F A] [IsSimpleRing A] in
+set_option backward.isDefEq.respectTransparency false in
 lemma Subalgebra.conj_simple_iff {B : Subalgebra F A} {x : Aˣ} :
     IsSimpleOrder (TwoSidedIdeal <| B.conj x) ↔
     IsSimpleOrder (TwoSidedIdeal B) := by

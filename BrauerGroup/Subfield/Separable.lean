@@ -237,6 +237,7 @@ instance (L : SubField K D) : IsScalarTower K L (Subalgebra.centralizer K (A := 
 instance (L : SubField K D) : FiniteDimensional L (Subalgebra.centralizer K (A := D) L) :=
   .of_restrictScalars_finite K _ _
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable abbrev ZCL_equiv_ZCL_map (L : SubField K D) :
     (Subalgebra.center K (Subalgebra.centralizer K (A := D) L)) ≃ₐ[K] Subalgebra.map
       (Subalgebra.centralizer K (A := D) L).val
@@ -275,6 +276,7 @@ lemma SubField.bot_adjoin_coe (a : D) :
     simp
 
 open Subalgebra in
+set_option backward.isDefEq.respectTransparency false in
 theorem exists_sep_masSubfield' : ∃ (a : D), IsMax (SubField.bot_adjoin K D a) ∧
     Algebra.IsSeparable K (SubField.bot_adjoin K D a) := by
   obtain ⟨L, hL⟩ := exists_max_sepSub K D

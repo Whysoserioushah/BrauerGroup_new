@@ -230,6 +230,7 @@ abbrev toModuleOverTensor : TensorModule R A C ⥤ ModuleCat (A ⊗[R] C) where
   map_id M := by ext; simp
   map_comp _ _ := by ext; simp
 
+set_option backward.isDefEq.respectTransparency false in
 abbrev fromModuleOverTensor : ModuleCat (A ⊗[R] C) ⥤ TensorModule R A C where
   obj M := {
     carrier := (ModuleCat.restrictScalars (Algebra.TensorProduct.includeLeftRingHom)).obj M
@@ -273,6 +274,7 @@ abbrev eModunitIso : 𝟭 (TensorModule R A C) ≅ toModuleOverTensor R A C ⋙
     fromModuleOverTensor R A C :=
   NatIso.ofComponents (e01 R A C) <| e01_naturality R A C
 
+set_option backward.isDefEq.respectTransparency false in
 abbrev e02 (M : ModuleCat (A ⊗[R] C)) :
     (fromModuleOverTensor R A C ⋙ toModuleOverTensor R A C).obj M ≅
       (𝟭 (ModuleCat (A ⊗[R] C))).obj M := LinearEquiv.toModuleIso <| by
