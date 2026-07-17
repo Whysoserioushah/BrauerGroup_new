@@ -116,6 +116,29 @@ lemma basis_val (σ : Gal(K/F)) : (basis (f := f) σ).val = .single σ 1 := rfl
 lemma mk_single_one (σ : Gal(K/F)) : mk (.single σ 1) = basis (f := f) σ := rfl
 
 variable (f) in
+/-- The generator `c • u_σ` of the crossed product. Downstream statements and proofs
+should use this and its lemmas rather than the raw `Finsupp` constructor. -/
+def single (σ : Gal(K/F)) (c : K) : CrossProductAlgebra f := ⟨.single σ c⟩
+
+@[simp] lemma val_single (σ : Gal(K/F)) (c : K) : (single f σ c).val = .single σ c := rfl
+
+@[simp] lemma single_zero (σ : Gal(K/F)) : single f σ 0 = 0 := by
+  ext : 1; simp
+
+@[simp] lemma single_add (σ : Gal(K/F)) (c d : K) :
+    single f σ (c + d) = single f σ c + single f σ d := by
+  ext : 1; simp
+
+@[simp] lemma smul_single [Semiring R] [Module R K] (r : R) (σ : Gal(K/F)) (c : K) :
+    r • single f σ c = single f σ (r • c) := by
+  ext : 1; simp
+
+lemma single_one_eq_basis (σ : Gal(K/F)) : single f σ 1 = basis (f := f) σ := rfl
+
+lemma single_eq_smul_basis (σ : Gal(K/F)) (c : K) : single f σ c = c • basis σ := by
+  ext : 1; simp [basis_val]
+
+variable (f) in
 def mulLinearMap : (Gal(K/F) →₀ K) →ₗ[F] (Gal(K/F) →₀ K) →ₗ[F] (Gal(K/F) →₀ K) :=
   Finsupp.lsum F fun σ =>
   { toFun c := Finsupp.lsum F fun τ =>
@@ -147,6 +170,17 @@ lemma mulLinearMap_single_right_apply (c : K) (σ : Gal(K/F)) (x : Gal(K/F) →�
     mulLinearMap f x (.single σ c) τ = x (τ * σ⁻¹) * τ (σ⁻¹ c) * f (τ * σ⁻¹, σ) := by
   classical simp +contextual [mulLinearMap, Finsupp.single_apply, ← eq_mul_inv_iff_mul_eq]
 
+@[elab_as_elim]
+theorem induction_linear {motive : CrossProductAlgebra f → Prop} (x : CrossProductAlgebra f)
+    (zero : motive 0) (add : ∀ x y, motive x → motive y → motive (x + y))
+    (single : ∀ (σ : Gal(K/F)) (c : K), motive (CrossProductAlgebra.single f σ c)) :
+    motive x := by
+  obtain ⟨x⟩ := x
+  induction x using Finsupp.induction_linear with
+  | zero => exact zero
+  | add f g hf hg => exact add ⟨f⟩ ⟨g⟩ hf hg
+  | single σ c => exact single σ c
+
 instance : One (CrossProductAlgebra f) where
   one := ⟨.single 1 (f (1, 1))⁻¹⟩
 
@@ -162,6 +196,14 @@ lemma val_mul (x y : CrossProductAlgebra f) : (x * y).val = mulLinearMap f x.val
 
 @[simp] lemma mk_mul_mk (x y : Gal(K/F) →₀ K) :
     (mk x * mk y : CrossProductAlgebra f) = mk (mulLinearMap f x y) := rfl
+
+lemma one_eq_single : (1 : CrossProductAlgebra f) = single f 1 (f (1, 1))⁻¹ := rfl
+
+variable (f) in
+@[simp]
+lemma single_mul_single (σ τ : Gal(K/F)) (c d : K) :
+    single f σ c * single f τ d = single f (σ * τ) (c * σ d * f (σ, τ)) := by
+  ext : 1; simp
 
 lemma basis_smul_comm (σ : Gal(K/F)) (k1 k2 : K) (x : CrossProductAlgebra f) :
     (k1 • basis (f := f) σ) * (k2 • x) = σ k2 • k1 • basis σ * x := by

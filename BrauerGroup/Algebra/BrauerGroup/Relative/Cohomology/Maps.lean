@@ -41,15 +41,13 @@ public noncomputable def unitsSMulEquiv : CrossProductAlgebra f₂ ≃ₗ[L] Cro
   (basis (f := f₂)).equiv ((basis (f := f₁)).unitsSMul β) (Equiv.refl _)
 
 @[simp]
-public lemma unitsSMulEquiv_mk_single (σ : Gal(L/K)) (c : L) :
-    unitsSMulEquiv (f₁ := f₁) (f₂ := f₂) β (mk (.single σ c)) = mk (.single σ (c * β σ)) := by
-  have h : (mk (.single σ c) : CrossProductAlgebra f₂) = c • basis σ := by
-    ext : 1
-    simp only [val_smul, basis_val, Finsupp.smul_single, smul_eq_mul, mul_one]
-  rw [h, map_smul]
+public lemma unitsSMulEquiv_single (σ : Gal(L/K)) (c : L) :
+    unitsSMulEquiv (f₁ := f₁) (f₂ := f₂) β (single f₂ σ c) = single f₁ σ (c * β σ) := by
+  rw [single_eq_smul_basis, map_smul]
   simp only [unitsSMulEquiv, Basis.equiv_apply, Equiv.refl_apply, Basis.unitsSMul_apply]
   ext : 1
-  simp only [val_smul, Units.smul_def, basis_val, Finsupp.smul_single, smul_eq_mul, mul_one]
+  simp only [val_smul, Units.smul_def, basis_val, val_single, Finsupp.smul_single,
+    smul_eq_mul, mul_one]
 
 public lemma unitsSMulEquiv_map_one
     (hβ : ∀ σ τ, σ • β τ / β (σ * τ) * β σ = f₂ (σ, τ) / f₁ (σ, τ)) :
@@ -61,7 +59,7 @@ public lemma unitsSMulEquiv_map_one
     rw [h11, mul_inv_rev, inv_mul_cancel_right]
   have hc := congrArg Units.val hcoef
   simp only [Units.val_mul, Units.val_inv_eq_inv_val] at hc
-  rw [one_def, unitsSMulEquiv_mk_single]
+  rw [one_eq_single, unitsSMulEquiv_single]
   ext : 1
   rw [val_one]
   exact congrArg (Finsupp.single 1) hc
@@ -70,15 +68,13 @@ public lemma unitsSMulEquiv_map_mul [Fact <| IsMulCocycle₂ f₁] [Fact <| IsMu
     (hβ : ∀ σ τ, σ • β τ / β (σ * τ) * β σ = f₂ (σ, τ) / f₁ (σ, τ))
     (x y : CrossProductAlgebra f₂) :
     unitsSMulEquiv (f₁ := f₁) β (x * y) = unitsSMulEquiv β x * unitsSMulEquiv β y := by
-  obtain ⟨x⟩ := x
-  obtain ⟨y⟩ := y
-  induction x using Finsupp.induction_linear with
+  induction x using induction_linear with
   | zero => simp
-  | add x₁ x₂ ih₁ ih₂ => simp only [← mk_add_mk, add_mul, map_add, ih₁, ih₂]
+  | add x₁ x₂ ih₁ ih₂ => simp only [add_mul, map_add, ih₁, ih₂]
   | single σ a =>
-    induction y using Finsupp.induction_linear with
+    induction y using induction_linear with
     | zero => simp
-    | add y₁ y₂ ih₁ ih₂ => simp only [← mk_add_mk, mul_add, map_add, ih₁, ih₂]
+    | add y₁ y₂ ih₁ ih₂ => simp only [mul_add, map_add, ih₁, ih₂]
     | single τ b =>
       have key : (f₂ (σ, τ) : L) * β (σ * τ) = σ (β τ) * β σ * f₁ (σ, τ) := by
         have h := congrArg Units.val (hβ σ τ)
@@ -86,8 +82,8 @@ public lemma unitsSMulEquiv_map_mul [Fact <| IsMulCocycle₂ f₁] [Fact <| IsMu
           Units.coe_map, MonoidHom.coe_coe] at h
         rw [div_mul_eq_mul_div, div_eq_div_iff (Units.ne_zero _) (Units.ne_zero _)] at h
         exact h.symm
-      simp only [mk_mul_mk, mulLinearMap_single_single, unitsSMulEquiv_mk_single]
-      refine congrArg (fun c ↦ mk (Finsupp.single (σ * τ) c)) ?_
+      simp only [single_mul_single, unitsSMulEquiv_single]
+      refine congrArg (single f₁ (σ * τ)) ?_
       rw [map_mul]
       linear_combination (a * σ b) * key
 

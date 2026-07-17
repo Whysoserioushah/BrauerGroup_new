@@ -105,6 +105,10 @@ def incl : K →ₐ[F] CrossProductAlgebra f where
     simp
   commutes' _ := by ext; simp [Algebra.algebraMap_eq_smul_one]
 
+lemma incl_eq_single (c : K) : incl f c = single f 1 (c * (f (1, 1))⁻¹) := by
+  ext : 1
+  simp [incl_apply]
+
 lemma smul_eq_incl_mul (k : K) (x : CrossProductAlgebra f) : k • x = incl f k * x := by
   obtain ⟨x⟩ := x
   ext : 1

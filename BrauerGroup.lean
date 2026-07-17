@@ -9,6 +9,7 @@ public import BrauerGroup.Algebra.Algebra.Subalgebra.Conj
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Directed
 public import BrauerGroup.Algebra.Algebra.Subalgebra.DivisionRing
 public import BrauerGroup.Algebra.Algebra.Subalgebra.Lattice
+public import BrauerGroup.Algebra.BigOperators.GroupWithZero.Action
 public import BrauerGroup.Algebra.BrauerGroup.AlgClosed
 public import BrauerGroup.Algebra.BrauerGroup.BaseChange
 public import BrauerGroup.Algebra.BrauerGroup.Basic
@@ -18,6 +19,7 @@ public import BrauerGroup.Algebra.BrauerGroup.Galois
 public import BrauerGroup.Algebra.BrauerGroup.Relative.Basic
 public import BrauerGroup.Algebra.BrauerGroup.Relative.Cohomology.FactorSet
 public import BrauerGroup.Algebra.BrauerGroup.Relative.Cohomology.Maps
+public import BrauerGroup.Algebra.BrauerGroup.Relative.Cohomology.Structure
 public import BrauerGroup.Algebra.Central.Matrix
 public import BrauerGroup.Algebra.Central.TensorProduct
 public import BrauerGroup.Algebra.CrossProduct.Basic
@@ -49,7 +51,6 @@ public import BrauerGroup.LinearAlgebra.Matrix.ToLin
 public import BrauerGroup.LinearAlgebra.Quotient.Basic
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Basic
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Directed
-public import BrauerGroup.Algebra.BigOperators.GroupWithZero.Action
 public import BrauerGroup.Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 public import BrauerGroup.Mathlib.RepresentationTheory.Homological.GroupCohomology.LowDegree
 public import BrauerGroup.Mathlib.RingTheory.Congruence.Defs

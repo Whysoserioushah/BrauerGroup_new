@@ -9,13 +9,16 @@
 > The live dashboard Artifact may be tied to an old account; `.claude/brauer-roadmap.html` in
 > this folder is a snapshot of its source and can be re-published as a new Artifact if needed.
 
-Last updated: **2026-07-15** (dashboard rev 60, **57/132 tasks done**, build green 8723 jobs).
-🏁 **FIRST GOAL-A KEYSTONE LANDED: `CyclicAlgebra.mk_eq_one_iff` — a cyclic algebra is split
-iff its parameter is a norm** (`Algebra/BrauerGroup/Cyclic.lean`), cohomology-free end to end.
-Eight tasks landed 2026-07-15: 4.5b/c/d/e, 4.9a/b, 5.5b, plus the W-A `Module.Finite` upgrade.
-Phase-5 remainder is trunk-gated: 5.4 ⇐ 4.8c (via 4.7a–d), 5.6 ⇐ 4.14a/b, 5.7 ⇐ 4.11a–e.
-Open fronts: trunk **4.7a–d** (conjFactor basis → 4.8 structure theorem → 5.4) or **4.14a**
-(inflation) or port wave **6.3a**.
+Last updated: **2026-07-17** (dashboard rev 67, **65/132 tasks done**, build green 8724 jobs).
+🏁 Landed 2026-07-15→17: `CyclicAlgebra.mk_eq_one_iff` (split iff norm, first Goal-A
+keystone), the whole **4.7 basis arc**, the **4.8 STRUCTURE THEOREM**
+(`GoodRep.compareAlgEquiv` + `mk_crossProduct_factorSet` + `mk_congr_cocycle`), **5.4**
+(`exists_mk_cyclicAlgebra_eq` — every Br(L/K) class over cyclic L/K is a cyclic algebra),
+and the **`CrossProductAlgebra.single` kit + `induction_linear`** (swept repo-wide).
+With 5.5b, both halves of level-iso 6.8's algebra side are done.
+Phase-5 remainder: only 5.6 ⇐ 4.14a/b and 5.7 ⇐ 4.11a–e.
+Open fronts: **4.14a** (inflation I — easier than 4.11, unlocks 5.6/8.2b/B.7), the **4.11
+bimodule arc**, or port wave **6.3a**.
 
 ---
 
@@ -134,6 +137,13 @@ Declared milestones: 3.12 ✓ · 6.8 · 7.10 · 8.3 · B.5 · B.8.
   IsCentral/IsSimpleRing under `[Fact (IsMulCocycle₂ f)]`.
   **`of_one`/`of_mul_of` are CARRIER-level equations** — for a units-level goal do
   `Units.ext` then `Units.val_mul` first.
+  **Generator API (2026-07-17)**: `CrossProductAlgebra.single f σ c` (+ `val_single`,
+  `single_zero/add`, `smul_single`, `single_one_eq_basis`, `single_eq_smul_basis`,
+  `one_eq_single`, `single_mul_single` — the last is Fact-FREE, in Basic.lean) and
+  `CrossProductAlgebra.induction_linear` (@[elab_as_elim], cases zero/add/single at CPA
+  level) — never write `⟨.single σ c⟩` / `mk (.single σ c)` or induct on `.val` in consumer
+  files anymore; `incl_eq_single` in CentralSimple.lean. Defining-file internals stay at
+  Finsupp level; `one_def`/`mk_single_one` kept verbatim for legacy (IsoSecond).
 - **FactorSet layer** (`Algebra/BrauerGroup/Relative/Cohomology/FactorSet.lean`):
   `GoodRep L x` (ι : L →ₐ[K] carrier; `Algebra L carrier` is IMPOSSIBLE in a K-central
   algebra), `self_centralize`, `conjFactor A σ`, `conjFactor_rel` (∃!),
@@ -143,7 +153,14 @@ Declared milestones: 3.12 ✓ · 6.8 · 7.10 · 8.3 · B.5 · B.8.
   `powUnitL`, `powScalar : Kˣ`, `factorSet_powFamily`; §comparison:
   `GoodRep.exists_algEquiv_ι` (any two GoodReps of x isomorphic intertwining the ι's,
   stated at `GoodRep.{v}` — the skolemNoether same-universe pin), `conjFactor.map` +
-  `factorSet_map` (transport preserves the factor set on the nose).
+  `factorSet_map` (transport preserves the factor set on the nose); §canonical:
+  `GoodRep.ofCrossProduct`/`ofFamily`/`factorSet_ofFamily`.
+- **Structure layer** (`Relative/Cohomology/Structure.lean`): `GoodRep.lmodule` L-action kit
+  (LOCAL instances only — global would diamond with concrete carriers' native L-actions),
+  `finrank_ι`, `conjFactor_coeff` (Dedekind), `linearIndependent_conjFactor`,
+  `conjFactorBasis`, `compareEquiv` (+ basis/single kit), `compareAlgEquiv` (STRUCTURE
+  THEOREM), `mk_crossProduct_factorSet`, `CrossProductAlgebra.mk_congr_cocycle`,
+  `exists_mk_cyclicAlgebra_eq` (5.4).
 - **Maps** (`Relative/Cohomology/Maps.lean`): `IsMulCocycle₂.toRelBr`, `equivOfCoboundary`,
   `relativeBrGroup.fromCocycles₂/fromH2` + `fromH2_H2π` (@[simp] spec — downstream uses ONLY
   this), `groupCohomology.H2π_surjective`.
@@ -309,13 +326,13 @@ Full mirror of the dashboard `TASKS` array. `[x]` = done (ground-truth build gre
 - [x] **4.5c** Skolem–Noether alignment — Done 2026-07-15: `GoodRep.exists_algEquiv_ι` (FactorSet.lean §comparison); 4.5b on the `quot_eq`/`dim_eq_sq` projections + `skolemNoether` correction via `MulSemiringAction.toAlgEquiv (ConjAct.toConjAct u)`. `GoodRep.{v}` pin kept (Subsingleton-split bypass analyzed and rejected; ULift / two-universe skolemNoether are the real escape hatches if ever needed).
 - [x] **4.5d** factorSet transport — Done 2026-07-15 (Edison): `conjFactor.map` (+ `@[simp] map_val`) and `factorSet_map` in §comparison; transported family has the SAME factor set on the nose. No universe pin (same x forces same universe via `quot_eq`). Gotcha: `← map_inv` before `Units.coe_map`.
 - [x] **4.5e** Cross-GoodRep coboundary comparison — Done 2026-07-15 (Edison): `isMulCoboundary₂_factorSet_div'` in §comparison, 3 lines (`exists_algEquiv_ι` + `rw [← factorSet_map]` + 4.5a). **Chain closed.**
-- [ ] **4.7a** `Module L A.carrier` via compHom along ι (letI discipline) + `finrank_ι`. 1–2 steps.
-- [ ] **4.7b** Dedekind coefficient lemma — expand ι(σc)·u_σ two ways, compare coefficients. 2–3 steps.
-- [ ] **4.7c** conjFactor units L-linearly independent — maximal `linearIndepOn` subfamily + 4.7b. 3 steps.
-- [ ] **4.7d** `conjFactorBasis` — `basisOfLinearIndependentOfCardEqFinrank` + card_aut. 1 step.
-- [ ] **4.8a** Comparison linear equiv `CPA (factorSet A b) ≃ₗ[L] A.carrier` (Basis.equiv; restrictScalars via CompatibleSMul). 2 steps.
-- [ ] **4.8b** Multiplicativity: AlgEquiv.ofLinearEquiv — basis_mul_basis vs factorSet_spec match verbatim. 3 steps.
-- [ ] **4.8c** Structure-theorem corollary `mk K (CPA (factorSet A b)) = x`. 1 step. **← gates 5.4**
+- [x] **4.7a** L-module kit — Done 2026-07-15 (Edison): NEW `Relative/Cohomology/Structure.lean` (4.7+4.8 home, not in root yet): `GoodRep.lmodule` + `lsmul_def` + tower/finiteness + `finrank_ι`, all `attribute [local instance]` only (global would diamond with CPA's native L-action).
+- [x] **4.7b** Dedekind coefficient lemma — Done 2026-07-15 (Edison): `GoodRep.conjFactor_coeff` (Structure.lean); Finsupp shape matched to `linearIndepOn_iff`, τ-dependent family via `Finsupp.onFinset`.
+- [x] **4.7c** conjFactor independence — Done 2026-07-15 (Edison): `GoodRep.linearIndependent_conjFactor`, 23 lines, finiteness-free (maximal `linearIndepOn` subfamily + field rescale + 4.7b + `mul_right_cancel₀`).
+- [x] **4.7d** `conjFactorBasis` — Done 2026-07-15 (Edison): + `@[simp] conjFactorBasis_apply`. **4.7 complete: A = ⊕_σ L·u_σ.**
+- [x] **4.8a** Comparison linear equiv — Done 2026-07-16 (Edison): `GoodRep.compareEquiv` + basis/single apply kit (Structure.lean); no Fact needed, restrictScalars free via the generic CPA tower instance.
+- [x] **4.8b** Multiplicativity — Done 2026-07-17 (Edison): `GoodRep.compareAlgEquiv`, THE STRUCTURE THEOREM; double `induction_linear` + `single` kit, ~14 lines. Global `Fact (IsMulCocycle₂ (factorSet A b))` instance declared.
+- [x] **4.8c** Structure-theorem corollary — Done 2026-07-17 (Edison): `GoodRep.mk_crossProduct_factorSet` + the `mk_congr_cocycle` shield (`subst h; rfl`) for cocycle-rewrites under `mk`.
 - [x] **4.9a** CPA as its own GoodRep — Done 2026-07-15 (Edison): `GoodRep.ofCrossProduct f (h : mk K (CPA f) = x)` (h-parameterized — lets two CPAs sit over one class) + `ofFamily` + `@[simp] ofFamily_val`, FactorSet.lean §canonical.
 - [x] **4.9b** factorSet of canonical conjFactors = f — Done 2026-07-15 (Edison): `factorSet_ofFamily`, 3 lines (`of_mul_of` IS the obligation).
 - [x] **4.10** `fromH2 : H² → relativeBrGroup` on H2 itself (`Maps.lean`) — toRelBr, equivOfCoboundary, fromH2_H2π spec; H2π_surjective 1-liner (PR candidate). NO H2Iso/moduleCatLeftHomologyData anywhere.
@@ -332,7 +349,7 @@ Full mirror of the dashboard `TASKS` array. `[x]` = done (ground-truth build gre
 - [x] **5.1** `CyclicAlgebra (σ, a)` := CPA of the carry cocycle — `CyclicIndex.lean` + `CrossProduct/Cyclic.lean`; presentation `of_pow_eq_of`, `of_pow_orderOf` (σ ≠ 1!).
 - [x] **5.2** CPA(1) ≅ `End K L` + `BrauerGroup.mk_one_eq_one` (`BrauerGroup/Cyclic.lean`, Edison) + oneEquivEnd calc kit.
 - [x] **5.3** Power family uⁱ + `powScalar` + `factorSet_powFamily` (`FactorSet.lean` §cyclic, Edison + carry-case fill) — ℤ-power induction, no finiteness in descent.
-- [ ] **5.4** Every class in Br(L/K) cyclic (L/K cyclic) — GoodRep.nonempty + conjFactor at σ + 5.3 + **4.8c**: x = mk (CyclicAlgebra σ uⁿ). 2 steps.
+- [x] **5.4** Every class in Br(L/K) cyclic — Done 2026-07-17 (Edison): `exists_mk_cyclicAlgebra_eq` (Structure.lean, single universe from `GoodRep.nonempty`), witness `powScalar σ hσ A u`, 6 lines.
 - [x] **5.5a** Cyclic coboundary ⟺ norm — `isMulCoboundary₂_cyclicCocycle_iff` + `_div_iff`; P0/P1/P2 prep, coboundary_aux telescope, recurrence + (σⁿ⁻¹,σ) evaluation, Units.map_injective. Build 8723.
 - [x] **5.5b** 🏁 Split iff norm — Done 2026-07-15 (Edison): `CyclicAlgebra.mk_eq_one_iff` in `Algebra/BrauerGroup/Cyclic.lean`; `rw [← isMulCoboundary₂_cyclicCocycle_iff]` up front, (⇒) via 4.5e + 4.9 with the CPA(1) GoodRep in the first slot, (⇐) via `equivOfCoboundary` + `mk_one_eq_one`. File slimmed to 6 imports by #min_imports.
 - [ ] **5.6** Cyclic inflation formula [(L/K,σ,a)] = [(L′/K,σ′,a^{[L′:L]})] — explicit coboundary β(σ′ⁱ) = a^⌊i/n⌋ + **4.14b**. Feeds 8.2b. 2–3 steps.
