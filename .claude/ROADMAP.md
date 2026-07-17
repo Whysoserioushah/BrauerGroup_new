@@ -471,3 +471,4 @@ B.5 itself · `Subfield.centralizer` idea.
 | 2026-07-14 | f831c29 | b6afa84→now batch: CrossProduct split, galAct removal, Relative rehoming, Maps/FactorSet/Embedding, CyclicIndex, cyclic layer, test.lean, min_imports + mk_all (4.13) |
 | 2026-07-14 | 39ff8ce | 5.5a proof + P0 + `prod_range_add_pow_smul` shim (at `Algebra/BigOperators/`) + `.claude/ROADMAP.md` + dashboard snapshot + .gitignore exceptions |
 | 2026-07-15 | ba259cd | The whole day's batch: 4.5b/c/d/e comparison chain (+ `Module.Finite k D` in common_divisionring, `WedderburnArtin.lean` rename), 4.9a/b canonical GoodRep, 🏁 5.5b `CyclicAlgebra.mk_eq_one_iff` (split iff norm), #min_imports pass |
+| 2026-07-17 | 9297f81 | 4.7a–d basis arc + 4.8a–c STRUCTURE THEOREM (new `Structure.lean`) + 5.4 cyclic surjectivity + `CrossProductAlgebra.single` kit & `induction_linear` repo sweep + mk_all root wiring |
