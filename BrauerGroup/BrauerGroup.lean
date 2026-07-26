@@ -353,6 +353,7 @@ def e5 (e : A ≃ₐ[K] B) : (E ⊗[K] A) ≃ₐ[E] (E ⊗[K] B) :=
 
 set_option maxHeartbeats 800000 in
 -- FIXME: Get rid of the raised heartbeats
+set_option backward.isDefEq.respectTransparency false in
 def e6Aux0 : (E ⊗[K] A) ⊗[E] (E ⊗[K] B) →ₐ[E] E ⊗[K] (A ⊗[K] B) :=
   Algebra.TensorProduct.lift
     (Algebra.TensorProduct.lift
@@ -416,6 +417,7 @@ def e6Aux0 : (E ⊗[K] A) ⊗[E] (E ⊗[K] B) →ₐ[E] E ⊗[K] (A ⊗[K] B) :=
         rw [mul_comm]
 
 -- e6: equivalence (E ⊗[K] A) ⊗[E] (E ⊗[K] B) ≃ₐ[E] E ⊗[K] (A ⊗[K] B)
+set_option backward.isDefEq.respectTransparency false in
 def e6 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A]
     [Algebra.IsCentral K B] [csa_B : IsSimpleRing B] :
     (E ⊗[K] A) ⊗[E] (E ⊗[K] B) ≃ₐ[E] E ⊗[K] (A ⊗[K] B) :=

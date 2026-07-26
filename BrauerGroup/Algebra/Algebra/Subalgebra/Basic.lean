@@ -13,4 +13,4 @@ variable {R₀ R S A B : Type*} [CommSemiring R₀] [CommSemiring R] [CommSemiri
 def Subalgebra.centerCongr (e : A ≃ₐ[R₀] B) : Subalgebra.center R A ≃ₐ[R₀]
     Subalgebra.center S B where
   __ := Subsemiring.centerCongr e.toRingEquiv
-  commutes' r := by ext; simp
+  commutes' r := by ext; exact e.commutes r

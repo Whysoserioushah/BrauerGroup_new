@@ -747,6 +747,7 @@ instance : SMulCommClass C F SM where
 
 section C_iso
 
+set_option backward.isDefEq.respectTransparency false in
 def isoDagger (m : ℕ) [NeZero m] :
     Module.End C (Fin m → SM) ≃ₐ[F] Matrix (Fin m) (Fin m) (Module.End C SM) where
   __ := endVecAlgEquivMatrixEnd (Fin m) ℤ C SM

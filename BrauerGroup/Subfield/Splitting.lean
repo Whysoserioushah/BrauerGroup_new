@@ -103,7 +103,8 @@ lemma exists_embedding_of_isSplit [FiniteDimensional F K] (A : CSA F) (split : i
     apply Quotient.sound'
     exact ⟨1, Module.finrank F (Fin n → K), one_ne_zero, by aesop, ⟨(dim_one_iso _).trans iso⟩⟩
   · change Module.finrank F K ^ 2 = Module.finrank F B
-    have dim_eq1 : Module.finrank F B * _ = _ := Subalgebra.finrank_centralizer_mul_finrank (F := F) emb.range
+    have dim_eq1 : Module.finrank F B * _ = _ :=
+      Subalgebra.finrank_centralizer_mul_finrank (F := F) emb.range
     rw [Module.finrank_linearMap, show Module.finrank F (Fin n → K) =
       Module.finrank F K * Module.finrank K (Fin n → K) from
       (Module.finrank_mul_finrank F K (Fin n → K)).symm, Module.finrank_fin_fun,

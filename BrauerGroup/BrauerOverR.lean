@@ -48,6 +48,7 @@ abbrev toEnd : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] →ₐ[ℝ] Module.End ℝ (ℍ[ℝ]) 
     algebraMap_def, lift.tmul, LinearMap.coe_mk, AddHom.coe_mk, star_one, _root_.mul_one,
     Module.algebraMap_end_apply]; exact coe_mul_eq_smul r _
 
+set_option backward.isDefEq.respectTransparency false in
 instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
   rw [Subalgebra.mem_center_iff] at hq
   change ∃(_ : _), _ = _
@@ -233,6 +234,7 @@ abbrev C2toBrauerOverR : ZMod 2 →+ Additive (BrauerGroup ℝ) where
     change IsBrauerEquivalent _ ⟨.of ℝ (ℍ[ℝ] ⊗[ℝ] ℍ[ℝ])⟩
     exact QuaternionTensorEquivOne.symm
 
+set_option backward.isDefEq.respectTransparency false in
 lemma toC2.left_inv : Function.LeftInverse C2toBrauerOverR toC2 := fun A ↦ by
   induction A using Quotient.inductionOn' with | h A
   obtain h1 | h2 := BrauerOverR A

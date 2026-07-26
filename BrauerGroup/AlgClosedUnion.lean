@@ -114,7 +114,7 @@ omit [IsAlgClosure K K_bar] in
 lemma SetOfFinite_nonempty : (Set.range fun (L : SetOfFinite K K_bar) ↦
     intermediateTensor K K_bar A L).Nonempty := by
   refine ⟨intermediateTensor K K_bar A ⊥, ⟨⟨⊥, ?_⟩, rfl⟩⟩
-  simp only [SetOfFinite, Set.mem_setOf_eq]
+  simp only [SetOfFinite, Set.mem_ofPred_eq]
   infer_instance
 
 /-- K_bar ⊗[K] A = union of all finite subextension of K ⊗ A -/
@@ -275,6 +275,7 @@ lemma comm_triangle :
   rfl
 
 set_option backward.isDefEq.respectTransparency false in
+omit [FiniteDimensional k A] in
 /--
 intermidateTensor ----> M_n(ℒ)
   | val                 | inclusion'
@@ -307,6 +308,7 @@ lemma comm_square' :
     algebraMap ℒ k_bar ((if i.1 = a ∧ i.2 = b then 1 else 0) : ℒ)
   simp
 
+omit [FiniteDimensional k A] in
 /-- This shows the following diagram commutes:
      isoRestrict
   ℒ ⊗_k A -----> M_n(ℒ)
@@ -323,6 +325,7 @@ lemma comm_square :
   rw [← comm_triangle n k k_bar A iso, ← LinearMap.comp_assoc, comm_square' n k k_bar A iso]
   rfl
 
+omit [FiniteDimensional k A] in
 lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   /-
         isoRestrict
@@ -348,6 +351,7 @@ lemma isoRestrict_map_one : isoRestrict' n k k⁻ A iso 1 = 1 := by
   refine inclusion'_injective n k k_bar A iso (eq.trans ?_)
   rw [_root_.map_one]
 
+omit [FiniteDimensional k A] in
 lemma isoRestrict_map_mul (x y : ℒ ⊗[k] A) :
     isoRestrict' n k k⁻ A iso (x * y) =
     isoRestrict' n k k⁻ A iso x * isoRestrict' n k k⁻ A iso y := by

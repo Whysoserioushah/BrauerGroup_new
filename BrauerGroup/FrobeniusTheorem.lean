@@ -87,6 +87,7 @@ abbrev f : k →ₐ[ℝ] k where
         Complex.ofReal_im, mul_one, add_zero]]
     rw [_root_.map_smul, show ⟨1, 0⟩ = (1 : ℂ) by rfl, _root_.map_one]
 
+omit hD' in
 lemma f_injective : Function.Injective (f k e) := by
   intro x y h
   simp only [AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
@@ -96,14 +97,17 @@ lemma f_injective : Function.Injective (f k e) := by
   apply e.injective
   exact h
 
+omit hD' in
 @[simp]
 lemma f_apply (x : k) : f k e x = e.symm (conj (e x)) := rfl
 
+omit hD' in
 lemma f_apply_apply (z : ℂ) : f k e (e.symm z) = e.symm (conj z) := by
   rw [f_apply]
   congr
   exact AlgEquiv.apply_symm_apply e z
 
+omit hD' in
 lemma linindep_one_xsq (x : Dˣ) (hxx : ¬x.1 ^ 2 ∈ Subalgebra.center ℝ D) :
     LinearIndependent ℝ ![(1 : D), x.1^2] := by
   rw [LinearIndependent.pair_iff]
@@ -133,6 +137,7 @@ lemma linindep_one_xsq (x : Dˣ) (hxx : ¬x.1 ^ 2 ∈ Subalgebra.center ℝ D) :
         simp only [Algebra.mul_smul_comm, mul_one, Algebra.smul_mul_assoc, one_mul]
       exact hxx this
 
+omit hD' in
 lemma x2_comm_k (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z) :
     ∀ (y : k), x.1^2 * k.val y = k.val y * x.1^2 := by
   have hx2 := hx
@@ -153,10 +158,12 @@ lemma x2_comm_k (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z) :
     ← pow_two, mul_assoc, ← pow_two] at this
   exact this
 
+omit hD' in
 lemma i_mul_i : (e.symm ⟨0, 1⟩ : D) * e.symm ⟨0, 1⟩ = (-1 : ℝ) • 1 := by
   rw [← Subalgebra.coe_mul, ← _root_.map_mul e.symm, ← Complex.I, Complex.I_mul_I, map_neg,
     map_one, Subalgebra.coe_neg, Subalgebra.coe_one]; simp
 
+omit hD' in
 lemma i_ne_zero : (e.symm ⟨0, 1⟩ : D) ≠ 0 := by
   intro h
   change _ = ((0 : k) : D) at h
@@ -165,6 +172,7 @@ lemma i_ne_zero : (e.symm ⟨0, 1⟩ : D) ≠ 0 := by
   obtain ⟨_, h⟩ := h
   simp only [Complex.zero_im, one_ne_zero] at h
 
+omit hD' in
 set_option backward.isDefEq.respectTransparency false in
 lemma linindep1i :
     LinearIndependent ℝ ![(1 : D), ↑(e.symm { re := 0, im := 1 })] := by
@@ -359,7 +367,7 @@ lemma x_is_in_V (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x.1 = k.val z)
         smul_eq_zero] at hx31; aesop
     · simp only [inv_eq_zero, Units.ne_zero, ZeroMemClass.coe_eq_zero,
       EmbeddingLike.map_eq_zero_iff, Complex.I_ne_zero, or_self] at hx32
-  simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
+  simp_all only [Set.mem_ofPred_eq, false_or, RingHom.mem_range, not_exists]
 
 -- instance : NoZeroSMulDivisors ℝ D := inferInstance
 

@@ -44,12 +44,12 @@ lemma BrauerGroup.split_iff (A : CSA F) : isSplit F A K ↔
     rintro ⟨n, hn, ⟨iso⟩⟩
     simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk'']
     change _ = Quotient.mk'' _
-    simp only [Quotient.eq'', one_in']
+    simp only [Quotient.eq'']
     exact ⟨1, n, one_ne_zero, hn.1, ⟨dim_one_iso (K ⊗[F] A) |>.trans iso⟩⟩,
     fun hA ↦ by
       simp only [MonoidHom.coe_mk, OneHom.coe_mk, Quotient.map'_mk''] at hA
       change _ = Quotient.mk'' _ at hA
-      simp only [Quotient.eq'', one_in'] at hA
+      simp only [Quotient.eq''] at hA
       change IsBrauerEquivalent _ _ at hA
       obtain ⟨n, m, hn, hm, ⟨iso⟩⟩ := hA
       let p : ℕ := Wedderburn_Artin_algebra_version K (K ⊗[F] A)|>.choose

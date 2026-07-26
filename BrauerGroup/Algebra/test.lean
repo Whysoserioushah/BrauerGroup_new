@@ -15,8 +15,9 @@ public import Mathlib
   `ValuativeRel.IsNontrivial ℚ_[p]` are already instances in mathlib. The only missing parent is
   `IsValuativeTopology ℚ_[p]` — mathlib does *not* provide it (the `ValuativeRel ℚ_[p]` instance is
   built from `Padic.mulValuation`, but the norm-topology = valuation-topology bridge is a `TODO` in
-  `Mathlib/NumberTheory/Padics/ValuativeRel.lean`). We prove it below via `IsValuativeTopology.of_zero`
-  and the dictionary `‖x‖ = p ^ log (mulValuation x)`. Task 1 is then just assembly.
+  `Mathlib/NumberTheory/Padics/ValuativeRel.lean`). We prove it below via
+  `IsValuativeTopology.of_zero` and the dictionary `‖x‖ = p ^ log (mulValuation x)`. Task 1 is then
+  just assembly.
 
 * **Task 2** (finite extensions): the statement *as originally written* is **not provable** (see the
   note above `isNonarch_of_finiteDimensional`); with the compatibility hypotheses that make it true
@@ -67,7 +68,7 @@ instance : IsValuativeTopology ℚ_[p] := by
     refine ⟨Units.mk0 (valuation ℚ_[p] a) (by simpa [valuation_eq_zero_iff] using ha0'), ?_⟩
     intro z hz
     apply hεs
-    simp only [Units.val_mk0, mem_setOf_eq, valuation_lt_iff_norm_lt] at hz
+    simp only [Units.val_mk0, mem_ofPred_eq, valuation_lt_iff_norm_lt] at hz
     exact mem_ball_zero_iff.mpr (hz.trans haε)
   · -- conversely each valuation-ball is a norm ball `ball 0 ‖a‖`, hence a neighbourhood of `0`.
     rintro ⟨γ, hγ⟩
@@ -80,7 +81,7 @@ instance : IsValuativeTopology ℚ_[p] := by
     have hset : {z : ℚ_[p] | valuation ℚ_[p] z < (γ : ValueGroupWithZero ℚ_[p])}
         = Metric.ball 0 ‖a‖ := by
       ext z
-      simp only [mem_setOf_eq, ← ha, valuation_lt_iff_norm_lt, mem_ball_zero_iff]
+      simp only [mem_ofPred_eq, ← ha, valuation_lt_iff_norm_lt, mem_ball_zero_iff]
     rw [hset]
     exact Metric.ball_mem_nhds 0 (norm_pos_iff.mpr ha0)
 
@@ -101,8 +102,9 @@ lemma isNonarch_of_findim (K L : Type*) [Field K] [Field L] [Algebra K L] [Finit
     [TopologicalSpace L] : IsNonarchimedeanLocalField L
 ```
 is **false as stated**: `[ValuativeRel L]` and `[TopologicalSpace L]` are unconstrained, so `L` may
-carry a valuation/topology *unrelated* to `K` (e.g. the trivial valuation, or the discrete topology),
-and then all three conclusions fail. In fact `IsValuativeTopology L` is genuinely false unless
+carry a valuation/topology *unrelated* to `K` (e.g. the trivial valuation, or the discrete
+topology), and then all three conclusions fail. In fact `IsValuativeTopology L` is genuinely false
+unless
 `L`'s valuation has rank `≤ 1`: a rank-`2` valuation extending `K`'s satisfies `ValuativeExtension`
 and `IsModuleTopology` yet its valuation topology is strictly finer than the module topology. So the
 honest hypotheses that make the theorem *true* are:
@@ -113,17 +115,18 @@ honest hypotheses that make the theorem *true* are:
   but not available from the `ValuativeExtension` API, which only transfers rank downward);
 * a uniformity on `K` (`[UniformSpace K] [IsUniformAddGroup K]`) to access `CompleteSpace K`.
 
-The proof has three parts: nontriviality transfers up the value-group embedding; local compactness is
-`LocallyCompactSpace.of_finiteDimensional_of_complete` over the (normed) field `K`; and the valuative
-topology is identified with the given one by showing both are the `K`-module topology — the module
-topology via `IsModuleTopology`, the valuation topology via `isModuleTopologyOfFiniteDimensional`,
-whose hypotheses (`T2`, `IsTopologicalAddGroup`, `ContinuousSMul`) hold because `K`'s value scale is
-cofinal below every element of `L`'s (this is where `IsRankLeOne L` is essential).
+The proof has three parts: nontriviality transfers up the value-group embedding; local compactness
+is `LocallyCompactSpace.of_finiteDimensional_of_complete` over the (normed) field `K`; and the
+valuative topology is identified with the given one by showing both are the `K`-module topology —
+the module topology via `IsModuleTopology`, the valuation topology via
+`isModuleTopologyOfFiniteDimensional`, whose hypotheses (`T2`, `IsTopologicalAddGroup`,
+`ContinuousSMul`) hold because `K`'s value scale is cofinal below every element of `L`'s (this is
+where `IsRankLeOne L` is essential).
 -/
 
 /-- **Task 2 (corrected):** a finite extension `L` of a nonarchimedean local field `K`, carrying the
-compatible valuation (`ValuativeExtension K L`), the `K`-module topology (`IsModuleTopology K L`), and
-a rank-`≤ 1` valuation, is itself a nonarchimedean local field. -/
+compatible valuation (`ValuativeExtension K L`), the `K`-module topology (`IsModuleTopology K L`),
+and a rank-`≤ 1` valuation, is itself a nonarchimedean local field. -/
 lemma isNonarch_of_finiteDimensional
     (K L : Type*) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
     [ValuativeRel K] [UniformSpace K] [IsUniformAddGroup K] [IsNonarchimedeanLocalField K]
@@ -134,8 +137,10 @@ lemma isNonarch_of_finiteDimensional
   haveI : ValuativeRel.IsNontrivial L := by
     obtain ⟨a, ha0, ha1⟩ := (inferInstance : ValuativeRel.IsNontrivial K).condition
     refine ⟨⟨ValuativeExtension.mapValueGroupWithZero K L a, ?_, ?_⟩⟩
-    · simpa using (ValuativeExtension.mapValueGroupWithZero_strictMono (A := K) (B := L)).injective.ne ha0
-    · simpa using (ValuativeExtension.mapValueGroupWithZero_strictMono (A := K) (B := L)).injective.ne ha1
+    · simpa using
+        (ValuativeExtension.mapValueGroupWithZero_strictMono (A := K) (B := L)).injective.ne ha0
+    · simpa using
+        (ValuativeExtension.mapValueGroupWithZero_strictMono (A := K) (B := L)).injective.ne ha1
   -- (d) Local compactness of `L`: `K` is a complete, locally compact nontrivially normed field
   -- (its norm topology is defeq to the given one), and `L` is finite-dimensional over it.
   haveI : LocallyCompactSpace L := by
@@ -170,7 +175,8 @@ lemma isNonarch_of_finiteDimensional
             fun y hy => by simpa using hy⟩
         haveI a3 : ContinuousSMul K L := by
           -- `algebraMap K L` is continuous: `K`'s valuation balls map into `L`'s, because `K`'s
-          -- value scale is cofinal below every `γ ∈ (ValueGroupWithZero L)ˣ` (needs `IsRankLeOne L`).
+          -- value scale is cofinal below every `γ ∈ (ValueGroupWithZero L)ˣ` (needs
+          -- `IsRankLeOne L`).
           have halg : Continuous (algebraMap K L) := by
             apply continuous_of_continuousAt_zero (algebraMap K L : K →+ L)
             unfold ContinuousAt
@@ -191,8 +197,8 @@ lemma isNonarch_of_finiteDimensional
             obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one hγ0 hemc1
             refine ⟨Units.mk0 (c ^ n) (pow_ne_zero n hc0.ne'), trivial, ?_⟩
             intro k hk
-            simp only [Set.mem_setOf_eq, Units.val_mk0] at hk ⊢
-            show valuation L (algebraMap K L k) < (γ : ValueGroupWithZero L)
+            simp only [Set.mem_ofPred_eq, Units.val_mk0] at hk ⊢
+            change valuation L (algebraMap K L k) < (γ : ValueGroupWithZero L)
             rw [← ValuativeExtension.mapValueGroupWithZero_valuation, ← fL.strictMono.lt_iff_lt]
             calc fL.emb (ValuativeExtension.mapValueGroupWithZero K L (valuation K k))
                 < fL.emb (ValuativeExtension.mapValueGroupWithZero K L (c ^ n)) :=

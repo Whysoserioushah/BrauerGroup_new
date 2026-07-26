@@ -40,6 +40,7 @@ variable (K F E K_bar F_bar A : Type*) [Field K] [Field F] [Field E] [Field F_ba
 
 section defs
 
+set_option backward.isDefEq.respectTransparency false in
 variable {K F E} in
 @[simps]
 def φ_m (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) F →ₐ[K] Matrix (Fin n) (Fin n) E where
@@ -58,6 +59,7 @@ variable {K F E} in
 lemma φ_m_inj (φ : F →ₐ[K] E) : Function.Injective (φ_m n φ) := fun M N h ↦ funext fun i ↦
   funext fun j ↦ by rw [← Matrix.ext_iff] at h; exact φ.injective (h i j)
 
+set_option backward.isDefEq.respectTransparency false in
 variable {K F E} in
 abbrev e1Aux (φ : F →ₐ[K] E) : Matrix (Fin n) (Fin n) φ.range ≃ₐ[K] (φ_m n φ).range where
   toFun M := ⟨(M · · |>.1), fun i j ↦ M i j |>.2.choose, by ext i j; exact M i j|>.2.choose_spec⟩
@@ -109,6 +111,7 @@ abbrev g (φ : F →ₐ[K] E) : E ⊗[K] A ≃ₐ[E] Matrix (Fin n) (Fin n) E :=
 
 end defs
 
+set_option backward.isDefEq.respectTransparency false in
 variable {K E F} in
 omit [NeZero n] [Algebra.IsCentral K A] [IsSimpleRing A] in
 lemma mat_over_extension (φ : F →ₐ[K] E) (a : A) :

@@ -39,7 +39,9 @@ abbrev toTensorMatrix_toFun_Klinear : K ⊗[F] Matrix n n A →ₗ[K] Matrix n n
 
 abbrev toTensorMatrix : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) := by
   refine .ofLinearMap (toTensorMatrix_toFun_Klinear K F A n)
-    (by simp [Algebra.TensorProduct.one_def]) fun t1 t2 ↦ ?_
+    (by simp only [Algebra.TensorProduct.one_def, LinearMap.coe_mk, TensorProduct.lift.tmul',
+          toTensorMatrix_toFun_bilinear_apply, AlgHom.mapMatrix_apply, one_smul]
+        exact Matrix.map_one _ (map_zero _) (map_one _)) fun t1 t2 ↦ ?_
   induction t1 with
   | zero => simp
   | add _ _ h1 h2 => simp_all [add_mul]
