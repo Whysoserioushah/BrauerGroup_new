@@ -520,8 +520,8 @@ lemma TensorProduct.map_comap_eq_of_isSimple_isCentralSimple
           conv_rhs => rw [← mem]
           congr 1
           refine Finset.sum_congr rfl fun i _ => ?_
-          rw [dif_pos i.2]) i₀ hi₀
-        rw [if_pos rfl] at LI
+          rw [dite_eq_left i.2]) i₀ hi₀
+        rw [ite_eq_left rfl] at LI
         exact zero_ne_one LI.symm
       rw [hI, TwoSidedIdeal.coe_top_set, TwoSidedIdeal.le_iff]
       rintro x -
