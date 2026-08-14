@@ -580,7 +580,7 @@ def Aox_KBToM : A ⊗[K] B →ₗ[F] M α β where
       simp only [smul_zero, map_zero,
         RingHom.id_apply]
 
-def Aox_KBEquivM : M α β ≃ₗ[F] A ⊗[K] B := .ofLinear MtoAox_KB Aox_KBToM
+def Aox_KBEquivM : M α β ≃ₗ[F] A ⊗[K] B := .ofLinearMap MtoAox_KB Aox_KBToM
   (by
     ext x
     induction x using TensorProduct.induction_on with
