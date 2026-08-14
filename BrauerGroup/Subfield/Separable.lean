@@ -1,7 +1,6 @@
 module
 
 public import BrauerGroup.Mathlib.Algebra.Algebra.Subalgebra.Lattice
-public import BrauerGroup.Mathlib.FieldTheory.Separable
 public import BrauerGroup.Subfield.Splitting
 public import Mathlib.FieldTheory.JacobsonNoether
 
@@ -385,7 +384,7 @@ theorem exists_sep_masSubfield' : ∃ (a : D), IsMax (SubField.bot_adjoin K D a)
             let f : SubField.adjoin K D L a.1 a.2 →ₐ[L] centralizer K (L : Set D) :=
               ⟨(Subalgebra.inclusion (SubField.adjoin_le_centralizer K D L a.1 a.2)).toRingHom,
                 fun r ↦ rfl⟩
-            refine IsSeparable.of_algHom' f asep
+            exact asep.of_algHom _ f
       · simp only [Algebra.isSeparable_def, Subtype.forall] at hLsep
         have := IsSeparable.map (F := K) (K := L) (L := SubField.adjoin K D L a.1 a.2)
           (x := (⟨x1, hx12⟩ : L)) (Subalgebra.inclusion (Set.subset_union_left |>.trans
