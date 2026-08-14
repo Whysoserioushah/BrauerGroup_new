@@ -357,7 +357,7 @@ lemma exists_iso :
     Module.finrank_tensorProduct, Module.finrank_matrix, Fintype.card_fin, Module.finrank_self,
     _root_.mul_one] at eq2
   have eq3 := eq1.symm.trans eq2
-  haveI : FiniteDimensional F D := is_fin_dim_of_wdb _ _ (NeZero.ne _) _ isoB
+  have : FiniteDimensional F D := is_fin_dim_of_wdb _ _ (NeZero.ne _) _ isoB
   have : 0 < Module.finrank F D := Module.finrank_pos
   rw [Nat.mul_right_inj (by lia), ← pow_two, ← pow_two] at eq3
   simp only [zero_le, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj₀] at eq3
@@ -721,11 +721,11 @@ def fromSnd :
     let A := asCSA a
     let B := asCSA b
     change IsBrauerEquivalent A B
-    letI : Module K A := inferInstanceAs <| Module K (CrossProductAlgebra a)
-    letI : Module K B := inferInstanceAs <| Module K (CrossProductAlgebra b)
+    let : Module K A := inferInstanceAs <| Module K (CrossProductAlgebra a)
+    let : Module K B := inferInstanceAs <| Module K (CrossProductAlgebra b)
     let basis : Basis Gal(K/F) K B := (basis (f := b)).unitsSMul c
     let φ0 : A ≃ₗ[K] B := CrossProductAlgebra.basis.equiv basis (.refl _)
-    haveI : LinearMap.CompatibleSMul A B F K := by
+    have : LinearMap.CompatibleSMul A B F K := by
       constructor
       have eq (c : F) (a : A) : c • a = algebraMap F K c • a := by
         apply val_injective
@@ -847,7 +847,7 @@ lemma toSnd_fromSnd : toSnd ∘ fromSnd F K ∘ (H2Iso (galAct F K)).hom = id :=
   let am := Additive.toMul ∘ Amelia.toAdditive _ _ ∘ a
   have ha : IsMulCocycle₂ am :=
     isMulCocycle₂_of_mem_cocycles₂ _ (by simpa using! a.2)
-  haveI : Fact (IsMulCocycle₂ am) := ⟨ha⟩
+  have : Fact (IsMulCocycle₂ am) := ⟨ha⟩
   simp only [Function.comp_apply, id_eq]
   let A : GoodRep K (Quotient.mk'' <| CrossProductAlgebra.asCSA am) :=
     ⟨CrossProductAlgebra.asCSA am, rfl, CrossProductAlgebra.incl am, CrossProductAlgebra.dim_eq_sq⟩
@@ -917,7 +917,7 @@ lemma fromSnd_toSnd : (fromSnd F K ∘ (H2Iso (galAct F K)).hom) ∘ toSnd = id 
     rw [eq, eq', map_smul]
   let φ1 : CrossProductAlgebra f ≃ₗ[F] A := φ0.restrictScalars F
   refine AlgEquiv.ofLinearEquiv φ1 ?_ ?_
-  · haveI : Fact (IsMulCocycle₂ (M := Kˣ)
+  · have : Fact (IsMulCocycle₂ (M := Kˣ)
       (Additive.toMul ∘ cocyclesOfIsMulCocycle₂ (GoodRep.isMulCocycle₂ A.arbitraryConjFactor))) :=
       ⟨isMulCocycle₂_of_mem_cocycles₂ _ (cocyclesOfIsMulCocycle₂
         (GoodRep.isMulCocycle₂ A.arbitraryConjFactor)).2⟩

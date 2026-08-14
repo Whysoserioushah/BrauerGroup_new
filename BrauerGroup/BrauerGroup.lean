@@ -632,8 +632,8 @@ def e3Aux4 :
       (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)), mul_zero
       (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
   | add e a he ha =>
-    haveI := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
-    haveI := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
+    have := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
+    have := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
     simp only [TensorProduct.add_tmul, map_add,
       add_mul (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)), he, ha,
       mul_add (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
@@ -647,8 +647,8 @@ def e3Aux4 :
     · symm
       exact zero_mul (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) _
   | add x y hx hy =>
-    haveI := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
-    haveI := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
+    have := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
+    have := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
     convert congr($hx + $hy) using 1
     · rw [← mul_add (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
       congr
@@ -700,12 +700,12 @@ def e3 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A] :
   AlgEquiv.ofBijective (e3Aux4 (K := K) (E := E) A m) <| by
       if hm : m = 0
       then
-        haveI := e3Aux3 (K := K) (E := E) A m hm
+        have := e3Aux3 (K := K) (E := E) A m hm
         refine ⟨fun _ _ _ => Subsingleton.elim _ _, e3Aux5 (K := K) (E := E) A m⟩
       else
         have : NeZero m := ⟨hm⟩
-        letI r1 : Ring ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K)) := inferInstance
-        letI r2 : Ring (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := inferInstance
+        let r1 : Ring ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (Fin m) (Fin m) K)) := inferInstance
+        let r2 : Ring (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) := inferInstance
         apply bijective_of_surj_of_isCentralSimple E _ _ _ <| e3Aux5 (K := K) (E := E) A m
 
 def e4 :
@@ -850,7 +850,6 @@ abbrev BaseChange : BrauerGroup (K := K) →* BrauerGroup (K := E) where
 abbrev BaseChange_Q_to_C := BaseChange (K := ℚ) (E := ℂ)
 
 lemma BaseChange_Q_to_C_eq_one : BaseChange_Q_to_C = 1 := by
-  haveI : IsAlgClosed ℂ := Complex.isAlgClosed
   ext A; simp only [MonoidHom.coe_mk, OneHom.coe_mk, MonoidHom.one_apply]
   induction A using Quotient.inductionOn' with | h A;
   simp only [Quotient.map'_mk'']; apply Quotient.sound
@@ -952,9 +951,9 @@ def Br : FieldCat ⥤ CommGrpCat where
     simp only [← CommGrpCat.ofHom_comp]
     congr 1
     apply +allowSynthFailures baseChange_idem
-    letI : Algebra F E := RingHom.toAlgebra (f ≫ g).hom
-    letI : Algebra F K := RingHom.toAlgebra f.hom
-    letI : Algebra K E := RingHom.toAlgebra g.hom
+    let : Algebra F E := RingHom.toAlgebra (f ≫ g).hom
+    let : Algebra F K := RingHom.toAlgebra f.hom
+    let : Algebra K E := RingHom.toAlgebra g.hom
     exact IsScalarTower.of_algebraMap_smul (R := F) (A := K) (M := E) fun r ↦ congrFun rfl
 
 end BrauerGroupHom

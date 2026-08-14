@@ -387,9 +387,9 @@ lemma small_comm_square (e : A ≃ₐ[R] B) :
   | add _ _ _ _ => simp_all [map_add]
 
 lemma _root_.IsAzumaya.ofAlgEquiv (e : A ≃ₐ[R] B) (hA : IsAzumaya R A) : IsAzumaya R B :=
-  let _ : Module.Projective R B := .of_equiv e.toLinearEquiv
-  let _ : FaithfulSMul R B := .of_injective e e.injective
-  let _ : Module.Finite R B := .equiv e.toLinearEquiv
+  have : Module.Projective R B := .of_equiv e.toLinearEquiv
+  have : FaithfulSMul R B := .of_injective e e.injective
+  have : Module.Finite R B := .equiv e.toLinearEquiv
   ⟨Function.Bijective.of_comp_iff (AlgHom.mulLeftRight R B)
     (Algebra.TensorProduct.congr e e.op).bijective |>.1 <| by
     erw [← AlgHom.coe_comp, small_comm_square]

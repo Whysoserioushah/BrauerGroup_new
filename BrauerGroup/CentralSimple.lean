@@ -128,7 +128,7 @@ lemma TensorProduct.submodule_tensor_inf_tensor_submodule
     LinearMap.range (TensorProduct.map .id c.subtype) =
     LinearMap.range (TensorProduct.map b.subtype c.subtype) := by
   refine le_antisymm ?_ ?_
-  · letI : Module.Flat K (B ⧸ b) := Module.Flat.of_free
+  · have : Module.Flat K (B ⧸ b) := Module.Flat.of_free
     let u : b ⊗[K] c →ₗ[K] B ⊗[K] c := TensorProduct.map b.subtype LinearMap.id
     let v : B ⊗[K] c →ₗ[K] (B ⧸ b) ⊗[K] c :=
       TensorProduct.map (Submodule.mkQ _) LinearMap.id

@@ -96,7 +96,7 @@ abbrev e1'' (φ : F →ₐ[K] E) : φ.range ⊗[K] A ≃ₐ[φ.range] Matrix (Fi
     · subst h
       simp only [AlgEquiv.ofInjective, AlgEquiv.ofLeftInverse_symm_apply, Subtype.mk.injEq]
       set ψ := Classical.choose _ with ψ_eq
-      let hψ := Classical.choose_spec φ.injective.hasLeftInverse
+      have hψ := Classical.choose_spec φ.injective.hasLeftInverse
       simp only [Function.LeftInverse, ← ψ_eq] at hψ
       rw [← eq, hψ y]
       simp
@@ -309,7 +309,7 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
   let E := (F ⊗[K] L) ⧸ (Ideal.exists_maximal (F ⊗[K] L)).choose
   have : IsField E :=
     Ideal.Quotient.maximal_ideal_iff_isField_quotient _|>.1 (Ideal.exists_maximal _).choose_spec
-  letI alg : Algebra K E := Ideal.Quotient.algebra K
+  let alg : Algebra K E := Ideal.Quotient.algebra K
   let φ : F →ₐ[K] E := {
     toFun m := Ideal.Quotient.mk _ (m ⊗ₜ 1)
     map_one' := by simp [← Algebra.TensorProduct.one_def]

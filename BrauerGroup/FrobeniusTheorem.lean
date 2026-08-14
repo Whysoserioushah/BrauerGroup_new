@@ -27,19 +27,19 @@ set_option backward.isDefEq.respectTransparency false in
 lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensional ℝ K] :
     Nonempty (K ≃ₐ[ℝ] ℝ) ∨ Nonempty (K ≃ₐ[ℝ] ℂ) := by
   let CC := AlgebraicClosure K
-  letI : Algebra ℝ CC := AlgebraicClosure.instAlgebra K
-  haveI : IsAlgClosure ℝ CC := ⟨inferInstance, Algebra.IsAlgebraic.trans ℝ K CC⟩
-  haveI : IsAlgClosure ℝ ℂ := ⟨inferInstance, inferInstance⟩
+  let : Algebra ℝ CC := AlgebraicClosure.instAlgebra K
+  have : IsAlgClosure ℝ CC := ⟨inferInstance, Algebra.IsAlgebraic.trans ℝ K CC⟩
+  have : IsAlgClosure ℝ ℂ := ⟨inferInstance, inferInstance⟩
   let e : ℂ ≃ₐ[ℝ] CC := IsAlgClosure.equiv ℝ _ _
   have dim_eq1 : Module.finrank ℝ CC = 2 := by
     rw [← Complex.finrank_real_complex, e.toLinearEquiv.finrank_eq]
   have dim_eq2 : Module.finrank ℝ K * Module.finrank K CC = 2 := by
     rw [Module.finrank_mul_finrank, dim_eq1]
-  haveI : Module.Finite ℝ CC := by
+  have : Module.Finite ℝ CC := by
     have := e.toLinearEquiv.finrank_eq
     simp only [Complex.finrank_real_complex] at this
     exact FiniteDimensional.of_finrank_eq_succ this.symm
-  haveI : Module.Finite K CC := Module.Finite.right ℝ K CC
+  have : Module.Finite K CC := Module.Finite.right ℝ K CC
   have dim_eq3 : Module.finrank ℝ K = 1 ∨ Module.finrank ℝ K = 2 := by
     have ineq1 : 0 < Module.finrank ℝ K := Module.finrank_pos
     have ineq2 : 0 < Module.finrank K CC := Module.finrank_pos
@@ -58,7 +58,7 @@ lemma RealExtension_is_RorC (K : Type) [Field K] [Algebra ℝ K] [FiniteDimensio
 
 end prerequisites
 
-variable [hD' : IsSimpleRing D] [Algebra ℝ D] (k : SubField ℝ D) (hk : IsMax k) (e : k ≃ₐ[ℝ] ℂ)
+variable [Algebra ℝ D] (k : SubField ℝ D) (hk : IsMax k) (e : k ≃ₐ[ℝ] ℂ)
 
 open ComplexConjugate
 
@@ -251,7 +251,7 @@ lemma IsBasis1 (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
 
 lemma x2_is_real (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) : x.1^2 ∈ (algebraMap ℝ D).range := by
-  let hx2 := hx
+  have hx2 := hx
   have x2_is_central : x.1^2 ∈ Subalgebra.center ℝ D := by
       have x2_commutes_K := x2_comm_k _ _ _ hx
       by_contra! hxx
@@ -295,10 +295,10 @@ lemma x2_is_real (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
 open scoped algebraMap in
 abbrev V : Set D := {x | ∃ r : ℝ, r < 0 ∧ x^2 = (r : D)}
 
-omit [Algebra.IsCentral ℝ D] [FiniteDimensional ℝ D] hD' in
+omit [Algebra.IsCentral ℝ D] [FiniteDimensional ℝ D] in
 lemma V_def (x : D) : x ∈ V ↔ ∃ r < 0, x ^ 2 = algebraMap ℝ D r := .rfl
 
-omit [Algebra.IsCentral ℝ D] [FiniteDimensional ℝ D] hD' in
+omit [Algebra.IsCentral ℝ D] [FiniteDimensional ℝ D] in
 lemma real_sq_in_R_or_V (x : D) :
     x ^ 2 ∈ (algebraMap ℝ D).range → x ∈ (algebraMap ℝ D).range ∨ x ∈ V := by
   rintro ⟨r, hr⟩
@@ -330,9 +330,9 @@ lemma real_sq_in_R_or_V (x : D) :
 
 lemma x_is_in_V (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x.1 = k.val z)
     (hDD : Module.finrank ℝ D = 4) : x.1 ∈ V := by
-  let hx3 := hx
+  have hx3 := hx
   apply x2_is_real _ at hx
-  let hx' := hx hDD
+  have hx' := hx hDD
   have hx := real_sq_in_R_or_V _ hx'
   have : x.1 ∉ (algebraMap ℝ D).range := by
     by_contra! hxx
@@ -353,7 +353,7 @@ lemma x_is_in_V (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x.1 = k.val z)
         smul_eq_zero] at hx31; aesop
     · simp only [inv_eq_zero, Units.ne_zero, ZeroMemClass.coe_eq_zero,
       EmbeddingLike.map_eq_zero_iff, Complex.I_ne_zero, or_self] at hx32
-  simp_all only [Set.mem_setOf_eq, false_or, RingHom.mem_range, not_exists]
+  simp_all only [Set.mem_ofPred_eq, false_or, RingHom.mem_range, not_exists]
 
 -- instance : NoZeroSMulDivisors ℝ D := inferInstance
 
@@ -420,7 +420,7 @@ lemma jij_eq_negi (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
   apply_fun (·)^2 at zero
   rw [Pi.pow_apply, Real.sq_sqrt (le_of_lt (r_pos _ _ _ hx1 hDD)), Pi.pow_apply,
     pow_two 0, zero_mul] at zero
-  haveI := r_pos _ _ _ hx1
+  have := r_pos _ _ _ hx1
   simp_all
 
 lemma k_sq_eq_negone (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
@@ -438,7 +438,7 @@ lemma k_sq_eq_negone (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     apply_fun (·)^2 at heq
     rw [Pi.pow_apply, Real.sq_sqrt (le_of_lt (r_pos _ _ _ hx hDD)), Pi.pow_apply,
       pow_two 0, zero_mul] at heq
-    haveI := r_pos _ _ _ hx
+    have := r_pos _ _ _ hx
     simp_all only [Real.sqrt_zero, inv_zero, map_zero, zero_mul, lt_self_iff_false]), mul_assoc]
   nth_rw 2 [← mul_assoc, ← mul_assoc, ← mul_assoc, ← mul_assoc]
   rw [jij_eq_negi _ _ _ hx, ← Subalgebra.coe_neg, ← map_neg e.symm, ← mul_assoc,
@@ -717,7 +717,7 @@ lemma linEquivH_eq_toFun (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z
 lemma bij_tofun (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (h : Module.finrank ℝ D = 4) : Function.Bijective (toFun _ _ _ hx h) := by
   have eq1 := linEquivH_eq_toFun _ _ _ hx h
-  haveI := LinearEquiv.bijective (linEquivH _ _ _ hx h)
+  have := LinearEquiv.bijective (linEquivH _ _ _ hx h)
   have eq2 : @DFunLike.coe (ℍ[ℝ] ≃ₗ[ℝ] D) ℍ[ℝ] (fun x ↦ D) EquivLike.toFunLike
       (linEquivH k e x hx h) = @DFunLike.coe (ℍ[ℝ] →ₐ[ℝ] D) ℍ[ℝ] (fun x ↦ D)
       AlgHom.funLike (toFun k e x hx h) := by
@@ -761,11 +761,11 @@ set_option backward.isDefEq.respectTransparency false in
 theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A]
     (hA : Nonempty (Subalgebra.center ℝ A ≃ₐ[ℝ] ℂ)) : Nonempty (A ≃ₐ[ℝ] ℂ) := by
   have e := hA.some.symm
-  letI : Algebra ℂ A := AlgCA A e
+  let : Algebra ℂ A := AlgCA A e
   have : IsScalarTower ℝ ℂ A := { smul_assoc := smulCRassoc A e }
   rename_i _ _ _ fin
-  haveI : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 ‹FiniteDimensional ℝ A›
-  haveI : FiniteDimensional ℂ A := .right ℝ ℂ A
+  have : IsNoetherian ℝ A := IsNoetherian.iff_fg.2 ‹FiniteDimensional ℝ A›
+  have : FiniteDimensional ℂ A := .right ℝ ℂ A
   have bij := IsAlgClosed.algebraMap_bijective_of_isIntegral (k := ℂ) (K := A)
   exact ⟨.symm <| .ofBijective {
     toFun := algebraMap ℂ A

@@ -52,9 +52,9 @@ instance : Algebra.IsCentral ℝ ℍ[ℝ] := ⟨fun q hq ↦ by
   rw [Subalgebra.mem_center_iff] at hq
   change ∃(_ : _), _ = _
   use q.1
-  let eq1 := hq ⟨0, 1, 0, 0⟩
-  let eq2 := hq ⟨0, 0, 1, 0⟩
-  let eq3 := hq ⟨0, 0, 0, 1⟩
+  have eq1 := hq ⟨0, 1, 0, 0⟩
+  have eq2 := hq ⟨0, 0, 1, 0⟩
+  have eq3 := hq ⟨0, 0, 0, 1⟩
   rw [Quaternion.ext_iff] at eq1 eq2 eq3
   obtain ⟨_, _, eq13, eq14⟩ := eq1
   obtain ⟨_, eq22, _, eq24⟩ := eq2
@@ -85,13 +85,13 @@ lemma QuaternionTensorEquivOne : IsBrauerEquivalent (K := ℝ) ⟨.of ℝ (ℍ[�
 lemma QuaternionNotEquivR : ¬ IsBrauerEquivalent (K := ℝ) ⟨.of ℝ ℍ[ℝ]⟩ ⟨.of ℝ ℝ⟩ := by
   intro h
   obtain ⟨n, m, hn, hm, ⟨e⟩⟩ := h
-  letI : NeZero n := ⟨hn⟩
-  letI : NeZero m := ⟨hm⟩
+  have : NeZero n := ⟨hn⟩
+  have : NeZero m := ⟨hm⟩
   obtain ⟨e'⟩ := Wedderburn_Artin_uniqueness₀ ℝ (Matrix (Fin n) (Fin n) ℍ[ℝ])
     n m ℍ[ℝ] AlgEquiv.refl ℝ e
   have eq2 := e'.toLinearEquiv.finrank_eq
   simp only [Module.finrank_self] at eq2
-  haveI := eq2.symm.trans <| Quaternion.finrank_eq_four (R := ℝ)
+  have := eq2.symm.trans <| Quaternion.finrank_eq_four (R := ℝ)
   norm_num at this
 
 lemma BrauerOverR (A : CSA.{0, 0} ℝ) :
@@ -100,16 +100,16 @@ lemma BrauerOverR (A : CSA.{0, 0} ℝ) :
   else
   right
   obtain ⟨n, hn, D, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version.{0, 0} ℝ A
-  letI := A.4
-  letI : FiniteDimensional ℝ D := is_fin_dim_of_wdb ℝ A hn D e
+  have := A.4
+  have : FiniteDimensional ℝ D := is_fin_dim_of_wdb ℝ A hn D e
   obtain ⟨⟨e'⟩⟩ | hD2 | hD3 := FrobeniusTheorem D
   · have := is_central_of_wdb ℝ A n D hn e|>.center_eq_bot
     have e2 : Subalgebra.center ℝ D ≠ ⊥ := by
       refine ne_of_gt ?_
-      letI : Algebra ℂ D := RingHom.toAlgebra' e'.symm fun z d ↦ by
+      let : Algebra ℂ D := RingHom.toAlgebra' e'.symm fun z d ↦ by
         simp only [RingHom.coe_coe]
         rw [← e'.symm_apply_apply d, ← map_mul, mul_comm, map_mul]
-      letI : IsScalarTower ℝ ℂ D := {
+      have : IsScalarTower ℝ ℂ D := {
         smul_assoc := fun r z d ↦ by
           change e'.symm _  * _ = _ • (e'.symm z * d)
           rw [map_smul, Algebra.smul_mul_assoc]
@@ -153,7 +153,7 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
         simp [h]
         have : ¬ IsBrauerEquivalent B (BrauerGroup.one_in') := by
           by_contra!
-          haveI := hAB.trans this
+          have := hAB.trans this
           tauto
         simpa using this
   map_zero' := by
@@ -187,7 +187,7 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
             Algebra.TensorProduct.lid _ _) : Matrix _ _ (A ⊗[ℝ] B) ≃ₐ[ℝ] Matrix _ _ B)⟩⟩
       -- rw [this]
       by_contra! hBB
-      haveI := this.symm.trans hBB
+      have := this.symm.trans hBB
       tauto
     else
     if hB : IsBrauerEquivalent B one_in' then
@@ -199,7 +199,7 @@ abbrev toC2 : Additive (BrauerGroup ℝ) →+ ZMod 2 where
         (kroneckerMatrixTensor' A ℝ 1 m).trans <| AlgEquiv.mapMatrix <|
         Algebra.TensorProduct.rid _ _ _⟩⟩
     by_contra! hAA
-    haveI := this.symm.trans hAA
+    have := this.symm.trans hAA
     tauto
     else
     simp only [hA, ↓reduceIte, hB]

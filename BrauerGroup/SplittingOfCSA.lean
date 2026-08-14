@@ -147,7 +147,7 @@ def extension_inv [FiniteDimensional k A]
         simp only [map_one, one_ne_zero] at this
       simp only [nezero, false_or] at this
       exact this
-    haveI : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
+    have : FiniteDimensional k (K ⊗[k] A) := Module.Finite.trans (R := k) K (K ⊗[k] A)
     exact FiniteDimensional.of_injective (K := k) to_ten.toLinearMap Isinj
 
 theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
@@ -157,7 +157,7 @@ theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
         Nonempty (L ⊗[k] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) := by
   constructor
   · rintro ⟨_, _⟩
-    haveI := hk_bar.1
+    have := hk_bar.1
     obtain ⟨n, hn, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
     refine ⟨n, hn, ?_⟩
     use lemma_tto.ℒℒ n k k_bar A iso
@@ -172,7 +172,7 @@ theorem CSA_iff_exist_split (k_bar : Type u) [Field k_bar] [Algebra k k_bar]
 lemma dim_is_sq (k_bar : Type u) [Field k_bar] [Algebra k k_bar] [hk_bar : IsAlgClosure k k_bar]
     [Algebra.IsCentral k A] [IsSimpleRing A] [FiniteDimensional k A] :
     IsSquare (Module.finrank k A) := by
-  haveI := hk_bar.1
+  have := hk_bar.1
   obtain ⟨n, _, ⟨iso⟩⟩ := simple_eq_matrix_algClosed k_bar (k_bar ⊗[k] A)
   refine ⟨n, ?_⟩
   have := Module.finrank_matrix k_bar k_bar (Fin n) (Fin n)
@@ -250,7 +250,7 @@ def extension_over_split (A : CSA k) (L L' : Type u) [Field L] [Field L'] [Algeb
         · simp [Matrix.one_apply_eq, Algebra.algebraMap_eq_smul_one, Matrix.smul_apply]
         · simp [hij, Matrix.one_apply_ne, Algebra.algebraMap_eq_smul_one]
     }
-    let e5 : n = deg k k_bar A := by
+    have e5 : n = deg k k_bar A := by
       have := deg_sq_eq_dim k k_bar A
       rw [pow_two] at this
       have e6 := LinearEquiv.finrank_eq (e3.trans e4).toLinearEquiv|>.trans <|
@@ -267,7 +267,7 @@ lemma extension_over_split' (A : Type u) [Ring A] [IsSimpleRing A] [Algebra k A]
     isSplit k A L' := by
   obtain ⟨n, hn, ⟨e⟩⟩ := hA
   obtain ⟨n, e⟩ := extension_over_split k k_bar ⟨.of k A⟩ L L' ⟨n, e⟩
-  let e5 : n = deg k k_bar ⟨.of k A⟩ := by
+  have e5 : n = deg k k_bar ⟨.of k A⟩ := by
       have := deg_sq_eq_dim k k_bar ⟨.of k A⟩
       rw [pow_two] at this
       have e6 := LinearEquiv.finrank_eq e.toLinearEquiv|>.trans <|

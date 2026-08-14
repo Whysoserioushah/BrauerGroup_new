@@ -225,8 +225,8 @@ instance tensor_is_simple (K A B M : Type u)
   obtain ⟨n, hn, D, hD1, hD2, ⟨iso⟩⟩ := Wedderburn_Artin_algebra_version K A
   have : NeZero n := ⟨hn⟩
   obtain ⟨e1⟩ := end_simple_mod_of_wedderburn' K A n hn D iso M
-  haveI := CSA_implies_CSA K A n D _ iso
-  haveI : Algebra.IsCentral K (Module.End A M) := e1.symm.isCentral
+  have := CSA_implies_CSA K A n D _ iso
+  have : Algebra.IsCentral K (Module.End A M) := e1.symm.isCentral
   classical
   exact @IsCentralSimple.TensorProduct.simple K _ B (Module.End A M) _ _ _ _ _ this _
 
@@ -253,7 +253,7 @@ lemma findimB (K A B M : Type u)
 omit hB in
 lemma iso_fg [hB1 : IsSimpleRing B] :
     Nonempty <| module_inst K A B M f ≃ₗ[B ⊗[K] (Module.End A M)] module_inst K A B M g := by
-  haveI := findimB K A B M f
+  have := findimB K A B M f
   rw [linearEquiv_iff_finrank_eq_over_simple_ring K]
   rfl
 
@@ -339,9 +339,9 @@ theorem SkolemNoether' (K A B : Type u)
     [Algebra K B] [hB : IsSimpleRing B] (f g : B →ₐ[K] A) :
     ∃ (x : Aˣ), ∀(b : B), g b = x * f b * x⁻¹ := by
   obtain ⟨n, hn, S, _, _, ⟨e⟩⟩ := Wedderburn_Artin_algebra_version K A
-  letI := Module.compHom (Fin n → S) e.toRingEquiv.toRingHom
+  let := Module.compHom (Fin n → S) e.toRingEquiv.toRingHom
   have : IsSimpleModule A (Fin n → S) := simple_mod_of_wedderburn K A hn S e
-  haveI : IsScalarTower K A (Fin n → S) := by
+  have : IsScalarTower K A (Fin n → S) := by
     constructor
     intro a b c
     ext i
