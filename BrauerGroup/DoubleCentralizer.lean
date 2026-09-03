@@ -775,13 +775,9 @@ lemma finrank_mop (B : Type*) [Ring B] [Algebra F B] : Module.finrank F Bᵐᵒ�
 
 end centralizer_isSimple.aux
 
-set_option maxHeartbeats 400000 in
--- Unclear
 open centralizer_isSimple.aux in
 lemma centralizer_isSimple {ι : Type*} (ℬ : Basis ι F <| Module.End F B) :
     IsSimpleRing (Subalgebra.centralizer F (B : Set A)) := by
-  let (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
-      Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
   obtain ⟨x, ⟨eqv⟩⟩ := step1 B ℬ
   have : IsSimpleRing (Subalgebra.centralizer F (B : Set A) ⊗[F] Module.End F B) := by
     have := TwoSidedIdeal.orderIsoOfRingEquiv eqv.toRingEquiv
@@ -801,8 +797,6 @@ variable (F) in
 lemma dim_centralizer :
     Module.finrank F (Subalgebra.centralizer F (B : Set A)) *
     Module.finrank F B = Module.finrank F A := by
-  let (X : Subalgebra F (A ⊗[F] Module.End F B)) : Ring X :=
-      Subalgebra.toRing (R := F) (A := A ⊗[F] Module.End F B) X
   have : Module.Free F (Module.End.rightMul F B) := Module.Free.of_divisionRing F
     ↥(Module.End.rightMul F ↥B)
   obtain ⟨x, ⟨eqv⟩⟩ := step1 B (Module.finBasis _ _)
