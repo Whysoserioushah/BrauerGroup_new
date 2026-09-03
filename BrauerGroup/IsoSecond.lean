@@ -315,28 +315,26 @@ lemma C_smul_calc (k : K) (σ : Gal(K/F)) (a : A) (b : B) :
 theorem C_mul_smul' (x y : C) (ab : M α β) : (x * y) • ab = x • y • ab := by
   change ((⟨x.val⟩ : C) * ⟨y.val⟩) • ab = (⟨x.val⟩ : C) • (⟨y.val⟩ : C) • ab
   induction x.val using Finsupp.induction_linear with
-  | zero => change (0 * _) • _ = 0 • _; change C_smul _ _ = C_smul _ (C_smul _ _); simp
+  | zero => change (0 * _) • _ = 0 • _; simp [C_smul_def]
   | add f g h1 h2 =>
     change ((⟨f⟩ + ⟨g⟩ : C) * _) • ab = (⟨f⟩ + ⟨g⟩ : C) • _ • _
     simp only [add_mul]
-    change C_smul _ _ = C_smul _ (C_smul _ _) at h1 h2 ⊢
+    simp only [C_smul_def] at h1 h2 ⊢
     rw [map_add, LinearMap.add_apply, map_add, LinearMap.add_apply, h1, h2]
   | single σ k1 =>
     induction y.val using Finsupp.induction_linear with
     | zero =>
       change (_ * 0) • _ = _ • 0 • _ ;
-      change C_smul _ _ = C_smul _ (C_smul _ _)
-      simp
+      simp [C_smul_def]
     | add f g h1 h2 =>
       change C_smul (⟨.single σ k1⟩ * (_ + _) : C) _ = C_smul _ (C_smul (⟨f⟩ + ⟨g⟩ : C) _)
-      change C_smul _ _ = C_smul _ (C_smul _ _) at h1 h2
+      simp only [C_smul_def] at h1 h2
       rw [mul_add, map_add, LinearMap.add_apply, map_add, LinearMap.add_apply, h1, h2, map_add]
     | single τ k2 =>
       induction ab using Submodule.Quotient.induction_on with | H ab =>
       induction ab using TensorProduct.induction_on with
       | zero =>
-        change C_smul _ _ = C_smul _ (C_smul _ _)
-        simp
+        simp [C_smul_def]
       | tmul a b =>
         change C_smul (⟨mulLinearMap _ (.single σ k1) (.single τ k2)⟩ : C) _ = C_smul _ (C_smul _ _)
         simp only [mulLinearMap_single_single, Pi.mul_apply, Units.val_mul]

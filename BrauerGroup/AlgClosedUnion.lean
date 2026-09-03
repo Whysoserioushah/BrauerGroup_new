@@ -138,9 +138,8 @@ theorem inter_tensor_union :
   induction x using TensorProduct.induction_on with
   |zero => simp
   |tmul x a =>
-    have fin0: FiniteDimensional K K⟮x⟯ := IntermediateField.adjoin.finiteDimensional (by
-      observe : IsAlgebraic K x
-      exact Algebra.IsIntegral.isIntegral x)
+    have fin0 : FiniteDimensional K K⟮x⟯ :=
+      IntermediateField.adjoin.finiteDimensional (Algebra.IsIntegral.isIntegral x)
     exact Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A) (is_direct K K_bar A) |>.2
       ⟨intermediateTensor K K_bar A K⟮x⟯, ⟨⟨⟨K⟮x⟯, fin0⟩, rfl⟩,
         ⟨(⟨x, IntermediateField.mem_adjoin_simple_self K x⟩ ⊗ₜ a), by simp⟩⟩⟩
