@@ -295,9 +295,6 @@ end field_ext
 -- ∀ a : A, reduced charpoly of `a` using `e` is the same as using `e'`.
 include F_bar in
 set_option maxSynthPendingDepth 3 in
-set_option synthInstance.maxHeartbeats 80000 in
--- FIXME: Get rid of the raised heartbeats
-set_option maxHeartbeats 1600000 in
 lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L] [Algebra L L_bar]
     [FiniteDimensional K L] [IsGalois K L] [hL : IsAlgClosure L L_bar]
     (e' : L ⊗[K] A ≃ₐ[L] Matrix (Fin n) (Fin n) L) (a : A) :

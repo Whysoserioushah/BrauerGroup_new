@@ -551,8 +551,6 @@ lemma linindep1ij (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
       mul_inv_cancel₀ (Subtype.coe_ne_coe.1 hyy), one_mul] at hx
     simpa [Complex.ext_iff, neg_one_eq_one_iff] using congr(e $(hx <| e.symm Complex.I))
 
-set_option synthInstance.maxHeartbeats 40000 in
--- set_option maxHeartbeats 600000 in
 lemma linindepijk (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (hDD : Module.finrank ℝ D = 4) :
     LinearIndependent ℝ (basisijk k e x hx hDD) := by
@@ -713,7 +711,6 @@ lemma linEquivH_eq_toFun (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z
     simp [QuaternionAlgebra.basisOneIJK, QuaternionAlgebra.Basis.liftHom,
       QuaternionAlgebra.Basis.lift]
 
--- set_option maxHeartbeats 600000 in
 lemma bij_tofun (x : Dˣ) (hx : ∀ z, x.1⁻¹ * f k e z * x = k.val z)
     (h : Module.finrank ℝ D = 4) : Function.Bijective (toFun _ _ _ hx h) := by
   have eq1 := linEquivH_eq_toFun _ _ _ hx h
@@ -778,8 +775,6 @@ theorem centereqvCisoC (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimens
         Algebra.algebraMap_eq_smul_one, smul_assoc, one_smul]} bij⟩
 
 set_option backward.isDefEq.respectTransparency false in
-set_option maxHeartbeats 600000 in
--- FIXME: Get rid of the raised heartbeats
 theorem FrobeniusTheorem (A : Type) [DivisionRing A] [Algebra ℝ A] [FiniteDimensional ℝ A] :
     Nonempty (A ≃ₐ[ℝ] ℂ) ∨ Nonempty (A ≃ₐ[ℝ] ℝ) ∨ Nonempty (A ≃ₐ[ℝ] ℍ[ℝ]) := by
   obtain ⟨⟨hR⟩⟩ | hC := RealExtension_is_RorC (Subalgebra.center ℝ A)

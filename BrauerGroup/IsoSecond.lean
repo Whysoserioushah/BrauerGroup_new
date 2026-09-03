@@ -312,8 +312,6 @@ lemma C_smul_calc (k : K) (σ : Gal(K/F)) (a : A) (b : B) :
     Submodule.Quotient.mk (((k • basis σ) * a) ⊗ₜ (basis σ * b)) :=
   C_smul_aux_calc k σ a b
 
-set_option maxHeartbeats 1200000 in
--- FIXME: Get rid of the raised heartbeats
 theorem C_mul_smul' (x y : C) (ab : M α β) : (x * y) • ab = x • y • ab := by
   change ((⟨x.val⟩ : C) * ⟨y.val⟩) • ab = (⟨x.val⟩ : C) • (⟨y.val⟩ : C) • ab
   induction x.val using Finsupp.induction_linear with
