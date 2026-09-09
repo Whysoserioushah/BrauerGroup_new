@@ -335,7 +335,7 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
       simp only [AlgHom.coe_mk, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, φ]
       induction m using Submodule.Quotient.induction_on with
       | H m =>
-      induction m using TensorProduct.induction_on with
+      induction m with
       | tmul x y =>
         simp only [Ideal.Quotient.mk_eq_mk]
         rw [← map_mul, Algebra.TensorProduct.tmul_mul_tmul, one_mul, ← smul_eq_mul,
@@ -343,15 +343,13 @@ lemma unique_onver_split (L L_bar : Type u) [Field L] [Field L_bar] [Algebra K L
         rfl
       | add x y hx hy =>
         change _ * Ideal.Quotient.mk _ _ = r • Ideal.Quotient.mk _ _ at hx hy
-        simp [map_add, mul_add, hx, hy]
-      | zero => simp) _
+        simp [map_add, mul_add, hx, hy]) _
   have algclo : IsAlgClosed F_bar := IsAlgClosure.isAlgClosed F
   have tow : IsScalarTower F E F_bar := {
     smul_assoc f e f0 := by
       induction e using Submodule.Quotient.induction_on with
       | H z =>
-      induction z using TensorProduct.induction_on with
-      | zero => simp
+      induction z with
       | tmul x y =>
         -- change _ = f • (IsAlgClosed.lift (S := E) (M := F_bar) _)
         sorry

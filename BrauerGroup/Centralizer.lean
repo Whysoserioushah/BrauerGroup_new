@@ -92,13 +92,12 @@ lemma centralizer_range_includeLeft_eq_center_tensorProduct [Module.Free R B] :
   · rintro ⟨w, rfl⟩
     rw [Subalgebra.mem_centralizer_iff]
     rintro _ ⟨x, rfl⟩
-    induction w using TensorProduct.induction_on with
-    | zero => simp
-    | tmul b c =>
-      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.includeLeft_apply,
-        Algebra.TensorProduct.map_tmul, coe_val, AlgHom.coe_id, id_eq,
-        Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one, Subalgebra.mem_center_iff.1 b.2 x]
+    induction w with
     | add y z hy hz => rw [map_add, mul_add, hy, hz, add_mul]
+    | tmul b c =>
+    simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, Algebra.TensorProduct.includeLeft_apply,
+      Algebra.TensorProduct.map_tmul, coe_val, AlgHom.coe_id, id_eq,
+      Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one, Subalgebra.mem_center_iff.1 b.2 x]
 
 set_option backward.isDefEq.respectTransparency false in
 /--

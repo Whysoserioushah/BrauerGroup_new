@@ -222,10 +222,9 @@ abbrev toModuleOverTensor : TensorModule R A C ⥤ ModuleCat (A ⊗[R] C) where
   map {M N} f := ModuleCat.ofHom {
     __ := f.hom.hom
     map_smul' ac m := by
-      induction ac using TensorProduct.induction_on with
-      | zero => simp
-      | tmul a c => simp
+      induction ac with
       | add _ _ _ _ => simp_all [add_smul]
+      | tmul a c => simp
   }
   map_id M := by ext; simp
   map_comp _ _ := by ext; simp
@@ -282,27 +281,23 @@ abbrev e02 (M : ModuleCat (A ⊗[R] C)) :
   · apply (config := {allowSynthFailures := true, newGoals := .all}) @LinearMap.mk
     · exact AddHom.id _
     · intro ac m
-      induction ac using TensorProduct.induction_on with
-      | zero =>
-      conv_lhs => erw [AddHom.toFun_eq_coe, AddHom.id_apply]
-      rw [RingHom.id_apply, zero_smul]
-      rfl
+      induction ac with
+      | add x y h1 h2 =>
+        rw [RingHom.id_apply, AddHom.toFun_eq_coe]
+        erw [AddHom.id_apply, AddHom.id_apply]
+        conv_rhs => rw [add_smul]
+        erw [AddHom.toFun_eq_coe, AddHom.id_apply] at h1 h2
+        simp only [RingHom.id_apply] at h1 h2
+        erw [AddHom.id_apply] at h1 h2
+        rw [← h1, ← h2]
+        rw [smul_tensormod, map_add]
+        rfl
       | tmul a c =>
       conv_lhs => erw [AddHom.toFun_eq_coe, AddHom.id_apply]
       rw [RingHom.id_apply, AddHom.toFun_eq_coe]
       conv_rhs => erw [AddHom.id_apply]
       rw [smul_tensormod]
       simp [smul_smul]
-      | add x y h1 h2 =>
-      rw [RingHom.id_apply, AddHom.toFun_eq_coe]
-      erw [AddHom.id_apply, AddHom.id_apply]
-      conv_rhs => rw [add_smul]
-      erw [AddHom.toFun_eq_coe, AddHom.id_apply] at h1 h2
-      simp only [RingHom.id_apply] at h1 h2
-      erw [AddHom.id_apply] at h1 h2
-      rw [← h1, ← h2]
-      rw [smul_tensormod, map_add]
-      rfl
   · exact id
   · exact congrFun rfl
   · exact congrFun rfl

@@ -208,10 +208,8 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
     let μ' : K ⊗[F] B →ₗ[F] Module.End K B := TensorProduct.lift μ
     let μ'' : K ⊗[F] B →ₗ[K] Module.End K B :=
     { __ := μ'
-      map_smul' := by
-        intro r a
-        induction a using TensorProduct.induction_on with
-        | zero => simp
+      map_smul' r a := by
+        induction a with
         | tmul c a =>
           ext a'
           simp only [smul_eq_mul, smul_def, smul_tmul', AddHom.toFun_eq_coe, lift.tmul',
@@ -230,11 +228,9 @@ theorem isSplit_iff_dimension [FiniteDimensional F K] (A : CSA F) :
       (by
         intro x y
         ext a''
-        induction x using TensorProduct.induction_on with
-        | zero => simp
+        induction x with
         | tmul c a =>
-          induction y using TensorProduct.induction_on with
-          | zero => simp
+          induction y with
           | tmul c' a' =>
             simp only [smul_eq_mul, Algebra.TensorProduct.tmul_mul_tmul, mul_comm c c',
               LinearMap.coe_mk, lift.tmul', AddHom.coe_mk, mul_smul, _root_.mul_assoc,
