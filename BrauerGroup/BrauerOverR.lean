@@ -27,15 +27,12 @@ abbrev toEnd_map : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] →ₗ[ℝ] Module.End ℝ (ℍ[�
 set_option maxSynthPendingDepth 2 in
 lemma toEnd_map.map_mul (x1 x2 : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ]) : toEnd_map (x1 * x2) =
     toEnd_map x1 * toEnd_map x2 := by
-  induction x1 using TensorProduct.induction_on with
-  | zero => simp
-  | tmul q1 q2 =>
-    induction x2 using TensorProduct.induction_on with
-    | zero => simp
-    | tmul q3 q4 => ext : 1; simp [← _root_.mul_assoc]
-    | add x y h1 h2 =>
-      rw [mul_add, map_add, map_add, mul_add, h1, h2]
+  induction x1 with
   | add x y h1 h2 => rw [add_mul, map_add, map_add, add_mul, h1, h2]
+  | tmul q1 q2 =>
+  induction x2 with
+  | add x y h1 h2 => rw [mul_add, map_add, map_add, mul_add, h1, h2]
+  | tmul q3 q4 => ext : 1; simp [← _root_.mul_assoc]
 
 abbrev toEnd : ℍ[ℝ] ⊗[ℝ] ℍ[ℝ] →ₐ[ℝ] Module.End ℝ (ℍ[ℝ]) where
   toFun := toEnd_map

@@ -33,7 +33,6 @@ abbrev toTensorMatrix_toFun_Klinear : K ⊗[F] Matrix n n A →ₗ[K] Matrix n n
   {__ := toTensorMatrix_toFun_Flinear K F A n,
    map_smul' k tensor := by
     induction tensor with
-    | zero => simp
     | tmul k0 M => simp [TensorProduct.smul_tmul', SemigroupAction.mul_smul]
     | add _ _ h1 h2 => simp_all}
 
@@ -42,11 +41,9 @@ abbrev toTensorMatrix : K ⊗[F] Matrix n n A →ₐ[K] Matrix n n (K ⊗[F] A) 
   refine .ofLinearMap (toTensorMatrix_toFun_Klinear K F A n)
     (by simp [Algebra.TensorProduct.one_def]) fun t1 t2 ↦ ?_
   induction t1 with
-  | zero => simp
   | add _ _ h1 h2 => simp_all [add_mul]
   | tmul x y =>
   induction t2 with
-  | zero => simp
   | add _ _ h1 h2 => simp_all [mul_add]
   | tmul x0 y0 =>
   simp [Algebra.TensorProduct.tmul_mul_tmul, mul_comm x x0, SemigroupAction.mul_smul]
@@ -74,7 +71,6 @@ abbrev invFun_Klinear (i j : n) : K ⊗[F] A →ₗ[K] K ⊗[F] Matrix n n A :=
   {__ := invFun_toFun K F A n i j,
    map_smul' k tensor := by
     induction tensor with
-    | zero => simp
     | tmul k0 a => simp [smul_tmul']
     | add _ _ h1 h2 => simp_all}
 
@@ -86,7 +82,6 @@ abbrev invFun_linearMap : Matrix n n (K ⊗[F] A) →ₗ[K] K ⊗[F] Matrix n n 
 lemma left_inv (M : K ⊗[F] Matrix n n A) :
     invFun_linearMap K F A n (toTensorMatrix K F A n M) = M := by
   induction M with
-  | zero => simp
   | tmul k M =>
     simp [← tmul_sum, smul_tmul', Fintype.sum_prod_type, ← matrix_eq_sum_single]
   | add koxa1 koxa2 h1 h2 => rw [map_add, map_add, h1, h2]
@@ -98,7 +93,6 @@ lemma right_inv (M : Matrix n n (K ⊗[F] A)) :
   conv_rhs => rw [matrix_eq_sum_single M]
   refine Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => ?_
   induction M p q with
-  | zero => simp
   | tmul x y => simp [smul_tmul']
   | add _ _ h1 h2 => simp [single_add, h1, h2]
 

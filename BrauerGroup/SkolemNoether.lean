@@ -78,8 +78,7 @@ def smul1 (K A B M : Type u)
     map_smul' := fun k b ↦ by
       simp only [smul1AddHom, smul1AddHom', ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe,
         RingHom.id_apply]
-      induction b using TensorProduct.induction_on
-      · simp only [smul_zero, map_zero]
+      induction b
       · rename_i b l
         simp only [TensorProduct.smul_tmul', TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
           ZeroHom.coe_mk, LinearMapClass.map_smul, smul_assoc]
@@ -105,12 +104,9 @@ lemma mul_smul1 (K A B M : Type u)
     ∀ (x y : (B ⊗[K] (Module.End A M))) (m : module_inst K A B M f),
     smul1 K A B M f m (x * y) = smul1 K A B M f (smul1 K A B M f m y) x := fun x y m ↦ by
   dsimp [smul1, smul1AddHom, smul1AddHom']
-  induction x using TensorProduct.induction_on
-  · simp only [zero_mul, map_zero]
+  induction x
   · rename_i b1 l1
-    induction y using TensorProduct.induction_on
-    · simp only [mul_zero, map_zero, smul_zero, TensorProduct.liftAddHom_tmul, AddMonoidHom.coe_mk,
-      ZeroHom.coe_mk]
+    induction y
     · rename_i b2 l2
       simp only [Algebra.TensorProduct.tmul_mul_tmul, TensorProduct.liftAddHom_tmul,
         AddMonoidHom.coe_mk, ZeroHom.coe_mk, map_mul, Module.End.mul_apply, LinearMapClass.map_smul]
@@ -124,8 +120,7 @@ lemma smul1_add (K A B M : Type u)
     [Ring B] [Algebra K B] [AddCommGroup M] [Module K M] [Module A M] [IsScalarTower K A M]
     (f : B →ₐ[K] A) :  ∀ (r : (B ⊗[K] (Module.End A M))) (m1 m2 : module_inst K A B M f),
     smul1 K A B M f (m1 + m2) r = smul1 K A B M f m1 r + smul1 K A B M f m2 r := fun r m1 m2 ↦ by
-  induction r using TensorProduct.induction_on
-  · simp only [map_zero, add_zero]
+  induction r
   · simp only [smul1, smul1AddHom, smul1AddHom', map_add, smul_add, ZeroHom.toFun_eq_coe,
       AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk, TensorProduct.liftAddHom_tmul,
       AddMonoidHom.coe_mk, ZeroHom.coe_mk]
@@ -155,8 +150,7 @@ instance IsMod (K A B M : Type u)
     change smul1 K A B M f 0 a = 0
     rw [smul1]
     simp only [ZeroHom.toFun_eq_coe, AddMonoidHom.toZeroHom_coe, LinearMap.coe_mk, AddHom.coe_mk]
-    induction a using TensorProduct.induction_on
-    · simp only [map_zero]
+    induction a
     · rename_i b l
       simp only [smul1AddHom, smul1AddHom', map_zero, smul_zero, TensorProduct.liftAddHom_tmul,
         AddMonoidHom.coe_mk, ZeroHom.coe_mk]
@@ -175,10 +169,6 @@ instance (K A B M : Type u)
     IsScalarTower K (B ⊗[K] Module.End A M) (module_inst K A B M f) where
   smul_assoc a x y := by
     induction x with
-    | zero =>
-      -- simp
-      change smul1 K A B M f _ _ = _ • smul1 K A B M f _ _
-      rw [map_zero, smul_zero, smul_zero, map_zero]
     | tmul b z =>
       change (smul1 K A B M f _ _) = _ • smul1 K A B M f _ _
       simp

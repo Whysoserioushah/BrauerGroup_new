@@ -605,12 +605,10 @@ lemma e3Aux3 (hm : m = 0) : Subsingleton ((E ⊗[K] A) ⊗[E] (E ⊗[K] Matrix (
     rw [this a, this b]
   subst hm
   intro x
-  induction x using TensorProduct.induction_on with
-  | zero => rfl
+  induction x with
   | add e a he ha => rw [he, ha, zero_add]
   | tmul e a =>
-  induction a using TensorProduct.induction_on with
-  | zero => simp
+  induction a with
   | add _ _ hx hy => rw [TensorProduct.tmul_add, hx, hy, add_zero]
   | tmul e' mat =>
   rw [show mat = 0 from Subsingleton.elim _ _]
@@ -624,11 +622,7 @@ def e3Aux4 :
   simp only [e3Aux0, AlgHom.toRingHom_eq_coe, AlgEquiv.toAlgHom_toRingHom, AlgHom.coe_comp,
     AlgHom.coe_mk, RingHom.coe_coe, Function.comp_apply, Algebra.TensorProduct.includeLeft_apply,
     e3Aux1, e3Aux10, AlgEquiv.coe_trans, Algebra.TensorProduct.congr_apply, AlgEquiv.refl_toAlgHom]
-  induction x using TensorProduct.induction_on with
-  | zero =>
-    simp only [TensorProduct.zero_tmul, map_zero]; rw [zero_mul
-      (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)), mul_zero
-      (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
+  induction x with
   | add e a he ha =>
     have := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
     have := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
@@ -637,13 +631,7 @@ def e3Aux4 :
       mul_add (R := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))]
   | tmul e a =>
   simp only [Algebra.TensorProduct.assoc_tmul]
-  induction y using TensorProduct.induction_on with
-  | zero =>
-    simp only [TensorProduct.zero_tmul]
-    trans 0
-    · exact mul_zero (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) _
-    · symm
-      exact zero_mul (M₀ := E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K)) _
+  induction y with
   | add x y hx hy =>
     have := Distrib.leftDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
     have := Distrib.rightDistribClass (E ⊗[K] (A ⊗[K] Matrix (Fin m) (Fin m) K))
@@ -665,18 +653,14 @@ def e3Aux4 :
 
 lemma e3Aux5 : Function.Surjective (e3Aux4 (K := K) (E := E) A m) := by
   intro x
-  induction x using TensorProduct.induction_on with
-  | zero => exact ⟨0, rfl⟩
+  induction x with
   | add e a he ha =>
     rcases he with ⟨e, rfl⟩
     rcases ha with ⟨a, rfl⟩
     refine ⟨e + a, ?_⟩
     exact map_add (f := e3Aux4 (K := K) (E := E) A _) _ _
   | tmul e a =>
-  induction a using TensorProduct.induction_on with
-  | zero =>
-    refine ⟨0, ?_⟩
-    simp only [TensorProduct.tmul_zero]; rfl
+  induction a with
   | add a m h₁ h₂ =>
     rcases h₂ with ⟨m, h₂⟩
     rcases h₁ with ⟨a, h₁⟩
@@ -758,13 +742,11 @@ def e6Aux0 : (E ⊗[K] A) ⊗[E] (E ⊗[K] B) →ₐ[E] E ⊗[K] (A ⊗[K] B) :=
       }
     fun e b => show (_ ⊗ₜ _) * (_ ⊗ₜ _) = (_ ⊗ₜ _) * (_ ⊗ₜ _) by simp)
       fun x y => show _ = _ by
-        induction x using TensorProduct.induction_on with
-        | zero => simp only [map_zero, zero_mul, mul_zero]
+        induction x with
         | add x x' hx hx' => simp only [map_add, mul_add, hx, hx', add_mul]
         | tmul e a =>
         simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
-        induction y using TensorProduct.induction_on with
-        | zero => simp only [map_zero, mul_zero, zero_mul]
+        induction y with
         | add y y' hy hy' => simp only [map_add, mul_add, hy, hy', add_mul]
         | tmul e' b =>
         simp only [Algebra.TensorProduct.lift_tmul, AlgHom.coe_mk, RingHom.coe_mk]
@@ -781,19 +763,14 @@ def e6 [Algebra.IsCentral K A] [csa_A : IsSimpleRing A]
   AlgEquiv.ofBijective (e6Aux0 (K := K) (E := E) A B) <| by
     apply bijective_of_surj_of_isCentralSimple E _ _ _
     intro x
-    induction x using TensorProduct.induction_on with
-    | zero => exact ⟨0, rfl⟩
+    induction x with
     | add x y hx hy =>
       rcases hx with ⟨x, rfl⟩
       rcases hy with ⟨y, rfl⟩
       refine ⟨x + y, ?_⟩
       exact map_add (f := (e6Aux0 (K := K) (E := E) A B)) _ _
     | tmul e a =>
-    induction a using TensorProduct.induction_on with
-    | zero =>
-      refine ⟨0, ?_⟩
-      rw [TensorProduct.tmul_zero]
-      rfl
+    induction a with
     | add a a' ha ha' =>
       rcases ha with ⟨aa, haa⟩
       rcases ha' with ⟨aa', haa'⟩
@@ -880,12 +857,10 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
           Algebra.smul_def, Algebra.smul_def, _root_.mul_assoc] }
   refine .ofLinearEquiv (baseChange_idem.Aux F K E A) ?_ fun x y ↦ ?_
   · simp [Algebra.TensorProduct.one_def]
-  induction x using TensorProduct.induction_on with
-  | zero => rw [zero_mul, (baseChange_idem.Aux F K E A).map_zero, zero_mul]
+  induction x with
   | add => simp only [add_mul, (Aux F K E A).map_add, *]
   | tmul =>
-  induction y using TensorProduct.induction_on with
-  | zero => rw [mul_zero, (baseChange_idem.Aux F K E A).map_zero, mul_zero]
+  induction y with
   | add => simp only [mul_add, (Aux F K E A).map_add, *]
   | tmul =>
   rename_i x1 y1 x2 y2
@@ -894,16 +869,10 @@ def baseChange_idem.Aux' (F K E : Type u) [Field F] [Field K] [Field E]
     (TensorProduct.AlgebraTensorModule.rid K E E) (LinearEquiv.refl F A))
   set g := (TensorProduct.AlgebraTensorModule.assoc F K E E K A.carrier).symm
   change f (g _) = _
-  induction y1 using TensorProduct.induction_on with
-  | zero =>
-    rw [zero_mul, TensorProduct.tmul_zero, g.map_zero, f.map_zero, TensorProduct.tmul_zero,
-      g.map_zero, f.map_zero, zero_mul]
+  induction y1 with
   | add => simp only [add_mul, TensorProduct.tmul_add, g.map_add, f.map_add, *]
   | tmul k1 a1 =>
-  induction y2 using TensorProduct.induction_on with
-  | zero =>
-    rw [mul_zero, TensorProduct.tmul_zero, TensorProduct.tmul_zero, g.map_zero, f.map_zero,
-      mul_zero]
+  induction y2 with
   | add => simp only [mul_add, TensorProduct.tmul_add, g.map_add, f.map_add, *]
   | tmul k2 a2 =>
   simp only [Algebra.TensorProduct.tmul_mul_tmul, *]

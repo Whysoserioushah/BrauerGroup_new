@@ -35,15 +35,13 @@ def intermediateTensor (L : IntermediateField K K_bar) : Submodule K (K_bar ⊗[
   LinearMap.range (LinearMap.rTensor _ (L.val.toLinearMap) : L ⊗[K] A →ₗ[K] K_bar ⊗[K] A)
 
 def intermediateTensor' (L : IntermediateField K K_bar) : Submodule L (K_bar ⊗[K] A) :=
-  LinearMap.range ({LinearMap.rTensor _ (L.val.toLinearMap) with
+  ({ (L.val.toLinearMap).rTensor A with
     map_smul' l x := by
       simp only [AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, RingHom.id_apply]
-      induction x using TensorProduct.induction_on with
-      | zero => simp
-      | tmul x a =>
-        simp only [smul_tmul', smul_eq_mul, LinearMap.rTensor_tmul, AlgHom.toLinearMap_apply,
-          _root_.map_mul, IntermediateField.coe_val]; rfl
-      | add x y hx hy => simp only [smul_add, map_add, hx, hy] } : L ⊗[K] A →ₗ[L] K_bar ⊗[K] A)
+      induction x with
+      | add x y hx hy => simp only [smul_add, map_add, hx, hy]
+      | tmul x a => simp; rfl
+  } : L ⊗[K] A →ₗ[L] K_bar ⊗[K] A).range
 
 def intermediateTensorEquiv (L : IntermediateField K K_bar) :
     intermediateTensor K K_bar A L ≃ₗ[K] L ⊗[K] A :=
@@ -71,11 +69,7 @@ def intermediateTensorEquiv' (L : IntermediateField K K_bar) :
   map_smul' := by
     rintro x ⟨-, ⟨y, rfl⟩⟩
     simp only [RingHom.id_apply]
-    induction y using TensorProduct.induction_on with
-    | zero =>
-      simp only [map_zero, SetLike.mk_smul_mk, smul_zero]
-      erw [map_zero]
-      rw [smul_zero]
+    induction y with
     | tmul y a =>
       simp only [LinearMap.coe_mk, LinearMap.coe_toAddHom, LinearMap.rTensor_tmul,
         AlgHom.toLinearMap_apply, IntermediateField.coe_val, SetLike.mk_smul_mk, smul_tmul',
@@ -135,15 +129,14 @@ theorem inter_tensor_union :
     (intermediateTensor K K_bar A L) = ⊤ := by
   rw [eq_top_iff]
   rintro x -
-  induction x using TensorProduct.induction_on with
-  |zero => simp
-  |tmul x a =>
+  induction x with
+  | tmul x a =>
     have fin0 : FiniteDimensional K K⟮x⟯ :=
       IntermediateField.adjoin.finiteDimensional (Algebra.IsIntegral.isIntegral x)
     exact Submodule.mem_sSup_of_directed (SetOfFinite_nonempty K K_bar A) (is_direct K K_bar A) |>.2
       ⟨intermediateTensor K K_bar A K⟮x⟯, ⟨⟨⟨K⟮x⟯, fin0⟩, rfl⟩,
         ⟨(⟨x, IntermediateField.mem_adjoin_simple_self K x⟩ ⊗ₜ a), by simp⟩⟩⟩
-  |add x y hx hy =>
+  | add x y hx hy =>
   apply AddMemClass.add_mem <;> assumption
 
 theorem algclosure_element_in (x : K_bar ⊗[K] A) : ∃(F : IntermediateField K K_bar),

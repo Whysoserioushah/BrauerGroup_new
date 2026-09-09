@@ -50,19 +50,18 @@ lemma centralizer_inclusionLeft :
     rw [sub_eq_zero] at this
     exact this
   · rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩
-    induction x using TensorProduct.induction_on with
-    | zero => simp
-    | tmul a b =>
-      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.coe_comp, Subalgebra.coe_val,
-        Function.comp_apply, Algebra.TensorProduct.includeLeft_apply,
-        Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq,
-        Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one]
-      congr 1
-      exact a.2 _ y.2
+    induction x with
     | add x y hx hy =>
       simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.coe_comp, Subalgebra.coe_val,
         Function.comp_apply, Algebra.TensorProduct.includeLeft_apply, map_add] at hx hy ⊢
       simp [mul_add, hx, hy, add_mul]
+    | tmul a b =>
+    simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.coe_comp, Subalgebra.coe_val,
+      Function.comp_apply, Algebra.TensorProduct.includeLeft_apply,
+      Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq,
+      Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one]
+    congr 1
+    exact a.2 _ y.2
 
 include 𝒜 in
 lemma centralizer_inclusionRight :
@@ -87,19 +86,18 @@ lemma centralizer_inclusionRight :
     rw [sub_eq_zero] at this
     exact this
   · rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩
-    induction x using TensorProduct.induction_on with
-    | zero => simp
-    | tmul a b =>
-      simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.coe_comp, Subalgebra.coe_val,
-        Function.comp_apply, Algebra.TensorProduct.includeRight_apply,
-        Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq,
-        Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one]
-      congr 1
-      exact b.2 _ y.2
+    induction x with
     | add x y hx hy =>
       simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.coe_comp, Subalgebra.coe_val,
         Function.comp_apply, Algebra.TensorProduct.includeRight_apply, map_add] at hx hy ⊢
       simp [mul_add, hx, hy, add_mul]
+    | tmul a b =>
+    simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, AlgHom.coe_comp, Subalgebra.coe_val,
+      Function.comp_apply, Algebra.TensorProduct.includeRight_apply,
+      Algebra.TensorProduct.map_tmul, AlgHom.coe_id, id_eq,
+      Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one]
+    congr 1
+    exact b.2 _ y.2
 
 lemma centralizer_tensor_le_inf_centralizer :
     Subalgebra.centralizer F (A := A ⊗[F] A')
@@ -162,26 +160,23 @@ lemma centralizer_tensor_centralizer :
     rw [← this]
     exact hx
   · rintro _ ⟨x, rfl⟩
-    induction x using TensorProduct.induction_on with
-    | zero => exact Subalgebra.zero_mem _
-    | tmul a b =>
-      simp only [AlgHom.coe_range, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
-        Algebra.TensorProduct.map_tmul, Subalgebra.coe_val, Subalgebra.mem_centralizer_iff,
-        Set.mem_range, forall_exists_index, forall_apply_eq_imp_iff]
-      intro x
-      induction x using TensorProduct.induction_on with
-      | zero => simp
-      | tmul x y =>
-        simp only [Algebra.TensorProduct.map_tmul, Subalgebra.coe_val,
-          Algebra.TensorProduct.tmul_mul_tmul]
-        congr 1
-        · exact a.2 x x.2
-        · exact b.2 y y.2
-      | add x y hx hy =>
-        simp only [map_add, add_mul, hx, hy, mul_add]
+    induction x with
     | add x y hx hy =>
       rw [RingHom.map_add]
       exact Subalgebra.add_mem _ hx hy
+    | tmul a b =>
+    simp only [AlgHom.coe_range, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+      Algebra.TensorProduct.map_tmul, Subalgebra.coe_val, Subalgebra.mem_centralizer_iff,
+      Set.mem_range, forall_exists_index, forall_apply_eq_imp_iff]
+    intro x
+    induction x with
+    | add x y hx hy => simp only [map_add, add_mul, hx, hy, mul_add]
+    | tmul x y =>
+    simp only [Algebra.TensorProduct.map_tmul, Subalgebra.coe_val,
+      Algebra.TensorProduct.tmul_mul_tmul]
+    congr 1
+    · exact a.2 x x.2
+    · exact b.2 y y.2
 
 end lemma1
 
